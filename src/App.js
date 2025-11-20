@@ -15,7 +15,7 @@ export default function KiwiVanMarket() {
   const [showAddVanForm, setShowAddVanForm] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true); // ← NOUVEAU : État de chargement
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     priceMax: 50000,
     yearMin: 2000,
@@ -24,23 +24,56 @@ export default function KiwiVanMarket() {
     selfContained: false
   });
 
-  // Chargement des vans depuis Firebase
+  // ✨ OPTIMISATION : Chargement avec cache localStorage
   useEffect(() => {
     const fetchVans = async () => {
       try {
-        setLoading(true); // Début du chargement
+        setLoading(true);
+        
+        // 🚀 ÉTAPE 1 : Charger depuis le cache local (INSTANTANÉ)
+        const cachedData = localStorage.getItem('kiwiVanMarket_vans');
+        const cacheTimestamp = localStorage.getItem('kiwiVanMarket_timestamp');
+        
+        if (cachedData) {
+          const cachedVans = JSON.parse(cachedData);
+          setVans(cachedVans);
+          setFilteredVans(cachedVans);
+          setLoading(false); // ✅ Affichage immédiat des vans en cache !
+          console.log('⚡ Vans chargés depuis le cache:', cachedVans.length);
+        }
+        
+        // 🔄 ÉTAPE 2 : Vérifier si le cache est récent (< 5 minutes)
+        const now = Date.now();
+        const cacheAge = cacheTimestamp ? now - parseInt(cacheTimestamp) : Infinity;
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes en millisecondes
+        
+        // Si le cache est récent, pas besoin de recharger depuis Firebase
+        if (cacheAge < CACHE_DURATION && cachedData) {
+          console.log('✅ Cache récent, pas de rechargement nécessaire');
+          return;
+        }
+        
+        // 📡 ÉTAPE 3 : Charger depuis Firebase (en arrière-plan si cache existe)
+        console.log('🔄 Rechargement depuis Firebase...');
         const querySnapshot = await getDocs(collection(db, 'vans'));
         const vansData = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
+        
+        // 💾 ÉTAPE 4 : Mettre à jour le cache
+        localStorage.setItem('kiwiVanMarket_vans', JSON.stringify(vansData));
+        localStorage.setItem('kiwiVanMarket_timestamp', now.toString());
+        
+        // 🎯 ÉTAPE 5 : Mettre à jour l'affichage
         setVans(vansData);
         setFilteredVans(vansData);
-        console.log('✅ Vans chargés depuis Firebase:', vansData.length);
+        console.log('✅ Vans chargés depuis Firebase et mis en cache:', vansData.length);
+        
       } catch (error) {
         console.error('❌ Erreur lors du chargement des vans:', error);
       } finally {
-        setLoading(false); // Fin du chargement (que ça marche ou non)
+        setLoading(false);
       }
     };
 
@@ -580,12 +613,12 @@ export default function KiwiVanMarket() {
           </div>
         )}
 
-        {/* NOUVEAU : Spinner de chargement */}
+        {/* Loading Spinner */}
         {loading ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4"></div>
-            <p className="text-xl text-gray-600 font-semibold">Loading vans from Firebase...</p>
-            <p className="text-sm text-gray-500 mt-2">This should only take a moment</p>
+            <p className="text-xl text-gray-600 font-semibold">Loading vans...</p>
+            <p className="text-sm text-gray-500 mt-2">⚡ First load might take a moment</p>
           </div>
         ) : (
           <>
