@@ -4,14 +4,14 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// Configuration Firebase - VOS clés
+// Configuration Firebase - Utilise les variables d'environnement
 const firebaseConfig = {
-  apiKey: "AIzaSyD5AZEcz4wr4VebmwKASBMT_1kTyJGWzhI",
-  authDomain: "kiwivanmarket.firebaseapp.com",
-  projectId: "kiwivanmarket",
-  storageBucket: "kiwivanmarket.firebasestorage.app",
-  messagingSenderId: "658498951752",
-  appId: "1:658498951752:web:930cf7d8ccf19c68c0967d"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "AIzaSyD5AZEcz4wr4VebmwKASBMT_1kTyJGWzhI",
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "kiwivanmarket.firebaseapp.com",
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "kiwivanmarket",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "kiwivanmarket.firebasestorage.app",
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "658498951752",
+  appId: process.env.REACT_APP_FIREBASE_APP_ID || "1:658498951752:web:930cf7d8ccf19c68c0967d"
 };
 
 // Initialisation de Firebase
