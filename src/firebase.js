@@ -1,23 +1,37 @@
-// Import des fonctions Firebase
+// Import des fonctions Firebase nécessaires
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
-// Configuration Firebase - Utilise les variables d'environnement
+// Configuration Firebase avec les variables d'environnement
 const firebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "AIzaSyD5AZEcz4wr4VebmwKASBMT_1kTyJGWzhI",
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "kiwivanmarket.firebaseapp.com",
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "kiwivanmarket",
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "kiwivanmarket.firebasestorage.app",
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "658498951752",
-  appId: process.env.REACT_APP_FIREBASE_APP_ID || "1:658498951752:web:930cf7d8ccf19c68c0967d"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-// Initialisation de Firebase
+// Vérification que toutes les variables d'environnement sont présentes
+if (!firebaseConfig.apiKey) {
+  console.error('❌ ERREUR: Les variables d\'environnement Firebase ne sont pas chargées!');
+  console.error('Vérifiez que le fichier .env.local existe et que React a été redémarré.');
+  console.error('Variables actuelles:', {
+    apiKey: firebaseConfig.apiKey,
+    authDomain: firebaseConfig.authDomain,
+    projectId: firebaseConfig.projectId
+  });
+}
+
+// Initialiser Firebase
 const app = initializeApp(firebaseConfig);
 
-// Export des services pour utilisation dans l'app
-export const auth = getAuth(app);        // Pour l'authentification
-export const db = getFirestore(app);     // Pour la base de données
-export const storage = getStorage(app);  // Pour le stockage d'images
+// Exporter les services
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+console.log('✅ Firebase initialisé avec succès');
+console.log('📦 Project ID:', firebaseConfig.projectId);
