@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, Linkedin, ChevronRight, AlertCircle } from 'lucide-react';
+import { db } from './firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 export default function KiwiVanMarket() {
   const [vans, setVans] = useState([]);
@@ -13,6 +15,7 @@ export default function KiwiVanMarket() {
   const [showAddVanForm, setShowAddVanForm] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true); // ← NOUVEAU : État de chargement
   const [filters, setFilters] = useState({
     priceMax: 50000,
     yearMin: 2000,
@@ -21,344 +24,30 @@ export default function KiwiVanMarket() {
     selfContained: false
   });
 
-  const initialVans = [
-    {
-      id: 1,
-      title: 'Toyota Hiace 2015 - Self-Contained Certified',
-      price: 18500,
-      year: 2015,
-      mileage: 145000,
-      location: 'Auckland',
-      region: 'North Island',
-      type: 'Campervan',
-      capacity: 2,
-      selfContained: true,
-      featured: true,
-      wofExpiry: '2025-11-15',
-      regoExpiry: '2025-09-20',
-      images: ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'],
-      description: 'Perfect backpacker van! Self-contained certified with fresh WOF. Fully equipped with solar panels, fridge, and sleeping area. Ready for your NZ adventure!',
-      features: ['Self-Contained', 'Solar 200W', 'Fridge', 'Fresh WOF', 'Queen Bed', 'Kitchen'],
-      seller: { name: 'Mike Thompson', rating: 4.9, phone: '+64 21 123 4567', email: 'mike@example.com' },
-      buyBack: true,
-      views: 234,
-      postedDays: 3
-    },
-    {
-      id: 2,
-      title: 'Mitsubishi Delica 2008 - 4WD Adventure',
-      price: 12800,
-      year: 2008,
-      mileage: 198000,
-      location: 'Queenstown',
-      region: 'South Island',
-      type: 'Van',
-      capacity: 4,
-      selfContained: false,
-      featured: true,
-      wofExpiry: '2025-08-10',
-      regoExpiry: '2025-07-15',
-      images: ['https://images.unsplash.com/photo-1622022999934-fe71e89e366d?w=800'],
-      description: '4WD Delica, perfect for adventures! Pop-top roof for extra space. Great condition.',
-      features: ['4WD', 'Pop-top', 'Sleeps 4', 'Diesel', 'Manual'],
-      seller: { name: 'Emma Wilson', rating: 4.7, phone: '+64 27 987 6543', email: 'emma@example.com' },
-      buyBack: false,
-      views: 189,
-      postedDays: 5
-    },
-    {
-      id: 3,
-      title: 'Ford Transit 2018 - Luxury Conversion',
-      price: 35000,
-      year: 2018,
-      mileage: 89000,
-      location: 'Wellington',
-      region: 'North Island',
-      type: 'Campervan',
-      capacity: 2,
-      selfContained: true,
-      featured: false,
-      wofExpiry: '2026-01-20',
-      regoExpiry: '2025-12-15',
-      images: ['https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=800'],
-      description: 'Professional conversion with high-end finishes. Self-contained certified.',
-      features: ['Self-Contained', 'Solar 400W', 'Shower', 'Toilet', 'Hot Water', 'Heating'],
-      seller: { name: 'John Smith', rating: 5.0, phone: '+64 22 345 6789', email: 'john@example.com' },
-      buyBack: true,
-      views: 456,
-      postedDays: 1
-    },
-    {
-      id: 4,
-      title: 'Mazda Bongo 2006 - Budget Friendly',
-      price: 8500,
-      year: 2006,
-      mileage: 215000,
-      location: 'Christchurch',
-      region: 'South Island',
-      type: 'Van',
-      capacity: 2,
-      selfContained: false,
-      featured: false,
-      wofExpiry: '2025-06-30',
-      regoExpiry: '2025-05-20',
-      images: ['https://images.unsplash.com/photo-1610647752706-3bb12232b37a?w=800'],
-      description: 'Perfect starter van for backpackers. Reliable and economical.',
-      features: ['Pop-top', 'Bed', 'Curtains', 'Storage', 'Economical'],
-      seller: { name: 'Sarah Brown', rating: 4.6, phone: '+64 21 567 8901', email: 'sarah@example.com' },
-      buyBack: false,
-      views: 123,
-      postedDays: 7
-    },
-    {
-      id: 5,
-      title: 'Volkswagen Crafter 2019 - Modern Living',
-      price: 42000,
-      year: 2019,
-      mileage: 65000,
-      location: 'Auckland',
-      region: 'North Island',
-      type: 'Campervan',
-      capacity: 2,
-      selfContained: true,
-      featured: true,
-      wofExpiry: '2026-03-15',
-      regoExpiry: '2026-02-10',
-      images: ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'],
-      description: 'Modern conversion with all amenities. Like new condition!',
-      features: ['Self-Contained', 'Solar 600W', 'Lithium Battery', 'Shower', 'AC', 'Heating'],
-      seller: { name: 'David Lee', rating: 4.9, phone: '+64 27 234 5678', email: 'david@example.com' },
-      buyBack: true,
-      views: 567,
-      postedDays: 2
-    },
-    {
-      id: 6,
-      title: 'Nissan Caravan 2012 - Family Size',
-      price: 15500,
-      year: 2012,
-      mileage: 168000,
-      location: 'Hamilton',
-      region: 'North Island',
-      type: 'Van',
-      capacity: 4,
-      selfContained: false,
-      featured: false,
-      wofExpiry: '2025-09-25',
-      regoExpiry: '2025-08-18',
-      images: ['https://images.unsplash.com/photo-1622022999934-fe71e89e366d?w=800'],
-      description: 'Spacious van perfect for families. Plenty of storage.',
-      features: ['Sleeps 4', 'Kitchen', 'Fridge', 'Sink', 'Storage'],
-      seller: { name: 'Lisa Chen', rating: 4.8, phone: '+64 21 876 5432', email: 'lisa@example.com' },
-      buyBack: false,
-      views: 234,
-      postedDays: 4
-    },
-    {
-      id: 7,
-      title: 'Mercedes Sprinter 2017 - Premium',
-      price: 38500,
-      year: 2017,
-      mileage: 95000,
-      location: 'Dunedin',
-      region: 'South Island',
-      type: 'Campervan',
-      capacity: 2,
-      selfContained: true,
-      featured: true,
-      wofExpiry: '2025-12-20',
-      regoExpiry: '2025-11-15',
-      images: ['https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=800'],
-      description: 'Premium Mercedes with professional conversion. Excellent condition.',
-      features: ['Self-Contained', 'Solar', 'Shower', 'Toilet', 'Diesel Heating', 'Premium Interior'],
-      seller: { name: 'Tom Anderson', rating: 4.9, phone: '+64 22 456 7890', email: 'tom@example.com' },
-      buyBack: true,
-      views: 389,
-      postedDays: 3
-    },
-    {
-      id: 8,
-      title: 'Toyota Regius 2010 - Reliable Choice',
-      price: 11200,
-      year: 2010,
-      mileage: 178000,
-      location: 'Tauranga',
-      region: 'North Island',
-      type: 'Van',
-      capacity: 3,
-      selfContained: false,
-      featured: false,
-      wofExpiry: '2025-07-15',
-      regoExpiry: '2025-06-20',
-      images: ['https://images.unsplash.com/photo-1610647752706-3bb12232b37a?w=800'],
-      description: 'Solid reliable van with basic conversion. Great for touring.',
-      features: ['Sleeps 3', 'Kitchen', 'Storage', 'Rock & Roll Bed'],
-      seller: { name: 'Rachel Green', rating: 4.5, phone: '+64 27 345 6789', email: 'rachel@example.com' },
-      buyBack: false,
-      views: 156,
-      postedDays: 6
-    },
-    {
-      id: 9,
-      title: 'Fiat Ducato 2016 - Self-Contained',
-      price: 28500,
-      year: 2016,
-      mileage: 112000,
-      location: 'Nelson',
-      region: 'South Island',
-      type: 'Campervan',
-      capacity: 2,
-      selfContained: true,
-      featured: false,
-      wofExpiry: '2025-10-30',
-      regoExpiry: '2025-09-25',
-      images: ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'],
-      description: 'Well-maintained Fiat with full self-contained setup.',
-      features: ['Self-Contained', 'Solar 300W', 'Shower', 'Toilet', 'Kitchen', 'Fridge'],
-      seller: { name: 'Mark Taylor', rating: 4.7, phone: '+64 21 234 5678', email: 'mark@example.com' },
-      buyBack: true,
-      views: 278,
-      postedDays: 5
-    },
-    {
-      id: 10,
-      title: 'Subaru Sambar 2005 - Compact Adventure',
-      price: 7200,
-      year: 2005,
-      mileage: 189000,
-      location: 'Rotorua',
-      region: 'North Island',
-      type: 'Van',
-      capacity: 2,
-      selfContained: false,
-      featured: false,
-      wofExpiry: '2025-05-15',
-      regoExpiry: '2025-04-20',
-      images: ['https://images.unsplash.com/photo-1622022999934-fe71e89e366d?w=800'],
-      description: 'Cute compact van, perfect for solo travelers or couples.',
-      features: ['4WD', 'Compact', 'Pop-top', 'Basic Kitchen', 'Economical'],
-      seller: { name: 'Jenny Park', rating: 4.6, phone: '+64 27 567 8901', email: 'jenny@example.com' },
-      buyBack: false,
-      views: 145,
-      postedDays: 8
-    },
-    {
-      id: 11,
-      title: 'Peugeot Boxer 2018 - Modern Comfort',
-      price: 32000,
-      year: 2018,
-      mileage: 78000,
-      location: 'Palmerston North',
-      region: 'North Island',
-      type: 'Campervan',
-      capacity: 2,
-      selfContained: true,
-      featured: true,
-      wofExpiry: '2026-02-10',
-      regoExpiry: '2026-01-15',
-      images: ['https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=800'],
-      description: 'Modern Peugeot with excellent conversion and low mileage.',
-      features: ['Self-Contained', 'Solar', 'Shower', 'Composting Toilet', 'Heating', 'Modern Design'],
-      seller: { name: 'Chris Martin', rating: 4.8, phone: '+64 22 678 9012', email: 'chris@example.com' },
-      buyBack: true,
-      views: 312,
-      postedDays: 2
-    },
-    {
-      id: 12,
-      title: 'Honda Step Wagon 2007 - Budget Family',
-      price: 9800,
-      year: 2007,
-      mileage: 195000,
-      location: 'Invercargill',
-      region: 'South Island',
-      type: 'Van',
-      capacity: 4,
-      selfContained: false,
-      featured: false,
-      wofExpiry: '2025-08-05',
-      regoExpiry: '2025-07-10',
-      images: ['https://images.unsplash.com/photo-1610647752706-3bb12232b37a?w=800'],
-      description: 'Affordable family van with basic camping setup.',
-      features: ['Sleeps 4', 'Curtains', 'Storage', 'Fold-down Bed'],
-      seller: { name: 'Peter White', rating: 4.4, phone: '+64 21 789 0123', email: 'peter@example.com' },
-      buyBack: false,
-      views: 98,
-      postedDays: 9
-    },
-    {
-      id: 13,
-      title: 'Renault Master 2019 - Luxury Living',
-      price: 45000,
-      year: 2019,
-      mileage: 52000,
-      location: 'Auckland',
-      region: 'North Island',
-      type: 'Campervan',
-      capacity: 2,
-      selfContained: true,
-      featured: true,
-      wofExpiry: '2026-04-20',
-      regoExpiry: '2026-03-15',
-      images: ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'],
-      description: 'Top-of-the-line conversion with premium features. Almost new!',
-      features: ['Self-Contained', 'Solar 800W', 'Lithium', 'Shower', 'Toilet', 'AC', 'Premium'],
-      seller: { name: 'Sophie Turner', rating: 5.0, phone: '+64 27 890 1234', email: 'sophie@example.com' },
-      buyBack: true,
-      views: 623,
-      postedDays: 1
-    },
-    {
-      id: 14,
-      title: 'Mitsubishi L300 2009 - Classic Van',
-      price: 10500,
-      year: 2009,
-      mileage: 185000,
-      location: 'New Plymouth',
-      region: 'North Island',
-      type: 'Van',
-      capacity: 2,
-      selfContained: false,
-      featured: false,
-      wofExpiry: '2025-09-10',
-      regoExpiry: '2025-08-15',
-      images: ['https://images.unsplash.com/photo-1622022999934-fe71e89e366d?w=800'],
-      description: 'Classic reliable van with simple conversion.',
-      features: ['Bed', 'Kitchen', 'Curtains', 'Storage', 'Reliable'],
-      seller: { name: 'Alex Johnson', rating: 4.6, phone: '+64 22 901 2345', email: 'alex@example.com' },
-      buyBack: false,
-      views: 167,
-      postedDays: 7
-    },
-    {
-      id: 15,
-      title: 'Citroen Relay 2017 - Stylish & Practical',
-      price: 29500,
-      year: 2017,
-      mileage: 98000,
-      location: 'Napier',
-      region: 'North Island',
-      type: 'Campervan',
-      capacity: 2,
-      selfContained: true,
-      featured: false,
-      wofExpiry: '2025-11-30',
-      regoExpiry: '2025-10-25',
-      images: ['https://images.unsplash.com/photo-1464219789935-c2d9d9aba644?w=800'],
-      description: 'Stylish French van with practical layout and good condition.',
-      features: ['Self-Contained', 'Solar', 'Shower', 'Toilet', 'Modern Kitchen', 'Good Storage'],
-      seller: { name: 'Maria Garcia', rating: 4.7, phone: '+64 21 012 3456', email: 'maria@example.com' },
-      buyBack: true,
-      views: 234,
-      postedDays: 4
-    }
-  ];
-
+  // Chargement des vans depuis Firebase
   useEffect(() => {
-    setVans(initialVans);
-    setFilteredVans(initialVans);
+    const fetchVans = async () => {
+      try {
+        setLoading(true); // Début du chargement
+        const querySnapshot = await getDocs(collection(db, 'vans'));
+        const vansData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setVans(vansData);
+        setFilteredVans(vansData);
+        console.log('✅ Vans chargés depuis Firebase:', vansData.length);
+      } catch (error) {
+        console.error('❌ Erreur lors du chargement des vans:', error);
+      } finally {
+        setLoading(false); // Fin du chargement (que ça marche ou non)
+      }
+    };
+
+    fetchVans();
   }, []);
 
+  // Filtrage des vans
   useEffect(() => {
     let filtered = vans.filter(van => {
       const matchSearch = van.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -564,7 +253,7 @@ export default function KiwiVanMarket() {
           <X size={24} />
         </button>
         
-        <img src={van.images[0]} alt={van.title} className="w-full h-96 object-cover rounded-t-2xl" />
+        <img src={van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'} alt={van.title} className="w-full h-96 object-cover rounded-t-2xl" />
         
         <div className="p-8">
           <div className="flex items-start justify-between mb-4">
@@ -678,7 +367,6 @@ export default function KiwiVanMarket() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-white text-emerald-600 p-2 rounded-xl">
-                {/* Nouveau logo campervan sympa */}
                 <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zM7 7h10v3H7V7zm4 13c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm6-2H7v-5h10v5z"/>
                   <circle cx="9" cy="15" r="1"/>
@@ -884,80 +572,100 @@ export default function KiwiVanMarket() {
         </div>
 
         {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-2xl font-bold text-gray-800">
-            {filteredVans.length} {filteredVans.length === 1 ? 'van' : 'vans'} available
-          </p>
-        </div>
-
-        {/* Van Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredVans.map(van => (
-            <div key={van.id} 
-              onClick={() => setSelectedVan(van)}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:-translate-y-1">
-              <div className="relative">
-                <img src={van.images[0]} alt={van.title} className="w-full h-56 object-cover"/>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
-                  className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition">
-                  <Heart size={20} className={favorites.includes(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}/>
-                </button>
-                {van.featured && (
-                  <div className="absolute top-3 left-3 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                    <Star size={12} fill="currentColor" />
-                    Featured
-                  </div>
-                )}
-                {van.buyBack && (
-                  <div className="absolute bottom-3 left-3 bg-green-400 text-green-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                    <Shield size={12} />
-                    Buy-Back
-                  </div>
-                )}
-                {van.selfContained && (
-                  <div className="absolute bottom-3 right-3 bg-blue-400 text-blue-900 px-3 py-1 rounded-full text-xs font-bold">
-                    Self-Contained
-                  </div>
-                )}
-              </div>
-
-              <div className="p-5">
-                <h3 className="font-bold text-lg mb-2 line-clamp-2">{van.title}</h3>
-                <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                  <MapPin size={16} className="text-emerald-600"/>
-                  {van.location}, {van.region}
-                </div>
-                <div className="text-3xl font-bold text-emerald-600 mb-3">
-                  {formatPrice(van.price)}
-                </div>
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
-                  <span>{van.year} • {van.mileage.toLocaleString()} km</span>
-                  <div className="flex items-center gap-1">
-                    <Star size={16} fill="currentColor" className="text-yellow-500"/>
-                    <span className="font-bold">{van.seller.rating}</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <Clock size={14} />
-                    {van.postedDays}d ago
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <TrendingUp size={14} />
-                    {van.views} views
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredVans.length === 0 && (
-          <div className="text-center py-20">
-            <p className="text-2xl font-bold text-gray-400 mb-2">No vans found</p>
-            <p className="text-gray-500">Try adjusting your filters or search term</p>
+        {!loading && (
+          <div className="mb-6">
+            <p className="text-2xl font-bold text-gray-800">
+              {filteredVans.length} {filteredVans.length === 1 ? 'van' : 'vans'} available
+            </p>
           </div>
+        )}
+
+        {/* NOUVEAU : Spinner de chargement */}
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4"></div>
+            <p className="text-xl text-gray-600 font-semibold">Loading vans from Firebase...</p>
+            <p className="text-sm text-gray-500 mt-2">This should only take a moment</p>
+          </div>
+        ) : (
+          <>
+            {/* Van Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredVans.map(van => (
+                <div key={van.id} 
+                  onClick={() => setSelectedVan(van)}
+                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:-translate-y-1">
+                  <div className="relative">
+                    <img src={van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'} alt={van.title} className="w-full h-56 object-cover"/>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
+                      className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition">
+                      <Heart size={20} className={favorites.includes(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}/>
+                    </button>
+                    {van.featured && (
+                      <div className="absolute top-3 left-3 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                        <Star size={12} fill="currentColor" />
+                        Featured
+                      </div>
+                    )}
+                    {van.buyBack && (
+                      <div className="absolute bottom-3 left-3 bg-green-400 text-green-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                        <Shield size={12} />
+                        Buy-Back
+                      </div>
+                    )}
+                    {van.selfContained && (
+                      <div className="absolute bottom-3 right-3 bg-blue-400 text-blue-900 px-3 py-1 rounded-full text-xs font-bold">
+                        Self-Contained
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-5">
+                    <h3 className="font-bold text-lg mb-2 line-clamp-2">{van.title}</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                      <MapPin size={16} className="text-emerald-600"/>
+                      {van.location}, {van.region}
+                    </div>
+                    <div className="text-3xl font-bold text-emerald-600 mb-3">
+                      {formatPrice(van.price)}
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
+                      <span>{van.year} • {van.mileage.toLocaleString()} km</span>
+                      {van.seller?.rating && (
+                        <div className="flex items-center gap-1">
+                          <Star size={16} fill="currentColor" className="text-yellow-500"/>
+                          <span className="font-bold">{van.seller.rating}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      {van.postedDays && (
+                        <span className="flex items-center gap-1">
+                          <Clock size={14} />
+                          {van.postedDays}d ago
+                        </span>
+                      )}
+                      {van.views && (
+                        <span className="flex items-center gap-1">
+                          <TrendingUp size={14} />
+                          {van.views} views
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* No results message */}
+            {filteredVans.length === 0 && (
+              <div className="text-center py-20">
+                <p className="text-2xl font-bold text-gray-400 mb-2">No vans found</p>
+                <p className="text-gray-500">Try adjusting your filters or search term</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
