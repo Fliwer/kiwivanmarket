@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, Linkedin, ChevronRight, AlertCircle } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { useAuth } from './AuthContext';
+import AuthModal from './components/AuthModal';
 
 export default function KiwiVanMarket() {
   const [vans, setVans] = useState([]);
@@ -14,7 +16,8 @@ export default function KiwiVanMarket() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showAddVanForm, setShowAddVanForm] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+ const { currentUser, logout } = useAuth();
+const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     priceMax: 50000,
@@ -420,13 +423,13 @@ export default function KiwiVanMarket() {
                 <span className="hidden md:inline">List Your Van</span>
               </button>
               
-              {!isLoggedIn ? (
-                <button 
-                  onClick={() => setIsLoggedIn(true)}
-                  className="bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-800 transition">
-                  Sign In
-                </button>
-              ) : (
+              {!currentUser ? (
+  <button 
+    onClick={() => setShowAuthModal(true)}
+    className="bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-800 transition">
+    Sign In
+  </button>
+) : (
                 <div className="relative">
                   <button 
                     onClick={() => setShowUserMenu(!showUserMenu)}
@@ -460,7 +463,7 @@ export default function KiwiVanMarket() {
                       </a>
                       <hr className="my-2" />
                       <button 
-                        onClick={() => { setIsLoggedIn(false); setShowUserMenu(false); }}
+                        onClick={() => { logout(); setShowUserMenu(false); }}
                         className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition text-red-600">
                         Sign Out
                       </button>
@@ -804,6 +807,10 @@ export default function KiwiVanMarket() {
       {selectedVan && <VanDetailsModal van={selectedVan} />}
       {showContactForm && selectedVan && <ContactForm van={selectedVan} />}
       {showAddVanForm && <AddVanForm />}
+      <AuthModal 
+  isOpen={showAuthModal} 
+  onClose={() => setShowAuthModal(false)} 
+/>
     </div>
   );
 }
