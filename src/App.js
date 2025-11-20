@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, Linkedin, ChevronRight, AlertCircle } from 'lucide-react';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import AuthModal from './components/AuthModal';
+import AddVanForm from './components/AddVanForm';
 
 export default function KiwiVanMarket() {
   const [vans, setVans] = useState([]);
@@ -16,12 +17,12 @@ export default function KiwiVanMarket() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showAddVanForm, setShowAddVanForm] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
- const { currentUser, logout } = useAuth();
-const [showAuthModal, setShowAuthModal] = useState(false);
+  const { currentUser, logout } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     priceMax: 50000,
-    yearMin: 2000,
+    yearMin: 1990,
     type: 'all',
     location: 'all',
     selfContained: false
@@ -82,6 +83,28 @@ const [showAuthModal, setShowAuthModal] = useState(false);
 
     fetchVans();
   }, []);
+
+  // Fonction pour recharger les vans après ajout
+  const refreshVans = async () => {
+    try {
+      console.log('🔄 Reloading vans...');
+      const querySnapshot = await getDocs(collection(db, 'vans'));
+      const vansData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Mettre à jour le cache et l'affichage
+      localStorage.setItem('kiwiVanMarket_vans', JSON.stringify(vansData));
+      localStorage.setItem('kiwiVanMarket_timestamp', Date.now().toString());
+      
+      setVans(vansData);
+      setFilteredVans(vansData);
+      console.log('✅ Vans reloaded:', vansData.length);
+    } catch (error) {
+      console.error('❌ Error reloading vans:', error);
+    }
+  };
 
   // Filtrage des vans
   useEffect(() => {
@@ -156,127 +179,6 @@ const [showAuthModal, setShowAuthModal] = useState(false);
             <span>{van.seller.email}</span>
           </a>
         </div>
-      </div>
-    </div>
-  );
-
-  const AddVanForm = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-2xl w-full my-8 p-8 relative">
-        <button onClick={() => setShowAddVanForm(false)} 
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-          <X size={24} />
-        </button>
-        
-        <h2 className="text-3xl font-bold mb-6">List Your Van</h2>
-        
-        <form className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-2">Van Title *</label>
-              <input type="text" placeholder="e.g. Toyota Hiace 2015 - Self-Contained" 
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Price (NZD) *</label>
-              <input type="number" placeholder="18500" 
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-2">Year *</label>
-              <input type="number" placeholder="2015" 
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Mileage (km) *</label>
-              <input type="number" placeholder="145000" 
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Capacity *</label>
-              <select className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                <option>2 people</option>
-                <option>3 people</option>
-                <option>4 people</option>
-                <option>5+ people</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-2">Type *</label>
-              <select className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                <option>Campervan</option>
-                <option>Van</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Location *</label>
-              <input type="text" placeholder="Auckland" 
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Description *</label>
-            <textarea rows="4" placeholder="Describe your van..."
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"></textarea>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Features (comma separated)</label>
-            <input type="text" placeholder="Solar, Fridge, Fresh WOF, Kitchen" 
-              className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold mb-2">WOF Expiry</label>
-              <input type="date" 
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Rego Expiry</label>
-              <input type="date" 
-                className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" className="w-5 h-5 text-emerald-600 rounded" />
-              <span className="font-semibold">Self-Contained Certified</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" className="w-5 h-5 text-emerald-600 rounded" />
-              <span className="font-semibold">Buy-Back Option</span>
-            </label>
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold mb-2">Upload Photos</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-emerald-500 transition cursor-pointer">
-              <Plus size={48} className="mx-auto text-gray-400 mb-2" />
-              <p className="text-gray-600">Click to upload or drag and drop</p>
-              <p className="text-sm text-gray-400">PNG, JPG up to 10MB</p>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <button type="button" onClick={() => setShowAddVanForm(false)}
-              className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
-              Cancel
-            </button>
-            <button type="submit" 
-              className="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-semibold hover:bg-emerald-700 transition">
-              List Your Van
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );
@@ -402,12 +304,8 @@ const [showAuthModal, setShowAuthModal] = useState(false);
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="bg-white text-emerald-600 p-2 rounded-xl">
-                <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zM7 7h10v3H7V7zm4 13c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm6-2H7v-5h10v5z"/>
-                  <circle cx="9" cy="15" r="1"/>
-                  <circle cx="15" cy="15" r="1"/>
-                </svg>
+              <div className="bg-[#f7eedd] p-3 rounded-full shadow-lg overflow-hidden">
+                <img src="/logo-kiwi.png" alt="Kiwi Van Market" className="w-16 h-16 object-contain" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold">Kiwi Van Market 🇳🇿</h1>
@@ -424,29 +322,28 @@ const [showAuthModal, setShowAuthModal] = useState(false);
               </button>
               
               {!currentUser ? (
-  <button 
-    onClick={() => setShowAuthModal(true)}
-    className="bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-800 transition">
-    Sign In
-  </button>
-) : (
+                <button 
+                  onClick={() => setShowAuthModal(true)}
+                  className="bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-800 transition">
+                  Sign In
+                </button>
+              ) : (
                 <div className="relative">
                   <button 
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center gap-2 bg-white bg-opacity-20 px-3 py-2 rounded-lg hover:bg-opacity-30 transition">
                     <div className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center font-bold">
-                      P
+                      {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
                     </div>
                     <ChevronDown size={16} className={`transform transition ${showUserMenu ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {showUserMenu && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 text-gray-700">
-                      <a href="#" className="block px-4 py-2 hover:bg-gray-100 transition">
-                        <div className="font-semibold">Paul</div>
-                        <div className="text-xs text-gray-500">paul@email.com</div>
-                      </a>
-                      <hr className="my-2" />
+                      <div className="px-4 py-2 border-b">
+                        <div className="font-semibold">{currentUser.displayName || 'User'}</div>
+                        <div className="text-xs text-gray-500">{currentUser.email}</div>
+                      </div>
                       <a href="#" className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
                         <Users size={16} />
                         My Profile
@@ -542,7 +439,7 @@ const [showAuthModal, setShowAuthModal] = useState(false);
                 <label className="block text-sm font-semibold mb-2">Min Year: {filters.yearMin}</label>
                 <input 
                   type="range" 
-                  min="2000" 
+                  min="1990" 
                   max="2024" 
                   step="1"
                   value={filters.yearMin}
@@ -676,7 +573,7 @@ const [showAuthModal, setShowAuthModal] = useState(false);
                       )}
                     </div>
                     <div className="flex items-center justify-between text-xs text-gray-500">
-                      {van.postedDays && (
+                      {van.postedDays !== undefined && (
                         <span className="flex items-center gap-1">
                           <Clock size={14} />
                           {van.postedDays}d ago
@@ -806,11 +703,16 @@ const [showAuthModal, setShowAuthModal] = useState(false);
       {/* Modals */}
       {selectedVan && <VanDetailsModal van={selectedVan} />}
       {showContactForm && selectedVan && <ContactForm van={selectedVan} />}
-      {showAddVanForm && <AddVanForm />}
+      {showAddVanForm && (
+        <AddVanForm 
+          onClose={() => setShowAddVanForm(false)} 
+          onVanAdded={refreshVans}
+        />
+      )}
       <AuthModal 
-  isOpen={showAuthModal} 
-  onClose={() => setShowAuthModal(false)} 
-/>
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+      />
     </div>
   );
 }
