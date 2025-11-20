@@ -420,7 +420,7 @@ const [showAuthModal, setShowAuthModal] = useState(false);
                 onClick={() => setShowAddVanForm(true)}
                 className="bg-white text-emerald-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center gap-2">
                 <Plus size={20} />
-                <span className="hidden md:inline">List Your Van</span>
+                <span className="hidden md:inline">Add Your Van</span>
               </button>
               
               {!currentUser ? (

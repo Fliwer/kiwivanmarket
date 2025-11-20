@@ -14,17 +14,6 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-// Vérification que toutes les variables d'environnement sont présentes
-if (!firebaseConfig.apiKey) {
-  console.error('❌ ERREUR: Les variables d\'environnement Firebase ne sont pas chargées!');
-  console.error('Vérifiez que le fichier .env.local existe et que React a été redémarré.');
-  console.error('Variables actuelles:', {
-    apiKey: firebaseConfig.apiKey,
-    authDomain: firebaseConfig.authDomain,
-    projectId: firebaseConfig.projectId
-  });
-}
-
 // Initialiser Firebase
 const app = initializeApp(firebaseConfig);
 
