@@ -5,6 +5,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import AuthModal from './components/AuthModal';
 import AddVanForm from './components/AddVanForm';
+import MyVans from './components/MyVans';
+import MessagingSystem from './components/MessagingSystem';
 
 export default function KiwiVanMarket() {
   const [vans, setVans] = useState([]);
@@ -16,6 +18,10 @@ export default function KiwiVanMarket() {
   const [activeTab, setActiveTab] = useState('all');
   const [showContactForm, setShowContactForm] = useState(false);
   const [showAddVanForm, setShowAddVanForm] = useState(false);
+  const [showMyVans, setShowMyVans] = useState(false);
+  const [showMessaging, setShowMessaging] = useState(false);
+  const [messagingInitialVan, setMessagingInitialVan] = useState(null);
+  const [messagingInitialRecipient, setMessagingInitialRecipient] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const { currentUser, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -288,9 +294,17 @@ export default function KiwiVanMarket() {
             </div>
           </div>
 
-          <button onClick={() => { setShowContactForm(true); setSelectedVan(null); }}
-            className="w-full bg-emerald-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-emerald-700 transition">
-            Contact Seller
+          <button onClick={() => { 
+            setMessagingInitialVan(van);
+            setMessagingInitialRecipient(van.seller);
+            setShowMessaging(true);
+            setSelectedVan(null);
+          }}
+            className="w-full bg-emerald-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-emerald-700 transition flex items-center justify-center gap-2">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Message Seller
           </button>
         </div>
       </div>
@@ -348,11 +362,23 @@ export default function KiwiVanMarket() {
                         <Users size={16} />
                         My Profile
                       </a>
+                      <a 
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); setShowMessaging(true); setShowUserMenu(false); }}
+                        className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        Messages
+                      </a>
                       <a href="#" className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
                         <Heart size={16} />
                         My Favorites
                       </a>
-                      <a href="#" className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
+                      <a 
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); setShowMyVans(true); setShowUserMenu(false); }}
+                        className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z"/>
                         </svg>
@@ -707,6 +733,22 @@ export default function KiwiVanMarket() {
         <AddVanForm 
           onClose={() => setShowAddVanForm(false)} 
           onVanAdded={refreshVans}
+        />
+      )}
+      {showMyVans && (
+        <MyVans 
+          onClose={() => setShowMyVans(false)}
+        />
+      )}
+      {showMessaging && (
+        <MessagingSystem 
+          onClose={() => {
+            setShowMessaging(false);
+            setMessagingInitialVan(null);
+            setMessagingInitialRecipient(null);
+          }}
+          initialVan={messagingInitialVan}
+          initialRecipient={messagingInitialRecipient}
         />
       )}
       <AuthModal 
