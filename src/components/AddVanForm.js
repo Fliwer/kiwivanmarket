@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Upload, Loader } from 'lucide-react';
+import { X, Upload, Loader, Calendar } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../AuthContext';
@@ -22,7 +22,9 @@ export default function AddVanForm({ onClose, onVanAdded }) {
     fuelType: 'Diesel',
     transmission: 'Manual',
     beds: '',
-    seats: ''
+    seats: '',
+    wofExpiry: '',
+    regoExpiry: ''
   });
 
   const handleImageSelect = (e) => {
@@ -83,6 +85,8 @@ export default function AddVanForm({ onClose, onVanAdded }) {
           name: currentUser.displayName || 'Anonymous',
           email: currentUser.email
         },
+        wofExpiry: formData.wofExpiry || null,
+        regoExpiry: formData.regoExpiry || null,
         createdAt: serverTimestamp(),
         status: 'active'
       };
@@ -281,6 +285,36 @@ export default function AddVanForm({ onClose, onVanAdded }) {
                   value={formData.seats}
                   onChange={handleInputChange}
                   placeholder="4"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
+            </div>
+
+            {/* ✨ NOUVEAU : WOF & Rego */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                  <Calendar size={16} className="text-emerald-600" />
+                  WOF Expiry <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="date"
+                  name="wofExpiry"
+                  value={formData.wofExpiry}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                  <Calendar size={16} className="text-emerald-600" />
+                  Rego Expiry <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="date"
+                  name="regoExpiry"
+                  value={formData.regoExpiry}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
