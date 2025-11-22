@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Upload, Loader, Calendar } from 'lucide-react';
+import { X, Upload, Loader, Calendar, Shield } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../AuthContext';
@@ -24,7 +24,11 @@ export default function AddVanForm({ onClose, onVanAdded }) {
     beds: '',
     seats: '',
     wofExpiry: '',
-    regoExpiry: ''
+    regoExpiry: '',
+    buyBack: false,
+    buyBackPrice: '',
+    buyBackDuration: '',
+    buyBackConditions: ''
   });
 
   const handleImageSelect = (e) => {
@@ -40,10 +44,10 @@ export default function AddVanForm({ onClose, onVanAdded }) {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -60,6 +64,20 @@ export default function AddVanForm({ onClose, onVanAdded }) {
       return;
     }
 
+    // Validation Buy-Back
+    if (formData.buyBack) {
+      if (!formData.buyBackPrice || !formData.buyBackDuration) {
+        alert('Please fill in buy-back guarantee price and duration');
+        return;
+      }
+      const buyBackPrice = parseFloat(formData.buyBackPrice);
+      const salePrice = parseFloat(formData.price);
+      if (!salePrice || buyBackPrice >= salePrice) {
+        alert('Buy-back price must be lower than sale price');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -71,10 +89,15 @@ export default function AddVanForm({ onClose, onVanAdded }) {
 
       // Créer le van dans Firestore
       const vanData = {
-        ...formData,
+        title: formData.title.trim(),
         price: parseFloat(formData.price),
         year: parseInt(formData.year),
         mileage: parseInt(formData.mileage),
+        location: formData.location.trim(),
+        description: formData.description.trim(),
+        condition: formData.condition,
+        fuelType: formData.fuelType,
+        transmission: formData.transmission,
         beds: parseInt(formData.beds) || 0,
         seats: parseInt(formData.seats) || 0,
         imageUrl: uploadResult.url,
@@ -87,9 +110,24 @@ export default function AddVanForm({ onClose, onVanAdded }) {
         },
         wofExpiry: formData.wofExpiry || null,
         regoExpiry: formData.regoExpiry || null,
+        buyBack: formData.buyBack,
         createdAt: serverTimestamp(),
         status: 'active'
       };
+
+      // Ajouter buy-back details si activé
+      if (formData.buyBack) {
+        const durationMonths = parseInt(formData.buyBackDuration);
+        const offerValidUntil = new Date();
+        offerValidUntil.setMonth(offerValidUntil.getMonth() + durationMonths);
+
+        vanData.buyBackDetails = {
+          guaranteedPrice: parseFloat(formData.buyBackPrice),
+          duration: durationMonths,
+          conditions: formData.buyBackConditions || 'Standard conditions apply',
+          offerValidUntil: offerValidUntil.toISOString()
+        };
+      }
 
       const docRef = await addDoc(collection(db, 'vans'), vanData);
       console.log('✅ Van added with ID:', docRef.id);
@@ -318,6 +356,84 @@ export default function AddVanForm({ onClose, onVanAdded }) {
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
+            </div>
+
+            {/* ✨ NOUVEAU : Buy-Back Guarantee */}
+            <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+              <label className="flex items-center gap-3 cursor-pointer mb-4">
+                <input
+                  type="checkbox"
+                  name="buyBack"
+                  checked={formData.buyBack}
+                  onChange={handleInputChange}
+                  className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
+                />
+                <div className="flex items-center gap-2">
+                  <Shield size={20} className="text-green-600" />
+                  <span className="font-semibold text-green-900">Offer Buy-Back Guarantee</span>
+                </div>
+              </label>
+
+              {formData.buyBack && (
+                <div className="space-y-4 pl-8">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">
+                        Guaranteed Buy-Back Price (NZ$) *
+                      </label>
+                      <input
+                        type="number"
+                        name="buyBackPrice"
+                        value={formData.buyBackPrice}
+                        onChange={handleInputChange}
+                        placeholder="18000"
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">
+                        Duration (months) *
+                      </label>
+                      <input
+                        type="number"
+                        name="buyBackDuration"
+                        value={formData.buyBackDuration}
+                        onChange={handleInputChange}
+                        placeholder="6"
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">
+                      Conditions <span className="text-gray-400 font-normal">(optional)</span>
+                    </label>
+                    <textarea
+                      name="buyBackConditions"
+                      value={formData.buyBackConditions}
+                      onChange={handleInputChange}
+                      rows="2"
+                      placeholder="e.g., No major accidents, max 20,000 km additional mileage..."
+                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none resize-none"
+                    />
+                  </div>
+
+                  {formData.price && formData.buyBackPrice && (
+                    <div className="bg-white p-3 rounded border border-green-300">
+                      <p className="text-xs text-gray-600 mb-1">Estimated Total Cost</p>
+                      <p className="text-sm text-gray-700">
+                        Buy for <strong>NZ${parseFloat(formData.price).toLocaleString()}</strong>, 
+                        sell back for <strong>NZ${parseFloat(formData.buyBackPrice).toLocaleString()}</strong> = 
+                        <strong className="text-green-700"> NZ${(parseFloat(formData.price) - parseFloat(formData.buyBackPrice)).toLocaleString()} total</strong>
+                        {formData.buyBackDuration && (
+                          <span className="text-gray-500"> (≈ NZ${Math.round((parseFloat(formData.price) - parseFloat(formData.buyBackPrice)) / parseInt(formData.buyBackDuration))}/month)</span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Description */}
