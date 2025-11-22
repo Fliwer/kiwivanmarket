@@ -7,12 +7,15 @@ import AuthModal from './components/AuthModal';
 import AddVanForm from './components/AddVanForm';
 import MyVans from './components/MyVans';
 import MessagingSystem from './components/MessagingSystem';
+import FavoritesPage from './components/FavoritesPage';
+import { useFavorites } from './hooks/useFavorites';
 
 export default function KiwiVanMarket() {
   const [vans, setVans] = useState([]);
   const [filteredVans, setFilteredVans] = useState([]);
   const [selectedVan, setSelectedVan] = useState(null);
-  const [favorites, setFavorites] = useState([]);
+  const { favorites, toggleFavorite, isFavorite, count: favoritesCount } = useFavorites();
+const [showFavorites, setShowFavorites] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -144,11 +147,6 @@ export default function KiwiVanMarket() {
     setFilteredVans(filtered);
   }, [searchTerm, filters, vans, activeTab]);
 
-  const toggleFavorite = (vanId) => {
-    setFavorites(prev => 
-      prev.includes(vanId) ? prev.filter(id => id !== vanId) : [...prev, vanId]
-    );
-  };
 
   const formatPrice = (price) => `NZ$${price.toLocaleString()}`;
 
@@ -223,7 +221,8 @@ export default function KiwiVanMarket() {
               <p className="text-4xl font-bold text-emerald-600">{formatPrice(van.price)}</p>
               <button onClick={() => toggleFavorite(van.id)}
                 className="mt-2 flex items-center gap-2 text-sm text-gray-600 hover:text-red-500">
-                <Heart size={20} className={favorites.includes(van.id) ? 'text-red-500 fill-red-500' : ''} />
+                <Heart size={20} className={isFavorite(van.id)
+? 'text-red-500 fill-red-500' : ''} />
                 Save
               </button>
             </div>
@@ -381,11 +380,19 @@ export default function KiwiVanMarket() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                         Messages
-                      </a>
-                      <a href="#" className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
-                        <Heart size={16} />
-                        My Favorites
-                      </a>
+                     </a>
+                      <a
+  href="#"
+  onClick={(e) => { e.preventDefault(); setShowFavorites(true); setShowUserMenu(false); }}
+  className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
+  <Heart size={16} />
+  My Favorites
+  {favoritesCount > 0 && (
+    <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+      {favoritesCount}
+    </span>
+  )}
+</a>
                       <a 
                         href="#"
                         onClick={(e) => { e.preventDefault(); setShowMyVans(true); setShowUserMenu(false); }}
@@ -570,7 +577,8 @@ export default function KiwiVanMarket() {
                     <button 
                       onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
                       className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition">
-                      <Heart size={20} className={favorites.includes(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}/>
+                      <Heart size={20} className={isFavorite(van.id)
+ ? 'text-red-500 fill-red-500' : 'text-gray-400'}/>
                     </button>
                     {van.featured && (
                       <div className="absolute top-3 left-3 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
@@ -762,6 +770,12 @@ export default function KiwiVanMarket() {
           initialRecipient={messagingInitialRecipient}
         />
       )}
+      {showFavorites && (
+        <FavoritesPage 
+          onClose={() => setShowFavorites(false)}
+          onVanClick={(van) => setSelectedVan(van)}
+        />
+      )} 
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
