@@ -197,127 +197,230 @@ export default function KiwiVanMarket() {
     </div>
   );
 
-  const VanDetailsModal = ({ van }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-4xl w-full my-8 relative">
-        <button onClick={() => setSelectedVan(null)} 
-          className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg z-[70] hover:bg-gray-100">
-          <X size={24} />
-        </button>
-        
-        <img src={van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'} alt={van.title} className="w-full h-96 object-cover rounded-t-2xl" />
-        
-        <div className="p-8">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h2 className="text-3xl font-bold mb-2">{van.title}</h2>
-              <div className="flex items-center gap-2 text-gray-600">
-                <MapPin size={20} className="text-emerald-600" />
-                {van.location}, {van.region}
+  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+
+  const VanDetailsModal = ({ van }) => {
+    const images = van.images && van.images.length > 0 ? van.images : [van.imageUrl || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'];
+    
+    const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+
+    return (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[60] p-4 overflow-y-auto"
+        onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }}>
+        <div 
+          className="bg-white rounded-3xl max-w-7xl w-full my-8 relative shadow-2xl overflow-hidden"
+          onClick={(e) => e.stopPropagation()}>
+          
+          {/* Bouton de fermeture */}
+          <button 
+            onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }} 
+            className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl z-[70] hover:bg-white transition-all hover:scale-110">
+            <X size={24} className="text-gray-700" />
+          </button>
+          
+          {/* Layout Grid : Image à gauche, Infos à droite */}
+          <div className="grid lg:grid-cols-2">
+            
+            {/* GALERIE PHOTO - GAUCHE */}
+            <div className="relative bg-black h-[600px] lg:h-[800px]">
+              {/* Image principale */}
+              <img 
+                src={images[currentImageIndex]} 
+                alt={van.title} 
+                className="w-full h-full object-contain"
+              />
+              
+              {/* Navigation si plusieurs images */}
+              {images.length > 1 && (
+                <>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  
+                  {/* Indicateur de position */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold">
+                    {currentImageIndex + 1} / {images.length}
+                  </div>
+                </>
+              )}
+              
+              {/* Badges sur l'image */}
+              <div className="absolute top-6 left-6 flex flex-col gap-3">
+                {van.featured && (
+                  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+                    <Star size={16} fill="currentColor" />
+                    FEATURED
+                  </div>
+                )}
+                {van.selfContained && (
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                    ✓ Self-Contained
+                  </div>
+                )}
+                {van.buyBack && (
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+                    <Shield size={16} />
+                    Buy-Back
+                  </div>
+                )}
               </div>
+
+              {/* Bouton Favorite */}
+              <button 
+                onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
+                className="absolute bottom-6 right-6 bg-white rounded-full p-3 shadow-xl hover:scale-110 transition-all">
+                <Heart 
+                  size={24} 
+                  className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-700'} 
+                />
+              </button>
             </div>
-            <div className="text-right">
-              <p className="text-4xl font-bold text-emerald-600">{formatPrice(van.price)}</p>
-              <button onClick={() => toggleFavorite(van.id)}
-                className="mt-2 flex items-center gap-2 text-sm text-gray-600 hover:text-red-500">
-                <Heart size={20} className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : ''} />
-                Save
+            
+            {/* INFORMATIONS - DROITE */}
+            <div className="p-8 lg:p-10 overflow-y-auto max-h-[600px] lg:max-h-[800px]">
+              
+              {/* Header avec prix */}
+              <div className="mb-6 pb-6 border-b-2 border-gray-100">
+                <h1 className="text-3xl lg:text-4xl font-black text-gray-900 mb-3 leading-tight">
+                  {van.title}
+                </h1>
+                <div className="flex items-center gap-2 text-gray-600 mb-4">
+                  <MapPin size={20} className="text-emerald-600" />
+                  <span className="font-medium">{van.location}, {van.region}</span>
+                </div>
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-2xl border-2 border-emerald-200">
+                  <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-1">Price</p>
+                  <p className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                    {formatPrice(van.price)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Stats compactes */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <Calendar className="text-emerald-600 mb-2" size={20} />
+                  <p className="text-xs text-gray-500 font-semibold mb-1">YEAR</p>
+                  <p className="text-xl font-bold text-gray-900">{van.year}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <Gauge className="text-emerald-600 mb-2" size={20} />
+                  <p className="text-xs text-gray-500 font-semibold mb-1">MILEAGE</p>
+                  <p className="text-xl font-bold text-gray-900">{van.mileage.toLocaleString()} km</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <Users className="text-emerald-600 mb-2" size={20} />
+                  <p className="text-xs text-gray-500 font-semibold mb-1">CAPACITY</p>
+                  <p className="text-xl font-bold text-gray-900">{van.capacity} people</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <Clock className="text-emerald-600 mb-2" size={20} />
+                  <p className="text-xs text-gray-500 font-semibold mb-1">POSTED</p>
+                  <p className="text-xl font-bold text-gray-900">{van.postedDays}d ago</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
+                  Description
+                </h3>
+                <p className="text-gray-700 leading-relaxed">{van.description}</p>
+              </div>
+
+              {/* Features */}
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
+                  Features
+                </h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {van.features.map((feature, idx) => (
+                    <div 
+                      key={idx} 
+                      className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg">
+                      <CheckCircle size={16} className="text-emerald-600 flex-shrink-0" />
+                      <span className="text-sm font-semibold text-gray-900">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* WOF & Rego */}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Shield className="text-blue-600" size={18} />
+                    <p className="text-xs font-bold text-gray-900">WOF</p>
+                  </div>
+                  <p className="text-xs text-gray-700">{new Date(van.wofExpiry).toLocaleDateString()}</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
+                  <div className="flex items-center gap-2 mb-1">
+                    <AlertCircle className="text-blue-600" size={18} />
+                    <p className="text-xs font-bold text-gray-900">REGO</p>
+                  </div>
+                  <p className="text-xs text-gray-700">{new Date(van.regoExpiry).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              {/* Seller */}
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl border border-gray-200 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full w-12 h-12 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                    {van.seller.name[0]}
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">{van.seller.name}</p>
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          size={14} 
+                          className={i < van.seller.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'} 
+                        />
+                      ))}
+                      <span className="text-xs text-gray-600 ml-1">({van.seller.rating}.0)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <button 
+                onClick={() => { 
+                  setMessagingInitialVan(van);
+                  setMessagingInitialRecipient(van.seller);
+                  setShowMessaging(true);
+                  setSelectedVan(null);
+                  setCurrentImageIndex(0);
+                }}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group">
+                <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Message Seller
               </button>
             </div>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <Calendar className="text-emerald-600 mb-2" size={24} />
-              <p className="text-sm text-gray-600">Year</p>
-              <p className="font-bold">{van.year}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <Gauge className="text-emerald-600 mb-2" size={24} />
-              <p className="text-sm text-gray-600">Mileage</p>
-              <p className="font-bold">{van.mileage.toLocaleString()} km</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <Users className="text-emerald-600 mb-2" size={24} />
-              <p className="text-sm text-gray-600">Capacity</p>
-              <p className="font-bold">{van.capacity} people</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <Clock className="text-emerald-600 mb-2" size={24} />
-              <p className="text-sm text-gray-600">Posted</p>
-              <p className="font-bold">{van.postedDays}d ago</p>
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <h3 className="font-bold text-xl mb-3">Description</h3>
-            <p className="text-gray-700 leading-relaxed">{van.description}</p>
-          </div>
-
-          <div className="mb-6">
-            <h3 className="font-bold text-xl mb-3">Features</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {van.features.map((feature, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-emerald-50 px-3 py-2 rounded-lg">
-                  <CheckCircle size={18} className="text-emerald-600" />
-                  <span className="text-sm font-medium">{feature}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Shield className="text-blue-600" size={20} />
-                <p className="font-semibold">WOF Expiry</p>
-              </div>
-              <p className="text-sm text-gray-700">{new Date(van.wofExpiry).toLocaleDateString()}</p>
-            </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle className="text-blue-600" size={20} />
-                <p className="font-semibold">Rego Expiry</p>
-              </div>
-              <p className="text-sm text-gray-700">{new Date(van.regoExpiry).toLocaleDateString()}</p>
-            </div>
-          </div>
-
-          <div className="bg-gray-50 p-6 rounded-lg mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="font-bold text-lg">{van.seller.name}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Star size={16} fill="currentColor" className="text-yellow-500" />
-                  <span className="text-sm font-semibold">{van.seller.rating}</span>
-                  <span className="text-sm text-gray-600">Seller Rating</span>
-                </div>
-              </div>
-              {van.buyBack && (
-                <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg font-semibold flex items-center gap-2">
-                  <Shield size={18} />
-                  Buy-Back Available
-                </div>
-              )}
-            </div>
-          </div>
-
-          <button onClick={() => { 
-            setMessagingInitialVan(van);
-            setMessagingInitialRecipient(van.seller);
-            setShowMessaging(true);
-            setSelectedVan(null);
-          }}
-            className="w-full bg-emerald-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-emerald-700 transition flex items-center justify-center gap-2">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            Message Seller
-          </button>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
