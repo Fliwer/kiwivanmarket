@@ -9,13 +9,15 @@ import MyVans from './components/MyVans';
 import MessagingSystem from './components/MessagingSystem';
 import FavoritesPage from './components/FavoritesPage';
 import { useFavorites } from './hooks/useFavorites';
+import AddRealisticVans from './components/AddRealisticVans';
 
 export default function KiwiVanMarket() {
   const [vans, setVans] = useState([]);
+  const [showAddRealistic, setShowAddRealistic] = useState(false);
   const [filteredVans, setFilteredVans] = useState([]);
   const [selectedVan, setSelectedVan] = useState(null);
   const { favorites, toggleFavorite, isFavorite, count: favoritesCount } = useFavorites();
-const [showFavorites, setShowFavorites] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -62,22 +64,21 @@ const [showFavorites, setShowFavorites] = useState(false);
           const cachedVans = JSON.parse(cachedData);
           setVans(cachedVans);
           setFilteredVans(cachedVans);
-          setLoading(false); // ✅ Affichage immédiat des vans en cache !
+          setLoading(false);
           console.log('⚡ Vans chargés depuis le cache:', cachedVans.length);
         }
         
         // 🔄 ÉTAPE 2 : Vérifier si le cache est récent (< 5 minutes)
         const now = Date.now();
         const cacheAge = cacheTimestamp ? now - parseInt(cacheTimestamp) : Infinity;
-        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes en millisecondes
+        const CACHE_DURATION = 5 * 60 * 1000;
         
-        // Si le cache est récent, pas besoin de recharger depuis Firebase
         if (cacheAge < CACHE_DURATION && cachedData) {
           console.log('✅ Cache récent, pas de rechargement nécessaire');
           return;
         }
         
-        // 📡 ÉTAPE 3 : Charger depuis Firebase (en arrière-plan si cache existe)
+        // 📡 ÉTAPE 3 : Charger depuis Firebase
         console.log('🔄 Rechargement depuis Firebase...');
         const querySnapshot = await getDocs(collection(db, 'vans'));
         const vansData = querySnapshot.docs.map(doc => ({
@@ -92,10 +93,10 @@ const [showFavorites, setShowFavorites] = useState(false);
         // 🎯 ÉTAPE 5 : Mettre à jour l'affichage
         setVans(vansData);
         setFilteredVans(vansData);
-        console.log('✅ Vans chargés depuis Firebase et mis en cache:', vansData.length);
+        console.log('✅ Vans chargés depuis Firebase:', vansData.length);
         
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des vans:', error);
+        console.error('❌ Erreur chargement vans:', error);
       } finally {
         setLoading(false);
       }
@@ -114,7 +115,6 @@ const [showFavorites, setShowFavorites] = useState(false);
         ...doc.data()
       }));
       
-      // Mettre à jour le cache et l'affichage
       localStorage.setItem('kiwiVanMarket_vans', JSON.stringify(vansData));
       localStorage.setItem('kiwiVanMarket_timestamp', Date.now().toString());
       
@@ -146,7 +146,6 @@ const [showFavorites, setShowFavorites] = useState(false);
     
     setFilteredVans(filtered);
   }, [searchTerm, filters, vans, activeTab]);
-
 
   const formatPrice = (price) => `NZ$${price.toLocaleString()}`;
 
@@ -199,10 +198,10 @@ const [showFavorites, setShowFavorites] = useState(false);
   );
 
   const VanDetailsModal = ({ van }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-4xl w-full my-8 relative">
         <button onClick={() => setSelectedVan(null)} 
-          className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg z-10 hover:bg-gray-100">
+          className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg z-[70] hover:bg-gray-100">
           <X size={24} />
         </button>
         
@@ -221,8 +220,7 @@ const [showFavorites, setShowFavorites] = useState(false);
               <p className="text-4xl font-bold text-emerald-600">{formatPrice(van.price)}</p>
               <button onClick={() => toggleFavorite(van.id)}
                 className="mt-2 flex items-center gap-2 text-sm text-gray-600 hover:text-red-500">
-                <Heart size={20} className={isFavorite(van.id)
-? 'text-red-500 fill-red-500' : ''} />
+                <Heart size={20} className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : ''} />
                 Save
               </button>
             </div>
@@ -324,7 +322,7 @@ const [showFavorites, setShowFavorites] = useState(false);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-xl sticky top-0 z-40">
+      <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-xl sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -344,6 +342,14 @@ const [showFavorites, setShowFavorites] = useState(false);
                 <Plus size={20} />
                 <span className="hidden md:inline">Add Your Van</span>
               </button>
+
+              {currentUser && (
+                <button
+                  onClick={() => setShowAddRealistic(true)}
+                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">
+                  🚐 Add Samples
+                </button>
+              )}
               
               {!currentUser ? (
                 <button 
@@ -380,19 +386,19 @@ const [showFavorites, setShowFavorites] = useState(false);
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                         Messages
-                     </a>
+                      </a>
                       <a
-  href="#"
-  onClick={(e) => { e.preventDefault(); setShowFavorites(true); setShowUserMenu(false); }}
-  className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
-  <Heart size={16} />
-  My Favorites
-  {favoritesCount > 0 && (
-    <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-      {favoritesCount}
-    </span>
-  )}
-</a>
+                        href="#"
+                        onClick={(e) => { e.preventDefault(); setShowFavorites(true); setShowUserMenu(false); }}
+                        className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
+                        <Heart size={16} />
+                        My Favorites
+                        {favoritesCount > 0 && (
+                          <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                            {favoritesCount}
+                          </span>
+                        )}
+                      </a>
                       <a 
                         href="#"
                         onClick={(e) => { e.preventDefault(); setShowMyVans(true); setShowUserMenu(false); }}
@@ -577,8 +583,7 @@ const [showFavorites, setShowFavorites] = useState(false);
                     <button 
                       onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
                       className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition">
-                      <Heart size={20} className={isFavorite(van.id)
- ? 'text-red-500 fill-red-500' : 'text-gray-400'}/>
+                      <Heart size={20} className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}/>
                     </button>
                     {van.featured && (
                       <div className="absolute top-3 left-3 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
@@ -780,6 +785,9 @@ const [showFavorites, setShowFavorites] = useState(false);
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
+      {showAddRealistic && (
+        <AddRealisticVans onClose={() => setShowAddRealistic(false)} />
+      )}
     </div>
   );
 }
