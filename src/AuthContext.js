@@ -31,7 +31,18 @@ export const AuthProvider = ({ children }) => {
   // Connexion avec Google
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
+    
+    // ✅ FIX: Forcer Google à TOUJOURS afficher le sélecteur de compte
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+    
     try {
+      // Déconnecter l'utilisateur actuel AVANT de connecter le nouveau
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
@@ -48,6 +59,11 @@ export const AuthProvider = ({ children }) => {
   // Connexion avec Email/Password
   const signInWithEmail = async (email, password) => {
     try {
+      // Déconnecter l'utilisateur actuel AVANT de connecter le nouveau
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
+      
       const result = await signInWithEmailAndPassword(auth, email, password);
       return result.user;
     } catch (error) {
@@ -59,6 +75,11 @@ export const AuthProvider = ({ children }) => {
   // Inscription avec Email/Password
   const signUpWithEmail = async (email, password, displayName) => {
     try {
+      // Déconnecter l'utilisateur actuel AVANT de créer le nouveau compte
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
+      
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const user = result.user;
       
@@ -141,8 +162,7 @@ export const AuthProvider = ({ children }) => {
     signInWithEmail,
     signUpWithEmail,
     logout,
-    loading,
-    authLoading: loading  // Alias pour les autres composants
+    loading
   };
 
   return (
