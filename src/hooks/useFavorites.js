@@ -12,10 +12,15 @@ import { useAuth } from '../AuthContext';
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const { currentUser, authLoading } = useAuth();
 
   // 📡 Charger les favoris depuis Firebase au montage
   useEffect(() => {
+    // Attendre que l'auth soit terminée
+    if (authLoading) {
+      return;
+    }
+
     if (!currentUser) {
       setFavorites([]);
       setLoading(false);
@@ -37,7 +42,7 @@ export const useFavorites = () => {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, authLoading]);
 
   /**
    * Ajouter/Retirer un van des favoris

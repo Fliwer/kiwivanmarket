@@ -141,7 +141,8 @@ export const AuthProvider = ({ children }) => {
     signInWithEmail,
     signUpWithEmail,
     logout,
-    loading
+    loading,
+    authLoading: loading  // Alias pour les autres composants
   };
 
   return (

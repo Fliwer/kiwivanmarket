@@ -26,7 +26,7 @@ export function NotificationProvider({ children, onOpenMessaging }) {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [browserNotifEnabled, setBrowserNotifEnabled] = useState(false);
   const [lastMessageIds, setLastMessageIds] = useState(new Set());
-  const { currentUser } = useAuth();
+  const { currentUser, authLoading } = useAuth();
 
   // Son de notification (base64 d'un son court)
   const playNotificationSound = useCallback(() => {
@@ -135,68 +135,39 @@ export function NotificationProvider({ children, onOpenMessaging }) {
 
   // Écouter les nouveaux messages en temps réel
   useEffect(() => {
-    if (!currentUser) return;
+    // Attendre que l'auth soit terminée
+    if (authLoading) return;
+    
+    if (!currentUser) {
+      setUnreadCount(0);
+      return;
+    }
 
-    // Écouter les conversations pour le compteur
+    // Écouter les conversations pour le compteur (sans orderBy pour éviter les index)
     const convQuery = query(
       collection(db, 'conversations'),
-      where('participants', 'array-contains', currentUser.uid),
-      orderBy('lastMessageTime', 'desc')
+      where('participants', 'array-contains', currentUser.uid)
     );
 
-    const unsubConv = onSnapshot(convQuery, (snapshot) => {
-      let total = 0;
-      snapshot.docs.forEach(doc => {
-        const data = doc.data();
-        total += data.unreadCount?.[currentUser.uid] || 0;
-      });
-      setUnreadCount(total);
-    });
-
-    // Écouter les nouveaux messages pour les notifications
-    const msgQuery = query(
-      collection(db, 'messages'),
-      where('senderId', '!=', currentUser.uid),
-      orderBy('senderId'),
-      orderBy('timestamp', 'desc'),
-      limit(10)
+    const unsubConv = onSnapshot(convQuery, 
+      (snapshot) => {
+        let total = 0;
+        snapshot.docs.forEach(doc => {
+          const data = doc.data();
+          total += data.unreadCount?.[currentUser.uid] || 0;
+        });
+        setUnreadCount(total);
+      },
+      (error) => {
+        console.error('🔔 Erreur listener notifications:', error);
+        setUnreadCount(0);
+      }
     );
-
-    const unsubMsg = onSnapshot(msgQuery, (snapshot) => {
-      snapshot.docChanges().forEach(change => {
-        if (change.type === 'added') {
-          const msg = change.doc.data();
-          const msgId = change.doc.id;
-          
-          // Éviter les doublons et les vieux messages
-          if (lastMessageIds.has(msgId)) return;
-          
-          const msgTime = msg.timestamp?.toDate?.() || new Date();
-          const now = new Date();
-          const ageSeconds = (now - msgTime) / 1000;
-          
-          // Seulement les messages de moins de 10 secondes
-          if (ageSeconds < 10 && !msg.read) {
-            setLastMessageIds(prev => new Set([...prev, msgId]));
-            
-            // Récupérer les infos de la conversation
-            addNotification({
-              type: 'message',
-              conversationId: msg.conversationId,
-              senderName: msg.senderName || 'Someone',
-              text: msg.text,
-              vanImage: null // On pourrait aller chercher mais ça ajoute de la complexité
-            });
-          }
-        }
-      });
-    });
 
     return () => {
       unsubConv();
-      unsubMsg();
     };
-  }, [currentUser, addNotification, lastMessageIds]);
+  }, [currentUser, authLoading]);
 
   // Vérifier permission au démarrage
   useEffect(() => {

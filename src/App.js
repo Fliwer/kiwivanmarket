@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle } from 'lucide-react';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
@@ -8,9 +8,22 @@ import AddVanForm from './components/AddVanForm';
 import MyVans from './components/MyVans';
 import FavoritesPage from './components/FavoritesPage';
 import { useFavorites } from './hooks/useFavorites';
-import { NotificationProvider, FloatingMessageButton } from './components/NotificationSystem';
+import { NotificationProvider, FloatingMessageButton, useNotifications } from './components/NotificationSystem';
 import QuickMessageBox from './components/QuickMessageBox';
 import MessagingPage from './components/MessagingPage';
+
+// Petit composant pour le badge Messages (utilise useNotifications)
+function MessageBadge() {
+  const { unreadCount } = useNotifications();
+  
+  if (unreadCount === 0) return null;
+  
+  return (
+    <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold border-2 border-white animate-pulse">
+      {unreadCount > 9 ? '9+' : unreadCount}
+    </span>
+  );
+}
 
 export default function KiwiVanMarket() {
   const [vans, setVans] = useState([]);
@@ -352,92 +365,137 @@ export default function KiwiVanMarket() {
 
   return (
     <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-        {/* Header */}
-        <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-xl sticky top-0 z-30">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-[#f7eedd] p-3 rounded-full shadow-lg overflow-hidden">
-                  <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-16 h-16 object-contain" />
+      <div className="min-h-screen bg-gray-50">
+        
+        {/* ========== HEADER VERT + ICÔNES VISIBLES ========== */}
+        <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between h-16">
+              
+              {/* Logo */}
+              <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.reload()}>
+                <div className="bg-white/20 backdrop-blur-sm p-2 rounded-xl">
+                  <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-10 h-10 object-contain" />
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold">Kiwi Van Market 🇳🇿</h1>
-                  <p className="text-sm opacity-90">Buy & Sell Campervans</p>
+                <div className="hidden sm:block">
+                  <h1 className="text-xl font-bold">Kiwi Van Market</h1>
+                  <p className="text-xs text-white/80">Buy & Sell Campervans 🇳🇿</p>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <button 
-                  onClick={() => setShowAddVanForm(true)}
-                  className="bg-white text-emerald-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center gap-2">
-                  <Plus size={20} />
-                  <span className="hidden md:inline">Add Your Van</span>
-                </button>
+
+              {/* Bouton Vendre */}
+              <button 
+                onClick={() => setShowAddVanForm(true)}
+                className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
+              >
+                <Plus size={18} />
+                <span className="hidden sm:inline">Sell your van</span>
+              </button>
+
+              {/* Barre de recherche - Desktop */}
+              <div className="hidden lg:flex flex-1 max-w-md mx-6">
+                <div className="relative w-full">
+                  <input 
+                    type="text"
+                    placeholder="Search campervans..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-4 pr-12 py-2.5 bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-xl text-white placeholder-white/70 focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-white outline-none transition-all text-sm"
+                  />
+                  <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70" />
+                </div>
+              </div>
+
+              {/* Navigation Icons */}
+              <div className="flex items-center gap-1">
                 
+                {/* Favoris - sans badge rouge (juste le coeur) */}
+                <button 
+                  onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
+                  className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                >
+                  <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
+                  <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
+                </button>
+
+                {/* Messages - avec badge notification */}
+                <button 
+                  onClick={() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true)}
+                  className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                >
+                  <MessageCircle size={22} className="text-white" />
+                  <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
+                  <MessageBadge />
+                </button>
+
+                {/* Profil / Connexion */}
                 {!currentUser ? (
                   <button 
                     onClick={() => setShowAuthModal(true)}
-                    className="bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-800 transition">
-                    Sign In
+                    className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                  >
+                    <Users size={22} className="text-white" />
+                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Sign in</span>
                   </button>
                 ) : (
                   <div className="relative">
                     <button 
                       onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="flex items-center gap-2 bg-white bg-opacity-20 px-3 py-2 rounded-lg hover:bg-opacity-30 transition">
-                      <div className="w-8 h-8 bg-emerald-700 rounded-full flex items-center justify-center font-bold">
+                      className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                    >
+                      <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
                         {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
                       </div>
-                      <ChevronDown size={16} className={`transform transition ${showUserMenu ? 'rotate-180' : ''}`} />
+                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
                     </button>
                     
+                    {/* Dropdown Menu */}
                     {showUserMenu && (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 text-gray-700">
-                        <div className="px-4 py-2 border-b">
-                          <div className="font-semibold">{currentUser.displayName || 'User'}</div>
+                      <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 text-gray-700 border border-gray-100 z-50">
+                        <div className="px-4 py-3 border-b bg-gray-50 rounded-t-xl">
+                          <div className="font-semibold text-gray-900">{currentUser.displayName || 'User'}</div>
                           <div className="text-xs text-gray-500">{currentUser.email}</div>
                         </div>
-                        <a href="#" className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
-                          <Users size={16} />
-                          My Profile
-                        </a>
-                        <a 
-                          href="#"
-                          onClick={(e) => { e.preventDefault(); setShowMessagingPage(true); setShowUserMenu(false); }}
-                          className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                          </svg>
-                          Messages
-                        </a>
-                        <a
-                          href="#"
-                          onClick={(e) => { e.preventDefault(); setShowFavorites(true); setShowUserMenu(false); }}
-                          className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
-                          <Heart size={16} />
-                          My Favorites
-                          {favoritesCount > 0 && (
-                            <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                              {favoritesCount}
-                            </span>
-                          )}
-                        </a>
-                        <a 
-                          href="#"
-                          onClick={(e) => { e.preventDefault(); setShowMyVans(true); setShowUserMenu(false); }}
-                          className="block px-4 py-2 hover:bg-gray-100 transition flex items-center gap-2">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z"/>
-                          </svg>
-                          My Listings
-                        </a>
-                        <hr className="my-2" />
-                        <button 
-                          onClick={() => { logout(); setShowUserMenu(false); }}
-                          className="block w-full text-left px-4 py-2 hover:bg-gray-100 transition text-red-600">
-                          Sign Out
-                        </button>
+                        <div className="py-1">
+                          <a 
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); setShowMessagingPage(true); setShowUserMenu(false); }}
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
+                            <MessageCircle size={18} className="text-gray-400" />
+                            <span>Messages</span>
+                          </a>
+                          <a
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); setShowFavorites(true); setShowUserMenu(false); }}
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
+                            <Heart size={18} className="text-gray-400" />
+                            <span>My Favorites</span>
+                            {favoritesCount > 0 && (
+                              <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                {favoritesCount}
+                              </span>
+                            )}
+                          </a>
+                          <a 
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); setShowMyVans(true); setShowUserMenu(false); }}
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
+                            <svg className="w-[18px] h-[18px] text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z"/>
+                            </svg>
+                            <span>My Listings</span>
+                          </a>
+                        </div>
+                        <div className="border-t">
+                          <button 
+                            onClick={() => { logout(); setShowUserMenu(false); }}
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 transition w-full text-red-600">
+                            <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span>Sign Out</span>
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -447,57 +505,81 @@ export default function KiwiVanMarket() {
           </div>
         </header>
 
-        {/* Trust Bar */}
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-center gap-8 text-sm flex-wrap">
-              <div className="flex items-center gap-2">
-                <CheckCircle size={16} />
-                <span className="font-semibold">WOF Verified</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Shield size={16} />
-                <span className="font-semibold">Buy-Back Guarantee</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Award size={16} />
-                <span className="font-semibold">Trusted Sellers</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap size={16} />
-                <span className="font-semibold">Quick Response</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Search & Filters */}
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+        {/* ========== SEARCH MOBILE + FILTRES ========== */}
+        <div className="bg-white border-b border-gray-200 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            
+            {/* Search Mobile */}
+            <div className="lg:hidden mb-4">
+              <div className="relative">
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input 
                   type="text"
-                  placeholder="Search by location, model, or features..."
+                  placeholder="Search campervans..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  className="w-full pl-11 pr-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:border-emerald-500 focus:bg-white outline-none transition-all"
                 />
               </div>
+            </div>
+
+            {/* Tabs + Filtres - avec Filters à droite */}
+            <div className="flex items-center justify-between gap-3">
+              
+              {/* Tabs à gauche */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <button 
+                  onClick={() => setActiveTab('all')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition ${
+                    activeTab === 'all' 
+                      ? 'bg-emerald-600 text-white shadow-md' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}>
+                  All Vans ({vans.length})
+                </button>
+                <button 
+                  onClick={() => setActiveTab('featured')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                    activeTab === 'featured' 
+                      ? 'bg-emerald-600 text-white shadow-md' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}>
+                  <Star size={16} />
+                  Featured
+                </button>
+                <button 
+                  onClick={() => setActiveTab('buyback')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                    activeTab === 'buyback' 
+                      ? 'bg-emerald-600 text-white shadow-md' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}>
+                  <Shield size={16} />
+                  Buy-Back
+                </button>
+              </div>
+
+              {/* Bouton Filtres à droite */}
               <button 
                 onClick={() => setShowFilters(!showFilters)}
-                className="bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2 justify-center">
-                <Filter size={20} />
+                className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                  showFilters 
+                    ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-500' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}>
+                <Filter size={16} />
                 Filters
-                <ChevronDown size={20} className={`transform transition ${showFilters ? 'rotate-180' : ''}`} />
+                <ChevronDown size={16} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
               </button>
             </div>
 
+            {/* Panel Filtres Expandable */}
             {showFilters && (
-              <div className="mt-6 pt-6 border-t grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Max Price: NZ${filters.priceMax.toLocaleString()}</label>
+              <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Max Price: <span className="text-emerald-600">NZ${filters.priceMax.toLocaleString()}</span>
+                  </label>
                   <input 
                     type="range" 
                     min="5000" 
@@ -505,11 +587,17 @@ export default function KiwiVanMarket() {
                     step="1000"
                     value={filters.priceMax}
                     onChange={(e) => setFilters({...filters, priceMax: parseInt(e.target.value)})}
-                    className="w-full"
+                    className="w-full accent-emerald-500"
                   />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>$5,000</span>
+                    <span>$50,000</span>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Min Year: {filters.yearMin}</label>
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    Min Year: <span className="text-emerald-600">{filters.yearMin}</span>
+                  </label>
                   <input 
                     type="range" 
                     min="1990" 
@@ -517,71 +605,58 @@ export default function KiwiVanMarket() {
                     step="1"
                     value={filters.yearMin}
                     onChange={(e) => setFilters({...filters, yearMin: parseInt(e.target.value)})}
-                    className="w-full"
+                    className="w-full accent-emerald-500"
                   />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>1990</span>
+                    <span>2024</span>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Type</label>
-                  <select 
-                    value={filters.type}
-                    onChange={(e) => setFilters({...filters, type: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                    <option value="all">All Types</option>
-                    <option value="Campervan">Campervan</option>
-                    <option value="Van">Van</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Location</label>
+                <div className="bg-gray-50 p-4 rounded-xl">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Location</label>
                   <select 
                     value={filters.location}
                     onChange={(e) => setFilters({...filters, location: e.target.value})}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                    <option value="all">All Regions</option>
+                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
+                    <option value="all">🇳🇿 All New Zealand</option>
                     <option value="North Island">North Island</option>
                     <option value="South Island">South Island</option>
                   </select>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input 
-                    type="checkbox"
-                    id="selfContained"
-                    checked={filters.selfContained}
-                    onChange={(e) => setFilters({...filters, selfContained: e.target.checked})}
-                    className="w-5 h-5 text-emerald-600 rounded"
-                  />
-                  <label htmlFor="selfContained" className="font-semibold">Self-Contained Only</label>
+                <div className="bg-gray-50 p-4 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-sm font-semibold text-gray-700">Self-Contained</span>
+                    <p className="text-xs text-gray-500">Freedom camping certified</p>
+                  </div>
+                  <button
+                    onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
+                    className={`w-14 h-7 rounded-full transition-all flex items-center ${filters.selfContained ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform ${filters.selfContained ? 'translate-x-7' : 'translate-x-0.5'}`}></div>
+                  </button>
                 </div>
               </div>
             )}
           </div>
+        </div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 mb-6 flex-wrap">
-            <button 
-              onClick={() => setActiveTab('all')}
-              className={`px-6 py-2 rounded-lg font-semibold transition ${activeTab === 'all' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
-              All Vans ({vans.length})
-            </button>
-            <button 
-              onClick={() => setActiveTab('featured')}
-              className={`px-6 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${activeTab === 'featured' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
-              <Star size={18} />
-              Featured
-            </button>
-            <button 
-              onClick={() => setActiveTab('buyback')}
-              className={`px-6 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${activeTab === 'buyback' ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
-              <Shield size={18} />
-              Buy-Back Guarantee
-            </button>
-          </div>
+        {/* ========== RÉSULTATS ========== */}
+        <div className="max-w-7xl mx-auto px-4 py-6">
 
+          {/* Results count */}
           {!loading && (
-            <div className="mb-6">
-              <p className="text-2xl font-bold text-gray-800">
+            <div className="mb-5 flex items-center justify-between">
+              <p className="text-xl font-bold text-gray-800">
                 {filteredVans.length} {filteredVans.length === 1 ? 'van' : 'vans'} available
               </p>
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                >
+                  ✕ Clear search
+                </button>
+              )}
             </div>
           )}
 
