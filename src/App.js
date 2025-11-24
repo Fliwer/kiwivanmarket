@@ -9,11 +9,9 @@ import MyVans from './components/MyVans';
 import MessagingSystem from './components/MessagingSystem';
 import FavoritesPage from './components/FavoritesPage';
 import { useFavorites } from './hooks/useFavorites';
-import AddRealisticVans from './components/AddRealisticVans';
 
 export default function KiwiVanMarket() {
   const [vans, setVans] = useState([]);
-  const [showAddRealistic, setShowAddRealistic] = useState(false);
   const [filteredVans, setFilteredVans] = useState([]);
   const [selectedVan, setSelectedVan] = useState(null);
   const { favorites, toggleFavorite, isFavorite, count: favoritesCount } = useFavorites();
@@ -445,14 +443,6 @@ export default function KiwiVanMarket() {
                 <Plus size={20} />
                 <span className="hidden md:inline">Add Your Van</span>
               </button>
-
-              {currentUser && (
-                <button
-                  onClick={() => setShowAddRealistic(true)}
-                  className="bg-yellow-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-yellow-600 transition">
-                  🚐 Add Samples
-                </button>
-              )}
               
               {!currentUser ? (
                 <button 
@@ -888,9 +878,6 @@ export default function KiwiVanMarket() {
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)} 
       />
-      {showAddRealistic && (
-        <AddRealisticVans onClose={() => setShowAddRealistic(false)} />
-      )}
     </div>
   );
 }
