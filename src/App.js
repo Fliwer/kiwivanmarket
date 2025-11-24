@@ -707,16 +707,18 @@ export default function KiwiVanMarket() {
                 </div>
               </div>
 
-              {/* Bouton Buyback Calculator */}
-              <button 
-                onClick={() => setShowBuybackCalculator(true)}
-                className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
-              >
-                <Calculator size={18} />
-                <span className="hidden md:inline">Buyback Calculator</span>
-              </button>
+              {/* Boutons d'action */}
+              <div className="flex items-center gap-3 ml-10">
+                {/* Bouton Buyback Calculator */}
+                <button 
+                  onClick={() => setShowBuybackCalculator(true)}
+                  className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
+                >
+                  <Calculator size={18} />
+                  <span className="hidden md:inline">Buyback Calculator</span>
+                </button>
 
-              {/* Bouton Vendre */}
+                {/* Bouton Vendre */}
               <button 
                 onClick={() => setShowAddVanForm(true)}
                 className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
@@ -724,6 +726,7 @@ export default function KiwiVanMarket() {
                 <Plus size={18} />
                 <span className="hidden sm:inline">Sell your van</span>
               </button>
+              </div>
 
               {/* Barre de recherche - Desktop */}
               <div className="hidden lg:flex flex-1 max-w-md mx-6">

@@ -3,7 +3,8 @@ import {
   ArrowLeft, Send, Search, MoreVertical, Phone, Mail, MapPin,
   MessageCircle, Check, CheckCheck, Clock, Star, Archive,
   ChevronLeft, ChevronRight, DollarSign, Calendar, Gauge, Users,
-  Circle, CheckCircle2, MessageSquare, Eye, Settings, Bell, BellOff, X
+  Circle, CheckCircle2, MessageSquare, Eye, Settings, Bell, BellOff, X,
+  Heart, ChevronDown
 } from 'lucide-react';
 import { 
   collection, query, where, orderBy, onSnapshot, addDoc, 
@@ -15,6 +16,93 @@ import { useAuth } from '../AuthContext';
 // ============================================
 // MESSAGING PAGE - Full Page 3 Columns
 // ============================================
+
+// 🌐 Language Selector Component
+function LanguageSelector() {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const languages = [
+    { code: 'en', flag: 'https://flagcdn.com/24x18/gb.png', name: 'ENGLISH', short: 'EN' },
+    { code: 'fr', flag: 'https://flagcdn.com/24x18/fr.png', name: 'FRANÇAIS', short: 'FR' },
+    { code: 'de', flag: 'https://flagcdn.com/24x18/de.png', name: 'DEUTSCH', short: 'DE' },
+    { code: 'es', flag: 'https://flagcdn.com/24x18/es.png', name: 'ESPAÑOL', short: 'ES' },
+    { code: 'zh-CN', flag: 'https://flagcdn.com/24x18/cn.png', name: '简体中文', short: '中文' },
+    { code: 'ja', flag: 'https://flagcdn.com/24x18/jp.png', name: '日本語', short: 'JA' },
+    { code: 'ko', flag: 'https://flagcdn.com/24x18/kr.png', name: '한국어', short: 'KO' },
+    { code: 'pt', flag: 'https://flagcdn.com/24x18/br.png', name: 'PORTUGUÊS', short: 'PT' },
+    { code: 'th', flag: 'https://flagcdn.com/24x18/th.png', name: 'ไทย', short: 'TH' },
+    { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' },
+  ];
+
+  const changeLanguage = (langCode) => {
+    if (langCode === 'en') {
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
+      window.location.reload();
+    } else {
+      document.cookie = `googtrans=/en/${langCode}; path=/;`;
+      document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${window.location.hostname}`;
+      window.location.reload();
+    }
+    setIsOpen(false);
+  };
+
+  const getCurrentLang = () => {
+    const match = document.cookie.match(/googtrans=\/en\/([^;]+)/);
+    return match ? match[1] : 'en';
+  };
+
+  const currentLang = getCurrentLang();
+  const currentLangData = languages.find(l => l.code === currentLang) || languages[0];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
+        title="Change language"
+      >
+        <img 
+          src={currentLangData.flag} 
+          alt={currentLangData.name}
+          className="w-6 h-4 object-cover rounded-sm shadow-sm"
+        />
+        <span className="hidden sm:inline">{currentLangData.short}</span>
+        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-[100]" 
+            onClick={() => setIsOpen(false)}
+          />
+          
+          <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[180px] z-[101]">
+            {languages.map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => changeLanguage(lang.code)}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
+                  currentLang === lang.code 
+                    ? 'bg-emerald-50 text-emerald-700 font-semibold' 
+                    : 'hover:bg-gray-50 text-gray-700'
+                }`}
+              >
+                <img 
+                  src={lang.flag} 
+                  alt={lang.name}
+                  className="w-6 h-4 object-cover rounded-sm shadow-sm"
+                />
+                <span className="font-medium">{lang.name}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function MessagingPage({ onBack }) {
   const { currentUser } = useAuth();
@@ -314,8 +402,8 @@ export default function MessagingPage({ onBack }) {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Header */}
-      <header className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button 
               onClick={onBack}
@@ -336,9 +424,40 @@ export default function MessagingPage({ onBack }) {
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <button className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all">
-              <Settings size={20} />
+          {/* Navigation Icons */}
+          <div className="flex items-center gap-1">
+            {/* Language Selector */}
+            <LanguageSelector />
+            
+            {/* Favoris */}
+            <button 
+              onClick={onBack}
+              className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+              title="Favorites"
+            >
+              <Heart size={22} className="text-white" />
+              <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
+            </button>
+
+            {/* Messages (actif) */}
+            <button 
+              className="relative flex flex-col items-center p-2.5 bg-white/20 rounded-xl transition"
+              title="Messages"
+            >
+              <MessageCircle size={22} className="text-white" />
+              <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
+            </button>
+
+            {/* Profil */}
+            <button 
+              onClick={onBack}
+              className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+              title="Profile"
+            >
+              <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
+                {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
             </button>
           </div>
         </div>
