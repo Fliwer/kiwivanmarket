@@ -29,27 +29,27 @@ export default function AddVanForm({ onClose, onSuccess }) {
 
   const [featureInput, setFeatureInput] = useState('');
 
-  // Upload d'image avec preview immédiat
+  // Upload image
   const handleImageUpload = async (file) => {
     if (images.length >= 5) {
-      alert('⚠️ Maximum 5 photos !');
+      alert('⚠️ Maximum 5 photos!');
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      alert('⚠️ Fichier non valide !');
+      alert('⚠️ Invalid file!');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert('⚠️ Image trop grande (max 10MB)');
+      alert('⚠️ Image too large (max 10MB)');
       return;
     }
 
     const newIndex = images.length;
     setUploadingIndex(newIndex);
 
-    // Preview local IMMÉDIAT
+    // Instant local preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setImages(prev => [...prev, { url: e.target.result, uploading: true }]);
@@ -67,7 +67,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
     } catch (error) {
       console.error('Upload error:', error);
       setImages(prev => prev.filter((_, i) => i !== newIndex));
-      alert('❌ Erreur upload');
+      alert('❌ Upload error');
     } finally {
       setUploadingIndex(null);
     }
@@ -98,12 +98,12 @@ export default function AddVanForm({ onClose, onSuccess }) {
     e.preventDefault();
 
     if (!formData.title || !formData.price || !formData.location) {
-      alert('⚠️ Remplis tous les champs obligatoires !');
+      alert('⚠️ Please fill all required fields!');
       return;
     }
 
     if (images.length === 0) {
-      alert('⚠️ Ajoute au moins 1 photo !');
+      alert('⚠️ Please add at least 1 photo!');
       return;
     }
 
@@ -140,14 +140,14 @@ export default function AddVanForm({ onClose, onSuccess }) {
       localStorage.removeItem('kiwiVanMarket_vans');
       localStorage.removeItem('kiwiVanMarket_timestamp');
 
-      alert('✅ Van ajouté !');
+      alert('✅ Van added successfully!');
       onSuccess && onSuccess();
       onClose();
       window.location.reload();
       
     } catch (error) {
       console.error('Error:', error);
-      alert('❌ Erreur');
+      alert('❌ Error adding van');
     } finally {
       setLoading(false);
     }
@@ -169,13 +169,13 @@ export default function AddVanForm({ onClose, onSuccess }) {
 
           <form onSubmit={handleSubmit}>
             
-            {/* PHOTOS SECTION - GRILLE MODERNE */}
+            {/* PHOTOS SECTION */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
                 Photos ({images.length}/5)
               </h3>
 
-              {/* Grille de photos */}
+              {/* Photo grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
@@ -198,7 +198,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
                     </div>
                     {index === 0 && (
                       <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                        Principale
+                        Primary
                       </div>
                     )}
                     <button
@@ -210,7 +210,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
                   </div>
                 ))}
 
-                {/* Bouton d'ajout */}
+                {/* Add button */}
                 {images.length < 5 && (
                   <label className="aspect-video bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-dashed border-emerald-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-100 transition-all group">
                     <input
@@ -240,7 +240,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
               {images.length === 0 && (
                 <p className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-xl p-3 flex items-center gap-2">
                   <span>⚠️</span>
-                  <span>Au moins 1 photo requise</span>
+                  <span>At least 1 photo required</span>
                 </p>
               )}
             </div>
@@ -248,7 +248,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
             {/* BASIC INFO */}
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Titre *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
                 <input
                   type="text"
                   value={formData.title}
@@ -260,7 +260,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Prix (NZ$) *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Price (NZ$) *</label>
                 <input
                   type="number"
                   value={formData.price}
@@ -272,7 +272,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Ville *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">City *</label>
                 <input
                   type="text"
                   value={formData.location}
@@ -284,7 +284,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Région *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Region *</label>
                 <select
                   value={formData.region}
                   onChange={(e) => setFormData({...formData, region: e.target.value})}
@@ -295,7 +295,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Année *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Year *</label>
                 <input
                   type="number"
                   value={formData.year}
@@ -306,7 +306,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Kilométrage *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Mileage *</label>
                 <input
                   type="number"
                   value={formData.mileage}
@@ -330,7 +330,7 @@ export default function AddVanForm({ onClose, onSuccess }) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Capacité</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Capacity</label>
                 <input
                   type="number"
                   value={formData.capacity}
@@ -430,13 +430,13 @@ export default function AddVanForm({ onClose, onSuccess }) {
                 onClick={onClose}
                 disabled={loading}
                 className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-300 transition-colors disabled:opacity-50">
-                Annuler
+                Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading || images.length === 0}
                 className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading ? '⏳ Ajout en cours...' : '✅ Ajouter le Van'}
+                {loading ? '⏳ Adding...' : '✅ Add Van'}
               </button>
             </div>
           </form>
