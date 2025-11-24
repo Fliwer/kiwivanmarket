@@ -33,37 +33,51 @@ function LanguageSelector() {
     { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' },
   ];
 
-  // Petit helper pour le domaine du cookie
-  const getTranslateDomain = () => {
-    const host = window.location.hostname;
-    if (host.endsWith('vercel.app')) {
-      return '.vercel.app';
-    }
-    return '.' + host;
-  };
-
   const changeLanguage = (langCode) => {
     setIsOpen(false);
-    const domain = getTranslateDomain();
 
     if (langCode === 'en') {
-      // Pour l'anglais on force le cookie sur en → en
       localStorage.setItem('preferredLang', 'en');
 
-      document.cookie =
-        `googtrans=/en/en; path=/; domain=${domain}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
+      const host = window.location.hostname;
+      const domains = [
+        '',                         // sans domain, hôte courant
+        host,                       // ex  kiwivanmarket.vercel.app
+        '.' + host,                 // ex  .kiwivanmarket.vercel.app
+        '.vercel.app'               // domaine parent
+      ];
 
-      // Recharge propre pour enlever la traduction
+      domains.forEach(domain => {
+        const domainPart = domain ? `; domain=${domain}` : '';
+        
+        document.cookie =
+          `googtrans=/en/en; path=/${domainPart}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
+        document.cookie =
+          `googtrans=/auto/en; path=/${domainPart}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
+      });
+
       window.location.href = window.location.origin + window.location.pathname;
-    } else {
-      // Pour les autres langues on force en → langue choisie
-      localStorage.setItem('preferredLang', langCode);
-
-      document.cookie =
-        `googtrans=/en/${langCode}; path=/; domain=${domain}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
-
-      window.location.reload();
+      return;
     }
+
+    // autres langues
+    localStorage.setItem('preferredLang', langCode);
+
+    const host = window.location.hostname;
+    const domains = [
+      '',
+      host,
+      '.' + host,
+      '.vercel.app'
+    ];
+
+    domains.forEach(domain => {
+      const domainPart = domain ? `; domain=${domain}` : '';
+      document.cookie =
+        `googtrans=/en/${langCode}; path=/${domainPart}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
+    });
+
+    window.location.reload();
   };
 
   // Charger le script Google Translate seulement si langue différente de en
