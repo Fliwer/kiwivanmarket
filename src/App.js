@@ -34,41 +34,71 @@ function LanguageSelector() {
 
   // Fonction pour changer la langue via Google Translate
   const changeLanguage = (langCode) => {
-    // Supprimer TOUS les cookies googtrans sur tous les domaines possibles
     const hostname = window.location.hostname;
     const expiry = 'expires=Thu, 01 Jan 1970 00:00:00 UTC';
     
-    // Supprimer sur tous les domaines et paths possibles
-    document.cookie = `googtrans=; ${expiry}; path=/`;
-    document.cookie = `googtrans=; ${expiry}; path=/; domain=${hostname}`;
-    document.cookie = `googtrans=; ${expiry}; path=/; domain=.${hostname}`;
-    document.cookie = `googtrans=; ${expiry}`;
+    // Liste de tous les domaines possibles à nettoyer
+    const domains = [
+      '',
+      hostname,
+      `.${hostname}`,
+      '.vercel.app',
+      'vercel.app',
+    ];
     
-    // Nettoyer localStorage lié à Google Translate
+    // Supprimer les cookies sur tous les domaines et paths
+    domains.forEach(domain => {
+      const domainPart = domain ? `; domain=${domain}` : '';
+      document.cookie = `googtrans=; ${expiry}; path=/${domainPart}`;
+      document.cookie = `googtrans=; ${expiry}; path=${domainPart}`;
+    });
+    
+    // Nettoyer localStorage
     try {
-      localStorage.removeItem('googtrans');
-      // Supprimer toutes les clés liées à Google Translate
       Object.keys(localStorage).forEach(key => {
-        if (key.includes('google') || key.includes('goog') || key.includes('translate')) {
+        if (key.toLowerCase().includes('goog') || key.toLowerCase().includes('translate')) {
           localStorage.removeItem(key);
         }
       });
-    } catch (e) {
-      console.log('Could not clear localStorage');
-    }
+    } catch (e) {}
     
-    // Si pas anglais, définir le nouveau cookie
-    if (langCode !== 'en') {
+    // Nettoyer sessionStorage aussi
+    try {
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.toLowerCase().includes('goog') || key.toLowerCase().includes('translate')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+    } catch (e) {}
+    
+    // Si anglais, utiliser l'API Google Translate pour restaurer
+    if (langCode === 'en') {
+      // Essayer de restaurer via l'API Google Translate
+      const frame = document.querySelector('.goog-te-banner-frame');
+      if (frame) {
+        const closeBtn = frame.contentDocument?.querySelector('.goog-close-link');
+        if (closeBtn) closeBtn.click();
+      }
+      
+      // Chercher le sélecteur Google Translate et le reset
+      const select = document.querySelector('.goog-te-combo');
+      if (select) {
+        select.value = 'en';
+        select.dispatchEvent(new Event('change'));
+      }
+      
+      // Forcer rechargement avec timestamp pour bypass cache
+      setTimeout(() => {
+        window.location.href = window.location.origin + window.location.pathname + '?t=' + Date.now();
+      }, 100);
+    } else {
+      // Définir le nouveau cookie pour la nouvelle langue
       document.cookie = `googtrans=/en/${langCode}; path=/`;
       document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${hostname}`;
+      
+      setIsOpen(false);
+      window.location.reload();
     }
-    
-    setIsOpen(false);
-    
-    // Forcer un rechargement complet avec cache bust
-    const url = new URL(window.location.href);
-    url.searchParams.set('lang', langCode);
-    window.location.replace(url.toString());
   };
 
   // Charger le script Google Translate
