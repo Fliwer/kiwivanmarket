@@ -38,63 +38,66 @@ function LanguageSelector() {
     const hostname = window.location.hostname;
     const expiry = 'expires=Thu, 01 Jan 1970 00:00:00 UTC';
     
-    // Liste de tous les domaines possibles à nettoyer
-    const domains = [
-      '',
-      hostname,
-      `.${hostname}`,
-      '.vercel.app',
-      'vercel.app',
-    ];
-    
-    // Supprimer les cookies sur tous les domaines et paths
-    domains.forEach(domain => {
-      const domainPart = domain ? `; domain=${domain}` : '';
-      document.cookie = `googtrans=; ${expiry}; path=/${domainPart}`;
-      document.cookie = `googtrans=; ${expiry}; path=${domainPart}`;
-    });
-    
-    // Nettoyer localStorage
-    try {
-      Object.keys(localStorage).forEach(key => {
-        if (key.toLowerCase().includes('goog') || key.toLowerCase().includes('translate')) {
-          localStorage.removeItem(key);
-        }
-      });
-    } catch (e) {}
-    
-    // Nettoyer sessionStorage aussi
-    try {
-      Object.keys(sessionStorage).forEach(key => {
-        if (key.toLowerCase().includes('goog') || key.toLowerCase().includes('translate')) {
-          sessionStorage.removeItem(key);
-        }
-      });
-    } catch (e) {}
-    
-    // Si anglais, utiliser l'API Google Translate pour restaurer
+    // Si on veut l'anglais, on doit restaurer la page originale
     if (langCode === 'en') {
-      const frame = document.querySelector('.goog-te-banner-frame');
-      if (frame) {
-        const closeBtn = frame.contentDocument?.querySelector('.goog-close-link');
-        if (closeBtn) closeBtn.click();
+      // Supprimer tous les cookies googtrans
+      const domains = ['', hostname, `.${hostname}`, '.vercel.app'];
+      domains.forEach(domain => {
+        const domainPart = domain ? `; domain=${domain}` : '';
+        document.cookie = `googtrans=; ${expiry}; path=/${domainPart}`;
+      });
+      
+      // Méthode 1: Utiliser le sélecteur Google Translate
+      const googleCombo = document.querySelector('.goog-te-combo');
+      if (googleCombo) {
+        googleCombo.value = 'en';
+        googleCombo.dispatchEvent(new Event('change'));
+        setTimeout(() => {
+          setIsOpen(false);
+          window.location.reload();
+        }, 500);
+        return;
       }
       
-      const select = document.querySelector('.goog-te-combo');
-      if (select) {
-        select.value = 'en';
-        select.dispatchEvent(new Event('change'));
+      // Méthode 2: Utiliser la fonction Google Translate
+      if (window.google && window.google.translate) {
+        const iframe = document.querySelector('.goog-te-banner-frame');
+        if (iframe && iframe.contentDocument) {
+          const restoreBtn = iframe.contentDocument.querySelector('.goog-te-button');
+          if (restoreBtn) restoreBtn.click();
+        }
       }
       
-      setTimeout(() => {
-        window.location.href = window.location.origin + window.location.pathname + '?t=' + Date.now();
-      }, 100);
+      // Supprimer les éléments ajoutés par Google Translate
+      document.querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate').forEach(el => {
+        el.remove();
+      });
+      
+      // Restaurer le body
+      document.body.style.top = '';
+      document.body.classList.remove('translated-ltr', 'translated-rtl');
+      
+      setIsOpen(false);
+      
+      // Recharger sans le cache Google Translate
+      sessionStorage.setItem('skipTranslate', 'true');
+      window.location.href = window.location.origin + window.location.pathname;
+      
     } else {
+      // Changer vers une autre langue
       document.cookie = `googtrans=/en/${langCode}; path=/`;
       document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${hostname}`;
       
-      setIsOpen(false);
-      window.location.reload();
+      // Utiliser le sélecteur si disponible
+      const googleCombo = document.querySelector('.goog-te-combo');
+      if (googleCombo) {
+        googleCombo.value = langCode;
+        googleCombo.dispatchEvent(new Event('change'));
+        setIsOpen(false);
+      } else {
+        setIsOpen(false);
+        window.location.reload();
+      }
     }
   };
 
