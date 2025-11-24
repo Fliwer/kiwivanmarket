@@ -3,7 +3,7 @@ import {
   ArrowLeft, Send, Search, MoreVertical, Phone, Mail, MapPin,
   MessageCircle, Check, CheckCheck, Clock, Star, Archive,
   ChevronLeft, ChevronRight, DollarSign, Calendar, Gauge, Users,
-  Circle, CheckCircle2, MessageSquare, Eye, Settings, Bell, BellOff
+  Circle, CheckCircle2, MessageSquare, Eye, Settings, Bell, BellOff, X
 } from 'lucide-react';
 import { 
   collection, query, where, orderBy, onSnapshot, addDoc, 
@@ -19,6 +19,23 @@ import { useAuth } from '../AuthContext';
 export default function MessagingPage({ onBack }) {
   const { currentUser } = useAuth();
   
+  // Handle browser back button
+  useEffect(() => {
+    // Push a state when opening
+    window.history.pushState({ messaging: true }, '', window.location.href);
+    
+    const handlePopState = (event) => {
+      // When user clicks browser back, close messaging
+      onBack();
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [onBack]);
+  
   // State
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -31,6 +48,8 @@ export default function MessagingPage({ onBack }) {
   const [showDetailsPanel, setShowDetailsPanel] = useState(true);
   const [mobileView, setMobileView] = useState('list');
   const [isTyping, setIsTyping] = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [customOffer, setCustomOffer] = useState('');
   
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -59,14 +78,18 @@ export default function MessagingPage({ onBack }) {
       return;
     }
 
+    console.log('🔄 Loading conversations for:', currentUser.uid);
+
+    // Simple query without orderBy to avoid index requirement
     const q = query(
       collection(db, 'conversations'),
-      where('participants', 'array-contains', currentUser.uid),
-      orderBy('lastMessageAt', 'desc')
+      where('participants', 'array-contains', currentUser.uid)
     );
 
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
+        console.log('✅ Found conversations:', snapshot.docs.length);
+        
         const convos = snapshot.docs.map(docSnap => {
           const data = docSnap.data();
           return {
@@ -75,6 +98,13 @@ export default function MessagingPage({ onBack }) {
             unreadCount: data.unreadCount?.[currentUser.uid] || 0,
             otherUserId: data.participants.find(p => p !== currentUser.uid)
           };
+        });
+        
+        // Sort client-side by lastMessageAt (newest first)
+        convos.sort((a, b) => {
+          const timeA = a.lastMessageAt?.toDate?.() || new Date(0);
+          const timeB = b.lastMessageAt?.toDate?.() || new Date(0);
+          return timeB - timeA;
         });
         
         setConversations(convos);
@@ -86,7 +116,8 @@ export default function MessagingPage({ onBack }) {
         }
       },
       (error) => {
-        console.error('Firebase error:', error);
+        console.error('❌ Firebase error:', error);
+        console.error('💡 If index error, create index in Firebase Console');
         setLoading(false);
       }
     );
@@ -98,19 +129,34 @@ export default function MessagingPage({ onBack }) {
   useEffect(() => {
     if (!selectedConversation) return;
 
-    const q = query(
-      collection(db, 'conversations', selectedConversation.id, 'messages'),
-      orderBy('createdAt', 'asc')
-    );
+    console.log('📨 Loading messages for conversation:', selectedConversation.id);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setMessages(msgs);
-      markAsRead();
-    });
+    // Simple query without orderBy to avoid index issues
+    const messagesRef = collection(db, 'conversations', selectedConversation.id, 'messages');
+
+    const unsubscribe = onSnapshot(messagesRef, 
+      (snapshot) => {
+        console.log('✅ Found messages:', snapshot.docs.length);
+        
+        const msgs = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // Sort client-side by createdAt (oldest first)
+        msgs.sort((a, b) => {
+          const timeA = a.createdAt?.toDate?.() || new Date(0);
+          const timeB = b.createdAt?.toDate?.() || new Date(0);
+          return timeA - timeB;
+        });
+        
+        setMessages(msgs);
+        markAsRead();
+      },
+      (error) => {
+        console.error('❌ Error loading messages:', error);
+      }
+    );
 
     // Typing listener
     const typingUnsubscribe = onSnapshot(
@@ -168,10 +214,26 @@ export default function MessagingPage({ onBack }) {
 
   // Mark as read
   const markAsRead = async () => {
-    if (!selectedConversation) return;
+    if (!selectedConversation || !currentUser) return;
     try {
+      // Update conversation unread count
       await updateDoc(doc(db, 'conversations', selectedConversation.id), {
         [`unreadCount.${currentUser.uid}`]: 0
+      });
+      
+      // Mark all unread messages as read
+      const messagesRef = collection(db, 'conversations', selectedConversation.id, 'messages');
+      const snapshot = await getDocs(messagesRef);
+      
+      snapshot.docs.forEach(async (docSnap) => {
+        const msgData = docSnap.data();
+        // Only mark messages from other user as read
+        if (msgData.senderId !== currentUser.uid && !msgData.read) {
+          await updateDoc(doc(db, 'conversations', selectedConversation.id, 'messages', docSnap.id), {
+            read: true,
+            readAt: serverTimestamp()
+          });
+        }
       });
     } catch (error) {
       console.error('Error marking as read:', error);
@@ -512,7 +574,17 @@ export default function MessagingPage({ onBack }) {
                           <p className="text-sm leading-relaxed">{msg.text}</p>
                           <div className={`flex items-center justify-end gap-1 mt-1 ${isOwn ? 'text-white/70' : 'text-gray-400'}`}>
                             <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
-                            {isOwn && (msg.read ? <CheckCheck size={14} className="text-blue-300" /> : <Check size={14} />)}
+                            {isOwn && (
+                              <span className="flex items-center ml-1">
+                                {msg.read ? (
+                                  // Double check bleu = Lu
+                                  <CheckCheck size={16} className="text-blue-400" />
+                                ) : (
+                                  // Simple check gris = Envoyé
+                                  <Check size={16} className={isOwn ? 'text-white/50' : 'text-gray-400'} />
+                                )}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -537,18 +609,87 @@ export default function MessagingPage({ onBack }) {
 
               {/* Input */}
               <div className="p-4 border-t border-gray-200 bg-white">
+                {/* Make an Offer with options */}
                 {selectedConversation.van && (
-                  <button
-                    onClick={() => {
-                      const offer = Math.round(selectedConversation.van.price * 0.9);
-                      setNewMessage(`Hi! I'd like to make an offer of $${offer.toLocaleString()} for the ${selectedConversation.van.title}. Would you consider this?`);
-                      inputRef.current?.focus();
-                    }}
-                    className="w-full mb-3 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-medium text-sm hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
-                  >
-                    <DollarSign size={18} />
-                    Make an Offer
-                  </button>
+                  <div className="relative mb-3">
+                    <button
+                      onClick={() => setShowOfferModal(!showOfferModal)}
+                      className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-medium text-sm hover:from-amber-600 hover:to-orange-600 transition-all flex items-center justify-center gap-2"
+                    >
+                      <DollarSign size={18} />
+                      Make an Offer
+                      <ChevronRight size={16} className={`transition-transform ${showOfferModal ? 'rotate-90' : ''}`} />
+                    </button>
+                    
+                    {/* Offer Options Modal */}
+                    {showOfferModal && (
+                      <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-10">
+                        <p className="text-sm font-semibold text-gray-700 mb-3">
+                          Choose an offer for {selectedConversation.van.title}
+                        </p>
+                        <p className="text-xs text-gray-500 mb-3">
+                          Listed price: <span className="font-bold text-emerald-600">${selectedConversation.van.price?.toLocaleString()}</span>
+                        </p>
+                        
+                        {/* Preset Options */}
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          {[5, 10, 15, 20].map((percent) => {
+                            const offerPrice = Math.round(selectedConversation.van.price * (1 - percent / 100));
+                            return (
+                              <button
+                                key={percent}
+                                onClick={() => {
+                                  setNewMessage(`Hi! I'd like to make an offer of $${offerPrice.toLocaleString()} (-${percent}%) for the ${selectedConversation.van.title}. Would you consider this?`);
+                                  setShowOfferModal(false);
+                                  inputRef.current?.focus();
+                                }}
+                                className="py-2 px-3 bg-gray-100 hover:bg-emerald-100 hover:border-emerald-500 border border-gray-200 rounded-lg text-sm font-medium transition-all"
+                              >
+                                <span className="text-emerald-600 font-bold">${offerPrice.toLocaleString()}</span>
+                                <span className="text-gray-500 text-xs ml-1">(-{percent}%)</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Custom Amount */}
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
+                            <input
+                              type="number"
+                              value={customOffer}
+                              onChange={(e) => setCustomOffer(e.target.value)}
+                              placeholder="Custom amount"
+                              className="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (customOffer) {
+                                setNewMessage(`Hi! I'd like to make an offer of $${parseInt(customOffer).toLocaleString()} for the ${selectedConversation.van.title}. Would you consider this?`);
+                                setShowOfferModal(false);
+                                setCustomOffer('');
+                                inputRef.current?.focus();
+                              }
+                            }}
+                            disabled={!customOffer}
+                            className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Send
+                          </button>
+                        </div>
+                        
+                        {/* Close button */}
+                        <button
+                          onClick={() => setShowOfferModal(false)}
+                          className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
                 
                 <div className="flex items-end gap-2">
