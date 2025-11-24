@@ -45,6 +45,18 @@ function LanguageSelector() {
     document.cookie = `googtrans=; ${expiry}; path=/; domain=.${hostname}`;
     document.cookie = `googtrans=; ${expiry}`;
     
+    // Nettoyer localStorage lié à Google Translate
+    try {
+      localStorage.removeItem('googtrans');
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('google') || key.includes('goog') || key.includes('translate')) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch (e) {
+      console.log('Could not clear localStorage');
+    }
+    
     // Si pas anglais, définir le nouveau cookie
     if (langCode !== 'en') {
       document.cookie = `googtrans=/en/${langCode}; path=/`;
@@ -53,8 +65,10 @@ function LanguageSelector() {
     
     setIsOpen(false);
     
-    // Forcer un rechargement complet (pas depuis le cache)
-    window.location.href = window.location.pathname + window.location.search;
+    // Forcer un rechargement complet avec cache bust
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', langCode);
+    window.location.replace(url.toString());
   };
 
   const getCurrentLang = () => {
