@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -19,7 +19,7 @@ import BuybackCalculator from './components/BuybackCalculator';
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
-  
+
   const languages = [
     { code: 'en', flag: 'https://flagcdn.com/24x18/gb.png', name: 'ENGLISH', short: 'EN' },
     { code: 'fr', flag: 'https://flagcdn.com/24x18/fr.png', name: 'FRANÇAIS', short: 'FR' },
@@ -30,83 +30,49 @@ function LanguageSelector() {
     { code: 'ko', flag: 'https://flagcdn.com/24x18/kr.png', name: '한국어', short: 'KO' },
     { code: 'pt', flag: 'https://flagcdn.com/24x18/br.png', name: 'PORTUGUÊS', short: 'PT' },
     { code: 'th', flag: 'https://flagcdn.com/24x18/th.png', name: 'ไทย', short: 'TH' },
-    { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' },
+    { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' }
   ];
+
+  // On force Google Translate via le vrai select caché
+  const applyLanguage = useCallback((langCode) => {
+    const combo = document.querySelector('.goog-te-combo');
+    if (!combo) return;
+
+    // Pour revenir à la langue originale, Google attend une valeur vide
+    combo.value = langCode === 'en' ? '' : langCode;
+
+    const event = new Event('change');
+    combo.dispatchEvent(event);
+  }, []);
 
   const changeLanguage = (langCode) => {
     setIsOpen(false);
-
-    if (langCode === 'en') {
-      localStorage.setItem('preferredLang', 'en');
-
-      const host = window.location.hostname;
-      const domains = [
-        '',                         // sans domain, hôte courant
-        host,                       // ex  kiwivanmarket.vercel.app
-        '.' + host,                 // ex  .kiwivanmarket.vercel.app
-        '.vercel.app'               // domaine parent
-      ];
-
-      domains.forEach(domain => {
-        const domainPart = domain ? `; domain=${domain}` : '';
-        
-        document.cookie =
-          `googtrans=/en/en; path=/${domainPart}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
-        document.cookie =
-          `googtrans=/auto/en; path=/${domainPart}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
-      });
-
-      window.location.href = window.location.origin + window.location.pathname;
-      return;
-    }
-
-    // autres langues
+    setCurrentLang(langCode);
     localStorage.setItem('preferredLang', langCode);
-
-    const host = window.location.hostname;
-    const domains = [
-      '',
-      host,
-      '.' + host,
-      '.vercel.app'
-    ];
-
-    domains.forEach(domain => {
-      const domainPart = domain ? `; domain=${domain}` : '';
-      document.cookie =
-        `googtrans=/en/${langCode}; path=/${domainPart}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
-    });
-
-    window.location.reload();
+    applyLanguage(langCode);
   };
 
-  // Charger le script Google Translate seulement si langue différente de en
   useEffect(() => {
     const savedLang = localStorage.getItem('preferredLang') || 'en';
     setCurrentLang(savedLang);
-    
-    if (savedLang === 'en') {
-      document
-        .querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate, #google_translate_element')
-        .forEach(el => el.remove());
-      document.body.style.top = '';
-      document.body.classList.remove('translated-ltr', 'translated-rtl');
-      return;
-    }
-    
+
+    // On injecte le script Google si ce n'est pas déjà fait
     if (!document.getElementById('google-translate-script')) {
       const translateDiv = document.createElement('div');
       translateDiv.id = 'google_translate_element';
       translateDiv.style.display = 'none';
       document.body.appendChild(translateDiv);
 
-      window.googleTranslateElementInit = function() {
-        new window.google.translate.TranslateElement({
-          pageLanguage: 'en',
-          includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,th,vi',
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false
-        }, 'google_translate_element');
+      window.googleTranslateElementInit = function () {
+        new window.google.translate.TranslateElement(
+          {
+            pageLanguage: 'en',
+            includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,th,vi',
+            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false
+          },
+          'google_translate_element'
+        );
       };
 
       const script = document.createElement('script');
@@ -115,9 +81,21 @@ function LanguageSelector() {
       script.async = true;
       document.body.appendChild(script);
     }
-  }, []);
 
-  const currentLangData = languages.find(l => l.code === currentLang) || languages[0];
+    // On attend que .goog-te-combo apparaisse, puis on applique la langue sauvegardée
+    const intervalId = setInterval(() => {
+      const combo = document.querySelector('.goog-te-combo');
+      if (combo) {
+        applyLanguage(savedLang);
+        clearInterval(intervalId);
+      }
+    }, 500);
+
+    return () => clearInterval(intervalId);
+  }, [applyLanguage]);
+
+  const currentLangData =
+    languages.find((l) => l.code === currentLang) || languages[0];
 
   return (
     <div className="relative">
@@ -126,35 +104,38 @@ function LanguageSelector() {
         className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
         title="Change language"
       >
-        <img 
-          src={currentLangData.flag} 
+        <img
+          src={currentLangData.flag}
           alt={currentLangData.name}
           className="w-6 h-4 object-cover rounded-sm shadow-sm"
         />
         <span className="hidden sm:inline">{currentLangData.short}</span>
-        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          size={14}
+          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
-      
+
       {isOpen && (
         <>
-          <div 
-            className="fixed inset-0 z-[100]" 
+          <div
+            className="fixed inset-0 z-[100]"
             onClick={() => setIsOpen(false)}
           />
-          
+
           <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[180px] z-[101]">
-            {languages.map(lang => (
+            {languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => changeLanguage(lang.code)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
-                  currentLang === lang.code 
-                    ? 'bg-emerald-50 text-emerald-700 font-semibold' 
+                  currentLang === lang.code
+                    ? 'bg-emerald-50 text-emerald-700 font-semibold'
                     : 'hover:bg-gray-50 text-gray-700'
                 }`}
               >
-                <img 
-                  src={lang.flag} 
+                <img
+                  src={lang.flag}
                   alt={lang.name}
                   className="w-6 h-4 object-cover rounded-sm shadow-sm"
                 />
