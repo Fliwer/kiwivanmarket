@@ -1,469 +1,444 @@
 import React, { useState } from 'react';
-import { X, Upload, Loader, Calendar, Shield } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../AuthContext';
+import { X, Plus, Upload, Trash2, CheckCircle } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 
-export default function AddVanForm({ onClose, onVanAdded }) {
+export default function AddVanForm({ onClose, onSuccess }) {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  
+  const [images, setImages] = useState([]);
+  const [uploadingIndex, setUploadingIndex] = useState(null);
+
   const [formData, setFormData] = useState({
     title: '',
     price: '',
-    year: '',
-    mileage: '',
     location: '',
+    region: 'North Island',
+    year: new Date().getFullYear(),
+    mileage: '',
+    type: 'Campervan',
     description: '',
-    condition: 'Good',
-    fuelType: 'Diesel',
-    transmission: 'Manual',
-    beds: '',
-    seats: '',
-    wofExpiry: '',
-    regoExpiry: '',
+    capacity: 2,
+    selfContained: false,
+    featured: false,
     buyBack: false,
-    buyBackPrice: '',
-    buyBackDuration: '',
-    buyBackConditions: ''
+    features: []
   });
 
-  const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const [featureInput, setFeatureInput] = useState('');
+
+  // Upload d'image avec preview immédiat
+  const handleImageUpload = async (file) => {
+    if (images.length >= 5) {
+      alert('⚠️ Maximum 5 photos !');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      alert('⚠️ Fichier non valide !');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('⚠️ Image trop grande (max 10MB)');
+      return;
+    }
+
+    const newIndex = images.length;
+    setUploadingIndex(newIndex);
+
+    // Preview local IMMÉDIAT
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImages(prev => [...prev, { url: e.target.result, uploading: true }]);
+    };
+    reader.readAsDataURL(file);
+
+    try {
+      const result = await uploadToCloudinary(file);
+      
+      setImages(prev => {
+        const updated = [...prev];
+        updated[newIndex] = { url: result.url, uploading: false };
+        return updated;
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      setImages(prev => prev.filter((_, i) => i !== newIndex));
+      alert('❌ Erreur upload');
+    } finally {
+      setUploadingIndex(null);
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+  const removeImage = (index) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+
+  const addFeature = () => {
+    if (featureInput.trim()) {
+      setFormData({
+        ...formData,
+        features: [...formData.features, featureInput.trim()]
+      });
+      setFeatureInput('');
+    }
+  };
+
+  const removeFeature = (index) => {
+    setFormData({
+      ...formData,
+      features: formData.features.filter((_, i) => i !== index)
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!currentUser) {
-      alert('You must be logged in to add a van');
+
+    if (!formData.title || !formData.price || !formData.location) {
+      alert('⚠️ Remplis tous les champs obligatoires !');
       return;
     }
 
-    if (!imageFile) {
-      alert('Please select an image');
+    if (images.length === 0) {
+      alert('⚠️ Ajoute au moins 1 photo !');
       return;
-    }
-
-    // Validation Buy-Back
-    if (formData.buyBack) {
-      if (!formData.buyBackPrice || !formData.buyBackDuration) {
-        alert('Please fill in buy-back guarantee price and duration');
-        return;
-      }
-      const buyBackPrice = parseFloat(formData.buyBackPrice);
-      const salePrice = parseFloat(formData.price);
-      if (!salePrice || buyBackPrice >= salePrice) {
-        alert('Buy-back price must be lower than sale price');
-        return;
-      }
     }
 
     setLoading(true);
 
     try {
-      console.log('📤 Uploading image to Cloudinary...');
-      
-      // Upload vers Cloudinary
-      const uploadResult = await uploadToCloudinary(imageFile);
-      console.log('✅ Image uploaded:', uploadResult.url);
+      const imageUrls = images.map(img => img.url);
 
-      // Créer le van dans Firestore
       const vanData = {
-        title: formData.title.trim(),
-        price: parseFloat(formData.price),
+        ...formData,
+        price: parseInt(formData.price),
         year: parseInt(formData.year),
         mileage: parseInt(formData.mileage),
-        location: formData.location.trim(),
-        description: formData.description.trim(),
-        condition: formData.condition,
-        fuelType: formData.fuelType,
-        transmission: formData.transmission,
-        beds: parseInt(formData.beds) || 0,
-        seats: parseInt(formData.seats) || 0,
-        imageUrl: uploadResult.url,
-        cloudinaryId: uploadResult.publicId,
-        sellerId: currentUser.uid,
+        capacity: parseInt(formData.capacity),
+        imageUrl: imageUrls[0],
+        images: imageUrls,
         seller: {
           uid: currentUser.uid,
           name: currentUser.displayName || 'Anonymous',
-          email: currentUser.email
+          email: currentUser.email,
+          rating: 5,
+          phone: 'Not provided'
         },
-        wofExpiry: formData.wofExpiry || null,
-        regoExpiry: formData.regoExpiry || null,
-        buyBack: formData.buyBack,
-        createdAt: serverTimestamp(),
-        status: 'active'
+        views: 0,
+        postedDays: 0,
+        wofExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        regoExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        createdAt: new Date(),
+        updatedAt: new Date()
       };
 
-      // Ajouter buy-back details si activé
-      if (formData.buyBack) {
-        const durationMonths = parseInt(formData.buyBackDuration);
-        const offerValidUntil = new Date();
-        offerValidUntil.setMonth(offerValidUntil.getMonth() + durationMonths);
+      await addDoc(collection(db, 'vans'), vanData);
 
-        vanData.buyBackDetails = {
-          guaranteedPrice: parseFloat(formData.buyBackPrice),
-          duration: durationMonths,
-          conditions: formData.buyBackConditions || 'Standard conditions apply',
-          offerValidUntil: offerValidUntil.toISOString()
-        };
-      }
+      localStorage.removeItem('kiwiVanMarket_vans');
+      localStorage.removeItem('kiwiVanMarket_timestamp');
 
-      const docRef = await addDoc(collection(db, 'vans'), vanData);
-      console.log('✅ Van added with ID:', docRef.id);
-
-      alert('Van added successfully! 🎉');
-      onVanAdded();
+      alert('✅ Van ajouté !');
+      onSuccess && onSuccess();
       onClose();
+      window.location.reload();
+      
     } catch (error) {
-      console.error('❌ Error adding van:', error);
-      alert('Error adding van: ' + error.message);
+      console.error('Error:', error);
+      alert('❌ Erreur');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
+    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
+        
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-white rounded-full p-2 shadow-lg z-10">
+          className="absolute top-6 right-6 bg-white rounded-full p-3 shadow-xl z-[70] hover:bg-gray-100 transition-all hover:scale-110">
           <X size={24} />
         </button>
 
-        <div className="p-8">
-          <h2 className="text-3xl font-bold mb-6 text-emerald-600">🚐 Add Your Van</h2>
+        <div className="p-8 lg:p-10">
+          <h2 className="text-3xl font-black text-gray-900 mb-2">🚐 Add New Van</h2>
+          <p className="text-gray-600 mb-8">Upload photos and fill in details</p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit}>
             
-            {/* Image Upload */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">Van Photo *</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-emerald-500 transition">
-                {imagePreview ? (
-                  <div className="relative">
-                    <img src={imagePreview} alt="Preview" className="max-h-64 mx-auto rounded" />
+            {/* PHOTOS SECTION - GRILLE MODERNE */}
+            <div className="mb-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                Photos ({images.length}/5)
+              </h3>
+
+              {/* Grille de photos */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                {images.map((image, index) => (
+                  <div key={index} className="relative group">
+                    <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg">
+                      <img 
+                        src={image.url} 
+                        alt={`Photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {image.uploading && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                        </div>
+                      )}
+                      {!image.uploading && (
+                        <div className="absolute top-2 left-2 bg-emerald-500 text-white rounded-full p-1 shadow-lg">
+                          <CheckCircle size={16} />
+                        </div>
+                      )}
+                    </div>
+                    {index === 0 && (
+                      <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                        Principale
+                      </div>
+                    )}
                     <button
                       type="button"
-                      onClick={() => { setImageFile(null); setImagePreview(null); }}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600">
-                      <X size={20} />
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg">
+                      <Trash2 size={16} />
                     </button>
                   </div>
-                ) : (
-                  <div>
-                    <Upload className="mx-auto mb-4 text-gray-400" size={48} />
-                    <p className="text-gray-600 mb-2">Click to upload van image</p>
+                ))}
+
+                {/* Bouton d'ajout */}
+                {images.length < 5 && (
+                  <label className="aspect-video bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-dashed border-emerald-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-100 transition-all group">
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleImageSelect}
+                      onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])}
                       className="hidden"
-                      id="image-upload"
+                      disabled={uploadingIndex !== null}
                     />
-                    <label
-                      htmlFor="image-upload"
-                      className="inline-block px-4 py-2 bg-emerald-600 text-white rounded cursor-pointer hover:bg-emerald-700">
-                      Choose File
-                    </label>
-                  </div>
+                    {uploadingIndex === images.length ? (
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+                    ) : (
+                      <>
+                        <Upload size={32} className="text-emerald-600 mb-2 group-hover:scale-110 transition-transform" />
+                        <span className="text-sm font-semibold text-emerald-700">
+                          Upload Photo
+                        </span>
+                        <span className="text-xs text-gray-500 mt-1">
+                          Click to browse
+                        </span>
+                      </>
+                    )}
+                  </label>
                 )}
               </div>
+
+              {images.length === 0 && (
+                <p className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-xl p-3 flex items-center gap-2">
+                  <span>⚠️</span>
+                  <span>Au moins 1 photo requise</span>
+                </p>
+              )}
             </div>
 
-            {/* Title */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">Title *</label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder="e.g., Toyota Hiace Campervan"
-                required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-              />
-            </div>
-
-            {/* Price & Year */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* BASIC INFO */}
+            <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-semibold mb-2">Price (NZ$) *</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  placeholder="25000"
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">Year *</label>
-                <input
-                  type="number"
-                  name="year"
-                  value={formData.year}
-                  onChange={handleInputChange}
-                  placeholder="2018"
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Mileage & Location */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2">Mileage (km) *</label>
-                <input
-                  type="number"
-                  name="mileage"
-                  value={formData.mileage}
-                  onChange={handleInputChange}
-                  placeholder="150000"
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">Location *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Titre *</label>
                 <input
                   type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  placeholder="Auckland, North Island"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  placeholder="Toyota Hiace 2015"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
                 />
               </div>
-            </div>
 
-            {/* Condition & Fuel Type */}
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold mb-2">Condition</label>
-                <select
-                  name="condition"
-                  value={formData.condition}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                  <option>Excellent</option>
-                  <option>Good</option>
-                  <option>Fair</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">Fuel Type</label>
-                <select
-                  name="fuelType"
-                  value={formData.fuelType}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                  <option>Diesel</option>
-                  <option>Petrol</option>
-                  <option>Hybrid</option>
-                  <option>Electric</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Transmission & Beds & Seats */}
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2">Transmission</label>
-                <select
-                  name="transmission"
-                  value={formData.transmission}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
-                  <option>Manual</option>
-                  <option>Automatic</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2">Beds</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Prix (NZ$) *</label>
                 <input
                   type="number"
-                  name="beds"
-                  value={formData.beds}
-                  onChange={handleInputChange}
-                  placeholder="2"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  value={formData.price}
+                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  placeholder="18500"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  required
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-semibold mb-2">Seats</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Ville *</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  placeholder="Auckland"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Région *</label>
+                <select
+                  value={formData.region}
+                  onChange={(e) => setFormData({...formData, region: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                  <option>North Island</option>
+                  <option>South Island</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Année *</label>
                 <input
                   type="number"
-                  name="seats"
-                  value={formData.seats}
-                  onChange={handleInputChange}
-                  placeholder="4"
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  value={formData.year}
+                  onChange={(e) => setFormData({...formData, year: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  required
                 />
               </div>
-            </div>
 
-            {/* ✨ NOUVEAU : WOF & Rego */}
-            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Calendar size={16} className="text-emerald-600" />
-                  WOF Expiry <span className="text-gray-400 font-normal">(optional)</span>
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Kilométrage *</label>
                 <input
-                  type="date"
-                  name="wofExpiry"
-                  value={formData.wofExpiry}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  type="number"
+                  value={formData.mileage}
+                  onChange={(e) => setFormData({...formData, mileage: e.target.value})}
+                  placeholder="145000"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  required
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                  <Calendar size={16} className="text-emerald-600" />
-                  Rego Expiry <span className="text-gray-400 font-normal">(optional)</span>
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({...formData, type: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                  <option>Campervan</option>
+                  <option>Van</option>
+                  <option>Motorhome</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Capacité</label>
                 <input
-                  type="date"
-                  name="regoExpiry"
-                  value={formData.regoExpiry}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none"
+                  type="number"
+                  value={formData.capacity}
+                  onChange={(e) => setFormData({...formData, capacity: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
             </div>
 
-            {/* ✨ NOUVEAU : Buy-Back Guarantee */}
-            <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
-              <label className="flex items-center gap-3 cursor-pointer mb-4">
-                <input
-                  type="checkbox"
-                  name="buyBack"
-                  checked={formData.buyBack}
-                  onChange={handleInputChange}
-                  className="w-5 h-5 text-green-600 rounded focus:ring-2 focus:ring-green-500"
-                />
-                <div className="flex items-center gap-2">
-                  <Shield size={20} className="text-green-600" />
-                  <span className="font-semibold text-green-900">Offer Buy-Back Guarantee</span>
-                </div>
-              </label>
-
-              {formData.buyBack && (
-                <div className="space-y-4 pl-8">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">
-                        Guaranteed Buy-Back Price (NZ$) *
-                      </label>
-                      <input
-                        type="number"
-                        name="buyBackPrice"
-                        value={formData.buyBackPrice}
-                        onChange={handleInputChange}
-                        placeholder="18000"
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">
-                        Duration (months) *
-                      </label>
-                      <input
-                        type="number"
-                        name="buyBackDuration"
-                        value={formData.buyBackDuration}
-                        onChange={handleInputChange}
-                        placeholder="6"
-                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">
-                      Conditions <span className="text-gray-400 font-normal">(optional)</span>
-                    </label>
-                    <textarea
-                      name="buyBackConditions"
-                      value={formData.buyBackConditions}
-                      onChange={handleInputChange}
-                      rows="2"
-                      placeholder="e.g., No major accidents, max 20,000 km additional mileage..."
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 outline-none resize-none"
-                    />
-                  </div>
-
-                  {formData.price && formData.buyBackPrice && (
-                    <div className="bg-white p-3 rounded border border-green-300">
-                      <p className="text-xs text-gray-600 mb-1">Estimated Total Cost</p>
-                      <p className="text-sm text-gray-700">
-                        Buy for <strong>NZ${parseFloat(formData.price).toLocaleString()}</strong>, 
-                        sell back for <strong>NZ${parseFloat(formData.buyBackPrice).toLocaleString()}</strong> = 
-                        <strong className="text-green-700"> NZ${(parseFloat(formData.price) - parseFloat(formData.buyBackPrice)).toLocaleString()} total</strong>
-                        {formData.buyBackDuration && (
-                          <span className="text-gray-500"> (≈ NZ${Math.round((parseFloat(formData.price) - parseFloat(formData.buyBackPrice)) / parseInt(formData.buyBackDuration))}/month)</span>
-                        )}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-semibold mb-2">Description *</label>
+            {/* DESCRIPTION */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Description *</label>
               <textarea
-                name="description"
                 value={formData.description}
-                onChange={handleInputChange}
-                rows="4"
-                placeholder="Describe your van, its features, condition, and any extras included..."
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Perfect backpacker van..."
+                rows={4}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
                 required
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
               />
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              {loading ? (
-                <>
-                  <Loader className="animate-spin" size={20} />
-                  Uploading...
-                </>
-              ) : (
-                'Add Van'
-              )}
-            </button>
+            {/* FEATURES */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Features</label>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={featureInput}
+                  onChange={(e) => setFeatureInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
+                  placeholder="Solar, Fridge, etc."
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={addFeature}
+                  className="bg-emerald-600 text-white px-6 rounded-xl font-semibold hover:bg-emerald-700 transition-colors">
+                  <Plus size={20} />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.features.map((feature, index) => (
+                  <div 
+                    key={index}
+                    className="bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg flex items-center gap-2">
+                    <span className="text-sm font-semibold text-gray-900">{feature}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeFeature(index)}
+                      className="text-red-500 hover:text-red-700 transition-colors">
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* OPTIONS */}
+            <div className="mb-8">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">Options</label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={formData.selfContained}
+                    onChange={(e) => setFormData({...formData, selfContained: e.target.checked})}
+                    className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                  />
+                  <span className="font-medium text-gray-700">Self-Contained Certified</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={formData.featured}
+                    onChange={(e) => setFormData({...formData, featured: e.target.checked})}
+                    className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                  />
+                  <span className="font-medium text-gray-700">Featured Listing</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={formData.buyBack}
+                    onChange={(e) => setFormData({...formData, buyBack: e.target.checked})}
+                    className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                  />
+                  <span className="font-medium text-gray-700">Buy-Back Available</span>
+                </label>
+              </div>
+            </div>
+
+            {/* BUTTONS */}
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={loading}
+                className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-300 transition-colors disabled:opacity-50">
+                Annuler
+              </button>
+              <button
+                type="submit"
+                disabled={loading || images.length === 0}
+                className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                {loading ? '⏳ Ajout en cours...' : '✅ Ajouter le Van'}
+              </button>
+            </div>
           </form>
         </div>
       </div>
