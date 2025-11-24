@@ -33,51 +33,53 @@ function LanguageSelector() {
     { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' },
   ];
 
-  // Fonction pour changer la langue
+  // Petit helper pour le domaine du cookie
+  const getTranslateDomain = () => {
+    const host = window.location.hostname;
+    if (host.endsWith('vercel.app')) {
+      return '.vercel.app';
+    }
+    return '.' + host;
+  };
+
   const changeLanguage = (langCode) => {
     setIsOpen(false);
-    
+    const domain = getTranslateDomain();
+
     if (langCode === 'en') {
-      // Pour l'anglais: sauvegarder la préférence et recharger sans Google Translate
+      // Pour l'anglais on force le cookie sur en → en
       localStorage.setItem('preferredLang', 'en');
-      
-      // Supprimer tous les cookies Google Translate possibles
-      const hostname = window.location.hostname;
-      const expiry = 'expires=Thu, 01 Jan 1970 00:00:00 UTC';
-      ['', hostname, `.${hostname}`, '.vercel.app'].forEach(domain => {
-        const d = domain ? `; domain=${domain}` : '';
-        document.cookie = `googtrans=; ${expiry}; path=/${d}`;
-      });
-      
-      // Recharger la page - Google Translate ne sera pas chargé car preferredLang = 'en'
+
+      document.cookie =
+        `googtrans=/en/en; path=/; domain=${domain}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
+
+      // Recharge propre pour enlever la traduction
       window.location.href = window.location.origin + window.location.pathname;
     } else {
-      // Pour les autres langues: sauvegarder et activer Google Translate
+      // Pour les autres langues on force en → langue choisie
       localStorage.setItem('preferredLang', langCode);
-      
-      const hostname = window.location.hostname;
-      document.cookie = `googtrans=/en/${langCode}; path=/`;
-      document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${hostname}`;
-      
+
+      document.cookie =
+        `googtrans=/en/${langCode}; path=/; domain=${domain}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
+
       window.location.reload();
     }
   };
 
-  // Charger le script Google Translate seulement si langue != 'en'
+  // Charger le script Google Translate seulement si langue différente de en
   useEffect(() => {
     const savedLang = localStorage.getItem('preferredLang') || 'en';
     setCurrentLang(savedLang);
     
-    // Si langue = anglais, ne pas charger Google Translate
     if (savedLang === 'en') {
-      // Supprimer les éléments Google Translate existants
-      document.querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate, #google_translate_element').forEach(el => el.remove());
+      document
+        .querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate, #google_translate_element')
+        .forEach(el => el.remove());
       document.body.style.top = '';
       document.body.classList.remove('translated-ltr', 'translated-rtl');
       return;
     }
     
-    // Sinon, charger Google Translate
     if (!document.getElementById('google-translate-script')) {
       const translateDiv = document.createElement('div');
       translateDiv.id = 'google_translate_element';
@@ -119,10 +121,8 @@ function LanguageSelector() {
         <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
-      {/* Dropdown */}
       {isOpen && (
         <>
-          {/* Overlay pour fermer */}
           <div 
             className="fixed inset-0 z-[100]" 
             onClick={() => setIsOpen(false)}

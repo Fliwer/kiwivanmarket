@@ -35,27 +35,31 @@ function LanguageSelector() {
     { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' },
   ];
 
+  const getTranslateDomain = () => {
+    const host = window.location.hostname;
+    if (host.endsWith('vercel.app')) {
+      return '.vercel.app';
+    }
+    return '.' + host;
+  };
+
   const changeLanguage = (langCode) => {
     setIsOpen(false);
-    
+    const domain = getTranslateDomain();
+
     if (langCode === 'en') {
       localStorage.setItem('preferredLang', 'en');
-      
-      const hostname = window.location.hostname;
-      const expiry = 'expires=Thu, 01 Jan 1970 00:00:00 UTC';
-      ['', hostname, `.${hostname}`, '.vercel.app'].forEach(domain => {
-        const d = domain ? `; domain=${domain}` : '';
-        document.cookie = `googtrans=; ${expiry}; path=/${d}`;
-      });
-      
+
+      document.cookie =
+        `googtrans=/en/en; path=/; domain=${domain}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
+
       window.location.href = window.location.origin + window.location.pathname;
     } else {
       localStorage.setItem('preferredLang', langCode);
-      
-      const hostname = window.location.hostname;
-      document.cookie = `googtrans=/en/${langCode}; path=/`;
-      document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${hostname}`;
-      
+
+      document.cookie =
+        `googtrans=/en/${langCode}; path=/; domain=${domain}; expires=Thu, 31 Dec 2030 23:59:59 GMT`;
+
       window.location.reload();
     }
   };
@@ -65,7 +69,9 @@ function LanguageSelector() {
     setCurrentLang(savedLang);
     
     if (savedLang === 'en') {
-      document.querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate, #google_translate_element').forEach(el => el.remove());
+      document
+        .querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate, #google_translate_element')
+        .forEach(el => el.remove());
       document.body.style.top = '';
       document.body.classList.remove('translated-ltr', 'translated-rtl');
       return;
