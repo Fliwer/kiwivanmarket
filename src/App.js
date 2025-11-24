@@ -39,6 +39,7 @@ export default function KiwiVanMarket() {
   const [showMyVans, setShowMyVans] = useState(false);
   const [showMessagingPage, setShowMessagingPage] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showBuyBackInfo, setShowBuyBackInfo] = useState(false);
   const { currentUser, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -299,20 +300,31 @@ export default function KiwiVanMarket() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Shield className="text-blue-600" size={18} />
-                    <p className="text-xs font-bold text-gray-900">WOF</p>
+              {/* WOF + REGO + Self-Contained - Style Facebook */}
+              <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-4 rounded-xl border border-gray-200 mb-6">
+                <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                  <Shield size={16} className="text-emerald-600" />
+                  Vehicle Status
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className={`bg-white p-3 rounded-lg border text-center ${van.wofExpiry ? 'border-emerald-200' : 'border-gray-200'}`}>
+                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">WOF Valid</div>
+                    <div className={`text-lg font-bold ${van.wofExpiry ? 'text-emerald-600' : 'text-gray-400'}`}>
+                      {van.wofExpiry ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-700">{new Date(van.wofExpiry).toLocaleDateString()}</p>
-                </div>
-                <div className="bg-blue-50 p-3 rounded-xl border border-blue-200">
-                  <div className="flex items-center gap-2 mb-1">
-                    <AlertCircle className="text-blue-600" size={18} />
-                    <p className="text-xs font-bold text-gray-900">REGO</p>
+                  <div className={`bg-white p-3 rounded-lg border text-center ${van.regoExpiry ? 'border-blue-200' : 'border-gray-200'}`}>
+                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">REGO Until</div>
+                    <div className={`text-lg font-bold ${van.regoExpiry ? 'text-blue-600' : 'text-gray-400'}`}>
+                      {van.regoExpiry ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-700">{new Date(van.regoExpiry).toLocaleDateString()}</p>
+                  <div className={`p-3 rounded-lg border text-center ${van.selfContained ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">Self-Contained</div>
+                    <div className={`text-lg font-bold ${van.selfContained ? 'text-green-600' : 'text-gray-400'}`}>
+                      {van.selfContained ? '✓ Yes' : '✗ No'}
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -527,36 +539,50 @@ export default function KiwiVanMarket() {
             <div className="flex items-center justify-between gap-3">
               
               {/* Tabs à gauche */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                <button 
-                  onClick={() => setActiveTab('all')}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition ${
-                    activeTab === 'all' 
-                      ? 'bg-emerald-600 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}>
-                  All Vans ({vans.length})
-                </button>
-                <button 
-                  onClick={() => setActiveTab('featured')}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
-                    activeTab === 'featured' 
-                      ? 'bg-emerald-600 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}>
-                  <Star size={16} />
-                  Featured
-                </button>
-                <button 
-                  onClick={() => setActiveTab('buyback')}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
-                    activeTab === 'buyback' 
-                      ? 'bg-emerald-600 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}>
-                  <Shield size={16} />
-                  Buy-Back
-                </button>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  <button 
+                    onClick={() => setActiveTab('all')}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition ${
+                      activeTab === 'all' 
+                        ? 'bg-emerald-600 text-white shadow-md' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}>
+                    All Vans ({vans.length})
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('buyback')}
+                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                      activeTab === 'buyback' 
+                        ? 'bg-emerald-600 text-white shadow-md' 
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}>
+                    <Shield size={16} />
+                    Buy-Back
+                  </button>
+                </div>
+                {/* Icône ? avec tooltip - EN DEHORS du conteneur overflow */}
+                <div className="relative flex-shrink-0">
+                  <div 
+                    onMouseEnter={() => setShowBuyBackInfo(true)}
+                    onMouseLeave={() => setShowBuyBackInfo(false)}
+                    className="bg-gray-200 hover:bg-emerald-500 hover:text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold text-gray-600 cursor-help transition">
+                    ?
+                  </div>
+                  {showBuyBackInfo && (
+                    <div className="absolute left-0 top-full mt-2 w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield size={18} className="text-emerald-400" />
+                        <span className="font-bold text-emerald-400">Buy-Back Guarantee</span>
+                      </div>
+                      <p className="text-gray-300 leading-relaxed text-xs">
+                        The seller guarantees to buy back the van at an agreed price if you return it within the specified period. 
+                        <span className="text-white font-semibold"> Perfect for backpackers!</span>
+                      </p>
+                      <div className="absolute left-3 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Bouton Filtres à droite */}
@@ -679,54 +705,64 @@ export default function KiwiVanMarket() {
                         className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition">
                         <Heart size={20} className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}/>
                       </button>
-                      {van.featured && (
-                        <div className="absolute top-3 left-3 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                          <Star size={12} fill="currentColor" />
-                          Featured
-                        </div>
-                      )}
                       {van.buyBack && (
                         <div className="absolute bottom-3 left-3 bg-green-400 text-green-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                           <Shield size={12} />
                           Buy-Back
                         </div>
                       )}
-                      {van.selfContained && (
-                        <div className="absolute bottom-3 right-3 bg-blue-400 text-blue-900 px-3 py-1 rounded-full text-xs font-bold">
-                          Self-Contained
-                        </div>
-                      )}
                     </div>
 
-                    <div className="p-5">
-                      <h3 className="font-bold text-lg mb-2 line-clamp-2">{van.title}</h3>
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                        <MapPin size={16} className="text-emerald-600"/>
-                        {van.location}, {van.region}
-                      </div>
-                      <div className="text-3xl font-bold text-emerald-600 mb-3">
-                        {formatPrice(van.price)}
-                      </div>
-                      <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
-                        <span>{van.year} • {van.mileage.toLocaleString()} km</span>
-                        {van.seller?.rating && (
-                          <div className="flex items-center gap-1">
-                            <Star size={16} fill="currentColor" className="text-yellow-500"/>
-                            <span className="font-bold">{van.seller.rating}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        {van.postedDays !== undefined && (
-                          <span className="flex items-center gap-1">
-                            <Clock size={14} />
-                            {van.postedDays}d ago
+                    <div className="p-4">
+                      {/* Prix + Self-Contained badge */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-2xl font-bold text-gray-900">
+                          {formatPrice(van.price)}
+                        </div>
+                        {van.selfContained && (
+                          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+                            ✓ Self-Contained
                           </span>
                         )}
-                        {van.views && (
-                          <span className="flex items-center gap-1">
-                            <TrendingUp size={14} />
-                            {van.views} views
+                      </div>
+
+                      {/* Titre */}
+                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{van.title}</h3>
+                      
+                      {/* Location + Year + Km */}
+                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                        <span>{van.year}</span>
+                        <span>•</span>
+                        <span>{van.mileage?.toLocaleString()} km</span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <MapPin size={12} />
+                          {van.location}
+                        </span>
+                      </div>
+
+                      {/* WOF + REGO - Style clair */}
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        <div className={`rounded-lg px-3 py-2 ${van.wofExpiry ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
+                          <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry ? 'text-emerald-600' : 'text-gray-400'}`}>WOF until</div>
+                          <div className={`text-sm font-bold ${van.wofExpiry ? 'text-emerald-700' : 'text-gray-400'}`}>
+                            {van.wofExpiry ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
+                          </div>
+                        </div>
+                        <div className={`rounded-lg px-3 py-2 ${van.regoExpiry ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
+                          <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry ? 'text-blue-600' : 'text-gray-400'}`}>REGO until</div>
+                          <div className={`text-sm font-bold ${van.regoExpiry ? 'text-blue-700' : 'text-gray-400'}`}>
+                            {van.regoExpiry ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Footer simplifié */}
+                      <div className="flex items-center justify-end pt-2 border-t border-gray-100">
+                        {van.buyBack && (
+                          <span className="text-xs font-semibold text-green-600 flex items-center gap-1">
+                            <Shield size={12} />
+                            Buy-Back Guarantee
                           </span>
                         )}
                       </div>
@@ -775,70 +811,38 @@ export default function KiwiVanMarket() {
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer Simplifié */}
         <footer className="bg-gray-900 text-white py-12">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              {/* Logo et description */}
               <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="bg-emerald-600 p-2 rounded-lg">
-                    <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-                    </svg>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="bg-white/20 backdrop-blur-sm p-2 rounded-xl">
+                    <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-10 h-10" />
                   </div>
                   <span className="font-bold text-xl">Kiwi Van Market</span>
                 </div>
-                <p className="text-gray-400 text-sm">New Zealand's trusted platform for buying and selling campervans</p>
+                <p className="text-gray-400 text-sm mb-4">New Zealand's trusted platform for buying and selling campervans</p>
+                <p className="text-gray-500 text-xs">🇳🇿 Based in New Zealand</p>
               </div>
               
-              <div>
-                <h4 className="font-bold mb-4">Quick Links</h4>
-                <ul className="space-y-2 text-gray-400">
-                  <li><a href="#" className="hover:text-white transition">Browse Vans</a></li>
-                  <li><a href="#" className="hover:text-white transition">Sell Your Van</a></li>
-                  <li><a href="#" className="hover:text-white transition">How It Works</a></li>
-                  <li><a href="#" className="hover:text-white transition">Buy-Back Guarantee</a></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-bold mb-4">Support</h4>
-                <ul className="space-y-2 text-gray-400">
-                  <li><a href="#" className="hover:text-white transition">FAQ</a></li>
-                  <li><a href="#" className="hover:text-white transition">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-white transition">Safety Tips</a></li>
-                  <li><a href="#" className="hover:text-white transition">Terms of Service</a></li>
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="font-bold mb-4">Follow Us</h4>
-                <div className="flex gap-3">
-                  <a href="#" className="bg-gray-800 p-3 rounded-lg hover:bg-emerald-600 transition">
-                    <Facebook size={20} />
-                  </a>
-                  <a href="#" className="bg-gray-800 p-3 rounded-lg hover:bg-emerald-600 transition">
-                    <Instagram size={20} />
-                  </a>
-                  <a href="#" className="bg-gray-800 p-3 rounded-lg hover:bg-emerald-600 transition">
-                    <Twitter size={20} />
-                  </a>
-                </div>
-                <div className="mt-4">
-                  <p className="text-sm text-gray-400 mb-2">Get updates</p>
-                  <div className="flex gap-2">
-                    <input type="email" placeholder="Your email" 
-                      className="px-3 py-2 rounded-lg bg-gray-800 text-white text-sm flex-1 outline-none" />
-                    <button className="bg-emerald-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition">
-                      Subscribe
-                    </button>
-                  </div>
-                </div>
+              {/* Contact */}
+              <div className="md:text-right">
+                <h4 className="font-bold mb-4">Contact Us</h4>
+                <a 
+                  href="mailto:kiwivanmarket.contact@gmail.com" 
+                  className="flex items-center gap-2 text-gray-400 hover:text-emerald-400 transition md:justify-end mb-3"
+                >
+                  <Mail size={18} />
+                  kiwivanmarket.contact@gmail.com
+                </a>
+                <p className="text-gray-500 text-sm">We typically respond within 24 hours</p>
               </div>
             </div>
             
             <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
-              <p>&copy; 2024 Kiwi Van Market. All rights reserved. Made with ❤️ in New Zealand 🇳🇿</p>
+              <p>&copy; 2025 Kiwi Van Market. All rights reserved. Made with ❤️ in New Zealand 🇳🇿</p>
             </div>
           </div>
         </footer>

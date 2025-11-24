@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Heart, MapPin, Calendar, Gauge, Star, TrendingUp, Clock, Trash2 } from 'lucide-react';
+import { X, Heart, MapPin, Calendar, Gauge, Star, TrendingUp, Clock, Trash2, Shield } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useFavorites } from '../hooks/useFavorites';
@@ -122,29 +122,61 @@ export default function FavoritesPage({ onClose, onVanClick }) {
                         Featured
                       </div>
                     )}
+                    {van.buyBack && (
+                      <div className="absolute bottom-3 left-3 bg-green-400 text-green-900 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                        <Shield size={12} />
+                        Buy-Back
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-4">
-                    <h3 className="font-bold text-lg mb-2 line-clamp-2">{van.title}</h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                      <MapPin size={14} className="text-emerald-600"/>
-                      {van.location}, {van.region}
+                    {/* Prix + Self-Contained badge */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-2xl font-bold text-gray-900">
+                        {formatPrice(van.price)}
+                      </div>
+                      {van.selfContained && (
+                        <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-xs font-bold">
+                          ✓ SC
+                        </span>
+                      )}
                     </div>
-                    <div className="text-2xl font-bold text-emerald-600 mb-3">
-                      {formatPrice(van.price)}
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
+
+                    {/* Titre */}
+                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{van.title}</h3>
+                    
+                    {/* Location + Year + Km */}
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                      <span>{van.year}</span>
+                      <span>•</span>
+                      <span>{van.mileage?.toLocaleString()} km</span>
+                      <span>•</span>
                       <span className="flex items-center gap-1">
-                        <Calendar size={14} />
-                        {van.year}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Gauge size={14} />
-                        {van.mileage?.toLocaleString()} km
+                        <MapPin size={12} />
+                        {van.location}
                       </span>
                     </div>
+
+                    {/* WOF + REGO - Style clair */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <div className={`rounded-lg px-2 py-1.5 ${van.wofExpiry ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
+                        <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry ? 'text-emerald-600' : 'text-gray-400'}`}>WOF</div>
+                        <div className={`text-xs font-bold ${van.wofExpiry ? 'text-emerald-700' : 'text-gray-400'}`}>
+                          {van.wofExpiry ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'N/A'}
+                        </div>
+                      </div>
+                      <div className={`rounded-lg px-2 py-1.5 ${van.regoExpiry ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
+                        <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry ? 'text-blue-600' : 'text-gray-400'}`}>REGO</div>
+                        <div className={`text-xs font-bold ${van.regoExpiry ? 'text-blue-700' : 'text-gray-400'}`}>
+                          {van.regoExpiry ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer - Rating */}
                     {van.seller?.rating && (
-                      <div className="flex items-center gap-1 text-sm">
+                      <div className="flex items-center gap-1 text-sm pt-2 border-t border-gray-100">
                         <Star size={14} fill="currentColor" className="text-yellow-500"/>
                         <span className="font-semibold">{van.seller.rating}</span>
                         <span className="text-gray-500">seller rating</span>

@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { collection, addDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { X, Plus, Upload, Trash2, CheckCircle } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 
 
-export default function AddVanForm({ onClose, onSuccess }) {
+export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = false, vanData = null }) {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
@@ -25,10 +25,51 @@ export default function AddVanForm({ onClose, onSuccess }) {
     selfContained: false,
     featured: false,
     buyBack: false,
-    features: []
+    buyBackPrice: '',
+    buyBackDuration: '3',
+    buyBackMaxKm: '',
+    buyBackConditions: '',
+    features: [],
+    wofExpiry: '',
+    regoExpiry: ''
   });
 
+  // Charger les données du van en mode édition
+  useEffect(() => {
+    if (editMode && vanData) {
+      setFormData({
+        title: vanData.title || '',
+        price: vanData.price?.toString() || '',
+        location: vanData.location || '',
+        region: vanData.region || 'North Island',
+        year: vanData.year || new Date().getFullYear(),
+        mileage: vanData.mileage?.toString() || '',
+        type: vanData.type || 'Campervan',
+        description: vanData.description || '',
+        capacity: vanData.capacity || 2,
+        selfContained: vanData.selfContained || false,
+        featured: vanData.featured || false,
+        buyBack: vanData.buyBack || false,
+        buyBackPrice: vanData.buyBackPrice?.toString() || '',
+        buyBackDuration: vanData.buyBackDuration?.toString() || '3',
+        buyBackMaxKm: vanData.buyBackMaxKm?.toString() || '',
+        buyBackConditions: vanData.buyBackConditions || '',
+        features: vanData.features || [],
+        wofExpiry: vanData.wofExpiry ? vanData.wofExpiry.split('T')[0] : '',
+        regoExpiry: vanData.regoExpiry ? vanData.regoExpiry.split('T')[0] : ''
+      });
+      
+      // Charger les images existantes
+      if (vanData.images && vanData.images.length > 0) {
+        setImages(vanData.images.map(url => ({ url, uploading: false })));
+      } else if (vanData.imageUrl) {
+        setImages([{ url: vanData.imageUrl, uploading: false }]);
+      }
+    }
+  }, [editMode, vanData]);
+
   const [featureInput, setFeatureInput] = useState('');
+  const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
 
   // Upload image
   const handleImageUpload = async (file) => {
@@ -103,6 +144,16 @@ export default function AddVanForm({ onClose, onSuccess }) {
       return;
     }
 
+    if (!formData.wofExpiry || !formData.regoExpiry) {
+      alert('⚠️ Please enter WOF and REGO expiry dates!');
+      return;
+    }
+
+    if (formData.buyBack && !formData.buyBackPrice) {
+      alert('⚠️ Please enter the buy-back price!');
+      return;
+    }
+
     if (images.length === 0) {
       alert('⚠️ Please add at least 1 photo!');
       return;
@@ -113,38 +164,89 @@ export default function AddVanForm({ onClose, onSuccess }) {
     try {
       const imageUrls = images.map(img => img.url);
 
-      const vanData = {
-        ...formData,
-        price: parseInt(formData.price),
-        year: parseInt(formData.year),
-        mileage: parseInt(formData.mileage),
-        capacity: parseInt(formData.capacity),
-        imageUrl: imageUrls[0],
-        images: imageUrls,
-        seller: {
-          uid: currentUser.uid,
-          name: currentUser.displayName || 'Anonymous',
-          email: currentUser.email,
-          rating: 5,
-          phone: 'Not provided'
-        },
-        views: 0,
-        postedDays: 0,
-        wofExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        regoExpiry: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      if (editMode && vanData) {
+        // MODE ÉDITION - Update existing van
+        const updateData = {
+          title: formData.title,
+          price: parseInt(formData.price),
+          location: formData.location,
+          region: formData.region,
+          year: parseInt(formData.year),
+          mileage: parseInt(formData.mileage),
+          type: formData.type,
+          description: formData.description,
+          capacity: parseInt(formData.capacity),
+          selfContained: formData.selfContained,
+          featured: formData.featured,
+          buyBack: formData.buyBack,
+          buyBackPrice: formData.buyBack ? parseInt(formData.buyBackPrice) || 0 : null,
+          buyBackDuration: formData.buyBack ? parseInt(formData.buyBackDuration) : null,
+          buyBackMaxKm: formData.buyBack && formData.buyBackMaxKm ? parseInt(formData.buyBackMaxKm) : null,
+          buyBackConditions: formData.buyBack ? formData.buyBackConditions : '',
+          features: formData.features,
+          wofExpiry: formData.wofExpiry,
+          regoExpiry: formData.regoExpiry,
+          imageUrl: imageUrls[0],
+          images: imageUrls,
+          updatedAt: new Date()
+        };
 
-      await addDoc(collection(db, 'vans'), vanData);
+        await updateDoc(doc(db, 'vans', vanData.id), updateData);
 
-      localStorage.removeItem('kiwiVanMarket_vans');
-      localStorage.removeItem('kiwiVanMarket_timestamp');
+        localStorage.removeItem('kiwiVanMarket_vans');
+        localStorage.removeItem('kiwiVanMarket_timestamp');
 
-      alert('✅ Van added successfully!');
-      onSuccess && onSuccess();
-      onClose();
-      window.location.reload();
+        alert('✅ Van updated successfully!');
+        onVanAdded && onVanAdded();
+        onClose();
+        
+      } else {
+        // MODE CRÉATION - Add new van
+        const newVanData = {
+          title: formData.title,
+          price: parseInt(formData.price),
+          location: formData.location,
+          region: formData.region,
+          year: parseInt(formData.year),
+          mileage: parseInt(formData.mileage),
+          type: formData.type,
+          description: formData.description,
+          capacity: parseInt(formData.capacity),
+          selfContained: formData.selfContained,
+          featured: formData.featured,
+          buyBack: formData.buyBack,
+          buyBackPrice: formData.buyBack ? parseInt(formData.buyBackPrice) || 0 : null,
+          buyBackDuration: formData.buyBack ? parseInt(formData.buyBackDuration) : null,
+          buyBackMaxKm: formData.buyBack && formData.buyBackMaxKm ? parseInt(formData.buyBackMaxKm) : null,
+          buyBackConditions: formData.buyBack ? formData.buyBackConditions : '',
+          features: formData.features,
+          imageUrl: imageUrls[0],
+          images: imageUrls,
+          seller: {
+            uid: currentUser.uid,
+            name: currentUser.displayName || 'Anonymous',
+            email: currentUser.email,
+            rating: 5,
+            phone: 'Not provided'
+          },
+          views: 0,
+          postedDays: 0,
+          wofExpiry: formData.wofExpiry,
+          regoExpiry: formData.regoExpiry,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+
+        await addDoc(collection(db, 'vans'), newVanData);
+
+        localStorage.removeItem('kiwiVanMarket_vans');
+        localStorage.removeItem('kiwiVanMarket_timestamp');
+
+        alert('✅ Van added successfully!');
+        onSuccess && onSuccess();
+        onClose();
+        window.location.reload();
+      }
       
     } catch (error) {
       console.error('Error:', error);
@@ -165,8 +267,12 @@ export default function AddVanForm({ onClose, onSuccess }) {
         </button>
 
         <div className="p-8 lg:p-10">
-          <h2 className="text-3xl font-black text-gray-900 mb-2">🚐 Add New Van</h2>
-          <p className="text-gray-600 mb-8">Upload photos and fill in details</p>
+          <h2 className="text-3xl font-black text-gray-900 mb-2">
+            {editMode ? '✏️ Edit Van' : '🚐 Add New Van'}
+          </h2>
+          <p className="text-gray-600 mb-8">
+            {editMode ? 'Update your van details' : 'Upload photos and fill in details'}
+          </p>
 
           <form onSubmit={handleSubmit}>
             
@@ -339,6 +445,34 @@ export default function AddVanForm({ onClose, onSuccess }) {
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  WOF Expiry *
+                  <span className="text-gray-400 font-normal ml-1">(Warrant of Fitness)</span>
+                </label>
+                <input
+                  type="date"
+                  value={formData.wofExpiry}
+                  onChange={(e) => setFormData({...formData, wofExpiry: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  REGO Expiry *
+                  <span className="text-gray-400 font-normal ml-1">(Registration)</span>
+                </label>
+                <input
+                  type="date"
+                  value={formData.regoExpiry}
+                  onChange={(e) => setFormData({...formData, regoExpiry: e.target.value})}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  required
+                />
+              </div>
             </div>
 
             {/* DESCRIPTION */}
@@ -412,15 +546,108 @@ export default function AddVanForm({ onClose, onSuccess }) {
                   />
                   <span className="font-medium text-gray-700">Featured Listing</span>
                 </label>
-                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={formData.buyBack}
-                    onChange={(e) => setFormData({...formData, buyBack: e.target.checked})}
-                    className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
-                  />
-                  <span className="font-medium text-gray-700">Buy-Back Available</span>
-                </label>
+                <div className="flex items-center gap-2 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.buyBack}
+                      onChange={(e) => setFormData({...formData, buyBack: e.target.checked})}
+                      className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                    />
+                    <span className="font-medium text-gray-700">Buy-Back Available</span>
+                  </label>
+                  {/* Tooltip explicatif */}
+                  <div className="relative">
+                    <div 
+                      onMouseEnter={() => setShowBuyBackTooltip(true)}
+                      onMouseLeave={() => setShowBuyBackTooltip(false)}
+                      className="bg-gray-200 hover:bg-emerald-500 hover:text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold text-gray-600 cursor-help transition">
+                      ?
+                    </div>
+                    {showBuyBackTooltip && (
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-50">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-emerald-400 font-bold">🛡️ Buy-Back Guarantee</span>
+                        </div>
+                        <p className="text-gray-300 leading-relaxed text-xs">
+                          Offer to buy back the van at an agreed price if the buyer returns it within a specified period. 
+                          <span className="text-white font-semibold"> Great for attracting backpackers!</span>
+                        </p>
+                        <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 bg-gray-900 rotate-45"></div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Options Buy-Back (affichées si coché) */}
+                {formData.buyBack && (
+                  <div className="ml-8 mt-3 p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl space-y-4">
+                    <h4 className="font-bold text-emerald-700 flex items-center gap-2">
+                      🛡️ Buy-Back Details
+                    </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Guaranteed Buy-Back Price (NZ$) *
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.buyBackPrice}
+                          onChange={(e) => setFormData({...formData, buyBackPrice: e.target.value})}
+                          placeholder="e.g. 10000"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                          required={formData.buyBack}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Price you'll pay to buy back the van</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Valid For *
+                        </label>
+                        <select
+                          value={formData.buyBackDuration}
+                          onChange={(e) => setFormData({...formData, buyBackDuration: e.target.value})}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                        >
+                          <option value="1">1 month</option>
+                          <option value="2">2 months</option>
+                          <option value="3">3 months</option>
+                          <option value="6">6 months</option>
+                          <option value="12">12 months</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Maximum Kilometers
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.buyBackMaxKm}
+                          onChange={(e) => setFormData({...formData, buyBackMaxKm: e.target.value})}
+                          placeholder="e.g. 10000"
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Max km buyer can add (leave empty for unlimited)</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Additional Conditions
+                      </label>
+                      <textarea
+                        value={formData.buyBackConditions}
+                        onChange={(e) => setFormData({...formData, buyBackConditions: e.target.value})}
+                        placeholder="e.g. No major damage, regular maintenance required, must return in Auckland..."
+                        rows={3}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -437,7 +664,10 @@ export default function AddVanForm({ onClose, onSuccess }) {
                 type="submit"
                 disabled={loading || images.length === 0}
                 className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading ? '⏳ Adding...' : '✅ Add Van'}
+                {loading 
+                  ? (editMode ? '⏳ Saving...' : '⏳ Adding...') 
+                  : (editMode ? '✅ Save Changes' : '✅ Add Van')
+                }
               </button>
             </div>
           </form>
