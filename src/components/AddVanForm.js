@@ -436,14 +436,22 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">City *</label>
-                <input
-                  type="text"
+                <select
                   value={formData.location}
                   onChange={(e) => setFormData({...formData, location: e.target.value})}
-                  placeholder="Auckland"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   required
-                />
+                >
+                  <option value="">Select a city...</option>
+                  <option value="Auckland">Auckland</option>
+                  <option value="Wellington">Wellington</option>
+                  <option value="Christchurch">Christchurch</option>
+                  <option value="Queenstown">Queenstown</option>
+                  <option value="Rotorua">Rotorua</option>
+                  <option value="Tauranga">Tauranga</option>
+                  <option value="Hamilton">Hamilton</option>
+                  <option value="Dunedin">Dunedin</option>
+                </select>
               </div>
 
               <div>
@@ -481,14 +489,16 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Type</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Type</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                  <option>Campervan</option>
-                  <option>Van</option>
-                  <option>Motorhome</option>
+                  <option value="Station Wagon">🚗 Station Wagon</option>
+                  <option value="Minivan">🚙 Minivan</option>
+                  <option value="Van">🚐 Van</option>
+                  <option value="Campervan">🏕️ Campervan</option>
+                  <option value="Motorhome">🚌 Motorhome</option>
                 </select>
               </div>
 
@@ -674,7 +684,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                         <input type="checkbox" checked={formData.equipment.hotWater} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, hotWater: e.target.checked}})}
                           className="w-4 h-4 text-orange-600 rounded" />
-                        Hot Water
+                        Boiler
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.cookware} 

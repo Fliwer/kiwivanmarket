@@ -11,6 +11,118 @@ import { useFavorites } from './hooks/useFavorites';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import QuickMessageBox from './components/QuickMessageBox';
 import MessagingPage from './components/MessagingPage';
+import Footer, { FAQModal } from './components/Footer';
+import TermsModal from './components/TermsModal';
+
+// 🌐 Sélecteur de langue pour le header
+function LanguageSelector() {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const languages = [
+    { code: 'en', flag: '🇬🇧', name: 'ENGLISH', short: 'EN' },
+    { code: 'fr', flag: '🇫🇷', name: 'FRANÇAIS', short: 'FR' },
+    { code: 'de', flag: '🇩🇪', name: 'DEUTSCH', short: 'DE' },
+    { code: 'es', flag: '🇪🇸', name: 'ESPAÑOL', short: 'ES' },
+    { code: 'zh-CN', flag: '🇨🇳', name: '简体中文', short: '中文' },
+    { code: 'ja', flag: '🇯🇵', name: '日本語', short: 'JA' },
+    { code: 'ko', flag: '🇰🇷', name: '한국어', short: 'KO' },
+    { code: 'pt', flag: '🇧🇷', name: 'PORTUGUÊS', short: 'PT' },
+    { code: 'th', flag: '🇹🇭', name: 'ไทย', short: 'TH' },
+    { code: 'vi', flag: '🇻🇳', name: 'TIẾNG VIỆT', short: 'VI' },
+  ];
+
+  // Fonction pour changer la langue via Google Translate
+  const changeLanguage = (langCode) => {
+    if (langCode === 'en') {
+      // Revenir à l'anglais - supprimer le cookie et recharger
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
+      window.location.reload();
+    } else {
+      // Définir le cookie Google Translate
+      document.cookie = `googtrans=/en/${langCode}; path=/;`;
+      document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${window.location.hostname}`;
+      window.location.reload();
+    }
+    setIsOpen(false);
+  };
+
+  // Charger le script Google Translate
+  useEffect(() => {
+    if (!document.getElementById('google-translate-script')) {
+      const translateDiv = document.createElement('div');
+      translateDiv.id = 'google_translate_element';
+      translateDiv.style.display = 'none';
+      document.body.appendChild(translateDiv);
+
+      window.googleTranslateElementInit = function() {
+        new window.google.translate.TranslateElement({
+          pageLanguage: 'en',
+          includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,th,vi',
+          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false
+        }, 'google_translate_element');
+      };
+
+      const script = document.createElement('script');
+      script.id = 'google-translate-script';
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  // Détecter la langue actuelle depuis le cookie
+  const getCurrentLang = () => {
+    const match = document.cookie.match(/googtrans=\/en\/([^;]+)/);
+    return match ? match[1] : 'en';
+  };
+
+  const currentLang = getCurrentLang();
+  const currentLangData = languages.find(l => l.code === currentLang) || languages[0];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
+        title="Change language"
+      >
+        <span className="text-base">{currentLangData.flag}</span>
+        <span className="hidden sm:inline">{currentLangData.short}</span>
+        <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {/* Dropdown */}
+      {isOpen && (
+        <>
+          {/* Overlay pour fermer */}
+          <div 
+            className="fixed inset-0 z-[100]" 
+            onClick={() => setIsOpen(false)}
+          />
+          
+          <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[180px] z-[101]">
+            {languages.map(lang => (
+              <button
+                key={lang.code}
+                onClick={() => changeLanguage(lang.code)}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
+                  currentLang === lang.code 
+                    ? 'bg-emerald-50 text-emerald-700 font-semibold' 
+                    : 'hover:bg-gray-50 text-gray-700'
+                }`}
+              >
+                <span className="text-lg">{lang.flag}</span>
+                <span className="font-medium">{lang.name}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 // Petit composant pour le badge Messages (utilise useNotifications)
 function MessageBadge() {
@@ -42,6 +154,11 @@ export default function KiwiVanMarket() {
   const { currentUser, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  
+  // States pour Footer/FAQ/Terms
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  
   const [filters, setFilters] = useState({
     priceMax: 50000,
     yearMin: 1990,
@@ -50,7 +167,20 @@ export default function KiwiVanMarket() {
     selfContained: false,
     buyBack: false,
     wofValid: false,
-    regoValid: false
+    regoValid: false,
+    // Equipment filters
+    equipment: {
+      doubleBed: false,
+      fridge: false,
+      gasStove: false,
+      sink: false,
+      toilet: false,
+      solarPanel: false,
+      leisureBattery: false,
+      heater: false,
+      hotWater: false,
+      shower: false
+    }
   });
 
   // ⚡ Cache le loader initial dès que React a monté
@@ -130,9 +260,9 @@ export default function KiwiVanMarket() {
 
   useEffect(() => {
     let filtered = vans.filter(van => {
-      const matchSearch = van.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          van.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          van.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchSearch = van.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          van.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          van.description?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchPrice = van.price <= filters.priceMax;
       const matchYear = van.year >= filters.yearMin;
       const matchType = filters.type === 'all' || van.type === filters.type;
@@ -146,18 +276,38 @@ export default function KiwiVanMarket() {
       // Vérifier REGO valide (date future)
       const matchRegoValid = !filters.regoValid || (van.regoExpiry && new Date(van.regoExpiry) > new Date());
       
-      return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid;
+      // Vérifier les équipements sélectionnés
+      const matchEquipment = Object.entries(filters.equipment).every(([key, required]) => {
+        if (!required) return true; // Si pas requis, on passe
+        // Cas spécial pour shower (indoor ou outdoor)
+        if (key === 'shower') {
+          return van.equipment?.outdoorShower || van.equipment?.indoorShower;
+        }
+        return van.equipment?.[key] === true;
+      });
+      
+      return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid && matchEquipment;
     });
     
     setFilteredVans(filtered);
   }, [searchTerm, filters, vans]);
 
-  const formatPrice = (price) => `NZ$${price.toLocaleString()}`;
+  const formatPrice = (price) => `NZ$${(price || 0).toLocaleString()}`;
 
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
+  // ✅ FIX: VanDetailsModal avec protection contre les champs undefined
   const VanDetailsModal = ({ van }) => {
-    const images = van.images && van.images.length > 0 ? van.images : [van.imageUrl || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'];
+    // ✅ Protection: S'assurer que images est toujours un tableau
+    const images = van.images && van.images.length > 0 
+      ? van.images 
+      : (van.imageUrl ? [van.imageUrl] : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800']);
+    
+    // ✅ Protection: S'assurer que features est toujours un tableau
+    const features = van.features || [];
+    
+    // ✅ Protection: S'assurer que seller existe
+    const seller = van.seller || { name: 'Unknown', rating: 5, email: '', phone: '' };
     
     const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
     const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
@@ -182,7 +332,7 @@ export default function KiwiVanMarket() {
             <div className="relative bg-black h-[600px] lg:h-[800px]">
               <img 
                 src={images[currentImageIndex]} 
-                alt={van.title} 
+                alt={van.title || 'Van'} 
                 className="w-full h-full object-contain"
               />
               
@@ -244,11 +394,11 @@ export default function KiwiVanMarket() {
               
               <div className="mb-6 pb-6 border-b-2 border-gray-100">
                 <h1 className="text-3xl lg:text-4xl font-black text-gray-900 mb-3 leading-tight">
-                  {van.title}
+                  {van.title || 'Untitled Van'}
                 </h1>
                 <div className="flex items-center gap-2 text-gray-600 mb-4">
                   <MapPin size={20} className="text-emerald-600" />
-                  <span className="font-medium">{van.location}, {van.region}</span>
+                  <span className="font-medium">{van.location || 'Unknown'}, {van.region || ''}</span>
                 </div>
                 <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-2xl border-2 border-emerald-200">
                   <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-1">Price</p>
@@ -262,22 +412,22 @@ export default function KiwiVanMarket() {
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Calendar className="text-emerald-600 mb-2" size={20} />
                   <p className="text-xs text-gray-500 font-semibold mb-1">YEAR</p>
-                  <p className="text-xl font-bold text-gray-900">{van.year}</p>
+                  <p className="text-xl font-bold text-gray-900">{van.year || 'N/A'}</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Gauge className="text-emerald-600 mb-2" size={20} />
                   <p className="text-xs text-gray-500 font-semibold mb-1">MILEAGE</p>
-                  <p className="text-xl font-bold text-gray-900">{van.mileage.toLocaleString()} km</p>
+                  <p className="text-xl font-bold text-gray-900">{(van.mileage || 0).toLocaleString()} km</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Users className="text-emerald-600 mb-2" size={20} />
                   <p className="text-xs text-gray-500 font-semibold mb-1">CAPACITY</p>
-                  <p className="text-xl font-bold text-gray-900">{van.capacity} people</p>
+                  <p className="text-xl font-bold text-gray-900">{van.capacity || 2} people</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Clock className="text-emerald-600 mb-2" size={20} />
                   <p className="text-xs text-gray-500 font-semibold mb-1">POSTED</p>
-                  <p className="text-xl font-bold text-gray-900">{van.postedDays}d ago</p>
+                  <p className="text-xl font-bold text-gray-900">{van.postedDays || 0}d ago</p>
                 </div>
               </div>
 
@@ -286,25 +436,62 @@ export default function KiwiVanMarket() {
                   <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
                   Description
                 </h3>
-                <p className="text-gray-700 leading-relaxed">{van.description}</p>
+                <p className="text-gray-700 leading-relaxed">{van.description || 'No description available.'}</p>
               </div>
 
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
-                  Features
-                </h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {van.features.map((feature, idx) => (
-                    <div 
-                      key={idx} 
-                      className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg">
-                      <CheckCircle size={16} className="text-emerald-600 flex-shrink-0" />
-                      <span className="text-sm font-semibold text-gray-900">{feature}</span>
-                    </div>
-                  ))}
+              {/* ✅ FIX: Features avec protection */}
+              {features.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
+                    Features
+                  </h3>
+                  <div className="grid grid-cols-1 gap-2">
+                    {features.map((feature, idx) => (
+                      <div 
+                        key={idx} 
+                        className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg">
+                        <CheckCircle size={16} className="text-emerald-600 flex-shrink-0" />
+                        <span className="text-sm font-semibold text-gray-900">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Equipment Section - Si van a equipment */}
+              {van.equipment && Object.values(van.equipment).some(v => v === true) && (
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                    <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
+                    Equipment
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {van.equipment.doubleBed && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛏️ Double Bed</div>}
+                    {van.equipment.fridge && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🧊 Fridge</div>}
+                    {van.equipment.gasStove && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔥 Gas Stove</div>}
+                    {van.equipment.sink && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚰 Sink</div>}
+                    {van.equipment.toilet && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚽 Toilet</div>}
+                    {van.equipment.solarPanel && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">☀️ Solar Panel</div>}
+                    {van.equipment.leisureBattery && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔋 Leisure Battery</div>}
+                    {van.equipment.heater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🌡️ Heater</div>}
+                    {van.equipment.hotWater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">♨️ Hot Water</div>}
+                    {van.equipment.outdoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚿 Outdoor Shower</div>}
+                    {van.equipment.indoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛁 Indoor Shower</div>}
+                    {van.equipment.awning && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">⛺ Awning</div>}
+                    {van.equipment.reverseCamera && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📷 Reverse Camera</div>}
+                    {van.equipment.bluetooth && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔊 Bluetooth</div>}
+                  </div>
+                </div>
+              )}
+
+              {/* Custom Features */}
+              {van.customFeatures && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <h4 className="text-sm font-bold text-gray-700 mb-2">✏️ Other Features</h4>
+                  <p className="text-gray-600 text-sm">{van.customFeatures}</p>
+                </div>
+              )}
 
               {/* WOF + REGO + Self-Contained - Style Facebook */}
               <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-4 rounded-xl border border-gray-200 mb-6">
@@ -334,22 +521,57 @@ export default function KiwiVanMarket() {
                 </div>
               </div>
 
+              {/* Buy-Back Details si applicable */}
+              {van.buyBack && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+                  <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">
+                    <Shield size={20} />
+                    Buy-Back Guarantee
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-white p-3 rounded-lg border border-green-200">
+                      <div className="text-xs text-gray-500 font-semibold">Buy-Back Price</div>
+                      <div className="text-xl font-bold text-green-600">
+                        {van.buyBackPrice ? formatPrice(van.buyBackPrice) : 'Contact seller'}
+                      </div>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border border-green-200">
+                      <div className="text-xs text-gray-500 font-semibold">Valid For</div>
+                      <div className="text-xl font-bold text-green-600">
+                        {van.buyBackDuration ? `${van.buyBackDuration} months` : 'Contact seller'}
+                      </div>
+                    </div>
+                  </div>
+                  {van.buyBackMaxKm && (
+                    <p className="text-sm text-gray-600 mb-2">
+                      <strong>Max km:</strong> {van.buyBackMaxKm.toLocaleString()} km
+                    </p>
+                  )}
+                  {van.buyBackConditions && (
+                    <p className="text-sm text-gray-600">
+                      <strong>Conditions:</strong> {van.buyBackConditions}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* ✅ FIX: Seller info avec protection */}
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl border border-gray-200 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full w-12 h-12 flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                    {van.seller.name[0]}
+                    {seller.name?.[0] || 'U'}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900">{van.seller.name}</p>
+                    <p className="font-bold text-gray-900">{seller.name || 'Unknown Seller'}</p>
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <Star 
                           key={i} 
                           size={14} 
-                          className={i < van.seller.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'} 
+                          className={i < (seller.rating || 5) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'} 
                         />
                       ))}
-                      <span className="text-xs text-gray-600 ml-1">({van.seller.rating}.0)</span>
+                      <span className="text-xs text-gray-600 ml-1">({seller.rating || 5}.0)</span>
                     </div>
                   </div>
                 </div>
@@ -358,7 +580,7 @@ export default function KiwiVanMarket() {
               {/* Quick Message Box */}
               <QuickMessageBox 
                 van={van} 
-                seller={van.seller}
+                seller={seller}
                 onOpenFullChat={() => {
                   setSelectedVan(null);
                   setCurrentImageIndex(0);
@@ -426,6 +648,9 @@ export default function KiwiVanMarket() {
 
               {/* Navigation Icons */}
               <div className="flex items-center gap-1">
+                
+                {/* 🌐 Sélecteur de langue */}
+                <LanguageSelector />
                 
                 {/* Favoris - sans badge rouge (juste le coeur) */}
                 <button 
@@ -525,34 +750,19 @@ export default function KiwiVanMarket() {
             {/* Quick Filters - Pills cliquables */}
             <div className="flex items-center justify-between gap-3 flex-wrap">
               
-              {/* Compteur + Quick Filters */}
+              {/* Quick Filters par ordre alphabétique */}
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-semibold text-gray-600 mr-2">
-                  {filteredVans.length} van{filteredVans.length !== 1 ? 's' : ''}
-                </span>
                 
-                {/* Self-Contained */}
-                <button 
-                  onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
-                    filters.selfContained 
-                      ? 'bg-blue-500 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}>
-                  <CheckCircle size={14} />
-                  Self-Contained
-                </button>
-
                 {/* Buy-Back */}
                 <div className="relative">
                   <button 
                     onClick={() => setFilters({...filters, buyBack: !filters.buyBack})}
                     onMouseEnter={() => setShowBuyBackInfo(true)}
                     onMouseLeave={() => setShowBuyBackInfo(false)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer hover:scale-105 ${
                       filters.buyBack 
                         ? 'bg-green-500 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        : 'bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-700 border border-transparent hover:border-green-300'
                     }`}>
                     <Shield size={14} />
                     Buy-Back
@@ -576,28 +786,40 @@ export default function KiwiVanMarket() {
                   )}
                 </div>
 
-                {/* WOF Valid */}
-                <button 
-                  onClick={() => setFilters({...filters, wofValid: !filters.wofValid})}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
-                    filters.wofValid 
-                      ? 'bg-emerald-500 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}>
-                  <CheckCircle size={14} />
-                  WOF Valid
-                </button>
-
                 {/* REGO Valid */}
                 <button 
                   onClick={() => setFilters({...filters, regoValid: !filters.regoValid})}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer hover:scale-105 ${
                     filters.regoValid 
                       ? 'bg-purple-500 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700 border border-transparent hover:border-purple-300'
                   }`}>
                   <CheckCircle size={14} />
                   REGO Valid
+                </button>
+
+                {/* Self-Contained */}
+                <button 
+                  onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer hover:scale-105 ${
+                    filters.selfContained 
+                      ? 'bg-blue-500 text-white shadow-md' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700 border border-transparent hover:border-blue-300'
+                  }`}>
+                  <CheckCircle size={14} />
+                  Self-Contained
+                </button>
+
+                {/* WOF Valid */}
+                <button 
+                  onClick={() => setFilters({...filters, wofValid: !filters.wofValid})}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer hover:scale-105 ${
+                    filters.wofValid 
+                      ? 'bg-emerald-500 text-white shadow-md' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-emerald-100 hover:text-emerald-700 border border-transparent hover:border-emerald-300'
+                  }`}>
+                  <CheckCircle size={14} />
+                  WOF Valid
                 </button>
 
                 {/* Clear filters si au moins un actif */}
@@ -616,76 +838,169 @@ export default function KiwiVanMarket() {
                 onClick={() => setShowFilters(!showFilters)}
                 className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
                   showFilters 
-                    ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-500' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gray-200 text-gray-600 hover:bg-gray-300' 
+                    : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md'
                 }`}>
                 <Filter size={16} />
-                Filters
+                {showFilters ? 'Hide Filters' : 'Filters'}
                 <ChevronDown size={16} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
               </button>
             </div>
 
             {/* Panel Filtres Expandable */}
             {showFilters && (
-              <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Max Price: <span className="text-emerald-600">NZ${filters.priceMax.toLocaleString()}</span>
-                  </label>
-                  <input 
-                    type="range" 
-                    min="5000" 
-                    max="50000" 
-                    step="1000"
-                    value={filters.priceMax}
-                    onChange={(e) => setFilters({...filters, priceMax: parseInt(e.target.value)})}
-                    className="w-full accent-emerald-500"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>$5,000</span>
-                    <span>$50,000</span>
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                {/* Carte principale des filtres */}
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5">
+                  
+                  {/* Titre + Reset button */}
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                      🔍 Find your perfect campervan
+                    </h3>
+                    {(Object.values(filters.equipment).some(v => v) || filters.priceMax < 50000 || filters.yearMin > 1990 || filters.location !== 'all' || filters.type !== 'all') && (
+                      <button
+                        onClick={() => setFilters({
+                          ...filters,
+                          priceMax: 50000,
+                          yearMin: 1990,
+                          location: 'all',
+                          type: 'all',
+                          equipment: {
+                            doubleBed: false, fridge: false, gasStove: false, sink: false, toilet: false,
+                            solarPanel: false, leisureBattery: false, heater: false, hotWater: false, shower: false
+                          }
+                        })}
+                        className="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1 px-3 py-1.5 hover:bg-red-50 rounded-lg transition"
+                      >
+                        <X size={14} />
+                        Reset
+                      </button>
+                    )}
                   </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Min Year: <span className="text-emerald-600">{filters.yearMin}</span>
-                  </label>
-                  <input 
-                    type="range" 
-                    min="1990" 
-                    max="2024" 
-                    step="1"
-                    value={filters.yearMin}
-                    onChange={(e) => setFilters({...filters, yearMin: parseInt(e.target.value)})}
-                    className="w-full accent-emerald-500"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>1990</span>
-                    <span>2024</span>
+
+                  {/* Row 1: Price & Year side by side */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Max Price: <span className="text-emerald-600 font-bold">NZ${filters.priceMax.toLocaleString()}</span>
+                      </label>
+                      <input 
+                        type="range" 
+                        min="5000" 
+                        max="50000" 
+                        step="1000"
+                        value={filters.priceMax}
+                        onChange={(e) => setFilters({...filters, priceMax: parseInt(e.target.value)})}
+                        className="w-full accent-emerald-500 h-2 rounded-lg"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>$5,000</span>
+                        <span>$50,000</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Min Year: <span className="text-emerald-600 font-bold">{filters.yearMin}</span>
+                      </label>
+                      <input 
+                        type="range" 
+                        min="1990" 
+                        max="2024" 
+                        step="1"
+                        value={filters.yearMin}
+                        onChange={(e) => setFilters({...filters, yearMin: parseInt(e.target.value)})}
+                        className="w-full accent-emerald-500 h-2 rounded-lg"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>1990</span>
+                        <span>2024</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl">
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">Location</label>
-                  <select 
-                    value={filters.location}
-                    onChange={(e) => setFilters({...filters, location: e.target.value})}
-                    className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">
-                    <option value="all">🇳🇿 All New Zealand</option>
-                    <option value="North Island">North Island</option>
-                    <option value="South Island">South Island</option>
-                  </select>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-semibold text-gray-700">Self-Contained</span>
-                    <p className="text-xs text-gray-500">Freedom camping certified</p>
+
+                  {/* Row 2: Location & Type */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                      <select 
+                        value={filters.location}
+                        onChange={(e) => setFilters({...filters, location: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
+                        <option value="all">🇳🇿 All New Zealand</option>
+                        <option value="North Island">🏝️ North Island</option>
+                        <option value="South Island">🏔️ South Island</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Type</label>
+                      <select 
+                        value={filters.type}
+                        onChange={(e) => setFilters({...filters, type: e.target.value})}
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
+                        <option value="all">🚐 All Types</option>
+                        <option value="Station Wagon">🚗 Station Wagon</option>
+                        <option value="Minivan">🚙 Minivan</option>
+                        <option value="Van">🚐 Van</option>
+                        <option value="Campervan">🏕️ Campervan</option>
+                        <option value="Motorhome">🚌 Motorhome</option>
+                      </select>
+                    </div>
                   </div>
-                  <button
-                    onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
-                    className={`w-14 h-7 rounded-full transition-all flex items-center ${filters.selfContained ? 'bg-emerald-500' : 'bg-gray-300'}`}
-                  >
-                    <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform ${filters.selfContained ? 'translate-x-7' : 'translate-x-0.5'}`}></div>
-                  </button>
+
+                  {/* Row 3: Equipment filters - Accordéon */}
+                  <details className="group">
+                    <summary className="cursor-pointer list-none">
+                      <div className="flex items-center justify-between py-2 border-t border-gray-200">
+                        <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                          🔧 Equipment
+                          {Object.values(filters.equipment).some(v => v) && (
+                            <span className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full">
+                              {Object.values(filters.equipment).filter(v => v).length} selected
+                            </span>
+                          )}
+                        </span>
+                        <ChevronDown size={18} className="text-gray-500 transition-transform group-open:rotate-180" />
+                      </div>
+                    </summary>
+                    <div className="pt-3 pb-1">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                        {[
+                          { key: 'doubleBed', emoji: '🛏️', label: 'Double Bed' },
+                          { key: 'fridge', emoji: '🧊', label: 'Fridge' },
+                          { key: 'gasStove', emoji: '🔥', label: 'Gas Stove' },
+                          { key: 'sink', emoji: '🚰', label: 'Sink' },
+                          { key: 'toilet', emoji: '🚽', label: 'Toilet' },
+                          { key: 'solarPanel', emoji: '☀️', label: 'Solar Panel' },
+                          { key: 'leisureBattery', emoji: '🔋', label: 'Battery' },
+                          { key: 'heater', emoji: '🌡️', label: 'Heater' },
+                          { key: 'hotWater', emoji: '♨️', label: 'Boiler' },
+                          { key: 'shower', emoji: '🚿', label: 'Shower' },
+                        ].map(item => (
+                          <button
+                            key={item.key}
+                            type="button"
+                            onClick={() => setFilters({
+                              ...filters, 
+                              equipment: {
+                                ...filters.equipment, 
+                                [item.key]: !filters.equipment[item.key]
+                              }
+                            })}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                              filters.equipment[item.key]
+                                ? 'bg-emerald-500 text-white shadow-md'
+                                : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+                            }`}
+                          >
+                            <span>{item.emoji}</span>
+                            <span className="text-xs">{item.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </details>
+
                 </div>
               </div>
             )}
@@ -759,7 +1074,7 @@ export default function KiwiVanMarket() {
                       <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
                         <span>{van.year}</span>
                         <span>•</span>
-                        <span>{van.mileage?.toLocaleString()} km</span>
+                        <span>{(van.mileage || 0).toLocaleString()} km</span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
                           <MapPin size={12} />
@@ -837,41 +1152,11 @@ export default function KiwiVanMarket() {
           </div>
         </div>
 
-        {/* Footer Simplifié */}
-        <footer className="bg-gray-900 text-white py-12">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-8 mb-8">
-              {/* Logo et description */}
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-white/20 backdrop-blur-sm p-2 rounded-xl">
-                    <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-10 h-10" />
-                  </div>
-                  <span className="font-bold text-xl">Kiwi Van Market</span>
-                </div>
-                <p className="text-gray-400 text-sm mb-4">New Zealand's trusted platform for buying and selling campervans</p>
-                <p className="text-gray-500 text-xs">🇳🇿 Based in New Zealand</p>
-              </div>
-              
-              {/* Contact */}
-              <div className="md:text-right">
-                <h4 className="font-bold mb-4">Contact Us</h4>
-                <a 
-                  href="mailto:kiwivanmarket.contact@gmail.com" 
-                  className="flex items-center gap-2 text-gray-400 hover:text-emerald-400 transition md:justify-end mb-3"
-                >
-                  <Mail size={18} />
-                  kiwivanmarket.contact@gmail.com
-                </a>
-                <p className="text-gray-500 text-sm">We typically respond within 24 hours</p>
-              </div>
-            </div>
-            
-            <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
-              <p>&copy; 2025 Kiwi Van Market. All rights reserved. Made with ❤️ in New Zealand 🇳🇿</p>
-            </div>
-          </div>
-        </footer>
+        {/* ✅ NOUVEAU FOOTER avec Disclaimer + FAQ + Google Translate */}
+        <Footer 
+          onOpenFAQ={() => setShowFAQ(true)} 
+          onOpenTerms={() => setShowTerms(true)} 
+        />
 
         {/* Modals */}
         {selectedVan && <VanDetailsModal van={selectedVan} />}
@@ -893,6 +1178,19 @@ export default function KiwiVanMarket() {
         <AuthModal 
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)} 
+        />
+        
+        {/* FAQ Modal */}
+        <FAQModal 
+          isOpen={showFAQ} 
+          onClose={() => setShowFAQ(false)} 
+        />
+        
+        {/* Terms Modal */}
+        <TermsModal 
+          isOpen={showTerms} 
+          onAccept={() => setShowTerms(false)} 
+          onClose={() => setShowTerms(false)} 
         />
       </div>
     </NotificationProvider>

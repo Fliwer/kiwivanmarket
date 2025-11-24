@@ -1,3 +1,63 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* ========================================
+   GOOGLE TRANSLATE - CACHER LA BARRE MOCHE
+   Ajoute ce CSS dans ton index.css
+   ======================================== */
+
+/* Cacher la barre Google Translate en haut */
+.goog-te-banner-frame {
+  display: none !important;
+}
+
+/* Remettre le body à sa position normale */
+body {
+  top: 0 !important;
+}
+
+/* Cacher le tooltip Google */
+.goog-tooltip {
+  display: none !important;
+}
+.goog-tooltip:hover {
+  display: none !important;
+}
+
+/* Cacher le cadre de sélection autour du texte traduit */
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Cacher le widget Google Translate original */
+#google_translate_element {
+  display: none !important;
+}
+
+/* Optionnel: Cacher le logo "Powered by Google" dans le texte */
+.goog-logo-link {
+  display: none !important;
+}
+
+.goog-te-gadget {
+  color: transparent !important;
+}
+
+.goog-te-gadget .goog-te-combo {
+  display: none !important;
+}
+
+/* Fix pour éviter le décalage du body */
+.skiptranslate {
+  display: none !important;
+}
+
+body > .skiptranslate {
+  display: none !important;
+}
+
+/* S'assurer que le iframe de Google est caché */
+.skiptranslate iframe {
+  display: none !important;
+}
