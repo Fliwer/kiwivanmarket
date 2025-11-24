@@ -20,6 +20,7 @@ import { useAuth } from '../AuthContext';
 // 🌐 Language Selector Component
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState('en');
   
   const languages = [
     { code: 'en', flag: 'https://flagcdn.com/24x18/gb.png', name: 'ENGLISH', short: 'EN' },
@@ -35,78 +36,64 @@ function LanguageSelector() {
   ];
 
   const changeLanguage = (langCode) => {
-    const hostname = window.location.hostname;
-    const expiry = 'expires=Thu, 01 Jan 1970 00:00:00 UTC';
+    setIsOpen(false);
     
-    // Si on veut l'anglais, on doit restaurer la page originale
     if (langCode === 'en') {
-      // Supprimer tous les cookies googtrans
-      const domains = ['', hostname, `.${hostname}`, '.vercel.app'];
-      domains.forEach(domain => {
-        const domainPart = domain ? `; domain=${domain}` : '';
-        document.cookie = `googtrans=; ${expiry}; path=/${domainPart}`;
+      localStorage.setItem('preferredLang', 'en');
+      
+      const hostname = window.location.hostname;
+      const expiry = 'expires=Thu, 01 Jan 1970 00:00:00 UTC';
+      ['', hostname, `.${hostname}`, '.vercel.app'].forEach(domain => {
+        const d = domain ? `; domain=${domain}` : '';
+        document.cookie = `googtrans=; ${expiry}; path=/${d}`;
       });
       
-      // Méthode 1: Utiliser le sélecteur Google Translate
-      const googleCombo = document.querySelector('.goog-te-combo');
-      if (googleCombo) {
-        googleCombo.value = 'en';
-        googleCombo.dispatchEvent(new Event('change'));
-        setTimeout(() => {
-          setIsOpen(false);
-          window.location.reload();
-        }, 500);
-        return;
-      }
-      
-      // Méthode 2: Utiliser la fonction Google Translate
-      if (window.google && window.google.translate) {
-        const iframe = document.querySelector('.goog-te-banner-frame');
-        if (iframe && iframe.contentDocument) {
-          const restoreBtn = iframe.contentDocument.querySelector('.goog-te-button');
-          if (restoreBtn) restoreBtn.click();
-        }
-      }
-      
-      // Supprimer les éléments ajoutés par Google Translate
-      document.querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate').forEach(el => {
-        el.remove();
-      });
-      
-      // Restaurer le body
-      document.body.style.top = '';
-      document.body.classList.remove('translated-ltr', 'translated-rtl');
-      
-      setIsOpen(false);
-      
-      // Recharger sans le cache Google Translate
-      sessionStorage.setItem('skipTranslate', 'true');
       window.location.href = window.location.origin + window.location.pathname;
-      
     } else {
-      // Changer vers une autre langue
+      localStorage.setItem('preferredLang', langCode);
+      
+      const hostname = window.location.hostname;
       document.cookie = `googtrans=/en/${langCode}; path=/`;
       document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${hostname}`;
       
-      // Utiliser le sélecteur si disponible
-      const googleCombo = document.querySelector('.goog-te-combo');
-      if (googleCombo) {
-        googleCombo.value = langCode;
-        googleCombo.dispatchEvent(new Event('change'));
-        setIsOpen(false);
-      } else {
-        setIsOpen(false);
-        window.location.reload();
-      }
+      window.location.reload();
     }
   };
 
-  const getCurrentLang = () => {
-    const match = document.cookie.match(/googtrans=\/en\/([^;]+)/);
-    return match ? match[1] : 'en';
-  };
+  useEffect(() => {
+    const savedLang = localStorage.getItem('preferredLang') || 'en';
+    setCurrentLang(savedLang);
+    
+    if (savedLang === 'en') {
+      document.querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate, #google_translate_element').forEach(el => el.remove());
+      document.body.style.top = '';
+      document.body.classList.remove('translated-ltr', 'translated-rtl');
+      return;
+    }
+    
+    if (!document.getElementById('google-translate-script')) {
+      const translateDiv = document.createElement('div');
+      translateDiv.id = 'google_translate_element';
+      translateDiv.style.display = 'none';
+      document.body.appendChild(translateDiv);
 
-  const currentLang = getCurrentLang();
+      window.googleTranslateElementInit = function() {
+        new window.google.translate.TranslateElement({
+          pageLanguage: 'en',
+          includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,th,vi',
+          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false
+        }, 'google_translate_element');
+      };
+
+      const script = document.createElement('script');
+      script.id = 'google-translate-script';
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
   const currentLangData = languages.find(l => l.code === currentLang) || languages[0];
 
   return (

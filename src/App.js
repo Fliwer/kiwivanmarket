@@ -18,6 +18,7 @@ import BuybackCalculator from './components/BuybackCalculator';
 // 🌐 Sélecteur de langue pour le header
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState('en');
   
   const languages = [
     { code: 'en', flag: 'https://flagcdn.com/24x18/gb.png', name: 'ENGLISH', short: 'EN' },
@@ -32,90 +33,51 @@ function LanguageSelector() {
     { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' },
   ];
 
-  // Fonction pour changer la langue via Google Translate
+  // Fonction pour changer la langue
   const changeLanguage = (langCode) => {
-    const hostname = window.location.hostname;
-    const expiry = 'expires=Thu, 01 Jan 1970 00:00:00 UTC';
+    setIsOpen(false);
     
-    // Si on veut l'anglais, on doit restaurer la page originale
     if (langCode === 'en') {
-      // Supprimer tous les cookies googtrans
-      const domains = ['', hostname, `.${hostname}`, '.vercel.app'];
-      domains.forEach(domain => {
-        const domainPart = domain ? `; domain=${domain}` : '';
-        document.cookie = `googtrans=; ${expiry}; path=/${domainPart}`;
+      // Pour l'anglais: sauvegarder la préférence et recharger sans Google Translate
+      localStorage.setItem('preferredLang', 'en');
+      
+      // Supprimer tous les cookies Google Translate possibles
+      const hostname = window.location.hostname;
+      const expiry = 'expires=Thu, 01 Jan 1970 00:00:00 UTC';
+      ['', hostname, `.${hostname}`, '.vercel.app'].forEach(domain => {
+        const d = domain ? `; domain=${domain}` : '';
+        document.cookie = `googtrans=; ${expiry}; path=/${d}`;
       });
       
-      // Méthode 1: Utiliser le sélecteur Google Translate
-      const googleCombo = document.querySelector('.goog-te-combo');
-      if (googleCombo) {
-        googleCombo.value = 'en';
-        googleCombo.dispatchEvent(new Event('change'));
-        setTimeout(() => {
-          setIsOpen(false);
-          window.location.reload();
-        }, 500);
-        return;
-      }
-      
-      // Méthode 2: Utiliser la fonction Google Translate
-      if (window.google && window.google.translate) {
-        const iframe = document.querySelector('.goog-te-banner-frame');
-        if (iframe && iframe.contentDocument) {
-          const restoreBtn = iframe.contentDocument.querySelector('.goog-te-button');
-          if (restoreBtn) restoreBtn.click();
-        }
-      }
-      
-      // Méthode 3: Supprimer et recharger le script Google Translate
-      const translateElement = document.getElementById('google_translate_element');
-      if (translateElement) {
-        translateElement.innerHTML = '';
-      }
-      
-      // Supprimer les éléments ajoutés par Google Translate
-      document.querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate').forEach(el => {
-        el.remove();
-      });
-      
-      // Restaurer le body
-      document.body.style.top = '';
-      document.body.classList.remove('translated-ltr', 'translated-rtl');
-      
-      setIsOpen(false);
-      
-      // Recharger sans le cache Google Translate
-      sessionStorage.setItem('skipTranslate', 'true');
+      // Recharger la page - Google Translate ne sera pas chargé car preferredLang = 'en'
       window.location.href = window.location.origin + window.location.pathname;
-      
     } else {
-      // Changer vers une autre langue
+      // Pour les autres langues: sauvegarder et activer Google Translate
+      localStorage.setItem('preferredLang', langCode);
+      
+      const hostname = window.location.hostname;
       document.cookie = `googtrans=/en/${langCode}; path=/`;
       document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${hostname}`;
       
-      // Utiliser le sélecteur si disponible
-      const googleCombo = document.querySelector('.goog-te-combo');
-      if (googleCombo) {
-        googleCombo.value = langCode;
-        googleCombo.dispatchEvent(new Event('change'));
-        setIsOpen(false);
-      } else {
-        setIsOpen(false);
-        window.location.reload();
-      }
+      window.location.reload();
     }
   };
 
-  // Charger le script Google Translate
+  // Charger le script Google Translate seulement si langue != 'en'
   useEffect(() => {
-    // Si on vient de demander l'anglais, ne pas charger Google Translate
-    if (sessionStorage.getItem('skipTranslate') === 'true') {
-      sessionStorage.removeItem('skipTranslate');
-      // Supprimer le cookie au cas où
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+    const savedLang = localStorage.getItem('preferredLang') || 'en';
+    setCurrentLang(savedLang);
+    
+    // Si langue = anglais, ne pas charger Google Translate
+    if (savedLang === 'en') {
+      // Supprimer les éléments Google Translate existants
+      document.querySelectorAll('.goog-te-banner-frame, .goog-te-menu-frame, .skiptranslate, #google_translate_element').forEach(el => el.remove());
+      document.body.style.top = '';
+      document.body.classList.remove('translated-ltr', 'translated-rtl');
       return;
     }
     
+    // Sinon, charger Google Translate
     if (!document.getElementById('google-translate-script')) {
       const translateDiv = document.createElement('div');
       translateDiv.id = 'google_translate_element';
@@ -139,13 +101,6 @@ function LanguageSelector() {
     }
   }, []);
 
-  // Détecter la langue actuelle depuis le cookie
-  const getCurrentLang = () => {
-    const match = document.cookie.match(/googtrans=\/en\/([^;]+)/);
-    return match ? match[1] : 'en';
-  };
-
-  const currentLang = getCurrentLang();
   const currentLangData = languages.find(l => l.code === currentLang) || languages[0];
 
   return (
