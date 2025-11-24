@@ -35,16 +35,26 @@ function LanguageSelector() {
   ];
 
   const changeLanguage = (langCode) => {
-    if (langCode === 'en') {
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
-      window.location.reload();
-    } else {
-      document.cookie = `googtrans=/en/${langCode}; path=/;`;
-      document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${window.location.hostname}`;
-      window.location.reload();
+    // Supprimer TOUS les cookies googtrans sur tous les domaines possibles
+    const hostname = window.location.hostname;
+    const expiry = 'expires=Thu, 01 Jan 1970 00:00:00 UTC';
+    
+    // Supprimer sur tous les domaines et paths possibles
+    document.cookie = `googtrans=; ${expiry}; path=/`;
+    document.cookie = `googtrans=; ${expiry}; path=/; domain=${hostname}`;
+    document.cookie = `googtrans=; ${expiry}; path=/; domain=.${hostname}`;
+    document.cookie = `googtrans=; ${expiry}`;
+    
+    // Si pas anglais, définir le nouveau cookie
+    if (langCode !== 'en') {
+      document.cookie = `googtrans=/en/${langCode}; path=/`;
+      document.cookie = `googtrans=/en/${langCode}; path=/; domain=.${hostname}`;
     }
+    
     setIsOpen(false);
+    
+    // Forcer un rechargement complet (pas depuis le cache)
+    window.location.href = window.location.pathname + window.location.search;
   };
 
   const getCurrentLang = () => {
