@@ -494,7 +494,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                  <option value="Station Wagon">🚗 Station Wagon</option>
+                  <option value="Car">🚗 Car</option>
                   <option value="Minivan">🚙 Minivan</option>
                   <option value="Van">🚐 Van</option>
                   <option value="Campervan">🏕️ Campervan</option>

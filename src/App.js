@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle } from 'lucide-react';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
@@ -13,22 +13,23 @@ import QuickMessageBox from './components/QuickMessageBox';
 import MessagingPage from './components/MessagingPage';
 import Footer, { FAQModal } from './components/Footer';
 import TermsModal from './components/TermsModal';
+import BuybackCalculator from './components/BuybackCalculator';
 
 // 🌐 Sélecteur de langue pour le header
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   
   const languages = [
-    { code: 'en', flag: '🇬🇧', name: 'ENGLISH', short: 'EN' },
-    { code: 'fr', flag: '🇫🇷', name: 'FRANÇAIS', short: 'FR' },
-    { code: 'de', flag: '🇩🇪', name: 'DEUTSCH', short: 'DE' },
-    { code: 'es', flag: '🇪🇸', name: 'ESPAÑOL', short: 'ES' },
-    { code: 'zh-CN', flag: '🇨🇳', name: '简体中文', short: '中文' },
-    { code: 'ja', flag: '🇯🇵', name: '日本語', short: 'JA' },
-    { code: 'ko', flag: '🇰🇷', name: '한국어', short: 'KO' },
-    { code: 'pt', flag: '🇧🇷', name: 'PORTUGUÊS', short: 'PT' },
-    { code: 'th', flag: '🇹🇭', name: 'ไทย', short: 'TH' },
-    { code: 'vi', flag: '🇻🇳', name: 'TIẾNG VIỆT', short: 'VI' },
+    { code: 'en', flag: 'https://flagcdn.com/24x18/gb.png', name: 'ENGLISH', short: 'EN' },
+    { code: 'fr', flag: 'https://flagcdn.com/24x18/fr.png', name: 'FRANÇAIS', short: 'FR' },
+    { code: 'de', flag: 'https://flagcdn.com/24x18/de.png', name: 'DEUTSCH', short: 'DE' },
+    { code: 'es', flag: 'https://flagcdn.com/24x18/es.png', name: 'ESPAÑOL', short: 'ES' },
+    { code: 'zh-CN', flag: 'https://flagcdn.com/24x18/cn.png', name: '简体中文', short: '中文' },
+    { code: 'ja', flag: 'https://flagcdn.com/24x18/jp.png', name: '日本語', short: 'JA' },
+    { code: 'ko', flag: 'https://flagcdn.com/24x18/kr.png', name: '한국어', short: 'KO' },
+    { code: 'pt', flag: 'https://flagcdn.com/24x18/br.png', name: 'PORTUGUÊS', short: 'PT' },
+    { code: 'th', flag: 'https://flagcdn.com/24x18/th.png', name: 'ไทย', short: 'TH' },
+    { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' },
   ];
 
   // Fonction pour changer la langue via Google Translate
@@ -88,7 +89,11 @@ function LanguageSelector() {
         className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
         title="Change language"
       >
-        <span className="text-base">{currentLangData.flag}</span>
+        <img 
+          src={currentLangData.flag} 
+          alt={currentLangData.name}
+          className="w-6 h-4 object-cover rounded-sm shadow-sm"
+        />
         <span className="hidden sm:inline">{currentLangData.short}</span>
         <ChevronDown size={14} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -113,7 +118,11 @@ function LanguageSelector() {
                     : 'hover:bg-gray-50 text-gray-700'
                 }`}
               >
-                <span className="text-lg">{lang.flag}</span>
+                <img 
+                  src={lang.flag} 
+                  alt={lang.name}
+                  className="w-6 h-4 object-cover rounded-sm shadow-sm"
+                />
                 <span className="font-medium">{lang.name}</span>
               </button>
             ))}
@@ -149,6 +158,7 @@ export default function KiwiVanMarket() {
   const [showAddVanForm, setShowAddVanForm] = useState(false);
   const [showMyVans, setShowMyVans] = useState(false);
   const [showMessagingPage, setShowMessagingPage] = useState(false);
+  const [showBuybackCalculator, setShowBuybackCalculator] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showBuyBackInfo, setShowBuyBackInfo] = useState(false);
   const { currentUser, logout } = useAuth();
@@ -258,6 +268,7 @@ export default function KiwiVanMarket() {
     }
   };
 
+  // ✅ MODIFIÉ: Filtre par ville (location) au lieu de région
   useEffect(() => {
     let filtered = vans.filter(van => {
       const matchSearch = van.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -266,7 +277,10 @@ export default function KiwiVanMarket() {
       const matchPrice = van.price <= filters.priceMax;
       const matchYear = van.year >= filters.yearMin;
       const matchType = filters.type === 'all' || van.type === filters.type;
-      const matchLocation = filters.location === 'all' || van.region === filters.location;
+      
+      // ✅ Filtre par ville (van.location) au lieu de région
+      const matchLocation = filters.location === 'all' || van.location === filters.location;
+      
       const matchSelfContained = !filters.selfContained || van.selfContained;
       const matchBuyBack = !filters.buyBack || van.buyBack;
       
@@ -475,7 +489,7 @@ export default function KiwiVanMarket() {
                     {van.equipment.solarPanel && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">☀️ Solar Panel</div>}
                     {van.equipment.leisureBattery && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔋 Leisure Battery</div>}
                     {van.equipment.heater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🌡️ Heater</div>}
-                    {van.equipment.hotWater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">♨️ Hot Water</div>}
+                    {van.equipment.hotWater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">♨️ Boiler</div>}
                     {van.equipment.outdoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚿 Outdoor Shower</div>}
                     {van.equipment.indoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛁 Indoor Shower</div>}
                     {van.equipment.awning && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">⛺ Awning</div>}
@@ -594,6 +608,76 @@ export default function KiwiVanMarket() {
     );
   };
 
+  // Si page Buyback Calculator ouverte
+  if (showBuybackCalculator) {
+    return (
+      <div className="min-h-screen relative">
+        <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between h-16">
+              <button 
+                onClick={() => setShowBuybackCalculator(false)}
+                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition text-white font-semibold"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="hidden sm:inline">Back to listings</span>
+              </button>
+
+              <div className="flex items-center gap-1">
+                <LanguageSelector />
+                
+                <button 
+                  onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowFavorites(true) : setShowAuthModal(true), 100); }}
+                  className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                >
+                  <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
+                  <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
+                </button>
+
+                <button 
+                  onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true), 100); }}
+                  className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                >
+                  <MessageCircle size={22} className="text-white" />
+                  <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
+                </button>
+
+                {!currentUser ? (
+                  <button 
+                    onClick={() => setShowAuthModal(true)}
+                    className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                  >
+                    <Users size={22} className="text-white" />
+                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Sign in</span>
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => { setShowBuybackCalculator(false); setShowUserMenu(true); }}
+                    className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                  >
+                    <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
+                      {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+        
+        <BuybackCalculator />
+        
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)} 
+        />
+      </div>
+    );
+  }
+
   // Si page messagerie ouverte
   if (showMessagingPage) {
     return (
@@ -622,6 +706,15 @@ export default function KiwiVanMarket() {
                   <p className="text-xs text-white/80">Buy & Sell Campervans 🇳🇿</p>
                 </div>
               </div>
+
+              {/* Bouton Buyback Calculator */}
+              <button 
+                onClick={() => setShowBuybackCalculator(true)}
+                className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
+              >
+                <Calculator size={18} />
+                <span className="hidden md:inline">Buyback Calculator</span>
+              </button>
 
               {/* Bouton Vendre */}
               <button 
@@ -919,7 +1012,7 @@ export default function KiwiVanMarket() {
                     </div>
                   </div>
 
-                  {/* Row 2: Location & Type */}
+                  {/* Row 2: Location & Type - ✅ MODIFIÉ avec villes */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
@@ -928,8 +1021,18 @@ export default function KiwiVanMarket() {
                         onChange={(e) => setFilters({...filters, location: e.target.value})}
                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
                         <option value="all">🇳🇿 All New Zealand</option>
-                        <option value="North Island">🏝️ North Island</option>
-                        <option value="South Island">🏔️ South Island</option>
+                        <optgroup label="── North Island ──">
+                          <option value="Auckland">📍 Auckland</option>
+                          <option value="Wellington">📍 Wellington</option>
+                          <option value="Hamilton">📍 Hamilton</option>
+                          <option value="Tauranga">📍 Tauranga</option>
+                          <option value="Rotorua">📍 Rotorua</option>
+                        </optgroup>
+                        <optgroup label="── South Island ──">
+                          <option value="Christchurch">📍 Christchurch</option>
+                          <option value="Queenstown">📍 Queenstown</option>
+                          <option value="Dunedin">📍 Dunedin</option>
+                        </optgroup>
                       </select>
                     </div>
                     <div>
@@ -939,7 +1042,7 @@ export default function KiwiVanMarket() {
                         onChange={(e) => setFilters({...filters, type: e.target.value})}
                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
                         <option value="all">🚐 All Types</option>
-                        <option value="Station Wagon">🚗 Station Wagon</option>
+                        <option value="Car">🚗 Car</option>
                         <option value="Minivan">🚙 Minivan</option>
                         <option value="Van">🚐 Van</option>
                         <option value="Campervan">🏕️ Campervan</option>
