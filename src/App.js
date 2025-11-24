@@ -33,16 +33,28 @@ function LanguageSelector() {
     { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' }
   ];
 
-  // On force Google Translate via le vrai select caché
+  // ✨ CORRECTION: Force Google Translate à rafraîchir complètement
   const applyLanguage = useCallback((langCode) => {
-    const combo = document.querySelector('.goog-te-combo');
-    if (!combo) return;
+    // Nettoyer TOUS les cookies Google Translate
+    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.' + window.location.hostname;
 
-    // Pour revenir à la langue originale, Google attend une valeur vide
-    combo.value = langCode === 'en' ? '' : langCode;
+    if (langCode === 'en') {
+      // Retour à l'anglais - reload simple
+      window.location.reload(true);
+      return;
+    }
 
-    const event = new Event('change');
-    combo.dispatchEvent(event);
+    // Définir le nouveau cookie de langue
+    const langCookie = `/en/${langCode}`;
+    document.cookie = `googtrans=${langCookie}; path=/;`;
+    document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
+    
+    // Force reload avec cache bypass
+    setTimeout(() => {
+      const baseUrl = window.location.href.split('?')[0].split('#')[0];
+      window.location.href = baseUrl + '?t=' + Date.now();
+    }, 100);
   }, []);
 
   const changeLanguage = (langCode) => {
@@ -81,18 +93,7 @@ function LanguageSelector() {
       script.async = true;
       document.body.appendChild(script);
     }
-
-    // On attend que .goog-te-combo apparaisse, puis on applique la langue sauvegardée
-    const intervalId = setInterval(() => {
-      const combo = document.querySelector('.goog-te-combo');
-      if (combo) {
-        applyLanguage(savedLang);
-        clearInterval(intervalId);
-      }
-    }, 500);
-
-    return () => clearInterval(intervalId);
-  }, [applyLanguage]);
+  }, []);
 
   const currentLangData =
     languages.find((l) => l.code === currentLang) || languages[0];
