@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { X, Plus, Upload, Trash2, CheckCircle } from 'lucide-react';
+import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 
 
@@ -23,20 +23,87 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     description: '',
     capacity: 2,
     selfContained: false,
+    selfContainedType: 'green',
     featured: false,
     buyBack: false,
     buyBackPrice: '',
     buyBackDuration: '3',
     buyBackMaxKm: '',
     buyBackConditions: '',
-    features: [],
+    equipment: {
+      // Sleeping
+      doubleBed: false,
+      singleBeds: false,
+      roofBed: false,
+      bedding: false,
+      curtains: false,
+      // Kitchen
+      fridge: false,
+      freezer: false,
+      gasStove: false,
+      oven: false,
+      microwave: false,
+      sink: false,
+      hotWater: false,
+      cookware: false,
+      cutlery: false,
+      // Water & Bathroom
+      freshWaterTank: false,
+      greyWaterTank: false,
+      waterPump: false,
+      outdoorShower: false,
+      indoorShower: false,
+      toilet: false,
+      portaPotti: false,
+      // Power
+      solarPanel: false,
+      leisureBattery: false,
+      splitCharger: false,
+      inverter: false,
+      usb: false,
+      shoreHookup: false,
+      ledLights: false,
+      // Comfort
+      heater: false,
+      roofFan: false,
+      aircon: false,
+      insulation: false,
+      awning: false,
+      table: false,
+      mosquitoNets: false,
+      // Vehicle & Safety
+      reverseCamera: false,
+      bluetooth: false,
+      gps: false,
+      bikeRack: false,
+      towbar: false,
+      roofRack: false,
+      firstAid: false,
+      fireExtinguisher: false
+    },
     wofExpiry: '',
-    regoExpiry: ''
+    regoExpiry: '',
+    customFeatures: ''
   });
 
   // Charger les données du van en mode édition
   useEffect(() => {
     if (editMode && vanData) {
+      // Default equipment object
+      const defaultEquipment = {
+        doubleBed: false, singleBeds: false, roofBed: false, bedding: false, curtains: false,
+        fridge: false, freezer: false, gasStove: false, oven: false, microwave: false,
+        sink: false, hotWater: false, cookware: false, cutlery: false,
+        freshWaterTank: false, greyWaterTank: false, waterPump: false,
+        outdoorShower: false, indoorShower: false, toilet: false, portaPotti: false,
+        solarPanel: false, leisureBattery: false, splitCharger: false, inverter: false,
+        usb: false, shoreHookup: false, ledLights: false,
+        heater: false, roofFan: false, aircon: false, insulation: false,
+        awning: false, table: false, mosquitoNets: false,
+        reverseCamera: false, bluetooth: false, gps: false, bikeRack: false,
+        towbar: false, roofRack: false, firstAid: false, fireExtinguisher: false
+      };
+
       setFormData({
         title: vanData.title || '',
         price: vanData.price?.toString() || '',
@@ -48,15 +115,17 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         description: vanData.description || '',
         capacity: vanData.capacity || 2,
         selfContained: vanData.selfContained || false,
+        selfContainedType: vanData.selfContainedType || 'green',
         featured: vanData.featured || false,
         buyBack: vanData.buyBack || false,
         buyBackPrice: vanData.buyBackPrice?.toString() || '',
         buyBackDuration: vanData.buyBackDuration?.toString() || '3',
         buyBackMaxKm: vanData.buyBackMaxKm?.toString() || '',
         buyBackConditions: vanData.buyBackConditions || '',
-        features: vanData.features || [],
+        equipment: { ...defaultEquipment, ...(vanData.equipment || {}) },
         wofExpiry: vanData.wofExpiry ? vanData.wofExpiry.split('T')[0] : '',
-        regoExpiry: vanData.regoExpiry ? vanData.regoExpiry.split('T')[0] : ''
+        regoExpiry: vanData.regoExpiry ? vanData.regoExpiry.split('T')[0] : '',
+        customFeatures: vanData.customFeatures || ''
       });
       
       // Charger les images existantes
@@ -68,8 +137,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     }
   }, [editMode, vanData]);
 
-  const [featureInput, setFeatureInput] = useState('');
   const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
+  const [showAdvancedEquipment, setShowAdvancedEquipment] = useState(false);
 
   // Upload image
   const handleImageUpload = async (file) => {
@@ -119,23 +188,6 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     setImages(images.filter((_, i) => i !== index));
   };
 
-  const addFeature = () => {
-    if (featureInput.trim()) {
-      setFormData({
-        ...formData,
-        features: [...formData.features, featureInput.trim()]
-      });
-      setFeatureInput('');
-    }
-  };
-
-  const removeFeature = (index) => {
-    setFormData({
-      ...formData,
-      features: formData.features.filter((_, i) => i !== index)
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -177,15 +229,16 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           description: formData.description,
           capacity: parseInt(formData.capacity),
           selfContained: formData.selfContained,
-          featured: formData.featured,
+          selfContainedType: formData.selfContained ? formData.selfContainedType : null,
+          equipment: formData.equipment,
           buyBack: formData.buyBack,
           buyBackPrice: formData.buyBack ? parseInt(formData.buyBackPrice) || 0 : null,
           buyBackDuration: formData.buyBack ? parseInt(formData.buyBackDuration) : null,
           buyBackMaxKm: formData.buyBack && formData.buyBackMaxKm ? parseInt(formData.buyBackMaxKm) : null,
           buyBackConditions: formData.buyBack ? formData.buyBackConditions : '',
-          features: formData.features,
           wofExpiry: formData.wofExpiry,
           regoExpiry: formData.regoExpiry,
+          customFeatures: formData.customFeatures || '',
           imageUrl: imageUrls[0],
           images: imageUrls,
           updatedAt: new Date()
@@ -213,13 +266,16 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           description: formData.description,
           capacity: parseInt(formData.capacity),
           selfContained: formData.selfContained,
-          featured: formData.featured,
+          selfContainedType: formData.selfContained ? formData.selfContainedType : null,
+          equipment: formData.equipment,
           buyBack: formData.buyBack,
           buyBackPrice: formData.buyBack ? parseInt(formData.buyBackPrice) || 0 : null,
           buyBackDuration: formData.buyBack ? parseInt(formData.buyBackDuration) : null,
           buyBackMaxKm: formData.buyBack && formData.buyBackMaxKm ? parseInt(formData.buyBackMaxKm) : null,
           buyBackConditions: formData.buyBack ? formData.buyBackConditions : '',
-          features: formData.features,
+          wofExpiry: formData.wofExpiry,
+          regoExpiry: formData.regoExpiry,
+          customFeatures: formData.customFeatures || '',
           imageUrl: imageUrls[0],
           images: imageUrls,
           seller: {
@@ -488,96 +544,424 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               />
             </div>
 
-            {/* FEATURES */}
+            {/* EQUIPMENT - Simplifié */}
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Features</label>
-              <div className="flex gap-2 mb-3">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">🔧 Equipment & Features</label>
+              
+              {/* ESSENTIELS - Toujours visible */}
+              <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl mb-4">
+                <h4 className="text-sm font-bold text-emerald-700 mb-3">✨ Essentials</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
+                    <input type="checkbox" checked={formData.equipment.doubleBed} 
+                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, doubleBed: e.target.checked}})}
+                      className="w-4 h-4 text-emerald-600 rounded" />
+                    <span className="text-sm">🛏️ Double Bed</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
+                    <input type="checkbox" checked={formData.equipment.fridge} 
+                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, fridge: e.target.checked}})}
+                      className="w-4 h-4 text-emerald-600 rounded" />
+                    <span className="text-sm">🧊 Fridge</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
+                    <input type="checkbox" checked={formData.equipment.gasStove} 
+                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, gasStove: e.target.checked}})}
+                      className="w-4 h-4 text-emerald-600 rounded" />
+                    <span className="text-sm">🔥 Gas Stove</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
+                    <input type="checkbox" checked={formData.equipment.sink} 
+                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, sink: e.target.checked}})}
+                      className="w-4 h-4 text-emerald-600 rounded" />
+                    <span className="text-sm">🚰 Sink</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
+                    <input type="checkbox" checked={formData.equipment.toilet} 
+                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, toilet: e.target.checked}})}
+                      className="w-4 h-4 text-emerald-600 rounded" />
+                    <span className="text-sm">🚽 Toilet</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
+                    <input type="checkbox" checked={formData.equipment.solarPanel} 
+                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, solarPanel: e.target.checked}})}
+                      className="w-4 h-4 text-emerald-600 rounded" />
+                    <span className="text-sm">☀️ Solar Panel</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
+                    <input type="checkbox" checked={formData.equipment.leisureBattery} 
+                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, leisureBattery: e.target.checked}})}
+                      className="w-4 h-4 text-emerald-600 rounded" />
+                    <span className="text-sm">🔋 Leisure Battery</span>
+                  </label>
+                  <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
+                    <input type="checkbox" checked={formData.equipment.heater} 
+                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, heater: e.target.checked}})}
+                      className="w-4 h-4 text-emerald-600 rounded" />
+                    <span className="text-sm">🌡️ Heater</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* BOUTON MORE OPTIONS */}
+              <button
+                type="button"
+                onClick={() => setShowAdvancedEquipment(!showAdvancedEquipment)}
+                className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-600 transition flex items-center justify-center gap-2 mb-4"
+              >
+                {showAdvancedEquipment ? '➖ Hide' : '➕ More options'}
+                <span className="text-xs text-gray-400">(kitchen, power, comfort...)</span>
+              </button>
+
+              {/* OPTIONS AVANCÉES - Cachées par défaut */}
+              {showAdvancedEquipment && (
+                <div className="space-y-4 mb-4">
+                  
+                  {/* 🛏️ Sleeping */}
+                  <div className="p-3 bg-indigo-50 rounded-xl">
+                    <h4 className="text-xs font-bold text-indigo-600 mb-2">🛏️ Sleeping</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.singleBeds} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, singleBeds: e.target.checked}})}
+                          className="w-4 h-4 text-indigo-600 rounded" />
+                        Single Beds
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.roofBed} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, roofBed: e.target.checked}})}
+                          className="w-4 h-4 text-indigo-600 rounded" />
+                        Pop-top Roof
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.bedding} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, bedding: e.target.checked}})}
+                          className="w-4 h-4 text-indigo-600 rounded" />
+                        Bedding Included
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.curtains} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, curtains: e.target.checked}})}
+                          className="w-4 h-4 text-indigo-600 rounded" />
+                        Privacy Curtains
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* 🍳 Kitchen */}
+                  <div className="p-3 bg-orange-50 rounded-xl">
+                    <h4 className="text-xs font-bold text-orange-600 mb-2">🍳 Kitchen</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.freezer} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, freezer: e.target.checked}})}
+                          className="w-4 h-4 text-orange-600 rounded" />
+                        Freezer
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.oven} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, oven: e.target.checked}})}
+                          className="w-4 h-4 text-orange-600 rounded" />
+                        Oven
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.microwave} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, microwave: e.target.checked}})}
+                          className="w-4 h-4 text-orange-600 rounded" />
+                        Microwave
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.hotWater} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, hotWater: e.target.checked}})}
+                          className="w-4 h-4 text-orange-600 rounded" />
+                        Hot Water
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.cookware} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, cookware: e.target.checked}})}
+                          className="w-4 h-4 text-orange-600 rounded" />
+                        Pots & Pans
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.cutlery} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, cutlery: e.target.checked}})}
+                          className="w-4 h-4 text-orange-600 rounded" />
+                        Cutlery & Dishes
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* 💧 Water & Bathroom */}
+                  <div className="p-3 bg-cyan-50 rounded-xl">
+                    <h4 className="text-xs font-bold text-cyan-600 mb-2">💧 Water & Bathroom</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.freshWaterTank} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, freshWaterTank: e.target.checked}})}
+                          className="w-4 h-4 text-cyan-600 rounded" />
+                        Water Tank
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.greyWaterTank} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, greyWaterTank: e.target.checked}})}
+                          className="w-4 h-4 text-cyan-600 rounded" />
+                        Grey Water Tank
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.outdoorShower} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, outdoorShower: e.target.checked}})}
+                          className="w-4 h-4 text-cyan-600 rounded" />
+                        Outdoor Shower
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.indoorShower} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, indoorShower: e.target.checked}})}
+                          className="w-4 h-4 text-cyan-600 rounded" />
+                        Indoor Shower
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.portaPotti} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, portaPotti: e.target.checked}})}
+                          className="w-4 h-4 text-cyan-600 rounded" />
+                        Porta Potti
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* ⚡ Power */}
+                  <div className="p-3 bg-yellow-50 rounded-xl">
+                    <h4 className="text-xs font-bold text-yellow-600 mb-2">⚡ Power</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.splitCharger} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, splitCharger: e.target.checked}})}
+                          className="w-4 h-4 text-yellow-600 rounded" />
+                        Charges While Driving
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.inverter} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, inverter: e.target.checked}})}
+                          className="w-4 h-4 text-yellow-600 rounded" />
+                        230V Outlets
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.usb} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, usb: e.target.checked}})}
+                          className="w-4 h-4 text-yellow-600 rounded" />
+                        USB Ports
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.shoreHookup} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, shoreHookup: e.target.checked}})}
+                          className="w-4 h-4 text-yellow-600 rounded" />
+                        Campsite Hook-up
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.ledLights} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, ledLights: e.target.checked}})}
+                          className="w-4 h-4 text-yellow-600 rounded" />
+                        LED Lights
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* 🌡️ Comfort */}
+                  <div className="p-3 bg-rose-50 rounded-xl">
+                    <h4 className="text-xs font-bold text-rose-600 mb-2">🌡️ Comfort</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.roofFan} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, roofFan: e.target.checked}})}
+                          className="w-4 h-4 text-rose-600 rounded" />
+                        Roof Fan
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.aircon} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, aircon: e.target.checked}})}
+                          className="w-4 h-4 text-rose-600 rounded" />
+                        Air Conditioning
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.insulation} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, insulation: e.target.checked}})}
+                          className="w-4 h-4 text-rose-600 rounded" />
+                        Insulated
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.awning} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, awning: e.target.checked}})}
+                          className="w-4 h-4 text-rose-600 rounded" />
+                        Awning
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.table} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, table: e.target.checked}})}
+                          className="w-4 h-4 text-rose-600 rounded" />
+                        Table & Chairs
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.mosquitoNets} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, mosquitoNets: e.target.checked}})}
+                          className="w-4 h-4 text-rose-600 rounded" />
+                        Mosquito Nets
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* 🚗 Vehicle */}
+                  <div className="p-3 bg-gray-100 rounded-xl">
+                    <h4 className="text-xs font-bold text-gray-600 mb-2">🚗 Vehicle</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.reverseCamera} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, reverseCamera: e.target.checked}})}
+                          className="w-4 h-4 text-gray-600 rounded" />
+                        Reverse Camera
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.bluetooth} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, bluetooth: e.target.checked}})}
+                          className="w-4 h-4 text-gray-600 rounded" />
+                        Bluetooth Audio
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.towbar} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, towbar: e.target.checked}})}
+                          className="w-4 h-4 text-gray-600 rounded" />
+                        Towbar
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.bikeRack} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, bikeRack: e.target.checked}})}
+                          className="w-4 h-4 text-gray-600 rounded" />
+                        Bike Rack
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.roofRack} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, roofRack: e.target.checked}})}
+                          className="w-4 h-4 text-gray-600 rounded" />
+                        Roof Rack
+                      </label>
+                      <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
+                        <input type="checkbox" checked={formData.equipment.firstAid} 
+                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, firstAid: e.target.checked}})}
+                          className="w-4 h-4 text-gray-600 rounded" />
+                        First Aid Kit
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* CHAMP LIBRE - Autres équipements */}
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  ✏️ Other features <span className="font-normal text-gray-400">(optional)</span>
+                </label>
                 <input
                   type="text"
-                  value={featureInput}
-                  onChange={(e) => setFeatureInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
-                  placeholder="Solar, Fridge, etc."
-                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  value={formData.customFeatures || ''}
+                  onChange={(e) => setFormData({...formData, customFeatures: e.target.value})}
+                  placeholder="e.g. Surfboard rack, Kayak holder, TV, Coffee machine..."
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
-                <button
-                  type="button"
-                  onClick={addFeature}
-                  className="bg-emerald-600 text-white px-6 rounded-xl font-semibold hover:bg-emerald-700 transition-colors">
-                  <Plus size={20} />
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.features.map((feature, index) => (
-                  <div 
-                    key={index}
-                    className="bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg flex items-center gap-2">
-                    <span className="text-sm font-semibold text-gray-900">{feature}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeFeature(index)}
-                      className="text-red-500 hover:text-red-700 transition-colors">
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
+                <p className="text-xs text-gray-400 mt-1">Add anything special not listed above</p>
               </div>
             </div>
 
             {/* OPTIONS */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Options</label>
-              <div className="space-y-2">
-                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={formData.selfContained}
-                    onChange={(e) => setFormData({...formData, selfContained: e.target.checked})}
-                    className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
-                  />
-                  <span className="font-medium text-gray-700">Self-Contained Certified</span>
-                </label>
-                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={formData.featured}
-                    onChange={(e) => setFormData({...formData, featured: e.target.checked})}
-                    className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
-                  />
-                  <span className="font-medium text-gray-700">Featured Listing</span>
-                </label>
-                <div className="flex items-center gap-2 hover:bg-gray-50 p-2 rounded-lg transition-colors">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">📋 Certifications & Options</label>
+              <div className="space-y-3">
+                
+                {/* Self-Contained */}
+                <div className="p-3 bg-gray-50 rounded-xl">
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.buyBack}
-                      onChange={(e) => setFormData({...formData, buyBack: e.target.checked})}
+                      checked={formData.selfContained}
+                      onChange={(e) => setFormData({...formData, selfContained: e.target.checked})}
                       className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
                     />
-                    <span className="font-medium text-gray-700">Buy-Back Available</span>
+                    <span className="font-medium text-gray-700">Self-Contained Certified</span>
                   </label>
-                  {/* Tooltip explicatif */}
-                  <div className="relative">
-                    <div 
-                      onMouseEnter={() => setShowBuyBackTooltip(true)}
-                      onMouseLeave={() => setShowBuyBackTooltip(false)}
-                      className="bg-gray-200 hover:bg-emerald-500 hover:text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold text-gray-600 cursor-help transition">
-                      ?
-                    </div>
-                    {showBuyBackTooltip && (
-                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-50">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-emerald-400 font-bold">🛡️ Buy-Back Guarantee</span>
+                  
+                  {/* Choix Vert ou Bleu si coché */}
+                  {formData.selfContained && (
+                    <div className="mt-3 ml-8 flex gap-4">
+                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${
+                        formData.selfContainedType === 'green' 
+                          ? 'border-green-500 bg-green-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}>
+                        <input type="radio" name="selfContainedType" value="green"
+                          checked={formData.selfContainedType === 'green'}
+                          onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})}
+                          className="hidden" />
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">✓</span>
                         </div>
-                        <p className="text-gray-300 leading-relaxed text-xs">
-                          Offer to buy back the van at an agreed price if the buyer returns it within a specified period. 
-                          <span className="text-white font-semibold"> Great for attracting backpackers!</span>
-                        </p>
-                        <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 bg-gray-900 rotate-45"></div>
-                      </div>
-                    )}
-                  </div>
+                        <div>
+                          <span className="font-semibold text-green-700">Green Sticker</span>
+                          <p className="text-xs text-gray-500">Full self-containment</p>
+                        </div>
+                      </label>
+                      
+                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${
+                        formData.selfContainedType === 'blue' 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}>
+                        <input type="radio" name="selfContainedType" value="blue"
+                          checked={formData.selfContainedType === 'blue'}
+                          onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})}
+                          className="hidden" />
+                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">✓</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-blue-700">Blue Sticker</span>
+                          <p className="text-xs text-gray-500">Porta-potty allowed</p>
+                        </div>
+                      </label>
+                    </div>
+                  )}
                 </div>
+
+                {/* Buy-Back */}
+                <div className="p-3 bg-gray-50 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.buyBack}
+                        onChange={(e) => setFormData({...formData, buyBack: e.target.checked})}
+                        className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                      />
+                      <span className="font-medium text-gray-700">Buy-Back Available</span>
+                    </label>
+                    {/* Tooltip explicatif */}
+                    <div className="relative">
+                      <div 
+                        onMouseEnter={() => setShowBuyBackTooltip(true)}
+                        onMouseLeave={() => setShowBuyBackTooltip(false)}
+                        className="bg-gray-200 hover:bg-emerald-500 hover:text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold text-gray-600 cursor-help transition">
+                        ?
+                      </div>
+                      {showBuyBackTooltip && (
+                        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-50">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-emerald-400 font-bold">🛡️ Buy-Back Guarantee</span>
+                          </div>
+                          <p className="text-gray-300 leading-relaxed text-xs">
+                            Offer to buy back the van at an agreed price if the buyer returns it within a specified period. 
+                            <span className="text-white font-semibold"> Great for attracting backpackers!</span>
+                          </p>
+                          <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-4 h-4 bg-gray-900 rotate-45"></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                 {/* Options Buy-Back (affichées si coché) */}
                 {formData.buyBack && (
@@ -648,6 +1032,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
                 )}
+                </div>
               </div>
             </div>
 

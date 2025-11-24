@@ -8,7 +8,7 @@ import AddVanForm from './components/AddVanForm';
 import MyVans from './components/MyVans';
 import FavoritesPage from './components/FavoritesPage';
 import { useFavorites } from './hooks/useFavorites';
-import { NotificationProvider, FloatingMessageButton, useNotifications } from './components/NotificationSystem';
+import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import QuickMessageBox from './components/QuickMessageBox';
 import MessagingPage from './components/MessagingPage';
 
@@ -33,7 +33,6 @@ export default function KiwiVanMarket() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeTab, setActiveTab] = useState('all');
   const [showContactForm, setShowContactForm] = useState(false);
   const [showAddVanForm, setShowAddVanForm] = useState(false);
   const [showMyVans, setShowMyVans] = useState(false);
@@ -48,7 +47,10 @@ export default function KiwiVanMarket() {
     yearMin: 1990,
     type: 'all',
     location: 'all',
-    selfContained: false
+    selfContained: false,
+    buyBack: false,
+    wofValid: false,
+    regoValid: false
   });
 
   // ⚡ Cache le loader initial dès que React a monté
@@ -136,15 +138,19 @@ export default function KiwiVanMarket() {
       const matchType = filters.type === 'all' || van.type === filters.type;
       const matchLocation = filters.location === 'all' || van.region === filters.location;
       const matchSelfContained = !filters.selfContained || van.selfContained;
-      const matchTab = activeTab === 'all' || 
-                      (activeTab === 'featured' && van.featured) ||
-                      (activeTab === 'buyback' && van.buyBack);
+      const matchBuyBack = !filters.buyBack || van.buyBack;
       
-      return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchTab;
+      // Vérifier WOF valide (date future)
+      const matchWofValid = !filters.wofValid || (van.wofExpiry && new Date(van.wofExpiry) > new Date());
+      
+      // Vérifier REGO valide (date future)
+      const matchRegoValid = !filters.regoValid || (van.regoExpiry && new Date(van.regoExpiry) > new Date());
+      
+      return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid;
     });
     
     setFilteredVans(filtered);
-  }, [searchTerm, filters, vans, activeTab]);
+  }, [searchTerm, filters, vans]);
 
   const formatPrice = (price) => `NZ$${price.toLocaleString()}`;
 
@@ -471,25 +477,6 @@ export default function KiwiVanMarket() {
                         <div className="py-1">
                           <a 
                             href="#"
-                            onClick={(e) => { e.preventDefault(); setShowMessagingPage(true); setShowUserMenu(false); }}
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
-                            <MessageCircle size={18} className="text-gray-400" />
-                            <span>Messages</span>
-                          </a>
-                          <a
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); setShowFavorites(true); setShowUserMenu(false); }}
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
-                            <Heart size={18} className="text-gray-400" />
-                            <span>My Favorites</span>
-                            {favoritesCount > 0 && (
-                              <span className="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                {favoritesCount}
-                              </span>
-                            )}
-                          </a>
-                          <a 
-                            href="#"
                             onClick={(e) => { e.preventDefault(); setShowMyVans(true); setShowUserMenu(false); }}
                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
                             <svg className="w-[18px] h-[18px] text-gray-400" fill="currentColor" viewBox="0 0 24 24">
@@ -535,40 +522,45 @@ export default function KiwiVanMarket() {
               </div>
             </div>
 
-            {/* Tabs + Filtres - avec Filters à droite */}
-            <div className="flex items-center justify-between gap-3">
+            {/* Quick Filters - Pills cliquables */}
+            <div className="flex items-center justify-between gap-3 flex-wrap">
               
-              {/* Tabs à gauche */}
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {/* Compteur + Quick Filters */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-semibold text-gray-600 mr-2">
+                  {filteredVans.length} van{filteredVans.length !== 1 ? 's' : ''}
+                </span>
+                
+                {/* Self-Contained */}
+                <button 
+                  onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                    filters.selfContained 
+                      ? 'bg-blue-500 text-white shadow-md' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}>
+                  <CheckCircle size={14} />
+                  Self-Contained
+                </button>
+
+                {/* Buy-Back */}
+                <div className="relative">
                   <button 
-                    onClick={() => setActiveTab('all')}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition ${
-                      activeTab === 'all' 
-                        ? 'bg-emerald-600 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}>
-                    All Vans ({vans.length})
-                  </button>
-                  <button 
-                    onClick={() => setActiveTab('buyback')}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
-                      activeTab === 'buyback' 
-                        ? 'bg-emerald-600 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}>
-                    <Shield size={16} />
-                    Buy-Back
-                  </button>
-                </div>
-                {/* Icône ? avec tooltip - EN DEHORS du conteneur overflow */}
-                <div className="relative flex-shrink-0">
-                  <div 
+                    onClick={() => setFilters({...filters, buyBack: !filters.buyBack})}
                     onMouseEnter={() => setShowBuyBackInfo(true)}
                     onMouseLeave={() => setShowBuyBackInfo(false)}
-                    className="bg-gray-200 hover:bg-emerald-500 hover:text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold text-gray-600 cursor-help transition">
-                    ?
-                  </div>
+                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                      filters.buyBack 
+                        ? 'bg-green-500 text-white shadow-md' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}>
+                    <Shield size={14} />
+                    Buy-Back
+                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                      filters.buyBack ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
+                    }`}>?</span>
+                  </button>
+                  {/* Tooltip */}
                   {showBuyBackInfo && (
                     <div className="absolute left-0 top-full mt-2 w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
                       <div className="flex items-center gap-2 mb-2">
@@ -583,6 +575,40 @@ export default function KiwiVanMarket() {
                     </div>
                   )}
                 </div>
+
+                {/* WOF Valid */}
+                <button 
+                  onClick={() => setFilters({...filters, wofValid: !filters.wofValid})}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                    filters.wofValid 
+                      ? 'bg-emerald-500 text-white shadow-md' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}>
+                  <CheckCircle size={14} />
+                  WOF Valid
+                </button>
+
+                {/* REGO Valid */}
+                <button 
+                  onClick={() => setFilters({...filters, regoValid: !filters.regoValid})}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
+                    filters.regoValid 
+                      ? 'bg-purple-500 text-white shadow-md' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}>
+                  <CheckCircle size={14} />
+                  REGO Valid
+                </button>
+
+                {/* Clear filters si au moins un actif */}
+                {(filters.selfContained || filters.buyBack || filters.wofValid || filters.regoValid) && (
+                  <button 
+                    onClick={() => setFilters({...filters, selfContained: false, buyBack: false, wofValid: false, regoValid: false})}
+                    className="px-3 py-2 rounded-full text-sm font-semibold text-red-500 hover:bg-red-50 transition flex items-center gap-1">
+                    <X size={14} />
+                    Clear
+                  </button>
+                )}
               </div>
 
               {/* Bouton Filtres à droite */}
@@ -846,9 +872,6 @@ export default function KiwiVanMarket() {
             </div>
           </div>
         </footer>
-
-        {/* Floating Message Button */}
-        <FloatingMessageButton onClick={() => setShowMessagingPage(true)} />
 
         {/* Modals */}
         {selectedVan && <VanDetailsModal van={selectedVan} />}
