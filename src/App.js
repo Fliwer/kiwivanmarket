@@ -34,50 +34,55 @@ function LanguageSelector() {
   ];
 
   // ✨ CORRECTION: Force Google Translate à rafraîchir complètement
- // ✨ CORRECTION: Force Google Translate à rafraîchir complètement
-const applyLanguage = useCallback((langCode) => {
-  // 1. Nettoyer TOUS les cookies Google Translate
-  const domains = ['', '.' + window.location.hostname, '.kiwivanmarket.com'];
-  domains.forEach(domain => {
-    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${domain ? ' domain=' + domain + ';' : ''}`;
-  });
-  
-  // 2. Supprimer aussi du localStorage (Google Translate l'utilise parfois)
-  try {
-    localStorage.removeItem('googtrans');
-    sessionStorage.clear();
-  } catch (e) {}
+  const applyLanguage = useCallback((langCode) => {
+    // 1. Nettoyer TOUS les cookies Google Translate
+    const domains = ['', '.' + window.location.hostname, '.kiwivanmarket.com'];
+    domains.forEach(domain => {
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${domain ? ' domain=' + domain + ';' : ''}`;
+    });
+    
+    // 2. Supprimer aussi du localStorage
+    try {
+      localStorage.removeItem('googtrans');
+      sessionStorage.clear();
+    } catch (e) {}
 
-  // 3. Supprimer les éléments Google Translate du DOM
-  const gtFrame = document.querySelector('.goog-te-banner-frame');
-  if (gtFrame) gtFrame.remove();
-  const gtElement = document.getElementById('google_translate_element');
-  if (gtElement) gtElement.innerHTML = '';
-  
-  // 4. Réinitialiser le body (Google ajoute des classes)
-  document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
-  const html = document.documentElement;
-  html.className = html.className.replace(/translated-[a-z]+/g, '');
-  
-  if (langCode === 'en') {
-    // Retour à l'anglais - reload avec cache bypass
+    // 3. Supprimer les éléments Google Translate du DOM
+    const gtFrame = document.querySelector('.goog-te-banner-frame');
+    if (gtFrame) gtFrame.remove();
+    const gtElement = document.getElementById('google_translate_element');
+    if (gtElement) gtElement.innerHTML = '';
+    
+    // 4. Réinitialiser le body
+    document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
+    const html = document.documentElement;
+    html.className = html.className.replace(/translated-[a-z]+/g, '');
+    
+    // 5. Supprimer le script Google Translate pour forcer une réinitialisation
+    const oldScript = document.getElementById('google-translate-script');
+    if (oldScript) oldScript.remove();
+    
+    // 6. Supprimer les iframes Google
+    document.querySelectorAll('iframe.goog-te-menu-frame, iframe.goog-te-banner-frame').forEach(el => el.remove());
+    
+    if (langCode === 'en') {
+      // Retour à l'anglais - reload COMPLET sans cache
+      setTimeout(() => {
+        window.location.replace(window.location.pathname + '?lang=en&t=' + Date.now());
+      }, 100);
+      return;
+    }
+
+    // Définir le nouveau cookie de langue
+    const langCookie = `/en/${langCode}`;
+    document.cookie = `googtrans=${langCookie}; path=/;`;
+    document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
+    
+    // Force reload avec cache bypass
     setTimeout(() => {
-      window.location.href = window.location.pathname + '?lang=en&t=' + Date.now();
+      window.location.replace(window.location.pathname + '?lang=' + langCode + '&t=' + Date.now());
     }, 100);
-    return;
-  }
-
-  // Définir le nouveau cookie de langue
-  const langCookie = `/en/${langCode}`;
-  document.cookie = `googtrans=${langCookie}; path=/;`;
-  document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
-  
-  // Force reload avec cache bypass
-  setTimeout(() => {
-    const baseUrl = window.location.pathname;
-    window.location.href = baseUrl + '?lang=' + langCode + '&t=' + Date.now();
-  }, 100);
-}, []);
+  }, []);
 
   const changeLanguage = (langCode) => {
     setIsOpen(false);
