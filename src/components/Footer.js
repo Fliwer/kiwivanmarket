@@ -49,7 +49,7 @@ export function GoogleTranslate() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition text-sm"
+        className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full transition text-sm font-medium"
       >
         <Globe size={16} />
         <span>Language</span>
@@ -180,66 +180,109 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           
-          {/* Brand */}
+          {/* Brand - Logo en ROND */}
           <div className="md:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-2 rounded-xl">
-                <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-8 h-8" />
+            <div className="flex items-center gap-4 mb-4">
+              {/* Logo en cercle parfait */}
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 p-0.5 shadow-lg shadow-emerald-500/30">
+                <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+                  <img 
+                    src="/kiwi-van-logo.png" 
+                    alt="Kiwi Van Market" 
+                    className="w-10 h-10 object-contain"
+                  />
+                </div>
               </div>
-              <span className="text-xl font-bold">Kiwi Van Market</span>
+              <div>
+                <span className="text-xl font-bold block">Kiwi Van Market</span>
+                <span className="text-emerald-400 text-sm">NZ's #1 Campervan Marketplace</span>
+              </div>
             </div>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-gray-400 text-sm mb-6 leading-relaxed">
               The marketplace for buying and selling campervans in New Zealand. 
               Find your perfect adventure vehicle or sell your van to fellow travelers.
             </p>
             <GoogleTranslate />
           </div>
 
-          {/* Links */}
+          {/* Quick Links */}
           <div>
-            <h3 className="font-bold mb-4 text-emerald-400">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Quick Links</h3>
+            <ul className="space-y-3 text-sm">
               <li>
-                <button onClick={onOpenFAQ} className="text-gray-400 hover:text-white transition flex items-center gap-2">
-                  <HelpCircle size={14} />
+                <button onClick={onOpenFAQ} className="text-gray-400 hover:text-white transition flex items-center gap-2 group">
+                  <span className="w-8 h-8 rounded-full bg-gray-800 group-hover:bg-emerald-600 flex items-center justify-center transition">
+                    <HelpCircle size={14} />
+                  </span>
                   FAQ & How It Works
                 </button>
               </li>
               <li>
-                <button onClick={onOpenTerms} className="text-gray-400 hover:text-white transition flex items-center gap-2">
-                  <FileText size={14} />
+                <button onClick={onOpenTerms} className="text-gray-400 hover:text-white transition flex items-center gap-2 group">
+                  <span className="w-8 h-8 rounded-full bg-gray-800 group-hover:bg-emerald-600 flex items-center justify-center transition">
+                    <FileText size={14} />
+                  </span>
                   Terms of Use
                 </button>
               </li>
               <li>
-                <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-gray-400 hover:text-white transition flex items-center gap-2">
-                  <Mail size={14} />
+                <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-gray-400 hover:text-white transition flex items-center gap-2 group">
+                  <span className="w-8 h-8 rounded-full bg-gray-800 group-hover:bg-emerald-600 flex items-center justify-center transition">
+                    <Mail size={14} />
+                  </span>
                   Contact Us
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Safety Tips */}
           <div>
-            <h3 className="font-bold mb-4 text-emerald-400">Important</h3>
+            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Safety Tips</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li>• Always meet sellers in person</li>
-              <li>• Inspect vehicles before buying</li>
-              <li>• Verify WOF & REGO documents</li>
-              <li>• Never pay without seeing the van</li>
-              <li>• Report suspicious listings</li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-500 mt-1">✓</span>
+                Always meet sellers in person
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-500 mt-1">✓</span>
+                Inspect vehicles before buying
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-500 mt-1">✓</span>
+                Verify WOF & REGO documents
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-emerald-500 mt-1">✓</span>
+                Never pay without seeing the van
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-500 mt-1">⚠</span>
+                Report suspicious listings
+              </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom */}
-        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} Kiwi Van Market. All rights reserved.
-          </p>
-          <p className="text-gray-600 text-xs">
-            Made with 🥝 in New Zealand
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-800 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Mini logo en rond */}
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 p-0.5">
+              <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center overflow-hidden">
+                <img 
+                  src="/kiwi-van-logo.png" 
+                  alt="Kiwi Van Market" 
+                  className="w-5 h-5 object-contain"
+                />
+              </div>
+            </div>
+            <p className="text-gray-500 text-sm">
+              © {new Date().getFullYear()} Kiwi Van Market. All rights reserved.
+            </p>
+          </div>
+          <p className="text-gray-600 text-sm flex items-center gap-2">
+            Made with <span className="text-2xl">🥝</span> in New Zealand
           </p>
         </div>
       </div>
