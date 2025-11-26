@@ -17,7 +17,7 @@ import { useAuth } from '../AuthContext';
 // MESSAGING PAGE - Full Page 3 Columns
 // ============================================
 
-// 🌐 Language Selector Component
+// 🌐 Language Selector Component - CORRIGÉ
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
@@ -35,16 +35,49 @@ function LanguageSelector() {
     { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' }
   ];
 
-  // On force Google Translate via le vrai select caché
+  // ✨ CORRECTION: Force Google Translate à rafraîchir complètement
   const applyLanguage = useCallback((langCode) => {
-    const combo = document.querySelector('.goog-te-combo');
-    if (!combo) return;
+    // 1. Nettoyer TOUS les cookies Google Translate
+    const domains = ['', '.' + window.location.hostname, '.kiwivanmarket.com'];
+    domains.forEach(domain => {
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${domain ? ' domain=' + domain + ';' : ''}`;
+    });
+    
+    // 2. Supprimer aussi du localStorage (Google Translate l'utilise parfois)
+    try {
+      localStorage.removeItem('googtrans');
+      sessionStorage.clear();
+    } catch (e) {}
 
-    // Pour revenir à la langue originale, Google attend une valeur vide
-    combo.value = langCode === 'en' ? '' : langCode;
+    // 3. Supprimer les éléments Google Translate du DOM
+    const gtFrame = document.querySelector('.goog-te-banner-frame');
+    if (gtFrame) gtFrame.remove();
+    const gtElement = document.getElementById('google_translate_element');
+    if (gtElement) gtElement.innerHTML = '';
+    
+    // 4. Réinitialiser le body (Google ajoute des classes)
+    document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
+    const html = document.documentElement;
+    html.className = html.className.replace(/translated-[a-z]+/g, '');
+    
+    if (langCode === 'en') {
+      // Retour à l'anglais - reload avec cache bypass
+      setTimeout(() => {
+        window.location.href = window.location.pathname + '?lang=en&t=' + Date.now();
+      }, 100);
+      return;
+    }
 
-    const event = new Event('change');
-    combo.dispatchEvent(event);
+    // Définir le nouveau cookie de langue
+    const langCookie = `/en/${langCode}`;
+    document.cookie = `googtrans=${langCookie}; path=/;`;
+    document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
+    
+    // Force reload avec cache bypass
+    setTimeout(() => {
+      const baseUrl = window.location.pathname;
+      window.location.href = baseUrl + '?lang=' + langCode + '&t=' + Date.now();
+    }, 100);
   }, []);
 
   const changeLanguage = (langCode) => {
@@ -83,18 +116,7 @@ function LanguageSelector() {
       script.async = true;
       document.body.appendChild(script);
     }
-
-    // On attend que .goog-te-combo apparaisse, puis on applique la langue sauvegardée
-    const intervalId = setInterval(() => {
-      const combo = document.querySelector('.goog-te-combo');
-      if (combo) {
-        applyLanguage(savedLang);
-        clearInterval(intervalId);
-      }
-    }, 500);
-
-    return () => clearInterval(intervalId);
-  }, [applyLanguage]);
+  }, []);
 
   const currentLangData =
     languages.find((l) => l.code === currentLang) || languages[0];
@@ -170,6 +192,27 @@ export default function MessagingPage({ onBack }) {
       window.removeEventListener('popstate', handlePopState);
     };
   }, [onBack]);
+
+  // 🔄 Force Google Translate à re-traduire au chargement de la page
+  useEffect(() => {
+    const savedLang = localStorage.getItem('preferredLang');
+    if (savedLang && savedLang !== 'en') {
+      // Attendre que Google Translate soit prêt
+      const intervalId = setInterval(() => {
+        const combo = document.querySelector('.goog-te-combo');
+        if (combo) {
+          combo.value = savedLang;
+          combo.dispatchEvent(new Event('change'));
+          clearInterval(intervalId);
+        }
+      }, 500);
+      
+      // Timeout après 5 secondes
+      setTimeout(() => clearInterval(intervalId), 5000);
+      
+      return () => clearInterval(intervalId);
+    }
+  }, []);
   
   // State
   const [conversations, setConversations] = useState([]);
