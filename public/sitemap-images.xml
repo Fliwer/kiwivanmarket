@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.sitemaps.org/schemas/sitemap-image/1.1">
+
+  <url>
+    <loc>https://kiwivanmarket.com/van/12345</loc>
+    <image:image>
+      <image:loc>https://kiwivanmarket.com/uploads/12345-1.jpg</image:loc>
+      <image:title>Toyota Hiace campervan for sale in New Zealand</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://kiwivanmarket.com/uploads/12345-2.jpg</image:loc>
+      <image:title>Self contained Toyota Hiace interior in New Zealand</image:title>
+    </image:image>
+  </url>
+
+</urlset>

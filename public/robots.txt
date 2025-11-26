@@ -1,3 +1,19 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.png$
+Allow: /*.webp$
+
+Disallow: /*?page=
+Disallow: /*?sort=
+Disallow: /*&page=
+Disallow: /admin/
+
+Sitemap: https://kiwivanmarket.com/sitemap.xml
+Sitemap: https://kiwivanmarket.com/sitemap-vehicles.xml
+Sitemap: https://kiwivanmarket.com/sitemap-images.xml
+Sitemap: https://kiwivanmarket.com/sitemap-brands.xml
+Sitemap: https://kiwivanmarket.com/sitemap-locations.xml
+Sitemap: https://kiwivanmarket.com/sitemap-guides.xml

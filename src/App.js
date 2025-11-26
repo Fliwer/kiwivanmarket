@@ -13,6 +13,7 @@ import QuickMessageBox from './components/QuickMessageBox';
 import MessagingPage from './components/MessagingPage';
 import Footer, { FAQModal } from './components/Footer';
 import TermsModal from './components/TermsModal';
+import HomeSeoSection from './components/HomeSeoSection';
 import BuybackCalculator from './components/BuybackCalculator';
 
 // 🌐 Sélecteur de langue pour le header
@@ -1303,7 +1304,10 @@ export default function KiwiVanMarket() {
         </div>
 
         {/* ✅ NOUVEAU FOOTER avec Disclaimer + FAQ + Google Translate */}
-        <Footer 
+        
+          <HomeSeoSection />
+
+          <Footer 
           onOpenFAQ={() => setShowFAQ(true)} 
           onOpenTerms={() => setShowTerms(true)} 
         />

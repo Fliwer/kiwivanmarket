@@ -1,19 +1,139 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#10b981" />
-    <meta
-      name="description"
-      content="Kiwi Van Market - New Zealand's Campervan Marketplace"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <title>Kiwi Van Market</title>
-    
-    <style>
+<html lang="en-NZ">
+    <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="geo.region" content="NZ" />
+  <meta name="geo.placename" content="New Zealand" />
+  <meta name="geo.position" content="-41.2865;174.7762" />
+  <meta name="ICBM" content="-41.2865, 174.7762" />
+  <meta name="language" content="en-NZ" />
+
+
+  <title>Kiwi Van Market | Buy and Sell Campervans in New Zealand</title>
+  <meta name="description" content="Buy and sell campervans in New Zealand. Find self contained vans, WOF and rego valid vehicles, Toyota Hiace, Nissan Caravan, Mazda Bongo, Mitsubishi Delica, and buy back options for backpackers and travellers." />
+  <link rel="canonical" href="https://kiwivanmarket.com/" />
+
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="googlebot" content="index, follow" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://kiwivanmarket.com/" />
+  <meta property="og:title" content="Kiwi Van Market | Campervans for Sale in New Zealand" />
+  <meta property="og:description" content="New Zealand campervan marketplace for backpackers and travellers. Buy and sell self contained vans with valid WOF and rego." />
+  <meta property="og:image" content="https://kiwivanmarket.com/og-image.jpg" />
+  <meta property="og:image:alt" content="New Zealand campervan marketplace Kiwi Van Market" />
+  <meta property="og:site_name" content="Kiwi Van Market" />
+  <meta property="og:locale" content="en_NZ" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Kiwi Van Market | Buy and Sell Campervans in New Zealand" />
+  <meta name="twitter:description" content="Buy and sell campervans in New Zealand. Self contained vans plus valid WOF and rego." />
+  <meta name="twitter:image" content="https://kiwivanmarket.com/og-image.jpg" />
+
+  <meta name="theme-color" content="#10b981" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="%PUBLIC_URL%/kiwi-van-logo.png" as="image" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Kiwi Van Market",
+    "url": "https://kiwivanmarket.com",
+    "description": "Buy and sell campervans in New Zealand. Self contained vans with WOF and rego, perfect for backpackers and travellers.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://kiwivanmarket.com/?search={search_term}",
+      "query-input": "required name=search_term"
+    }
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Kiwi Van Market",
+    "url": "https://kiwivanmarket.com",
+    "logo": "https://kiwivanmarket.com/kiwi-van-logo.png",
+    "description": "Online marketplace for campervans in New Zealand.",
+    "sameAs": [
+      "https://www.facebook.com/kiwivanmarket",
+      "https://www.instagram.com/kiwivanmarket"
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "OnlineBusiness",
+    "name": "Kiwi Van Market",
+    "url": "https://kiwivanmarket.com",
+    "description": "Buy and sell campervans in New Zealand. Self contained vans, Toyota Hiace, Nissan Caravan, Mazda Bongo, Mitsubishi Delica.",
+    "areaServed": "NZ",
+    "currenciesAccepted": "NZD",
+    "paymentAccepted": ["Cash", "BankTransfer"]
+  }
+  </script>
+
+    <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is a self contained campervan in New Zealand",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A self contained campervan in New Zealand has its own toilet plus fresh water and grey water tanks and it meets the NZS 5465 standard which allows freedom camping in many designated areas."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is WOF",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WOF means Warrant of Fitness which is the regular vehicle safety inspection in New Zealand. Most cars and campervans need a new WOF every six or twelve months depending on the age of the vehicle."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is rego in New Zealand",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Rego is the registration of the vehicle in New Zealand and it must be valid for the campervan to be legally driven on public roads. Buyers should always check that rego is current before purchase."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I transfer campervan ownership in New Zealand",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "To transfer ownership of a campervan in New Zealand the buyer and seller both need to notify NZTA. This can be done online through the NZTA website or in person at a NZ Post shop using the correct forms."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How much does a backpacker campervan cost in New Zealand",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Prices for backpacker campervans in New Zealand vary a lot but many simple self contained vans fall between NZD 5 000 and NZD 20 000 depending on the brand age kilometres and fit out quality."
+        }
+      }
+    ]
+  }
+  </script>
+
+<style>
       #app-loader {
         position: fixed;
         inset: 0;
@@ -101,7 +221,8 @@
         to { opacity: 0; }
       }
     </style>
-  </head>
+</head>
+
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     
@@ -117,5 +238,11 @@
     </div>
     
     <div id="root"></div>
-  </body>
+  
+<noscript>
+  <h1>Buy Campervans in New Zealand</h1>
+  <p>Find Toyota Hiace, Nissan Caravan, Mazda Bongo, Mitsubishi Delica and other self contained vans with valid WOF and rego in Auckland Wellington Christchurch and Queenstown.</p>
+</noscript>
+
+</body>
 </html>
