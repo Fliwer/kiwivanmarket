@@ -180,18 +180,19 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           
-          {/* Brand - Logo en ROND */}
+          {/* Brand - Logo en ROND avec couleur #f7eedd */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-4 mb-4">
-              {/* Logo en cercle parfait */}
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 p-0.5 shadow-lg shadow-emerald-500/30">
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                  <img 
-                    src="/kiwi-van-logo.png" 
-                    alt="Kiwi Van Market" 
-                    className="w-10 h-10 object-contain"
-                  />
-                </div>
+              {/* Logo en cercle parfait avec overflow-hidden */}
+              <div 
+                className="w-14 h-14 rounded-full shadow-lg overflow-hidden flex items-center justify-center"
+                style={{ backgroundColor: '#f7eedd' }}
+              >
+                <img 
+                  src="/kiwi-van-logo.png" 
+                  alt="Kiwi Van Market" 
+                  className="w-11 h-11 object-contain"
+                />
               </div>
               <div>
                 <span className="text-xl font-bold block">Kiwi Van Market</span>
@@ -267,15 +268,16 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
-            {/* Mini logo en rond */}
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 p-0.5">
-              <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center overflow-hidden">
-                <img 
-                  src="/kiwi-van-logo.png" 
-                  alt="Kiwi Van Market" 
-                  className="w-5 h-5 object-contain"
-                />
-              </div>
+            {/* Mini logo en rond avec couleur #f7eedd */}
+            <div 
+              className="w-8 h-8 rounded-full shadow overflow-hidden flex items-center justify-center"
+              style={{ backgroundColor: '#f7eedd' }}
+            >
+              <img 
+                src="/kiwi-van-logo.png" 
+                alt="Kiwi Van Market" 
+                className="w-6 h-6 object-contain"
+              />
             </div>
             <p className="text-gray-500 text-sm">
               © {new Date().getFullYear()} Kiwi Van Market. All rights reserved.

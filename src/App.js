@@ -743,9 +743,8 @@ export default function KiwiVanMarket() {
               
               {/* Logo */}
               <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.reload()}>
-                <div className="bg-white/20 backdrop-blur-sm p-2 rounded-xl">
-                  <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-10 h-10 object-contain" />
-                </div>
+<div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>  <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-9 h-9 object-contain" />
+</div>
                 <div className="hidden sm:block">
                   <h1 className="text-xl font-bold">Kiwi Van Market</h1>
                   <p className="text-xs text-white/80">Buy & Sell Campervans 🇳🇿</p>
