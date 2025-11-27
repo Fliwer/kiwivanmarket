@@ -284,7 +284,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
             </p>
           </div>
           <p className="text-gray-600 text-sm flex items-center gap-2">
-            Made with <span className="text-2xl">🥝</span> in New Zealand
+            Made with <span className="text-2xl">❤️</span> in New Zealand
           </p>
         </div>
       </div>
