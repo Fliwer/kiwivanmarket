@@ -3,7 +3,6 @@ import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } fro
 import { RecaptchaVerifier, signInWithPhoneNumber, updateProfile } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { uploadToCloudinary } from '../cloudinaryConfig';
 import { 
   X, Camera, Check, Shield, Phone, Mail, MapPin, Calendar, 
   Star, MessageCircle, Eye, Upload, AlertCircle, ChevronRight,
@@ -185,21 +184,42 @@ export default function UserProfile({ onClose }) {
     try {
       setUploadingPhoto(true);
       
-      const result = await uploadToCloudinary(file);
+      // Upload directly to Cloudinary using unsigned upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'kiwivan_unsigned'); // You need to create this preset in Cloudinary
+      formData.append('folder', 'profile_photos');
+      
+      const cloudName = 'dsgnwjmlv'; // Your Cloudinary cloud name
+      
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const data = await response.json();
+      const photoURL = data.secure_url;
       
       // Update Firestore
       const userRef = doc(db, 'users', currentUser.uid);
-      await updateDoc(userRef, { photoURL: result.url });
+      await updateDoc(userRef, { photoURL: photoURL });
       
       // Update Firebase Auth profile
-      await updateProfile(currentUser, { photoURL: result.url });
+      await updateProfile(currentUser, { photoURL: photoURL });
       
       // Update local state
-      setProfile(prev => ({ ...prev, photoURL: result.url }));
+      setProfile(prev => ({ ...prev, photoURL: photoURL }));
       
     } catch (error) {
       console.error('Error uploading photo:', error);
-      alert('Failed to upload photo');
+      alert('Failed to upload photo: ' + error.message);
     } finally {
       setUploadingPhoto(false);
     }
