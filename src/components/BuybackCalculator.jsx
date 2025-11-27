@@ -137,46 +137,60 @@ export default function BuybackCalculator() {
     poor: { ...t.conditions.poor, emoji: '🔧' },
   };
 
-  // 💱 Convertir un montant NZD vers la devise sélectionnée
-  const convertPrice = (nzdAmount) => {
+  // 💱 Convertir un montant de la devise actuelle vers NZD (pour calcul interne)
+  const toNZD = (amount) => {
+    return amount / currentCurrency.rate;
+  };
+
+  // 💱 Convertir un montant NZD vers la devise sélectionnée (pour affichage)
+  const fromNZD = (nzdAmount) => {
     return Math.round(nzdAmount * currentCurrency.rate);
   };
 
-  // 💱 Formater un prix avec la devise
+  // 💱 Formater un prix avec la devise (montant déjà dans la devise actuelle)
   const formatPrice = (amount) => {
-    const converted = convertPrice(amount);
+    return `${Math.round(amount).toLocaleString()} ${currentCurrency.symbol}`;
+  };
+
+  // 💱 Formater un prix NZD converti vers la devise actuelle
+  const formatPriceFromNZD = (nzdAmount) => {
+    const converted = fromNZD(nzdAmount);
     return `${converted.toLocaleString()} ${currentCurrency.symbol}`;
   };
 
   const calculation = useMemo(() => {
-    const price = parseFloat(purchasePrice) || 0;
+    const priceInUserCurrency = parseFloat(purchasePrice) || 0;
     const dur = parseFloat(duration) || 0;
     const km = parseFloat(kilometers) || 0;
 
-    if (price <= 0) return null;
+    if (priceInUserCurrency <= 0) return null;
+
+    // Convertir le prix en NZD pour le calcul
+    const priceNZD = toNZD(priceInUserCurrency);
 
     const months = durationUnit === 'weeks' ? dur / 4.33 : dur;
     const timeDepreciation = Math.min(months * CONFIG.depreciationPerMonth, 50) / 100;
     const kmBlocks = Math.floor(km / CONFIG.kmBlockSize);
-    const kmDepreciation = kmBlocks * CONFIG.depreciationPerKmBlock;
+    const kmDepreciationNZD = kmBlocks * CONFIG.depreciationPerKmBlock;
     const conditionMultiplier = CONFIG.conditionMultipliers[condition];
-    const priceAfterTime = price * (1 - timeDepreciation);
-    const priceAfterKm = Math.max(priceAfterTime - kmDepreciation, price * 0.3);
-    const finalPrice = Math.max(priceAfterKm * conditionMultiplier, price * 0.2);
-    const percentageRecovered = (finalPrice / price) * 100;
+    const priceAfterTimeNZD = priceNZD * (1 - timeDepreciation);
+    const priceAfterKmNZD = Math.max(priceAfterTimeNZD - kmDepreciationNZD, priceNZD * 0.3);
+    const finalPriceNZD = Math.max(priceAfterKmNZD * conditionMultiplier, priceNZD * 0.2);
+    const percentageRecovered = (finalPriceNZD / priceNZD) * 100;
 
+    // Reconvertir les montants dans la devise de l'utilisateur pour l'affichage
     return {
-      originalPrice: price,
+      originalPrice: priceInUserCurrency, // Prix original tel qu'entré par l'utilisateur
       timeDepreciationPercent: timeDepreciation * 100,
-      timeDepreciationAmount: price * timeDepreciation,
-      kmDepreciation,
+      timeDepreciationAmount: priceInUserCurrency * timeDepreciation, // En devise utilisateur
+      kmDepreciation: fromNZD(kmDepreciationNZD), // Converti en devise utilisateur
       conditionMultiplier,
-      conditionAdjustment: priceAfterKm * (1 - conditionMultiplier),
-      finalPrice: Math.round(finalPrice),
+      conditionAdjustment: fromNZD(priceAfterKmNZD * (1 - conditionMultiplier)), // Converti
+      finalPrice: fromNZD(finalPriceNZD), // Prix final converti
       percentageRecovered: Math.round(percentageRecovered),
       months: months.toFixed(1),
     };
-  }, [purchasePrice, duration, durationUnit, kilometers, condition]);
+  }, [purchasePrice, duration, durationUnit, kilometers, condition, currentCurrency]);
 
   const handleCalculate = () => {
     if (purchasePrice && duration && kilometers) {
