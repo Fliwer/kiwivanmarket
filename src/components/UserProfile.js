@@ -9,6 +9,7 @@ import {
   Star, MessageCircle, Eye, Upload, AlertCircle, ChevronRight,
   Award, TrendingUp, Clock, Edit3, Save, Loader
 } from 'lucide-react';
+import { SellerReviews } from './ReviewSystem';
 
 export default function UserProfile({ onClose }) {
   const { currentUser } = useAuth();
@@ -43,10 +44,35 @@ export default function UserProfile({ onClose }) {
   // Phone verification
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneCountry, setPhoneCountry] = useState('+64'); // Default NZ
   const [verificationCode, setVerificationCode] = useState('');
   const [verificationId, setVerificationId] = useState(null);
   const [phoneStep, setPhoneStep] = useState('input'); // 'input', 'verify', 'success'
   const [phoneError, setPhoneError] = useState('');
+  
+  // Country codes for phone verification
+  const countryCodes = [
+    { code: '+64', country: 'NZ', flag: '🇳🇿', name: 'New Zealand' },
+    { code: '+61', country: 'AU', flag: '🇦🇺', name: 'Australia' },
+    { code: '+44', country: 'UK', flag: '🇬🇧', name: 'United Kingdom' },
+    { code: '+33', country: 'FR', flag: '🇫🇷', name: 'France' },
+    { code: '+49', country: 'DE', flag: '🇩🇪', name: 'Germany' },
+    { code: '+31', country: 'NL', flag: '🇳🇱', name: 'Netherlands' },
+    { code: '+32', country: 'BE', flag: '🇧🇪', name: 'Belgium' },
+    { code: '+41', country: 'CH', flag: '🇨🇭', name: 'Switzerland' },
+    { code: '+34', country: 'ES', flag: '🇪🇸', name: 'Spain' },
+    { code: '+39', country: 'IT', flag: '🇮🇹', name: 'Italy' },
+    { code: '+1', country: 'US', flag: '🇺🇸', name: 'United States' },
+    { code: '+1', country: 'CA', flag: '🇨🇦', name: 'Canada' },
+    { code: '+353', country: 'IE', flag: '🇮🇪', name: 'Ireland' },
+    { code: '+81', country: 'JP', flag: '🇯🇵', name: 'Japan' },
+    { code: '+82', country: 'KR', flag: '🇰🇷', name: 'South Korea' },
+    { code: '+86', country: 'CN', flag: '🇨🇳', name: 'China' },
+    { code: '+91', country: 'IN', flag: '🇮🇳', name: 'India' },
+    { code: '+55', country: 'BR', flag: '🇧🇷', name: 'Brazil' },
+    { code: '+54', country: 'AR', flag: '🇦🇷', name: 'Argentina' },
+    { code: '+56', country: 'CL', flag: '🇨🇱', name: 'Chile' },
+  ];
   
   // Edit mode
   const [isEditing, setIsEditing] = useState(false);
@@ -108,13 +134,28 @@ export default function UserProfile({ onClose }) {
           totalViews += doc.data().views || 0;
         });
         
+        // Load reviews stats
+        const reviewsQuery = query(
+          collection(db, 'reviews'),
+          where('sellerId', '==', currentUser.uid)
+        );
+        const reviewsSnap = await getDocs(reviewsQuery);
+        
+        let avgRating = 0;
+        let totalReviews = reviewsSnap.size;
+        
+        if (totalReviews > 0) {
+          const sumRatings = reviewsSnap.docs.reduce((sum, doc) => sum + (doc.data().rating || 0), 0);
+          avgRating = parseFloat((sumRatings / totalReviews).toFixed(1));
+        }
+        
         setStats({
           totalListings: vansSnap.size,
           activeListings: vansSnap.size,
           totalViews: totalViews,
-          responseRate: 100,
-          avgRating: 5.0,
-          totalReviews: 0
+          responseRate: 100, // TODO: Calculate from messages
+          avgRating: avgRating || 0,
+          totalReviews: totalReviews
         });
         
       } catch (error) {
@@ -203,7 +244,7 @@ export default function UserProfile({ onClose }) {
 
   // Phone verification - Step 1: Send code
   const sendVerificationCode = async () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
+    if (!phoneNumber || phoneNumber.length < 6) {
       setPhoneError('Please enter a valid phone number');
       return;
     }
@@ -211,15 +252,12 @@ export default function UserProfile({ onClose }) {
     try {
       setPhoneError('');
       
-      // Format phone number (add +64 for NZ if needed)
-      let formattedPhone = phoneNumber;
-      if (!phoneNumber.startsWith('+')) {
-        if (phoneNumber.startsWith('0')) {
-          formattedPhone = '+64' + phoneNumber.substring(1);
-        } else {
-          formattedPhone = '+64' + phoneNumber;
-        }
+      // Format phone number with selected country code
+      let formattedPhone = phoneNumber.replace(/\s/g, ''); // Remove spaces
+      if (formattedPhone.startsWith('0')) {
+        formattedPhone = formattedPhone.substring(1); // Remove leading 0
       }
+      formattedPhone = phoneCountry + formattedPhone;
       
       // Setup reCAPTCHA
       if (!window.recaptchaVerifier) {
@@ -265,17 +303,24 @@ export default function UserProfile({ onClose }) {
       
       await verificationId.confirm(verificationCode);
       
+      // Format full phone number with country code
+      let fullPhone = phoneNumber.replace(/\s/g, '');
+      if (fullPhone.startsWith('0')) {
+        fullPhone = fullPhone.substring(1);
+      }
+      fullPhone = phoneCountry + ' ' + fullPhone;
+      
       // Update Firestore
       const userRef = doc(db, 'users', currentUser.uid);
       await updateDoc(userRef, {
-        phone: phoneNumber,
+        phone: fullPhone,
         phoneVerified: true
       });
       
       // Update local state
       setProfile(prev => ({
         ...prev,
-        phone: phoneNumber,
+        phone: fullPhone,
         phoneVerified: true
       }));
       
@@ -484,10 +529,14 @@ export default function UserProfile({ onClose }) {
             </div>
             <div className="bg-gray-50 rounded-xl p-3 text-center">
               <div className="flex items-center justify-center gap-1">
-                <Star size={16} className="text-yellow-500 fill-yellow-500" />
-                <span className="text-2xl font-bold text-gray-900">{stats.avgRating}</span>
+                <Star size={16} className={stats.totalReviews > 0 ? "text-yellow-500 fill-yellow-500" : "text-gray-300"} />
+                <span className="text-2xl font-bold text-gray-900">
+                  {stats.totalReviews > 0 ? stats.avgRating : '-'}
+                </span>
               </div>
-              <div className="text-xs text-gray-500">Rating</div>
+              <div className="text-xs text-gray-500">
+                {stats.totalReviews > 0 ? `${stats.totalReviews} review${stats.totalReviews > 1 ? 's' : ''}` : 'No reviews'}
+              </div>
             </div>
             <div className="bg-gray-50 rounded-xl p-3 text-center">
               <div className="text-2xl font-bold text-gray-900">{stats.responseRate}%</div>
@@ -506,6 +555,22 @@ export default function UserProfile({ onClose }) {
               }`}
             >
               Profile Info
+            </button>
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`px-4 py-2 font-semibold text-sm transition border-b-2 -mb-px flex items-center gap-1 ${
+                activeTab === 'reviews'
+                  ? 'text-emerald-600 border-emerald-600'
+                  : 'text-gray-500 border-transparent hover:text-gray-700'
+              }`}
+            >
+              <Star size={14} />
+              Reviews
+              {stats.totalReviews > 0 && (
+                <span className="bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded-full text-xs">
+                  {stats.totalReviews}
+                </span>
+              )}
             </button>
             <button
               onClick={() => setActiveTab('security')}
@@ -645,6 +710,12 @@ export default function UserProfile({ onClose }) {
             </div>
           )}
           
+          {activeTab === 'reviews' && (
+            <div className="space-y-4">
+              <SellerReviews sellerId={currentUser?.uid} limit={10} />
+            </div>
+          )}
+          
           {activeTab === 'security' && (
             <div className="space-y-4">
               {/* Email verification */}
@@ -742,17 +813,28 @@ export default function UserProfile({ onClose }) {
                   <div className="mb-4">
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Phone Number</label>
                     <div className="flex">
-                      <span className="bg-gray-100 border-2 border-r-0 border-gray-200 rounded-l-xl px-3 py-3 text-gray-500 text-sm">
-                        +64
-                      </span>
+                      <select
+                        value={phoneCountry}
+                        onChange={(e) => setPhoneCountry(e.target.value)}
+                        className="bg-gray-100 border-2 border-r-0 border-gray-200 rounded-l-xl px-2 py-3 text-gray-700 text-sm focus:outline-none focus:border-emerald-500 cursor-pointer"
+                      >
+                        {countryCodes.map((c) => (
+                          <option key={c.country} value={c.code}>
+                            {c.flag} {c.code}
+                          </option>
+                        ))}
+                      </select>
                       <input
                         type="tel"
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                        onChange={(e) => setPhoneNumber(e.target.value.replace(/[^\d\s]/g, ''))}
                         placeholder="21 123 4567"
                         className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-r-xl focus:border-emerald-500 focus:outline-none"
                       />
                     </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {countryCodes.find(c => c.code === phoneCountry)?.flag} {countryCodes.find(c => c.code === phoneCountry)?.name}
+                    </p>
                   </div>
                   
                   <div id="recaptcha-container" className="mb-4"></div>
@@ -776,7 +858,7 @@ export default function UserProfile({ onClose }) {
               {phoneStep === 'verify' && (
                 <>
                   <p className="text-gray-600 text-sm mb-4">
-                    Enter the 6-digit code sent to +64{phoneNumber}
+                    Enter the 6-digit code sent to {phoneCountry} {phoneNumber}
                   </p>
                   
                   <div className="mb-4">
