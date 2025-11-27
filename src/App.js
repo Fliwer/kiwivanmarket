@@ -16,6 +16,54 @@ import TermsModal from './components/TermsModal';
 import HomeSeoSection from './components/HomeSeoSection';
 import BuybackCalculator from './components/BuybackCalculator';
 
+// ✅ Calcule le nombre de jours depuis la création
+const getDaysAgo = (createdAt) => {
+  if (!createdAt) return 0;
+  const created = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+  const now = new Date();
+  const diffTime = Math.abs(now - created);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
+
+// Détecteur WebView (Messenger, Instagram, etc.)
+function WebViewWarning() {
+  const [isWebView, setIsWebView] = useState(false);
+
+  useEffect(() => {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    // Détecte les WebViews de Facebook, Messenger, Instagram, etc.
+    const isInAppBrowser = /FBAN|FBAV|Instagram|Messenger|WebView|wv/i.test(ua);
+    setIsWebView(isInAppBrowser);
+  }, []);
+
+  if (!isWebView) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-6">
+      <div className="bg-white rounded-2xl p-6 max-w-sm text-center shadow-2xl">
+        <div className="text-5xl mb-4">🌐</div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">
+          Open in Browser
+        </h2>
+        <p className="text-gray-600 mb-4 text-sm">
+          For the best experience, please open this link in your browser (Safari, Chrome, etc.)
+        </p>
+        <div className="bg-gray-100 rounded-xl p-3 mb-4">
+          <p className="text-xs text-gray-500 mb-1">Tap the menu ••• then</p>
+          <p className="font-semibold text-gray-800">"Open in Browser"</p>
+        </div>
+        <button 
+          onClick={() => setIsWebView(false)}
+          className="text-sm text-gray-400 hover:text-gray-600"
+        >
+          Continue anyway →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // 🌐 Sélecteur de langue pour le header
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
@@ -580,7 +628,7 @@ export default function KiwiVanMarket() {
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Clock className="text-emerald-600 mb-2" size={20} />
                   <p className="text-xs text-gray-500 font-semibold mb-1">POSTED</p>
-                  <p className="text-xl font-bold text-gray-900">{van.postedDays || 0}d ago</p>
+                  <p className="text-xl font-bold text-gray-900">{getDaysAgo(van.createdAt)}d ago</p>
                 </div>
               </div>
 
@@ -829,6 +877,7 @@ export default function KiwiVanMarket() {
 
   return (
     <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
+      <WebViewWarning />
       <div className="min-h-screen bg-gray-50">
         
         {/* ========== HEADER VERT + ICÔNES VISIBLES ========== */}
@@ -838,8 +887,9 @@ export default function KiwiVanMarket() {
               
               {/* Logo */}
               <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.reload()}>
-<div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>  <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-9 h-9 object-contain" />
-</div>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
+                  <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-9 h-9 object-contain" />
+                </div>
                 <div className="hidden sm:block">
                   <h1 className="text-xl font-bold">Kiwi Van Market</h1>
                   <p className="text-xs text-white/80">Buy & Sell Campervans 🇳🇿</p>
@@ -858,13 +908,13 @@ export default function KiwiVanMarket() {
                 </button>
 
                 {/* Bouton Vendre */}
-              <button 
-                onClick={() => setShowAddVanForm(true)}
-                className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
-              >
-                <Plus size={18} />
-                <span className="hidden sm:inline">Sell your van</span>
-              </button>
+                <button 
+                  onClick={() => setShowAddVanForm(true)}
+                  className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
+                >
+                  <Plus size={18} />
+                  <span className="hidden sm:inline">Sell your van</span>
+                </button>
               </div>
 
               {/* Barre de recherche - Desktop */}
@@ -1399,10 +1449,9 @@ export default function KiwiVanMarket() {
         </div>
 
         {/* ✅ NOUVEAU FOOTER avec Disclaimer + FAQ + Google Translate */}
-        
-          <HomeSeoSection />
+        <HomeSeoSection />
 
-          <Footer 
+        <Footer 
           onOpenFAQ={() => setShowFAQ(true)} 
           onOpenTerms={() => setShowTerms(true)} 
         />
