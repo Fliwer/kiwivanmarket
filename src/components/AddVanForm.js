@@ -19,7 +19,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     region: 'North Island',
     year: new Date().getFullYear(),
     mileage: '',
-    type: 'Campervan',
+    type: 'Van',
     description: '',
     capacity: 2,
     selfContained: false,
@@ -111,7 +111,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         region: vanData.region || 'North Island',
         year: vanData.year || new Date().getFullYear(),
         mileage: vanData.mileage?.toString() || '',
-        type: vanData.type || 'Campervan',
+        type: vanData.type || 'Van',
         description: vanData.description || '',
         capacity: vanData.capacity || 2,
         selfContained: vanData.selfContained || false,
@@ -495,9 +495,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
                   <option value="Car">🚗 Car</option>
-                  <option value="Minivan">🚙 Minivan</option>
                   <option value="Van">🚐 Van</option>
-                  <option value="Campervan">🏕️ Campervan</option>
                   <option value="Motorhome">🚌 Motorhome</option>
                 </select>
               </div>

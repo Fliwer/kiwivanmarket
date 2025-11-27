@@ -178,6 +178,79 @@ function LanguageSelector() {
   );
 }
 
+// 💱 Sélecteur de devise pour le header
+const CURRENCIES = {
+  NZD: { symbol: '$', code: 'NZD', flag: '🇳🇿', rate: 1 },
+  EUR: { symbol: '€', code: 'EUR', flag: '🇪🇺', rate: 0.54 },
+  USD: { symbol: '$', code: 'USD', flag: '🇺🇸', rate: 0.59 },
+  AUD: { symbol: '$', code: 'AUD', flag: '🇦🇺', rate: 0.92 },
+  GBP: { symbol: '£', code: 'GBP', flag: '🇬🇧', rate: 0.47 },
+};
+
+function CurrencySelector() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentCurrency, setCurrentCurrency] = useState('NZD');
+
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('kiwivanmarket_currency') || 'NZD';
+    setCurrentCurrency(savedCurrency);
+  }, []);
+
+  const changeCurrency = (code) => {
+    setIsOpen(false);
+    setCurrentCurrency(code);
+    localStorage.setItem('kiwivanmarket_currency', code);
+    // Dispatch event pour que les autres composants puissent réagir
+    window.dispatchEvent(new CustomEvent('currencyChange', { detail: code }));
+  };
+
+  const currency = CURRENCIES[currentCurrency];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
+        title="Change currency"
+      >
+        <span className="text-base">{currency.flag}</span>
+        <span className="hidden sm:inline">{currency.code}</span>
+        <ChevronDown
+          size={14}
+          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-[100]"
+            onClick={() => setIsOpen(false)}
+          />
+
+          <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[140px] z-[101]">
+            {Object.entries(CURRENCIES).map(([code, curr]) => (
+              <button
+                key={code}
+                onClick={() => changeCurrency(code)}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
+                  currentCurrency === code
+                    ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                    : 'hover:bg-gray-50 text-gray-700'
+                }`}
+              >
+                <span className="text-base">{curr.flag}</span>
+                <span className="font-medium">{code}</span>
+                <span className="text-gray-400 ml-auto">{curr.symbol}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // Petit composant pour le badge Messages (utilise useNotifications)
 function MessageBadge() {
   const { unreadCount } = useNotifications();
@@ -237,6 +310,22 @@ export default function KiwiVanMarket() {
       shower: false
     }
   });
+
+  // 💱 State pour la devise
+  const [currency, setCurrency] = useState('NZD');
+
+  // 💱 Écouter les changements de devise
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('kiwivanmarket_currency') || 'NZD';
+    setCurrency(savedCurrency);
+
+    const handleCurrencyChange = (e) => {
+      setCurrency(e.detail);
+    };
+
+    window.addEventListener('currencyChange', handleCurrencyChange);
+    return () => window.removeEventListener('currencyChange', handleCurrencyChange);
+  }, []);
 
   // ⚡ Cache le loader initial dès que React a monté
   useEffect(() => {
@@ -351,7 +440,12 @@ export default function KiwiVanMarket() {
     setFilteredVans(filtered);
   }, [searchTerm, filters, vans]);
 
-  const formatPrice = (price) => `NZ$${(price || 0).toLocaleString()}`;
+  // 💱 Format price with selected currency
+  const formatPrice = (price) => {
+    const curr = CURRENCIES[currency];
+    const converted = Math.round((price || 0) * curr.rate);
+    return `${converted.toLocaleString()} ${curr.symbol}`;
+  };
 
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
@@ -671,6 +765,7 @@ export default function KiwiVanMarket() {
               </button>
 
               <div className="flex items-center gap-1">
+                <CurrencySelector />
                 <LanguageSelector />
                 
                 <button 
@@ -788,6 +883,9 @@ export default function KiwiVanMarket() {
 
               {/* Navigation Icons */}
               <div className="flex items-center gap-1">
+                
+                {/* 💱 Sélecteur de devise */}
+                <CurrencySelector />
                 
                 {/* 🌐 Sélecteur de langue */}
                 <LanguageSelector />
@@ -1090,9 +1188,7 @@ export default function KiwiVanMarket() {
                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
                         <option value="all">🚐 All Types</option>
                         <option value="Car">🚗 Car</option>
-                        <option value="Minivan">🚙 Minivan</option>
                         <option value="Van">🚐 Van</option>
-                        <option value="Campervan">🏕️ Campervan</option>
                         <option value="Motorhome">🚌 Motorhome</option>
                       </select>
                     </div>

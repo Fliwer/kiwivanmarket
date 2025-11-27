@@ -13,6 +13,15 @@ const CONFIG = {
   },
 };
 
+// 💱 Currency configuration
+const CURRENCIES = {
+  NZD: { symbol: '$', code: 'NZD', flag: '🇳🇿', rate: 1 },
+  EUR: { symbol: '€', code: 'EUR', flag: '🇪🇺', rate: 0.54 },
+  USD: { symbol: '$', code: 'USD', flag: '🇺🇸', rate: 0.59 },
+  AUD: { symbol: '$', code: 'AUD', flag: '🇦🇺', rate: 0.92 },
+  GBP: { symbol: '£', code: 'GBP', flag: '🇬🇧', rate: 0.47 },
+};
+
 // 🌐 Traductions EN/FR
 const translations = {
   en: {
@@ -40,6 +49,7 @@ const translations = {
     newCalculation: 'New calculation',
     poweredBy: 'Powered by',
     monthsLabel: 'months',
+    currency: 'Currency',
     conditions: {
       excellent: { label: 'Excellent', description: 'Like new, no damage' },
       good: { label: 'Good', description: 'Normal wear, well maintained' },
@@ -72,6 +82,7 @@ const translations = {
     newCalculation: 'Nouveau calcul',
     poweredBy: 'Propulsé par',
     monthsLabel: 'mois',
+    currency: 'Devise',
     conditions: {
       excellent: { label: 'Excellent', description: 'Comme neuf, aucun dégât' },
       good: { label: 'Bon état', description: 'Usure normale, bien entretenu' },
@@ -89,6 +100,8 @@ export default function BuybackCalculator() {
   const [condition, setCondition] = useState('good');
   const [showResult, setShowResult] = useState(false);
   const [lang, setLang] = useState('en');
+  const [currency, setCurrency] = useState('NZD');
+  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
   // 🌐 Détecter la langue depuis le cookie Google Translate
   useEffect(() => {
@@ -106,13 +119,33 @@ export default function BuybackCalculator() {
     return () => clearInterval(interval);
   }, []);
 
+  // 💱 Charger la devise sauvegardée
+  useEffect(() => {
+    const savedCurrency = localStorage.getItem('kiwivanmarket_currency');
+    if (savedCurrency && CURRENCIES[savedCurrency]) {
+      setCurrency(savedCurrency);
+    }
+  }, []);
+
   const t = translations[lang];
+  const currentCurrency = CURRENCIES[currency];
   
   const conditionLabels = {
     excellent: { ...t.conditions.excellent, emoji: '✨' },
     good: { ...t.conditions.good, emoji: '👍' },
     fair: { ...t.conditions.fair, emoji: '👌' },
     poor: { ...t.conditions.poor, emoji: '🔧' },
+  };
+
+  // 💱 Convertir un montant NZD vers la devise sélectionnée
+  const convertPrice = (nzdAmount) => {
+    return Math.round(nzdAmount * currentCurrency.rate);
+  };
+
+  // 💱 Formater un prix avec la devise
+  const formatPrice = (amount) => {
+    const converted = convertPrice(amount);
+    return `${converted.toLocaleString()} ${currentCurrency.symbol}`;
   };
 
   const calculation = useMemo(() => {
@@ -159,6 +192,12 @@ export default function BuybackCalculator() {
     setShowResult(false);
   };
 
+  const handleCurrencyChange = (newCurrency) => {
+    setCurrency(newCurrency);
+    localStorage.setItem('kiwivanmarket_currency', newCurrency);
+    setShowCurrencyDropdown(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-100 via-emerald-50 to-stone-100 py-12 px-4">
       {/* Background decoration */}
@@ -188,21 +227,65 @@ export default function BuybackCalculator() {
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-stone-200/50 border border-stone-200/50 overflow-hidden">
           {/* Form Section */}
           <div className="p-6 md:p-8 space-y-6">
+            
+            {/* 💱 Currency Selector */}
+            <div className="flex justify-end">
+              <div className="relative">
+                <button
+                  onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                  className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 rounded-xl transition text-stone-700 text-sm font-medium border border-stone-200"
+                >
+                  <span>{currentCurrency.flag}</span>
+                  <span>{currentCurrency.code}</span>
+                  <svg className={`w-4 h-4 transition-transform ${showCurrencyDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {showCurrencyDropdown && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowCurrencyDropdown(false)} />
+                    <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-stone-200 py-2 min-w-[140px] z-20">
+                      {Object.entries(CURRENCIES).map(([code, curr]) => (
+                        <button
+                          key={code}
+                          onClick={() => handleCurrencyChange(code)}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
+                            currency === code
+                              ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                              : 'hover:bg-stone-50 text-stone-700'
+                          }`}
+                        >
+                          <span>{curr.flag}</span>
+                          <span>{code}</span>
+                          <span className="text-stone-400 ml-auto">{curr.symbol}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
             {/* Purchase Price */}
             <div>
               <label className="block text-sm font-semibold text-stone-700 mb-2">
                 {t.labelPrice}
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-medium">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-medium">{currentCurrency.symbol}</span>
                 <input
                   type="number"
                   value={purchasePrice}
-                  onChange={(e) => setPurchasePrice(e.target.value)}
+                  onChange={(e) => {
+                    setPurchasePrice(e.target.value);
+                    // ✅ FIX: Permettre le recalcul en temps réel
+                    if (showResult) setShowResult(false);
+                  }}
                   placeholder="8500"
-                  className="w-full pl-10 pr-4 py-3.5 bg-stone-50 border-2 border-stone-200 rounded-xl text-stone-800 font-medium placeholder:text-stone-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
+                  className="w-full pl-10 pr-16 py-3.5 bg-stone-50 border-2 border-stone-200 rounded-xl text-stone-800 font-medium placeholder:text-stone-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm">NZD</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm">{currentCurrency.code}</span>
               </div>
             </div>
 
@@ -215,13 +298,19 @@ export default function BuybackCalculator() {
                 <input
                   type="number"
                   value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
+                  onChange={(e) => {
+                    setDuration(e.target.value);
+                    if (showResult) setShowResult(false);
+                  }}
                   placeholder="12"
                   className="flex-1 px-4 py-3.5 bg-stone-50 border-2 border-stone-200 rounded-xl text-stone-800 font-medium placeholder:text-stone-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
                 />
                 <select
                   value={durationUnit}
-                  onChange={(e) => setDurationUnit(e.target.value)}
+                  onChange={(e) => {
+                    setDurationUnit(e.target.value);
+                    if (showResult) setShowResult(false);
+                  }}
                   className="px-4 py-3.5 bg-stone-50 border-2 border-stone-200 rounded-xl text-stone-800 font-medium focus:outline-none focus:border-emerald-500 focus:bg-white transition-all cursor-pointer"
                 >
                   <option value="weeks">{t.weeks}</option>
@@ -239,7 +328,10 @@ export default function BuybackCalculator() {
                 <input
                   type="number"
                   value={kilometers}
-                  onChange={(e) => setKilometers(e.target.value)}
+                  onChange={(e) => {
+                    setKilometers(e.target.value);
+                    if (showResult) setShowResult(false);
+                  }}
                   placeholder="15000"
                   className="w-full px-4 py-3.5 bg-stone-50 border-2 border-stone-200 rounded-xl text-stone-800 font-medium placeholder:text-stone-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
                 />
@@ -257,7 +349,10 @@ export default function BuybackCalculator() {
                   <button
                     key={key}
                     type="button"
-                    onClick={() => setCondition(key)}
+                    onClick={() => {
+                      setCondition(key);
+                      if (showResult) setShowResult(false);
+                    }}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${
                       condition === key
                         ? 'border-emerald-500 bg-emerald-50 shadow-md'
@@ -294,9 +389,9 @@ export default function BuybackCalculator() {
                 <p className="text-sm text-stone-500 mb-2">{t.resultTitle}</p>
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-5xl md:text-6xl font-bold text-emerald-700">
-                    ${calculation.finalPrice.toLocaleString()}
+                    {formatPrice(calculation.finalPrice)}
                   </span>
-                  <span className="text-stone-400 text-lg">NZD</span>
+                  <span className="text-stone-400 text-lg">{currentCurrency.code}</span>
                 </div>
                 <div className="mt-3 inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -317,23 +412,23 @@ export default function BuybackCalculator() {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between items-center">
                     <span className="text-stone-600">{t.initialPrice}</span>
-                    <span className="font-semibold text-stone-800">${calculation.originalPrice.toLocaleString()}</span>
+                    <span className="font-semibold text-stone-800">{formatPrice(calculation.originalPrice)}</span>
                   </div>
                   <div className="flex justify-between items-center text-amber-700">
                     <span>{t.timeDepreciation} ({calculation.months} {t.monthsLabel})</span>
-                    <span className="font-medium">- ${Math.round(calculation.timeDepreciationAmount).toLocaleString()}</span>
+                    <span className="font-medium">- {formatPrice(Math.round(calculation.timeDepreciationAmount))}</span>
                   </div>
                   <div className="flex justify-between items-center text-amber-700">
                     <span>{t.mileageDepreciation} ({kilometers} km)</span>
-                    <span className="font-medium">- ${calculation.kmDepreciation.toLocaleString()}</span>
+                    <span className="font-medium">- {formatPrice(calculation.kmDepreciation)}</span>
                   </div>
                   <div className="flex justify-between items-center text-amber-700">
                     <span>{t.conditionAdjustment} ({conditionLabels[condition].label})</span>
-                    <span className="font-medium">- ${Math.round(calculation.conditionAdjustment).toLocaleString()}</span>
+                    <span className="font-medium">- {formatPrice(Math.round(calculation.conditionAdjustment))}</span>
                   </div>
                   <div className="border-t border-stone-200 pt-3 flex justify-between items-center">
                     <span className="font-bold text-stone-800">{t.estimatedPrice}</span>
-                    <span className="font-bold text-emerald-700 text-lg">${calculation.finalPrice.toLocaleString()}</span>
+                    <span className="font-bold text-emerald-700 text-lg">{formatPrice(calculation.finalPrice)}</span>
                   </div>
                 </div>
               </div>
