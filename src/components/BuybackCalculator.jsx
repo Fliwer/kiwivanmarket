@@ -159,6 +159,7 @@ export default function BuybackCalculator() {
   };
 
   const calculation = useMemo(() => {
+    const curr = CURRENCIES[currency]; // Utiliser la devise actuelle
     const priceInUserCurrency = parseFloat(purchasePrice) || 0;
     const dur = parseFloat(duration) || 0;
     const km = parseFloat(kilometers) || 0;
@@ -166,7 +167,7 @@ export default function BuybackCalculator() {
     if (priceInUserCurrency <= 0) return null;
 
     // Convertir le prix en NZD pour le calcul
-    const priceNZD = toNZD(priceInUserCurrency);
+    const priceNZD = priceInUserCurrency / curr.rate;
 
     const months = durationUnit === 'weeks' ? dur / 4.33 : dur;
     const timeDepreciation = Math.min(months * CONFIG.depreciationPerMonth, 50) / 100;
@@ -183,14 +184,14 @@ export default function BuybackCalculator() {
       originalPrice: priceInUserCurrency, // Prix original tel qu'entré par l'utilisateur
       timeDepreciationPercent: timeDepreciation * 100,
       timeDepreciationAmount: priceInUserCurrency * timeDepreciation, // En devise utilisateur
-      kmDepreciation: fromNZD(kmDepreciationNZD), // Converti en devise utilisateur
+      kmDepreciation: Math.round(kmDepreciationNZD * curr.rate), // Converti en devise utilisateur
       conditionMultiplier,
-      conditionAdjustment: fromNZD(priceAfterKmNZD * (1 - conditionMultiplier)), // Converti
-      finalPrice: fromNZD(finalPriceNZD), // Prix final converti
+      conditionAdjustment: Math.round(priceAfterKmNZD * (1 - conditionMultiplier) * curr.rate), // Converti
+      finalPrice: Math.round(finalPriceNZD * curr.rate), // Prix final converti
       percentageRecovered: Math.round(percentageRecovered),
       months: months.toFixed(1),
     };
-  }, [purchasePrice, duration, durationUnit, kilometers, condition, currentCurrency]);
+  }, [purchasePrice, duration, durationUnit, kilometers, condition, currency]);
 
   const handleCalculate = () => {
     if (purchasePrice && duration && kilometers) {
@@ -210,6 +211,7 @@ export default function BuybackCalculator() {
     setCurrency(newCurrency);
     localStorage.setItem('kiwivanmarket_currency', newCurrency);
     setShowCurrencyDropdown(false);
+    // Le résultat se recalcule automatiquement grâce au useMemo
   };
 
   return (
