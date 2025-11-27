@@ -15,6 +15,7 @@ import Footer, { FAQModal } from './components/Footer';
 import TermsModal from './components/TermsModal';
 import HomeSeoSection from './components/HomeSeoSection';
 import BuybackCalculator from './components/BuybackCalculator';
+import UserProfile from './components/UserProfile';
 
 // ✅ Calcule le nombre de jours depuis la création
 const getDaysAgo = (createdAt) => {
@@ -326,6 +327,7 @@ export default function KiwiVanMarket() {
   const [showMessagingPage, setShowMessagingPage] = useState(false);
   const [showBuybackCalculator, setShowBuybackCalculator] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const [showBuyBackInfo, setShowBuyBackInfo] = useState(false);
   const { currentUser, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -990,6 +992,15 @@ export default function KiwiVanMarket() {
                         <div className="py-1">
                           <a 
                             href="#"
+                            onClick={(e) => { e.preventDefault(); setShowUserProfile(true); setShowUserMenu(false); }}
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
+                            <svg className="w-[18px] h-[18px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span>My Profile</span>
+                          </a>
+                          <a 
+                            href="#"
                             onClick={(e) => { e.preventDefault(); setShowMyVans(true); setShowUserMenu(false); }}
                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
                             <svg className="w-[18px] h-[18px] text-gray-400" fill="currentColor" viewBox="0 0 24 24">
@@ -1472,7 +1483,10 @@ export default function KiwiVanMarket() {
             onClose={() => setShowFavorites(false)}
             onVanClick={(van) => setSelectedVan(van)}
           />
-        )} 
+        )}
+        {showUserProfile && (
+          <UserProfile onClose={() => setShowUserProfile(false)} />
+        )}
         <AuthModal 
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)} 
