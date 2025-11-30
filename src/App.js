@@ -1229,11 +1229,11 @@ export default function KiwiVanMarket() {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               
               {/* Quick Filters - Grille 2x2 sur mobile, ligne sur desktop */}
-              <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:overflow-visible md:pb-0 md:flex-wrap">
+              <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:gap-3 md:overflow-visible md:pb-0 md:flex-wrap">
                 
                 {/* Buy-Back */}
                 <div 
-                  className="relative flex items-center"
+                  className="relative w-full md:w-auto"
                   onMouseEnter={() => setShowBuyBackInfo(true)}
                   onMouseLeave={() => setShowBuyBackInfo(false)}
                 >
@@ -1274,7 +1274,7 @@ export default function KiwiVanMarket() {
 
                 {/* REGO Valid */}
                 <div 
-                  className="relative flex items-center"
+                  className="relative w-full md:w-auto"
                   onMouseEnter={() => setShowRegoInfo(true)}
                   onMouseLeave={() => setShowRegoInfo(false)}
                 >
@@ -1316,7 +1316,7 @@ export default function KiwiVanMarket() {
 
                 {/* Self-Contained */}
                 <div 
-                  className="relative flex-shrink-0 flex items-center"
+                  className="relative w-full md:w-auto"
                   onMouseEnter={() => setShowSelfContainedInfo(true)}
                   onMouseLeave={() => setShowSelfContainedInfo(false)}
                 >
@@ -1369,7 +1369,7 @@ export default function KiwiVanMarket() {
 
                 {/* WOF Valid */}
                 <div 
-                  className="relative flex-shrink-0 flex items-center"
+                  className="relative w-full md:w-auto"
                   onMouseEnter={() => setShowWofInfo(true)}
                   onMouseLeave={() => setShowWofInfo(false)}
                 >
