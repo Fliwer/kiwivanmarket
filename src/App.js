@@ -359,7 +359,7 @@ export default function KiwiVanMarket() {
     buyBack: false,
     wofValid: false,
     regoValid: false,
-    // Equipment filters
+    // Equipment filters - Simplified for backpackers
     equipment: {
       doubleBed: false,
       fridge: false,
@@ -369,8 +369,10 @@ export default function KiwiVanMarket() {
       solarPanel: false,
       leisureBattery: false,
       heater: false,
-      hotWater: false,
-      shower: false
+      dieselHeater: false,
+      shower: false,
+      insulation: false,
+      surfRack: false
     }
   });
 
@@ -493,6 +495,14 @@ export default function KiwiVanMarket() {
         // Cas spécial pour shower (indoor ou outdoor)
         if (key === 'shower') {
           return van.equipment?.outdoorShower || van.equipment?.indoorShower;
+        }
+        // Cas spécial pour surfRack (bike ou surf)
+        if (key === 'surfRack') {
+          return van.equipment?.surfRack || van.equipment?.bikeRack;
+        }
+        // Cas spécial pour heater (normal ou diesel)
+        if (key === 'heater') {
+          return van.equipment?.heater || van.equipment?.dieselHeater;
         }
         return van.equipment?.[key] === true;
       });
@@ -1312,7 +1322,8 @@ export default function KiwiVanMarket() {
                           type: 'all',
                           equipment: {
                             doubleBed: false, fridge: false, gasStove: false, sink: false, toilet: false,
-                            solarPanel: false, leisureBattery: false, heater: false, hotWater: false, shower: false
+                            solarPanel: false, leisureBattery: false, heater: false, dieselHeater: false, 
+                            shower: false, insulation: false, surfRack: false
                           }
                         })}
                         className="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1 px-3 py-1.5 hover:bg-red-50 rounded-lg transition"
@@ -1445,18 +1456,20 @@ export default function KiwiVanMarket() {
                       </div>
                     </summary>
                     <div className="pt-3 pb-1">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                         {[
                           { key: 'doubleBed', emoji: '🛏️', label: 'Double Bed' },
                           { key: 'fridge', emoji: '🧊', label: 'Fridge' },
                           { key: 'gasStove', emoji: '🔥', label: 'Gas Stove' },
                           { key: 'sink', emoji: '🚰', label: 'Sink' },
                           { key: 'toilet', emoji: '🚽', label: 'Toilet' },
+                          { key: 'shower', emoji: '🚿', label: 'Shower' },
                           { key: 'solarPanel', emoji: '☀️', label: 'Solar Panel' },
                           { key: 'leisureBattery', emoji: '🔋', label: 'Battery' },
-                          { key: 'heater', emoji: '🌐¡ï¸', label: 'Heater' },
-                          { key: 'hotWater', emoji: '♨️', label: 'Boiler' },
-                          { key: 'shower', emoji: '🚿', label: 'Shower' },
+                          { key: 'heater', emoji: '🌡️', label: 'Heater' },
+                          { key: 'dieselHeater', emoji: '🔥', label: 'Diesel Heater' },
+                          { key: 'insulation', emoji: '🧥', label: 'Insulated' },
+                          { key: 'surfRack', emoji: '🏄', label: 'Surf/Bike Rack' },
                         ].map(item => (
                           <button
                             key={item.key}
