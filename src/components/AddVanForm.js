@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
@@ -185,6 +185,38 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // 🛡️ SÉCURITÉ: Vérifier que l'utilisateur est connecté
+    if (!currentUser) {
+      alert('⚠️ Please sign in to add a van!');
+      return;
+    }
+
+    // 🛡️ SÉCURITÉ: Limiter à 20 vans par utilisateur (anti-spam)
+    if (!editMode) {
+      try {
+        const userVansQuery = query(
+          collection(db, 'vans'),
+          where('userId', '==', currentUser.uid)
+        );
+        const userVansSnapshot = await getDocs(userVansQuery);
+        const userVanCount = userVansSnapshot.size;
+        
+        if (userVanCount >= 20) {
+          const upgrade = window.confirm(
+            '🚐 You have reached the maximum of 20 free listings!\n\n' +
+            '💼 Need more? Upgrade to a Pro account for unlimited listings.\n\n' +
+            'Click OK to contact us about Pro accounts.'
+          );
+          if (upgrade) {
+            window.location.href = 'mailto:kiwivanmarket.contact@gmail.com?subject=Pro%20Account%20Request&body=Hi,%20I%20would%20like%20to%20upgrade%20to%20a%20Pro%20account%20for%20unlimited%20listings.';
+          }
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking user van count:', error);
+      }
+    }
 
     if (!formData.title || !formData.price || !formData.location) {
       alert('⚠️ Please fill all required fields!');

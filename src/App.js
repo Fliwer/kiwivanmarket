@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu } from 'lucide-react';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
@@ -351,6 +351,10 @@ export default function KiwiVanMarket() {
   // States pour Footer/FAQ/Terms
   const [showFAQ, setShowFAQ] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  
+  // État pour le tri des annonces
+  const [sortBy, setSortBy] = useState('newest'); // 'newest', 'price-asc', 'price-desc'
   
   const [filters, setFilters] = useState({
     priceMin: 0,
@@ -513,8 +517,24 @@ export default function KiwiVanMarket() {
       return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid && matchEquipment;
     });
     
+    // 🔄 Tri des résultats
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'price-asc':
+          return (a.price || 0) - (b.price || 0);
+        case 'price-desc':
+          return (b.price || 0) - (a.price || 0);
+        case 'newest':
+        default:
+          // Tri par date de création (plus récent en premier)
+          const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+          const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+          return dateB - dateA;
+      }
+    });
+    
     setFilteredVans(filtered);
-  }, [searchTerm, filters, vans]);
+  }, [searchTerm, filters, vans, sortBy]);
 
   // 💱 Format price with selected currency
   const formatPrice = (price) => {
@@ -979,7 +999,7 @@ export default function KiwiVanMarket() {
 
                 {/* Bouton Vendre */}
                 <button 
-                  onClick={() => setShowAddVanForm(true)}
+                  onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
                   className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
                 >
                   <Plus size={18} />
@@ -1107,7 +1127,7 @@ export default function KiwiVanMarket() {
               <div className="flex md:hidden items-center gap-1">
                 {/* Sell button mobile */}
                 <button 
-                  onClick={() => setShowAddVanForm(true)}
+                  onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
                   className="bg-white text-emerald-600 p-2 rounded-xl"
                 >
                   <Plus size={20} />
@@ -1645,20 +1665,35 @@ export default function KiwiVanMarket() {
         {/* ========== Rà‰SULTATS ========== */}
         <div className="max-w-7xl mx-auto px-4 py-6">
 
-          {/* Results count */}
+          {/* Results count + Sort */}
           {!loading && (
-            <div className="mb-5 flex items-center justify-between">
+            <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-xl font-bold text-gray-800">
                 {filteredVans.length} {filteredVans.length === 1 ? 'van' : 'vans'} available
               </p>
-              {searchTerm && (
-                <button 
-                  onClick={() => setSearchTerm('')}
-                  className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                >
-                  ✕ Clear search
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm('')}
+                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                  >
+                    ✕ Clear search
+                  </button>
+                )}
+                {/* Sort dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500 hidden sm:inline">Sort by:</span>
+                  <select 
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
+                  >
+                    <option value="newest">🆕 Newest first</option>
+                    <option value="price-asc">💰 Price: Low to High</option>
+                    <option value="price-desc">💎 Price: High to Low</option>
+                  </select>
+                </div>
+              </div>
             </div>
           )}
 
@@ -1832,6 +1867,131 @@ export default function KiwiVanMarket() {
           onAccept={() => setShowTerms(false)} 
           onClose={() => setShowTerms(false)} 
         />
+
+        {/* How it works Modal */}
+        {showHowItWorks && (
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+            onClick={() => setShowHowItWorks(false)}
+          >
+            <div 
+              className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-teal-600 p-6 rounded-t-3xl">
+                <button 
+                  onClick={() => setShowHowItWorks(false)}
+                  className="absolute top-4 right-4 text-white/80 hover:text-white"
+                >
+                  <X size={24} />
+                </button>
+                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                  <HelpCircle size={28} />
+                  How it works
+                </h2>
+                <p className="text-emerald-100 mt-1">Buy or sell your campervan in 3 simple steps</p>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                {/* For Buyers */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    🔍 For Buyers
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="font-bold text-emerald-600">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">Browse & Filter</h4>
+                        <p className="text-gray-600 text-sm">Search campervans by location, price, features. Use filters like Self-Contained, Buy-Back guarantee, WOF/REGO validity.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="font-bold text-emerald-600">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">Contact the Seller</h4>
+                        <p className="text-gray-600 text-sm">Found the perfect van? Send a message directly to the seller to arrange a viewing or ask questions.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="font-bold text-emerald-600">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">Meet & Buy</h4>
+                        <p className="text-gray-600 text-sm">Meet the seller, inspect the van, check WOF/REGO papers, and complete the transaction safely.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="border-gray-200" />
+
+                {/* For Sellers */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    💰 For Sellers
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="font-bold text-teal-600">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">Create your listing</h4>
+                        <p className="text-gray-600 text-sm">Click "Sell your van", add photos, describe your campervan, set your price. It's 100% free!</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="font-bold text-teal-600">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">Get contacted</h4>
+                        <p className="text-gray-600 text-sm">Interested buyers will message you directly. Respond quickly to increase your chances of selling!</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="font-bold text-teal-600">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800">Sell & Get Paid</h4>
+                        <p className="text-gray-600 text-sm">Meet the buyer, finalize the sale, and enjoy your payment. Don't forget to mark your listing as sold!</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="border-gray-200" />
+
+                {/* Tips */}
+                <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                  <h3 className="font-bold text-amber-800 mb-2 flex items-center gap-2">
+                    💡 Pro Tips for Backpackers
+                  </h3>
+                  <ul className="text-sm text-amber-700 space-y-1">
+                    <li>• Look for <strong>Self-Contained</strong> vans to freedom camp legally</li>
+                    <li>• Check <strong>WOF</strong> (safety) and <strong>REGO</strong> (registration) expiry dates</li>
+                    <li>• <strong>Buy-Back</strong> guarantee = seller buys it back when you leave NZ</li>
+                    <li>• Use our <strong>Buyback Calculator</strong> to estimate your costs</li>
+                  </ul>
+                </div>
+
+                <button 
+                  onClick={() => setShowHowItWorks(false)}
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition"
+                >
+                  Got it! Start browsing 🚐
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 📍 Admin Dashboard Modal */}
         {showAdminDashboard && (
