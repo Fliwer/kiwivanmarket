@@ -1,4 +1,4 @@
-// Import des fonctions Firebase nécessaires
+// Import des fonctions Firebase necessaires
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { 
   GoogleAuthProvider, 
@@ -11,10 +11,10 @@ import {
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
-// Création du contexte
+// Creation du contexte
 const AuthContext = createContext();
 
-// Hook personnalisé pour utiliser le contexte facilement
+// Hook personnalise pour utiliser le contexte facilement
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -32,13 +32,13 @@ export const AuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     
-    // ✅ FIX: Forcer Google à TOUJOURS afficher le sélecteur de compte
+    // Forcer Google a TOUJOURS afficher le selecteur de compte
     provider.setCustomParameters({
       prompt: 'select_account'
     });
     
     try {
-      // Déconnecter l'utilisateur actuel AVANT de connecter le nouveau
+      // Deconnecter l'utilisateur actuel AVANT de connecter le nouveau
       if (auth.currentUser) {
         await signOut(auth);
       }
@@ -46,8 +46,9 @@ export const AuthProvider = ({ children }) => {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       
-      // Sauvegarder/mettre à jour le profil dans Firestore
-      await saveUserProfile(user);
+      // Sauvegarder le profil en arriere-plan (ne pas attendre)
+      // Le modal se ferme immediatement apres la connexion Google
+      saveUserProfile(user).catch(err => console.error('Erreur sauvegarde profil:', err));
       
       return user;
     } catch (error) {
@@ -59,7 +60,7 @@ export const AuthProvider = ({ children }) => {
   // Connexion avec Email/Password
   const signInWithEmail = async (email, password) => {
     try {
-      // Déconnecter l'utilisateur actuel AVANT de connecter le nouveau
+      // Deconnecter l'utilisateur actuel AVANT de connecter le nouveau
       if (auth.currentUser) {
         await signOut(auth);
       }
@@ -75,7 +76,7 @@ export const AuthProvider = ({ children }) => {
   // Inscription avec Email/Password
   const signUpWithEmail = async (email, password, displayName) => {
     try {
-      // Déconnecter l'utilisateur actuel AVANT de créer le nouveau compte
+      // Deconnecter l'utilisateur actuel AVANT de creer le nouveau compte
       if (auth.currentUser) {
         await signOut(auth);
       }
@@ -93,12 +94,12 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Déconnexion
+  // Deconnexion
   const logout = async () => {
     try {
       await signOut(auth);
     } catch (error) {
-      console.error('Erreur déconnexion:', error);
+      console.error('Erreur deconnexion:', error);
       throw error;
     }
   };
@@ -107,11 +108,11 @@ export const AuthProvider = ({ children }) => {
   const saveUserProfile = async (user, displayName = null) => {
     const userRef = doc(db, 'users', user.uid);
     
-    // Vérifier si le profil existe déjà
+    // Verifier si le profil existe deja
     const userSnap = await getDoc(userRef);
     
     if (!userSnap.exists()) {
-      // Créer un nouveau profil
+      // Creer un nouveau profil
       await setDoc(userRef, {
         uid: user.uid,
         email: user.email,
@@ -120,22 +121,20 @@ export const AuthProvider = ({ children }) => {
         createdAt: new Date(),
         lastLogin: new Date()
       });
-      console.log('✅ Profil utilisateur créé dans Firestore');
     } else {
-      // Mettre à jour la dernière connexion
+      // Mettre a jour la derniere connexion
       await setDoc(userRef, {
         lastLogin: new Date()
       }, { merge: true });
-      console.log('✅ Dernière connexion mise à jour');
     }
   };
 
-  // Écouter les changements d'état d'authentification
+  // Ecouter les changements d'etat d'authentification
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // L'utilisateur est connecté
-        // Récupérer les infos depuis Firestore
+        // L'utilisateur est connecte
+        // Recuperer les infos depuis Firestore
         const userRef = doc(db, 'users', user.uid);
         const userSnap = await getDoc(userRef);
         
@@ -145,7 +144,7 @@ export const AuthProvider = ({ children }) => {
           setCurrentUser(user);
         }
       } else {
-        // L'utilisateur est déconnecté
+        // L'utilisateur est deconnecte
         setCurrentUser(null);
       }
       setLoading(false);
@@ -155,7 +154,7 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
-  // Valeurs exposées par le contexte
+  // Valeurs exposees par le contexte
   const value = {
     currentUser,
     signInWithGoogle,
