@@ -543,66 +543,88 @@ export default function KiwiVanMarket() {
 
     return (
       <div 
-        className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[60] p-4 overflow-y-auto"
+        className="fixed inset-0 bg-black md:bg-black/70 md:backdrop-blur-sm flex items-start md:items-center justify-center z-[60] overflow-y-auto"
         onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }}>
         <div 
-          className="bg-white rounded-3xl max-w-7xl w-full my-8 relative shadow-2xl overflow-hidden"
+          className="bg-white w-full md:rounded-3xl md:max-w-7xl md:my-8 relative shadow-2xl overflow-hidden min-h-screen md:min-h-0"
           onClick={(e) => e.stopPropagation()}>
           
+          {/* Header mobile avec bouton retour */}
+          <div className="sticky top-0 z-[80] bg-gradient-to-b from-black/70 to-transparent md:hidden">
+            <div className="flex items-center justify-between p-4">
+              <button 
+                onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }} 
+                className="bg-white/20 backdrop-blur-sm rounded-full p-2 text-white">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button 
+                onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
+                className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                <Heart 
+                  size={22} 
+                  className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-white'} 
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Bouton fermer desktop */}
           <button 
             onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }} 
-            className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl z-[70] hover:bg-white transition-all hover:scale-110">
+            className="hidden md:block absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl z-[70] hover:bg-white transition-all hover:scale-110">
             <X size={24} className="text-gray-700" />
           </button>
           
           <div className="grid lg:grid-cols-2">
             
             {/* GALERIE PHOTO */}
-            <div className="relative bg-black h-[600px] lg:h-[800px]">
+            <div className="relative bg-gray-900 h-[280px] md:h-[600px] lg:h-[800px] -mt-16 md:mt-0">
               <img 
                 src={images[currentImageIndex]} 
                 alt={van.title || 'Van'} 
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
               
               {images.length > 1 && (
                 <>
                   <button 
                     onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2 md:p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
+                    <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   <button 
                     onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2 md:p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
+                    <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                   
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold">
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-semibold">
                     {currentImageIndex + 1} / {images.length}
                   </div>
                 </>
               )}
               
-              <div className="absolute top-6 left-6 flex flex-col gap-3">
+              <div className="absolute top-20 md:top-6 left-4 md:left-6 flex flex-col gap-2 md:gap-3">
                 {van.featured && (
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
-                    <Star size={16} fill="currentColor" />
+                  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg flex items-center gap-1.5 md:gap-2">
+                    <Star size={14} fill="currentColor" />
                     FEATURED
                   </div>
                 )}
                 {van.selfContained && (
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg">
                     ✓ Self-Contained
                   </div>
                 )}
                 {van.buyBack && (
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
-                    <Shield size={16} />
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg flex items-center gap-1.5 md:gap-2">
+                    <Shield size={14} />
                     Buy-Back
                   </div>
                 )}
@@ -610,7 +632,7 @@ export default function KiwiVanMarket() {
 
               <button 
                 onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
-                className="absolute bottom-6 right-6 bg-white rounded-full p-3 shadow-xl hover:scale-110 transition-all">
+                className="hidden md:block absolute bottom-6 right-6 bg-white rounded-full p-3 shadow-xl hover:scale-110 transition-all">
                 <Heart 
                   size={24} 
                   className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-700'} 
@@ -619,7 +641,7 @@ export default function KiwiVanMarket() {
             </div>
             
             {/* INFORMATIONS */}
-            <div className="p-8 lg:p-10 overflow-y-auto max-h-[600px] lg:max-h-[800px]">
+            <div className="p-5 md:p-8 lg:p-10 md:overflow-y-auto md:max-h-[600px] lg:max-h-[800px]">
               
               <div className="mb-6 pb-6 border-b-2 border-gray-100">
                 <h1 className="text-3xl lg:text-4xl font-black text-gray-900 mb-3 leading-tight">
@@ -1211,32 +1233,24 @@ export default function KiwiVanMarket() {
                 
                 {/* Buy-Back */}
                 <div 
-                  className="relative flex-shrink-0 flex items-center"
+                  className="relative flex items-center"
                   onMouseEnter={() => setShowBuyBackInfo(true)}
                   onMouseLeave={() => setShowBuyBackInfo(false)}
                 >
                   <button 
                     onClick={() => setFilters({...filters, buyBack: !filters.buyBack})}
-                    className={`px-3 md:px-4 py-2 rounded-l-full md:rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
                       filters.buyBack 
                         ? 'bg-green-500 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-700 border border-transparent hover:border-green-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-700 border border-gray-200 hover:border-green-300'
                     }`}>
                     <Shield size={14} className="flex-shrink-0" />
-                    <span className="md:hidden">Buy-Back</span>
-                    <span className="hidden md:inline">Buy-Back</span>
-                    <span className={`hidden md:flex w-4 h-4 rounded-full items-center justify-center text-[9px] font-bold flex-shrink-0 ${
-                      filters.buyBack ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
-                    }`}>?</span>
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowBuyBackInfo(!showBuyBackInfo); }}
-                    className={`md:hidden px-2 py-2 rounded-r-full text-xs font-bold transition-all active:scale-95 ${
-                      filters.buyBack 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                    ?
+                    Buy-Back
+                    <span 
+                      onClick={(e) => { e.stopPropagation(); setShowBuyBackInfo(!showBuyBackInfo); }}
+                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${
+                        filters.buyBack ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
+                      }`}>?</span>
                   </button>
                   {/* Tooltip */}
                   {showBuyBackInfo && (
@@ -1260,32 +1274,25 @@ export default function KiwiVanMarket() {
 
                 {/* REGO Valid */}
                 <div 
-                  className="relative flex-shrink-0 flex items-center"
+                  className="relative flex items-center"
                   onMouseEnter={() => setShowRegoInfo(true)}
                   onMouseLeave={() => setShowRegoInfo(false)}
                 >
                   <button 
                     onClick={() => setFilters({...filters, regoValid: !filters.regoValid})}
-                    className={`px-3 md:px-4 py-2 rounded-l-full md:rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
                       filters.regoValid 
                         ? 'bg-purple-500 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700 border border-transparent hover:border-purple-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700 border border-gray-200 hover:border-purple-300'
                     }`}>
                     <CheckCircle size={14} className="flex-shrink-0" />
-                    <span className="md:hidden">REGO</span>
+                    <span className="md:hidden">REGO Valid</span>
                     <span className="hidden md:inline">REGO Valid</span>
-                    <span className={`hidden md:flex w-4 h-4 rounded-full items-center justify-center text-[9px] font-bold flex-shrink-0 ${
-                      filters.regoValid ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
-                    }`}>?</span>
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowRegoInfo(!showRegoInfo); }}
-                    className={`md:hidden px-2 py-2 rounded-r-full text-xs font-bold transition-all active:scale-95 ${
-                      filters.regoValid 
-                        ? 'bg-purple-600 text-white' 
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                    ?
+                    <span 
+                      onClick={(e) => { e.stopPropagation(); setShowRegoInfo(!showRegoInfo); }}
+                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${
+                        filters.regoValid ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
+                      }`}>?</span>
                   </button>
                   {/* Tooltip */}
                   {showRegoInfo && (
