@@ -13,13 +13,13 @@ const CONFIG = {
   },
 };
 
-// 💱 Currency configuration
+// 💱 Currency configuration with flag images
 const CURRENCIES = {
-  NZD: { symbol: '$', code: 'NZD', flag: '🇳🇿', rate: 1 },
-  EUR: { symbol: '€', code: 'EUR', flag: '🇪🇺', rate: 0.54 },
-  USD: { symbol: '$', code: 'USD', flag: '🇺🇸', rate: 0.59 },
-  AUD: { symbol: '$', code: 'AUD', flag: '🇦🇺', rate: 0.92 },
-  GBP: { symbol: '£', code: 'GBP', flag: '🇬🇧', rate: 0.47 },
+  NZD: { symbol: '$', code: 'NZD', flag: 'https://flagcdn.com/24x18/nz.png', rate: 1 },
+  EUR: { symbol: '€', code: 'EUR', flag: 'https://flagcdn.com/24x18/eu.png', rate: 0.54 },
+  USD: { symbol: '$', code: 'USD', flag: 'https://flagcdn.com/24x18/us.png', rate: 0.59 },
+  AUD: { symbol: '$', code: 'AUD', flag: 'https://flagcdn.com/24x18/au.png', rate: 0.92 },
+  GBP: { symbol: '£', code: 'GBP', flag: 'https://flagcdn.com/24x18/gb.png', rate: 0.47 },
 };
 
 // 🌐 Traductions EN/FR
@@ -244,15 +244,16 @@ export default function BuybackCalculator() {
           {/* Form Section */}
           <div className="p-6 md:p-8 space-y-6">
             
-            {/* 💱 Currency Selector */}
-            <div className="flex justify-end">
+            {/* 💱 Currency Selector - More prominent */}
+            <div className="flex justify-center mb-2">
               <div className="relative">
                 <button
                   onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-                  className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 rounded-xl transition text-stone-700 text-sm font-medium border border-stone-200"
+                  className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 rounded-xl transition text-white text-sm font-semibold shadow-lg shadow-emerald-500/25"
                 >
-                  <span>{currentCurrency.flag}</span>
-                  <span>{currentCurrency.code}</span>
+                  <img src={currentCurrency.flag} alt={currentCurrency.code} className="w-6 h-4 object-cover rounded-sm shadow" />
+                  <span className="text-base">{currentCurrency.code}</span>
+                  <span className="text-emerald-200">({currentCurrency.symbol})</span>
                   <svg className={`w-4 h-4 transition-transform ${showCurrencyDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -261,19 +262,22 @@ export default function BuybackCalculator() {
                 {showCurrencyDropdown && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowCurrencyDropdown(false)} />
-                    <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-stone-200 py-2 min-w-[140px] z-20">
+                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-white rounded-xl shadow-2xl border border-stone-200 py-2 min-w-[180px] z-20">
+                      <div className="px-3 py-2 text-xs font-semibold text-stone-400 uppercase tracking-wide border-b border-stone-100 mb-1">
+                        {t.currency}
+                      </div>
                       {Object.entries(CURRENCIES).map(([code, curr]) => (
                         <button
                           key={code}
                           onClick={() => handleCurrencyChange(code)}
-                          className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
+                          className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition ${
                             currency === code
                               ? 'bg-emerald-50 text-emerald-700 font-semibold'
                               : 'hover:bg-stone-50 text-stone-700'
                           }`}
                         >
-                          <span>{curr.flag}</span>
-                          <span>{code}</span>
+                          <img src={curr.flag} alt={code} className="w-6 h-4 object-cover rounded-sm shadow-sm" />
+                          <span className="font-medium">{code}</span>
                           <span className="text-stone-400 ml-auto">{curr.symbol}</span>
                         </button>
                       ))}

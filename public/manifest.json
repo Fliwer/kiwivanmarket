@@ -1,25 +1,50 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Kiwi Van Market",
+  "name": "Kiwi Van Market - Buy & Sell Campervans in New Zealand",
+  "description": "New Zealand's marketplace for buying and selling campervans. Find self-contained vans with valid WOF and rego.",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "favicon.png",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "type": "image/png"
     },
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait-primary",
+  "theme_color": "#10b981",
+  "background_color": "#f7eedd",
+  "categories": ["shopping", "travel", "lifestyle"],
+  "lang": "en-NZ",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Sell Your Van",
+      "short_name": "Sell",
+      "description": "List your campervan for sale",
+      "url": "/?action=sell",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Buyback Calculator",
+      "short_name": "Calculator",
+      "description": "Estimate your buyback price",
+      "url": "/?action=calculator",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ]
 }
