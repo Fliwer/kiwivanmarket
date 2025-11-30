@@ -1206,8 +1206,8 @@ export default function KiwiVanMarket() {
             {/* Quick Filters - Pills cliquables - Optimisé mobile */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               
-              {/* Quick Filters - Scroll horizontal sur mobile, overflow visible sur desktop */}
-              <div className="flex items-center gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 md:flex-wrap -mx-4 px-4 md:mx-0 md:px-0 pr-8" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+              {/* Quick Filters - Grille 2x2 sur mobile, ligne sur desktop */}
+              <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:overflow-visible md:pb-0 md:flex-wrap">
                 
                 {/* Buy-Back */}
                 <div 
