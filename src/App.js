@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings } from 'lucide-react';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
@@ -19,12 +19,12 @@ import UserProfile from './components/UserProfile';
 import AdminDashboard from './components/AdminDashboard';
 import { LeaveReviewButton, SellerReviews } from './components/ReviewSystem';
 
-// 🔐 Liste des emails admin autorisés
+// ðŸ” Liste des emails admin autorisÃ©s
 const ADMIN_EMAILS = [
   'p.morthier@gmail.com',
 ];
 
-// ✅ Calcule le nombre de jours depuis la création
+// âœ… Calcule le nombre de jours depuis la crÃ©ation
 const getDaysAgo = (createdAt) => {
   if (!createdAt) return 0;
   const created = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
@@ -34,13 +34,13 @@ const getDaysAgo = (createdAt) => {
   return diffDays;
 };
 
-// Détecteur WebView (Messenger, Instagram, etc.)
+// DÃ©tecteur WebView (Messenger, Instagram, etc.)
 function WebViewWarning() {
   const [isWebView, setIsWebView] = useState(false);
 
   useEffect(() => {
     const ua = navigator.userAgent || navigator.vendor || window.opera;
-    // Détecte les WebViews de Facebook, Messenger, Instagram, etc.
+    // DÃ©tecte les WebViews de Facebook, Messenger, Instagram, etc.
     const isInAppBrowser = /FBAN|FBAV|Instagram|Messenger|WebView|wv/i.test(ua);
     setIsWebView(isInAppBrowser);
   }, []);
@@ -50,7 +50,7 @@ function WebViewWarning() {
   return (
     <div className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-6">
       <div className="bg-white rounded-2xl p-6 max-w-sm text-center shadow-2xl">
-        <div className="text-5xl mb-4">🌐</div>
+        <div className="text-5xl mb-4">ðŸŒ</div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">
           Open in Browser
         </h2>
@@ -58,39 +58,39 @@ function WebViewWarning() {
           For the best experience, please open this link in your browser (Safari, Chrome, etc.)
         </p>
         <div className="bg-gray-100 rounded-xl p-3 mb-4">
-          <p className="text-xs text-gray-500 mb-1">Tap the menu ••• then</p>
+          <p className="text-xs text-gray-500 mb-1">Tap the menu â€¢â€¢â€¢ then</p>
           <p className="font-semibold text-gray-800">"Open in Browser"</p>
         </div>
         <button 
           onClick={() => setIsWebView(false)}
           className="text-sm text-gray-400 hover:text-gray-600"
         >
-          Continue anyway →
+          Continue anyway â†’
         </button>
       </div>
     </div>
   );
 }
 
-// 🌐 Sélecteur de langue pour le header
+// ðŸŒ SÃ©lecteur de langue pour le header
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
 
   const languages = [
     { code: 'en', flag: 'https://flagcdn.com/24x18/gb.png', name: 'ENGLISH', short: 'EN' },
-    { code: 'fr', flag: 'https://flagcdn.com/24x18/fr.png', name: 'FRANÇAIS', short: 'FR' },
+    { code: 'fr', flag: 'https://flagcdn.com/24x18/fr.png', name: 'FRANÃ‡AIS', short: 'FR' },
     { code: 'de', flag: 'https://flagcdn.com/24x18/de.png', name: 'DEUTSCH', short: 'DE' },
-    { code: 'es', flag: 'https://flagcdn.com/24x18/es.png', name: 'ESPAÑOL', short: 'ES' },
-    { code: 'zh-CN', flag: 'https://flagcdn.com/24x18/cn.png', name: '简体中文', short: '中文' },
-    { code: 'ja', flag: 'https://flagcdn.com/24x18/jp.png', name: '日本語', short: 'JA' },
-    { code: 'ko', flag: 'https://flagcdn.com/24x18/kr.png', name: '한국어', short: 'KO' },
-    { code: 'pt', flag: 'https://flagcdn.com/24x18/br.png', name: 'PORTUGUÊS', short: 'PT' },
-    { code: 'th', flag: 'https://flagcdn.com/24x18/th.png', name: 'ไทย', short: 'TH' },
-    { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' }
+    { code: 'es', flag: 'https://flagcdn.com/24x18/es.png', name: 'ESPAÃ‘OL', short: 'ES' },
+    { code: 'zh-CN', flag: 'https://flagcdn.com/24x18/cn.png', name: 'ç®€ä½“ä¸­æ–‡', short: 'ä¸­æ–‡' },
+    { code: 'ja', flag: 'https://flagcdn.com/24x18/jp.png', name: 'æ—¥æœ¬èªž', short: 'JA' },
+    { code: 'ko', flag: 'https://flagcdn.com/24x18/kr.png', name: 'í•œêµ­ì–´', short: 'KO' },
+    { code: 'pt', flag: 'https://flagcdn.com/24x18/br.png', name: 'PORTUGUÃŠS', short: 'PT' },
+    { code: 'th', flag: 'https://flagcdn.com/24x18/th.png', name: 'à¹„à¸—à¸¢', short: 'TH' },
+    { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIáº¾NG VIá»†T', short: 'VI' }
   ];
 
-  // ✨ CORRECTION: Force Google Translate à rafraîchir complètement
+  // âœ¨ CORRECTION: Force Google Translate Ã  rafraÃ®chir complÃ¨tement
   const applyLanguage = useCallback((langCode) => {
     // 1. Nettoyer TOUS les cookies Google Translate
     const domains = ['', '.' + window.location.hostname, '.kiwivanmarket.com'];
@@ -104,18 +104,18 @@ function LanguageSelector() {
       sessionStorage.clear();
     } catch (e) {}
 
-    // 3. Supprimer les éléments Google Translate du DOM
+    // 3. Supprimer les Ã©lÃ©ments Google Translate du DOM
     const gtFrame = document.querySelector('.goog-te-banner-frame');
     if (gtFrame) gtFrame.remove();
     const gtElement = document.getElementById('google_translate_element');
     if (gtElement) gtElement.innerHTML = '';
     
-    // 4. Réinitialiser le body
+    // 4. RÃ©initialiser le body
     document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
     const html = document.documentElement;
     html.className = html.className.replace(/translated-[a-z]+/g, '');
     
-    // 5. Supprimer le script Google Translate pour forcer une réinitialisation
+    // 5. Supprimer le script Google Translate pour forcer une rÃ©initialisation
     const oldScript = document.getElementById('google-translate-script');
     if (oldScript) oldScript.remove();
     
@@ -123,14 +123,14 @@ function LanguageSelector() {
     document.querySelectorAll('iframe.goog-te-menu-frame, iframe.goog-te-banner-frame').forEach(el => el.remove());
     
     if (langCode === 'en') {
-      // Retour à l'anglais - reload COMPLET sans cache
+      // Retour Ã  l'anglais - reload COMPLET sans cache
       setTimeout(() => {
         window.location.replace(window.location.pathname + '?lang=en&t=' + Date.now());
       }, 100);
       return;
     }
 
-    // Définir le nouveau cookie de langue
+    // DÃ©finir le nouveau cookie de langue
     const langCookie = `/en/${langCode}`;
     document.cookie = `googtrans=${langCookie}; path=/;`;
     document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
@@ -152,7 +152,7 @@ function LanguageSelector() {
     const savedLang = localStorage.getItem('preferredLang') || 'en';
     setCurrentLang(savedLang);
 
-    // On injecte le script Google si ce n'est pas déjà fait
+    // On injecte le script Google si ce n'est pas dÃ©jÃ  fait
     if (!document.getElementById('google-translate-script')) {
       const translateDiv = document.createElement('div');
       translateDiv.id = 'google_translate_element';
@@ -234,13 +234,13 @@ function LanguageSelector() {
   );
 }
 
-// 💱 Sélecteur de devise pour le header
+// ðŸ’± SÃ©lecteur de devise pour le header
 const CURRENCIES = {
-  NZD: { symbol: '$', code: 'NZD', flag: '🇳🇿', rate: 1 },
-  EUR: { symbol: '€', code: 'EUR', flag: '🇪🇺', rate: 0.54 },
-  USD: { symbol: '$', code: 'USD', flag: '🇺🇸', rate: 0.59 },
-  AUD: { symbol: '$', code: 'AUD', flag: '🇦🇺', rate: 0.92 },
-  GBP: { symbol: '£', code: 'GBP', flag: '🇬🇧', rate: 0.47 },
+  NZD: { symbol: '$', code: 'NZD', flag: 'ðŸ‡³ðŸ‡¿', rate: 1 },
+  EUR: { symbol: 'â‚¬', code: 'EUR', flag: 'ðŸ‡ªðŸ‡º', rate: 0.54 },
+  USD: { symbol: '$', code: 'USD', flag: 'ðŸ‡ºðŸ‡¸', rate: 0.59 },
+  AUD: { symbol: '$', code: 'AUD', flag: 'ðŸ‡¦ðŸ‡º', rate: 0.92 },
+  GBP: { symbol: 'Â£', code: 'GBP', flag: 'ðŸ‡¬ðŸ‡§', rate: 0.47 },
 };
 
 function CurrencySelector() {
@@ -256,7 +256,7 @@ function CurrencySelector() {
     setIsOpen(false);
     setCurrentCurrency(code);
     localStorage.setItem('kiwivanmarket_currency', code);
-    // Dispatch event pour que les autres composants puissent réagir
+    // Dispatch event pour que les autres composants puissent rÃ©agir
     window.dispatchEvent(new CustomEvent('currencyChange', { detail: code }));
   };
 
@@ -334,6 +334,7 @@ export default function KiwiVanMarket() {
   const [showMessagingPage, setShowMessagingPage] = useState(false);
   const [showBuybackCalculator, setShowBuybackCalculator] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showBuyBackInfo, setShowBuyBackInfo] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
@@ -341,7 +342,7 @@ export default function KiwiVanMarket() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // 🔐 Check if current user is admin
+  // ðŸ” Check if current user is admin
   const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
   
   // States pour Footer/FAQ/Terms
@@ -349,6 +350,7 @@ export default function KiwiVanMarket() {
   const [showTerms, setShowTerms] = useState(false);
   
   const [filters, setFilters] = useState({
+    priceMin: 0,
     priceMax: 50000,
     yearMin: 1990,
     type: 'all',
@@ -372,10 +374,10 @@ export default function KiwiVanMarket() {
     }
   });
 
-  // 💱 State pour la devise
+  // ðŸ’± State pour la devise
   const [currency, setCurrency] = useState('NZD');
 
-  // 💱 Écouter les changements de devise
+  // ðŸ’± Ã‰couter les changements de devise
   useEffect(() => {
     const savedCurrency = localStorage.getItem('kiwivanmarket_currency') || 'NZD';
     setCurrency(savedCurrency);
@@ -388,7 +390,7 @@ export default function KiwiVanMarket() {
     return () => window.removeEventListener('currencyChange', handleCurrencyChange);
   }, []);
 
-  // ⚡ Cache le loader initial dès que React a monté
+  // âš¡ Cache le loader initial dÃ¨s que React a montÃ©
   useEffect(() => {
     const loader = document.getElementById('app-loader');
     if (loader) {
@@ -399,7 +401,7 @@ export default function KiwiVanMarket() {
     }
   }, []);
 
-  // ✨ OPTIMISATION : Chargement avec cache localStorage
+  // âœ¨ OPTIMISATION : Chargement avec cache localStorage
   useEffect(() => {
     const fetchVans = async () => {
       try {
@@ -436,7 +438,7 @@ export default function KiwiVanMarket() {
         setFilteredVans(vansData);
         
       } catch (error) {
-        console.error('❌ Erreur chargement vans:', error);
+        console.error('âŒ Erreur chargement vans:', error);
       } finally {
         setLoading(false);
       }
@@ -459,36 +461,36 @@ export default function KiwiVanMarket() {
       setVans(vansData);
       setFilteredVans(vansData);
     } catch (error) {
-      console.error('❌ Error reloading vans:', error);
+      console.error('âŒ Error reloading vans:', error);
     }
   };
 
-  // ✅ MODIFIÉ: Filtre par ville (location) au lieu de région
+  // âœ… MODIFIÃ‰: Filtre par ville (location) au lieu de rÃ©gion
   useEffect(() => {
     let filtered = vans.filter(van => {
       const matchSearch = van.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           van.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           van.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchPrice = van.price <= filters.priceMax;
+      const matchPrice = van.price >= filters.priceMin && van.price <= filters.priceMax;
       const matchYear = van.year >= filters.yearMin;
       const matchType = filters.type === 'all' || van.type === filters.type;
       
-      // ✅ Filtre par ville (van.location) au lieu de région
+      // âœ… Filtre par ville (van.location) au lieu de rÃ©gion
       const matchLocation = filters.location === 'all' || van.location === filters.location;
       
       const matchSelfContained = !filters.selfContained || van.selfContained;
       const matchBuyBack = !filters.buyBack || van.buyBack;
       
-      // Vérifier WOF valide (date future)
+      // VÃ©rifier WOF valide (date future)
       const matchWofValid = !filters.wofValid || (van.wofExpiry && new Date(van.wofExpiry) > new Date());
       
-      // Vérifier REGO valide (date future)
+      // VÃ©rifier REGO valide (date future)
       const matchRegoValid = !filters.regoValid || (van.regoExpiry && new Date(van.regoExpiry) > new Date());
       
-      // Vérifier les équipements sélectionnés
+      // VÃ©rifier les Ã©quipements sÃ©lectionnÃ©s
       const matchEquipment = Object.entries(filters.equipment).every(([key, required]) => {
         if (!required) return true; // Si pas requis, on passe
-        // Cas spécial pour shower (indoor ou outdoor)
+        // Cas spÃ©cial pour shower (indoor ou outdoor)
         if (key === 'shower') {
           return van.equipment?.outdoorShower || van.equipment?.indoorShower;
         }
@@ -501,7 +503,7 @@ export default function KiwiVanMarket() {
     setFilteredVans(filtered);
   }, [searchTerm, filters, vans]);
 
-  // 💱 Format price with selected currency
+  // ðŸ’± Format price with selected currency
   const formatPrice = (price) => {
     const curr = CURRENCIES[currency];
     const converted = Math.round((price || 0) * curr.rate);
@@ -510,17 +512,17 @@ export default function KiwiVanMarket() {
 
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
-  // ✅ FIX: VanDetailsModal avec protection contre les champs undefined
+  // âœ… FIX: VanDetailsModal avec protection contre les champs undefined
   const VanDetailsModal = ({ van }) => {
-    // ✅ Protection: S'assurer que images est toujours un tableau
+    // âœ… Protection: S'assurer que images est toujours un tableau
     const images = van.images && van.images.length > 0 
       ? van.images 
       : (van.imageUrl ? [van.imageUrl] : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800']);
     
-    // ✅ Protection: S'assurer que features est toujours un tableau
+    // âœ… Protection: S'assurer que features est toujours un tableau
     const features = van.features || [];
     
-    // ✅ Protection: S'assurer que seller existe
+    // âœ… Protection: S'assurer que seller existe
     const seller = van.seller || { name: 'Unknown', rating: 5, email: '', phone: '' };
     
     const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -582,7 +584,7 @@ export default function KiwiVanMarket() {
                 )}
                 {van.selfContained && (
                   <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                    ✓ Self-Contained
+                    âœ“ Self-Contained
                   </div>
                 )}
                 {van.buyBack && (
@@ -653,7 +655,7 @@ export default function KiwiVanMarket() {
                 <p className="text-gray-700 leading-relaxed">{van.description || 'No description available.'}</p>
               </div>
 
-              {/* ✅ FIX: Features avec protection */}
+              {/* âœ… FIX: Features avec protection */}
               {features.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -681,20 +683,20 @@ export default function KiwiVanMarket() {
                     Equipment
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
-                    {van.equipment.doubleBed && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛏️ Double Bed</div>}
-                    {van.equipment.fridge && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🧊 Fridge</div>}
-                    {van.equipment.gasStove && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔥 Gas Stove</div>}
-                    {van.equipment.sink && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚰 Sink</div>}
-                    {van.equipment.toilet && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚽 Toilet</div>}
-                    {van.equipment.solarPanel && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">☀️ Solar Panel</div>}
-                    {van.equipment.leisureBattery && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔋 Leisure Battery</div>}
-                    {van.equipment.heater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🌡️ Heater</div>}
-                    {van.equipment.hotWater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">♨️ Boiler</div>}
-                    {van.equipment.outdoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚿 Outdoor Shower</div>}
-                    {van.equipment.indoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛁 Indoor Shower</div>}
-                    {van.equipment.awning && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">⛺ Awning</div>}
-                    {van.equipment.reverseCamera && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📷 Reverse Camera</div>}
-                    {van.equipment.bluetooth && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔊 Bluetooth</div>}
+                    {van.equipment.doubleBed && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸ›ï¸ Double Bed</div>}
+                    {van.equipment.fridge && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸ§Š Fridge</div>}
+                    {van.equipment.gasStove && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸ”¥ Gas Stove</div>}
+                    {van.equipment.sink && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸš° Sink</div>}
+                    {van.equipment.toilet && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸš½ Toilet</div>}
+                    {van.equipment.solarPanel && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">â˜€ï¸ Solar Panel</div>}
+                    {van.equipment.leisureBattery && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸ”‹ Leisure Battery</div>}
+                    {van.equipment.heater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸŒ¡ï¸ Heater</div>}
+                    {van.equipment.hotWater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">â™¨ï¸ Boiler</div>}
+                    {van.equipment.outdoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸš¿ Outdoor Shower</div>}
+                    {van.equipment.indoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸ› Indoor Shower</div>}
+                    {van.equipment.awning && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">â›º Awning</div>}
+                    {van.equipment.reverseCamera && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸ“· Reverse Camera</div>}
+                    {van.equipment.bluetooth && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">ðŸ”Š Bluetooth</div>}
                   </div>
                 </div>
               )}
@@ -702,7 +704,7 @@ export default function KiwiVanMarket() {
               {/* Custom Features */}
               {van.customFeatures && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <h4 className="text-sm font-bold text-gray-700 mb-2">✏️ Other Features</h4>
+                  <h4 className="text-sm font-bold text-gray-700 mb-2">âœï¸ Other Features</h4>
                   <p className="text-gray-600 text-sm">{van.customFeatures}</p>
                 </div>
               )}
@@ -714,22 +716,22 @@ export default function KiwiVanMarket() {
                   Vehicle Status
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className={`bg-white p-3 rounded-lg border text-center ${van.wofExpiry ? 'border-emerald-200' : 'border-gray-200'}`}>
+                  <div className={`bg-white p-3 rounded-lg border text-center ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'border-emerald-200' : 'border-gray-200'}`}>
                     <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">WOF Valid</div>
-                    <div className={`text-lg font-bold ${van.wofExpiry ? 'text-emerald-600' : 'text-gray-400'}`}>
-                      {van.wofExpiry ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
+                    <div className={`text-lg font-bold ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'text-emerald-600' : 'text-gray-400'}`}>
+                      {van.wofExpiry && new Date(van.wofExpiry).getTime() ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
                     </div>
                   </div>
-                  <div className={`bg-white p-3 rounded-lg border text-center ${van.regoExpiry ? 'border-blue-200' : 'border-gray-200'}`}>
+                  <div className={`bg-white p-3 rounded-lg border text-center ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'border-blue-200' : 'border-gray-200'}`}>
                     <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">REGO Until</div>
-                    <div className={`text-lg font-bold ${van.regoExpiry ? 'text-blue-600' : 'text-gray-400'}`}>
-                      {van.regoExpiry ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
+                    <div className={`text-lg font-bold ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'text-blue-600' : 'text-gray-400'}`}>
+                      {van.regoExpiry && new Date(van.regoExpiry).getTime() ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
                     </div>
                   </div>
                   <div className={`p-3 rounded-lg border text-center ${van.selfContained ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
                     <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">Self-Contained</div>
                     <div className={`text-lg font-bold ${van.selfContained ? 'text-green-600' : 'text-gray-400'}`}>
-                      {van.selfContained ? '✓ Yes' : '✗ No'}
+                      {van.selfContained ? 'âœ“ Yes' : 'âœ— No'}
                     </div>
                   </div>
                 </div>
@@ -769,7 +771,7 @@ export default function KiwiVanMarket() {
                 </div>
               )}
 
-              {/* ✅ FIX: Seller info avec protection */}
+              {/* âœ… FIX: Seller info avec protection */}
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl border border-gray-200 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full w-12 h-12 flex items-center justify-center text-white text-xl font-bold shadow-lg">
@@ -802,7 +804,7 @@ export default function KiwiVanMarket() {
                 }}
               />
 
-              {/* ⭐ NEW: Leave Review Button */}
+              {/* â­ NEW: Leave Review Button */}
               <div className="mt-4">
                 <LeaveReviewButton 
                   sellerId={seller.uid || van.seller?.uid}
@@ -813,7 +815,7 @@ export default function KiwiVanMarket() {
                 />
               </div>
 
-              {/* ⭐ NEW: Seller Reviews Section */}
+              {/* â­ NEW: Seller Reviews Section */}
               {(seller.uid || van.seller?.uid) && (
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -915,7 +917,7 @@ export default function KiwiVanMarket() {
       <WebViewWarning />
       <div className="min-h-screen bg-gray-50">
         
-        {/* ========== HEADER VERT + ICÔNES VISIBLES ========== */}
+        {/* ========== HEADER VERT + ICÃ”NES VISIBLES ========== */}
         <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-16">
@@ -927,12 +929,12 @@ export default function KiwiVanMarket() {
                 </div>
                 <div className="hidden sm:block">
                   <h1 className="text-xl font-bold">Kiwi Van Market</h1>
-                  <p className="text-xs text-white/80">Buy & Sell Campervans 🇳🇿</p>
+                  <p className="text-xs text-white/80">Buy & Sell Campervans ðŸ‡³ðŸ‡¿</p>
                 </div>
               </div>
 
-              {/* Boutons d'action */}
-              <div className="flex items-center gap-3 ml-10">
+              {/* Boutons d'action - Desktop only */}
+              <div className="hidden md:flex items-center gap-3 ml-10">
                 {/* Bouton Buyback Calculator */}
                 <button 
                   onClick={() => setShowBuybackCalculator(true)}
@@ -966,13 +968,13 @@ export default function KiwiVanMarket() {
                 </div>
               </div>
 
-              {/* Navigation Icons */}
-              <div className="flex items-center gap-1">
+              {/* Navigation Icons - Desktop only */}
+              <div className="hidden md:flex items-center gap-1">
                 
-                {/* 💱 Sélecteur de devise */}
+                {/* ðŸ’± SÃ©lecteur de devise */}
                 <CurrencySelector />
                 
-                {/* 🌐 Sélecteur de langue */}
+                {/* ðŸŒ SÃ©lecteur de langue */}
                 <LanguageSelector />
                 
                 {/* Favoris - sans badge rouge (juste le coeur) */}
@@ -1041,7 +1043,7 @@ export default function KiwiVanMarket() {
                             </svg>
                             <span>My Listings</span>
                           </a>
-                          {/* 🔐 Admin Dashboard - Only visible for admins */}
+                          {/* ðŸ” Admin Dashboard - Only visible for admins */}
                           {isAdmin && (
                             <a 
                               href="#"
@@ -1067,7 +1069,108 @@ export default function KiwiVanMarket() {
                   </div>
                 )}
               </div>
+
+              {/* Mobile Menu Button + Quick Icons */}
+              <div className="flex md:hidden items-center gap-1">
+                {/* Sell button mobile */}
+                <button 
+                  onClick={() => setShowAddVanForm(true)}
+                  className="bg-white text-emerald-600 p-2 rounded-xl"
+                >
+                  <Plus size={20} />
+                </button>
+
+                {/* Currency selector mobile */}
+                <CurrencySelector />
+                
+                {/* Language selector mobile */}
+                <LanguageSelector />
+                
+                {/* Favorites mobile */}
+                <button 
+                  onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
+                  className="p-2 hover:bg-white/10 rounded-xl"
+                >
+                  <Heart size={20} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
+                </button>
+                
+                {/* Messages mobile */}
+                <button 
+                  onClick={() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true)}
+                  className="relative p-2 hover:bg-white/10 rounded-xl"
+                >
+                  <MessageCircle size={20} className="text-white" />
+                  <MessageBadge />
+                </button>
+
+                {/* Hamburger menu */}
+                <button 
+                  onClick={() => setShowMobileMenu(!showMobileMenu)}
+                  className="p-2 hover:bg-white/10 rounded-xl"
+                >
+                  {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
+                </button>
+              </div>
             </div>
+
+            {/* Mobile Menu Dropdown */}
+            {showMobileMenu && (
+              <div className="md:hidden border-t border-white/20 py-4 space-y-2">
+                {/* Buyback Calculator */}
+                <button 
+                  onClick={() => { setShowBuybackCalculator(true); setShowMobileMenu(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
+                >
+                  <Calculator size={20} />
+                  <span>Buyback Calculator</span>
+                </button>
+                
+                {/* Profile / Sign in */}
+                {!currentUser ? (
+                  <button 
+                    onClick={() => { setShowAuthModal(true); setShowMobileMenu(false); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
+                  >
+                    <Users size={20} />
+                    <span>Sign In</span>
+                  </button>
+                ) : (
+                  <>
+                    <button 
+                      onClick={() => { setShowUserProfile(true); setShowMobileMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
+                    >
+                      <Users size={20} />
+                      <span>My Profile</span>
+                    </button>
+                    <button 
+                      onClick={() => { setShowMyVans(true); setShowMobileMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
+                    >
+                      <MapPin size={20} />
+                      <span>My Listings</span>
+                    </button>
+                    {/* Admin Dashboard - Mobile */}
+                    {isAdmin && (
+                      <button 
+                        onClick={() => { setShowAdminDashboard(true); setShowMobileMenu(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition text-yellow-300"
+                      >
+                        <Settings size={20} />
+                        <span>Admin Dashboard</span>
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => { logout(); setShowMobileMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-white/10 rounded-xl transition"
+                    >
+                      <X size={20} />
+                      <span>Sign Out</span>
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </header>
 
@@ -1092,7 +1195,7 @@ export default function KiwiVanMarket() {
             {/* Quick Filters - Pills cliquables */}
             <div className="flex items-center justify-between gap-3 flex-wrap">
               
-              {/* Quick Filters par ordre alphabétique */}
+              {/* Quick Filters par ordre alphabÃ©tique */}
               <div className="flex items-center gap-2 flex-wrap">
                 
                 {/* Buy-Back */}
@@ -1175,7 +1278,7 @@ export default function KiwiVanMarket() {
                 )}
               </div>
 
-              {/* Bouton Filtres à droite */}
+              {/* Bouton Filtres Ã  droite */}
               <button 
                 onClick={() => setShowFilters(!showFilters)}
                 className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
@@ -1198,12 +1301,13 @@ export default function KiwiVanMarket() {
                   {/* Titre + Reset button */}
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
-                      🔍 Find your perfect campervan
+                      ðŸ” Find your perfect campervan
                     </h3>
-                    {(Object.values(filters.equipment).some(v => v) || filters.priceMax < 50000 || filters.yearMin > 1990 || filters.location !== 'all' || filters.type !== 'all') && (
+                    {(Object.values(filters.equipment).some(v => v) || filters.priceMin > 0 || filters.priceMax < 50000 || filters.yearMin > 1990 || filters.location !== 'all' || filters.type !== 'all') && (
                       <button
                         onClick={() => setFilters({
                           ...filters,
+                          priceMin: 0,
                           priceMax: 50000,
                           yearMin: 1990,
                           location: 'all',
@@ -1221,24 +1325,53 @@ export default function KiwiVanMarket() {
                     )}
                   </div>
 
-                  {/* Row 1: Price & Year side by side */}
+                  {/* Row 1: Price Range & Year side by side */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Max Price: <span className="text-emerald-600 font-bold">NZ${filters.priceMax.toLocaleString()}</span>
+                        Price Range
                       </label>
-                      <input 
-                        type="range" 
-                        min="5000" 
-                        max="50000" 
-                        step="1000"
-                        value={filters.priceMax}
-                        onChange={(e) => setFilters({...filters, priceMax: parseInt(e.target.value)})}
-                        className="w-full accent-emerald-500 h-2 rounded-lg"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>$5,000</span>
-                        <span>$50,000</span>
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                          <input 
+                            type="number" 
+                            min="0" 
+                            max={filters.priceMax}
+                            step="1000"
+                            value={filters.priceMin}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 0;
+                              if (val <= filters.priceMax) {
+                                setFilters({...filters, priceMin: val});
+                              }
+                            }}
+                            placeholder="Min"
+                            className="w-full pl-7 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium"
+                          />
+                        </div>
+                        <span className="text-gray-400 font-medium">to</span>
+                        <div className="relative flex-1">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                          <input 
+                            type="number" 
+                            min={filters.priceMin}
+                            max="100000"
+                            step="1000"
+                            value={filters.priceMax}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value) || 50000;
+                              if (val >= filters.priceMin) {
+                                setFilters({...filters, priceMax: val});
+                              }
+                            }}
+                            placeholder="Max"
+                            className="w-full pl-7 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-1.5">
+                        <span>NZ${filters.priceMin.toLocaleString()} - ${filters.priceMax.toLocaleString()}</span>
                       </div>
                     </div>
                     <div>
@@ -1261,7 +1394,7 @@ export default function KiwiVanMarket() {
                     </div>
                   </div>
 
-                  {/* Row 2: Location & Type - ✅ MODIFIÉ avec villes */}
+                  {/* Row 2: Location & Type - âœ… MODIFIÃ‰ avec villes */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
@@ -1269,18 +1402,18 @@ export default function KiwiVanMarket() {
                         value={filters.location}
                         onChange={(e) => setFilters({...filters, location: e.target.value})}
                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
-                        <option value="all">🇳🇿 All New Zealand</option>
-                        <optgroup label="── North Island ──">
-                          <option value="Auckland">📍 Auckland</option>
-                          <option value="Wellington">📍 Wellington</option>
-                          <option value="Hamilton">📍 Hamilton</option>
-                          <option value="Tauranga">📍 Tauranga</option>
-                          <option value="Rotorua">📍 Rotorua</option>
+                        <option value="all">ðŸ‡³ðŸ‡¿ All New Zealand</option>
+                        <optgroup label="â”€â”€ North Island â”€â”€">
+                          <option value="Auckland">ðŸ“ Auckland</option>
+                          <option value="Wellington">ðŸ“ Wellington</option>
+                          <option value="Hamilton">ðŸ“ Hamilton</option>
+                          <option value="Tauranga">ðŸ“ Tauranga</option>
+                          <option value="Rotorua">ðŸ“ Rotorua</option>
                         </optgroup>
-                        <optgroup label="── South Island ──">
-                          <option value="Christchurch">📍 Christchurch</option>
-                          <option value="Queenstown">📍 Queenstown</option>
-                          <option value="Dunedin">📍 Dunedin</option>
+                        <optgroup label="â”€â”€ South Island â”€â”€">
+                          <option value="Christchurch">ðŸ“ Christchurch</option>
+                          <option value="Queenstown">ðŸ“ Queenstown</option>
+                          <option value="Dunedin">ðŸ“ Dunedin</option>
                         </optgroup>
                       </select>
                     </div>
@@ -1290,20 +1423,20 @@ export default function KiwiVanMarket() {
                         value={filters.type}
                         onChange={(e) => setFilters({...filters, type: e.target.value})}
                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
-                        <option value="all">🚐 All Types</option>
-                        <option value="Car">🚗 Car</option>
-                        <option value="Van">🚐 Van</option>
-                        <option value="Motorhome">🚌 Motorhome</option>
+                        <option value="all">ðŸš All Types</option>
+                        <option value="Car">ðŸš— Car</option>
+                        <option value="Van">ðŸš Van</option>
+                        <option value="Motorhome">ðŸšŒ Motorhome</option>
                       </select>
                     </div>
                   </div>
 
-                  {/* Row 3: Equipment filters - Accordéon */}
+                  {/* Row 3: Equipment filters - AccordÃ©on */}
                   <details className="group">
                     <summary className="cursor-pointer list-none">
                       <div className="flex items-center justify-between py-2 border-t border-gray-200">
                         <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                          🔧 Equipment
+                          ðŸ”§ Equipment
                           {Object.values(filters.equipment).some(v => v) && (
                             <span className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full">
                               {Object.values(filters.equipment).filter(v => v).length} selected
@@ -1316,16 +1449,16 @@ export default function KiwiVanMarket() {
                     <div className="pt-3 pb-1">
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                         {[
-                          { key: 'doubleBed', emoji: '🛏️', label: 'Double Bed' },
-                          { key: 'fridge', emoji: '🧊', label: 'Fridge' },
-                          { key: 'gasStove', emoji: '🔥', label: 'Gas Stove' },
-                          { key: 'sink', emoji: '🚰', label: 'Sink' },
-                          { key: 'toilet', emoji: '🚽', label: 'Toilet' },
-                          { key: 'solarPanel', emoji: '☀️', label: 'Solar Panel' },
-                          { key: 'leisureBattery', emoji: '🔋', label: 'Battery' },
-                          { key: 'heater', emoji: '🌡️', label: 'Heater' },
-                          { key: 'hotWater', emoji: '♨️', label: 'Boiler' },
-                          { key: 'shower', emoji: '🚿', label: 'Shower' },
+                          { key: 'doubleBed', emoji: 'ðŸ›ï¸', label: 'Double Bed' },
+                          { key: 'fridge', emoji: 'ðŸ§Š', label: 'Fridge' },
+                          { key: 'gasStove', emoji: 'ðŸ”¥', label: 'Gas Stove' },
+                          { key: 'sink', emoji: 'ðŸš°', label: 'Sink' },
+                          { key: 'toilet', emoji: 'ðŸš½', label: 'Toilet' },
+                          { key: 'solarPanel', emoji: 'â˜€ï¸', label: 'Solar Panel' },
+                          { key: 'leisureBattery', emoji: 'ðŸ”‹', label: 'Battery' },
+                          { key: 'heater', emoji: 'ðŸŒ¡ï¸', label: 'Heater' },
+                          { key: 'hotWater', emoji: 'â™¨ï¸', label: 'Boiler' },
+                          { key: 'shower', emoji: 'ðŸš¿', label: 'Shower' },
                         ].map(item => (
                           <button
                             key={item.key}
@@ -1357,7 +1490,7 @@ export default function KiwiVanMarket() {
           </div>
         </div>
 
-        {/* ========== RÉSULTATS ========== */}
+        {/* ========== RÃ‰SULTATS ========== */}
         <div className="max-w-7xl mx-auto px-4 py-6">
 
           {/* Results count */}
@@ -1371,7 +1504,7 @@ export default function KiwiVanMarket() {
                   onClick={() => setSearchTerm('')}
                   className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
                 >
-                  ✕ Clear search
+                  âœ• Clear search
                 </button>
               )}
             </div>
@@ -1412,7 +1545,7 @@ export default function KiwiVanMarket() {
                         </div>
                         {van.selfContained && (
                           <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-                            ✓ Self-Contained
+                            âœ“ Self-Contained
                           </span>
                         )}
                       </div>
@@ -1423,9 +1556,9 @@ export default function KiwiVanMarket() {
                       {/* Location + Year + Km */}
                       <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
                         <span>{van.year}</span>
-                        <span>•</span>
+                        <span>â€¢</span>
                         <span>{(van.mileage || 0).toLocaleString()} km</span>
-                        <span>•</span>
+                        <span>â€¢</span>
                         <span className="flex items-center gap-1">
                           <MapPin size={12} />
                           {van.location}
@@ -1434,21 +1567,21 @@ export default function KiwiVanMarket() {
 
                       {/* WOF + REGO - Style clair */}
                       <div className="grid grid-cols-2 gap-2 mb-3">
-                        <div className={`rounded-lg px-3 py-2 ${van.wofExpiry ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
-                          <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry ? 'text-emerald-600' : 'text-gray-400'}`}>WOF until</div>
-                          <div className={`text-sm font-bold ${van.wofExpiry ? 'text-emerald-700' : 'text-gray-400'}`}>
-                            {van.wofExpiry ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
+                        <div className={`rounded-lg px-3 py-2 ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
+                          <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'text-emerald-600' : 'text-gray-400'}`}>WOF until</div>
+                          <div className={`text-sm font-bold ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'text-emerald-700' : 'text-gray-400'}`}>
+                            {van.wofExpiry && new Date(van.wofExpiry).getTime() ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
                           </div>
                         </div>
-                        <div className={`rounded-lg px-3 py-2 ${van.regoExpiry ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
-                          <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry ? 'text-blue-600' : 'text-gray-400'}`}>REGO until</div>
-                          <div className={`text-sm font-bold ${van.regoExpiry ? 'text-blue-700' : 'text-gray-400'}`}>
-                            {van.regoExpiry ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
+                        <div className={`rounded-lg px-3 py-2 ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
+                          <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'text-blue-600' : 'text-gray-400'}`}>REGO until</div>
+                          <div className={`text-sm font-bold ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'text-blue-700' : 'text-gray-400'}`}>
+                            {van.regoExpiry && new Date(van.regoExpiry).getTime() ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
                           </div>
                         </div>
                       </div>
 
-                      {/* Footer simplifié */}
+                      {/* Footer simplifiÃ© */}
                       <div className="flex items-center justify-end pt-2 border-t border-gray-100">
                         {van.buyBack && (
                           <span className="text-xs font-semibold text-green-600 flex items-center gap-1">
@@ -1502,7 +1635,7 @@ export default function KiwiVanMarket() {
           </div>
         </div>
 
-        {/* ✅ NOUVEAU FOOTER avec Disclaimer + FAQ + Google Translate */}
+        {/* âœ… NOUVEAU FOOTER avec Disclaimer + FAQ + Google Translate */}
         <HomeSeoSection />
 
         <Footer 
@@ -1548,7 +1681,7 @@ export default function KiwiVanMarket() {
           onClose={() => setShowTerms(false)} 
         />
 
-        {/* 🔐 Admin Dashboard Modal */}
+        {/* ðŸ” Admin Dashboard Modal */}
         {showAdminDashboard && (
           <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
         )}
