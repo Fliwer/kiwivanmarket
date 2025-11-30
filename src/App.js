@@ -337,6 +337,9 @@ export default function KiwiVanMarket() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showBuyBackInfo, setShowBuyBackInfo] = useState(false);
+  const [showWofInfo, setShowWofInfo] = useState(false);
+  const [showRegoInfo, setShowRegoInfo] = useState(false);
+  const [showSelfContainedInfo, setShowSelfContainedInfo] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const { currentUser, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -1200,80 +1203,211 @@ export default function KiwiVanMarket() {
               </div>
             </div>
 
-            {/* Quick Filters - Pills cliquables */}
-            <div className="flex items-center justify-between gap-3 flex-wrap">
+            {/* Quick Filters - Pills cliquables - Optimisé mobile */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               
-              {/* Quick Filters par ordre alphabétique */}
-              <div className="flex items-center gap-2 flex-wrap">
+              {/* Quick Filters - Scroll horizontal sur mobile, overflow visible sur desktop */}
+              <div className="flex items-center gap-2 overflow-x-auto md:overflow-visible pb-2 md:pb-0 md:flex-wrap -mx-4 px-4 md:mx-0 md:px-0 pr-8" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
                 
                 {/* Buy-Back */}
-                <div className="relative">
+                <div 
+                  className="relative flex-shrink-0 flex items-center"
+                  onMouseEnter={() => setShowBuyBackInfo(true)}
+                  onMouseLeave={() => setShowBuyBackInfo(false)}
+                >
                   <button 
                     onClick={() => setFilters({...filters, buyBack: !filters.buyBack})}
-                    onMouseEnter={() => setShowBuyBackInfo(true)}
-                    onMouseLeave={() => setShowBuyBackInfo(false)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer hover:scale-105 ${
+                    className={`px-3 md:px-4 py-2 rounded-l-full md:rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
                       filters.buyBack 
                         ? 'bg-green-500 text-white shadow-md' 
                         : 'bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-700 border border-transparent hover:border-green-300'
                     }`}>
-                    <Shield size={14} />
-                    Buy-Back
-                    <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                    <Shield size={14} className="flex-shrink-0" />
+                    <span className="md:hidden">Buy-Back</span>
+                    <span className="hidden md:inline">Buy-Back</span>
+                    <span className={`hidden md:flex w-4 h-4 rounded-full items-center justify-center text-[9px] font-bold flex-shrink-0 ${
                       filters.buyBack ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
                     }`}>?</span>
                   </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowBuyBackInfo(!showBuyBackInfo); }}
+                    className={`md:hidden px-2 py-2 rounded-r-full text-xs font-bold transition-all active:scale-95 ${
+                      filters.buyBack 
+                        ? 'bg-green-600 text-white' 
+                        : 'bg-gray-200 text-gray-600'
+                    }`}>
+                    ?
+                  </button>
                   {/* Tooltip */}
                   {showBuyBackInfo && (
-                    <div className="absolute left-0 top-full mt-2 w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Shield size={18} className="text-emerald-400" />
-                        <span className="font-bold text-emerald-400">Buy-Back Guarantee</span>
+                    <>
+                      <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowBuyBackInfo(false)} />
+                      <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
+                        <button onClick={() => setShowBuyBackInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
+                        <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
+                          <Shield size={18} className="text-emerald-400" />
+                          <span className="font-bold text-emerald-400">Buy-Back Guarantee</span>
+                        </div>
+                        <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
+                          The seller guarantees to buy back the van at an agreed price if you return it within the specified period. 
+                          <span className="text-white font-semibold"> Perfect for backpackers!</span>
+                        </p>
+                        <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
                       </div>
-                      <p className="text-gray-300 leading-relaxed text-xs">
-                        The seller guarantees to buy back the van at an agreed price if you return it within the specified period. 
-                        <span className="text-white font-semibold"> Perfect for backpackers!</span>
-                      </p>
-                      <div className="absolute left-3 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
-                    </div>
+                    </>
                   )}
                 </div>
 
                 {/* REGO Valid */}
-                <button 
-                  onClick={() => setFilters({...filters, regoValid: !filters.regoValid})}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer hover:scale-105 ${
-                    filters.regoValid 
-                      ? 'bg-purple-500 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700 border border-transparent hover:border-purple-300'
-                  }`}>
-                  <CheckCircle size={14} />
-                  REGO Valid
-                </button>
+                <div 
+                  className="relative flex-shrink-0 flex items-center"
+                  onMouseEnter={() => setShowRegoInfo(true)}
+                  onMouseLeave={() => setShowRegoInfo(false)}
+                >
+                  <button 
+                    onClick={() => setFilters({...filters, regoValid: !filters.regoValid})}
+                    className={`px-3 md:px-4 py-2 rounded-l-full md:rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
+                      filters.regoValid 
+                        ? 'bg-purple-500 text-white shadow-md' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700 border border-transparent hover:border-purple-300'
+                    }`}>
+                    <CheckCircle size={14} className="flex-shrink-0" />
+                    <span className="md:hidden">REGO</span>
+                    <span className="hidden md:inline">REGO Valid</span>
+                    <span className={`hidden md:flex w-4 h-4 rounded-full items-center justify-center text-[9px] font-bold flex-shrink-0 ${
+                      filters.regoValid ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
+                    }`}>?</span>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowRegoInfo(!showRegoInfo); }}
+                    className={`md:hidden px-2 py-2 rounded-r-full text-xs font-bold transition-all active:scale-95 ${
+                      filters.regoValid 
+                        ? 'bg-purple-600 text-white' 
+                        : 'bg-gray-200 text-gray-600'
+                    }`}>
+                    ?
+                  </button>
+                  {/* Tooltip */}
+                  {showRegoInfo && (
+                    <>
+                      <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowRegoInfo(false)} />
+                      <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
+                        <button onClick={() => setShowRegoInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
+                        <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
+                          <span className="text-purple-400 font-bold">📋 Vehicle Registration (REGO)</span>
+                        </div>
+                        <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
+                          <span className="text-white font-semibold">Registration fee</span> that must be paid to legally drive on NZ roads. 
+                          Can be bought in 3, 6 or 12 month periods at any PostShop or online.
+                          <span className="text-white font-semibold"> Check the sticker on the windscreen!</span>
+                        </p>
+                        <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
+                      </div>
+                    </>
+                  )}
+                </div>
 
                 {/* Self-Contained */}
-                <button 
-                  onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer hover:scale-105 ${
-                    filters.selfContained 
-                      ? 'bg-blue-500 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700 border border-transparent hover:border-blue-300'
-                  }`}>
-                  <CheckCircle size={14} />
-                  Self-Contained
-                </button>
+                <div 
+                  className="relative flex-shrink-0 flex items-center"
+                  onMouseEnter={() => setShowSelfContainedInfo(true)}
+                  onMouseLeave={() => setShowSelfContainedInfo(false)}
+                >
+                  <button 
+                    onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
+                    className={`px-3 md:px-4 py-2 rounded-l-full md:rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
+                      filters.selfContained 
+                        ? 'bg-blue-500 text-white shadow-md' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700 border border-transparent hover:border-blue-300'
+                    }`}>
+                    <CheckCircle size={14} className="flex-shrink-0" />
+                    <span className="md:hidden">Self-Cont.</span>
+                    <span className="hidden md:inline">Self-Contained</span>
+                    <span className={`hidden md:flex w-4 h-4 rounded-full items-center justify-center text-[9px] font-bold flex-shrink-0 ${
+                      filters.selfContained ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
+                    }`}>?</span>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowSelfContainedInfo(!showSelfContainedInfo); }}
+                    className={`md:hidden px-2 py-2 rounded-r-full text-xs font-bold transition-all active:scale-95 ${
+                      filters.selfContained 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-gray-200 text-gray-600'
+                    }`}>
+                    ?
+                  </button>
+                  {/* Tooltip */}
+                  {showSelfContainedInfo && (
+                    <>
+                      <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowSelfContainedInfo(false)} />
+                      <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
+                        <button onClick={() => setShowSelfContainedInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
+                        <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
+                          <span className="text-blue-400 font-bold">🏕️ Self-Contained Certification</span>
+                        </div>
+                        <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
+                          A certified van with <span className="text-white font-semibold">toilet, fresh water & grey water tanks</span>. 
+                          Required for freedom camping in most areas of NZ.
+                        </p>
+                        <div className="flex gap-3 mt-2 text-xs">
+                          <span><span className="text-green-400 font-bold">🟢 Green</span> = fixed toilet</span>
+                          <span><span className="text-blue-400 font-bold">🔵 Blue</span> = porta-potty</span>
+                        </div>
+                        <p className="text-white font-semibold text-sm md:text-xs mt-2">Essential for free camping!</p>
+                        <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
+                      </div>
+                    </>
+                  )}
+                </div>
 
                 {/* WOF Valid */}
-                <button 
-                  onClick={() => setFilters({...filters, wofValid: !filters.wofValid})}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer hover:scale-105 ${
-                    filters.wofValid 
-                      ? 'bg-emerald-500 text-white shadow-md' 
-                      : 'bg-gray-100 text-gray-600 hover:bg-emerald-100 hover:text-emerald-700 border border-transparent hover:border-emerald-300'
-                  }`}>
-                  <CheckCircle size={14} />
-                  WOF Valid
-                </button>
+                <div 
+                  className="relative flex-shrink-0 flex items-center"
+                  onMouseEnter={() => setShowWofInfo(true)}
+                  onMouseLeave={() => setShowWofInfo(false)}
+                >
+                  <button 
+                    onClick={() => setFilters({...filters, wofValid: !filters.wofValid})}
+                    className={`px-3 md:px-4 py-2 rounded-l-full md:rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
+                      filters.wofValid 
+                        ? 'bg-emerald-500 text-white shadow-md' 
+                        : 'bg-gray-100 text-gray-600 hover:bg-emerald-100 hover:text-emerald-700 border border-transparent hover:border-emerald-300'
+                    }`}>
+                    <CheckCircle size={14} className="flex-shrink-0" />
+                    <span className="md:hidden">WOF</span>
+                    <span className="hidden md:inline">WOF Valid</span>
+                    <span className={`hidden md:flex w-4 h-4 rounded-full items-center justify-center text-[9px] font-bold flex-shrink-0 ${
+                      filters.wofValid ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
+                    }`}>?</span>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setShowWofInfo(!showWofInfo); }}
+                    className={`md:hidden px-2 py-2 rounded-r-full text-xs font-bold transition-all active:scale-95 ${
+                      filters.wofValid 
+                        ? 'bg-emerald-600 text-white' 
+                        : 'bg-gray-200 text-gray-600'
+                    }`}>
+                    ?
+                  </button>
+                  {/* Tooltip */}
+                  {showWofInfo && (
+                    <>
+                      <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowWofInfo(false)} />
+                      <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
+                        <button onClick={() => setShowWofInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
+                        <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
+                          <span className="text-emerald-400 font-bold">🔧 Warrant of Fitness (WOF)</span>
+                        </div>
+                        <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
+                          A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months for all vehicles in NZ. 
+                          It checks brakes, lights, tyres, steering and other safety features.
+                          <span className="text-white font-semibold"> You can't legally drive without a valid WOF!</span>
+                        </p>
+                        <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
+                      </div>
+                    </>
+                  )}
+                </div>
 
                 {/* Clear filters si au moins un actif */}
                 {(filters.selfContained || filters.buyBack || filters.wofValid || filters.regoValid) && (
