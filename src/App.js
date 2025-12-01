@@ -1254,7 +1254,7 @@ export default function KiwiVanMarket() {
                 {/* Buy-Back */}
                 <div 
                   className="relative w-full md:w-auto"
-                  onMouseEnter={() => window.innerWidth >= 768 && setShowBuyBackInfo(true)}
+                  onMouseEnter={() => setShowBuyBackInfo(true)}
                   onMouseLeave={() => setShowBuyBackInfo(false)}
                 >
                   <button 
