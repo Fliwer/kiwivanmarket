@@ -1254,22 +1254,22 @@ export default function KiwiVanMarket() {
                 {/* Buy-Back */}
                 <div 
                   className="relative w-full md:w-auto"
-                  onMouseEnter={() => setShowBuyBackInfo(true)}
+                  onMouseEnter={() => window.innerWidth >= 768 && setShowBuyBackInfo(true)}
                   onMouseLeave={() => setShowBuyBackInfo(false)}
                 >
                   <button 
                     onClick={() => setFilters({...filters, buyBack: !filters.buyBack})}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
+                    className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${
                       filters.buyBack 
                         ? 'bg-green-500 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-700 border border-gray-200 hover:border-green-300'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-400 hover:text-green-600'
                     }`}>
-                    <Shield size={14} className="flex-shrink-0" />
+                    <Shield size={16} className={filters.buyBack ? 'text-white' : 'text-green-500'} />
                     Buy-Back
                     <span 
                       onClick={(e) => { e.stopPropagation(); setShowBuyBackInfo(!showBuyBackInfo); }}
-                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${
-                        filters.buyBack ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
+                      className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${
+                        filters.buyBack ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-green-100 hover:text-green-600'
                       }`}>?</span>
                   </button>
                   {/* Tooltip */}
@@ -1295,23 +1295,22 @@ export default function KiwiVanMarket() {
                 {/* REGO Valid */}
                 <div 
                   className="relative w-full md:w-auto"
-                  onMouseEnter={() => setShowRegoInfo(true)}
+                  onMouseEnter={() => window.innerWidth >= 768 && setShowRegoInfo(true)}
                   onMouseLeave={() => setShowRegoInfo(false)}
                 >
                   <button 
                     onClick={() => setFilters({...filters, regoValid: !filters.regoValid})}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center justify-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
+                    className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${
                       filters.regoValid 
                         ? 'bg-purple-500 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-purple-100 hover:text-purple-700 border border-gray-200 hover:border-purple-300'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-purple-400 hover:text-purple-600'
                     }`}>
-                    <CheckCircle size={14} className="flex-shrink-0" />
-                    <span className="md:hidden">REGO Valid</span>
-                    <span className="hidden md:inline">REGO Valid</span>
+                    <CheckCircle size={16} className={filters.regoValid ? 'text-white' : 'text-purple-500'} />
+                    REGO Valid
                     <span 
                       onClick={(e) => { e.stopPropagation(); setShowRegoInfo(!showRegoInfo); }}
-                      className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0 ${
-                        filters.regoValid ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
+                      className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${
+                        filters.regoValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-purple-100 hover:text-purple-600'
                       }`}>?</span>
                   </button>
                   {/* Tooltip */}
@@ -1337,31 +1336,24 @@ export default function KiwiVanMarket() {
                 {/* Self-Contained */}
                 <div 
                   className="relative w-full md:w-auto"
-                  onMouseEnter={() => setShowSelfContainedInfo(true)}
+                  onMouseEnter={() => window.innerWidth >= 768 && setShowSelfContainedInfo(true)}
                   onMouseLeave={() => setShowSelfContainedInfo(false)}
                 >
                   <button 
                     onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
-                    className={`px-3 md:px-4 py-2 rounded-l-full md:rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
+                    className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${
                       filters.selfContained 
                         ? 'bg-blue-500 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700 border border-transparent hover:border-blue-300'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:text-blue-600'
                     }`}>
-                    <CheckCircle size={14} className="flex-shrink-0" />
+                    <CheckCircle size={16} className={filters.selfContained ? 'text-white' : 'text-blue-500'} />
                     <span className="md:hidden">Self-Cont.</span>
                     <span className="hidden md:inline">Self-Contained</span>
-                    <span className={`hidden md:flex w-4 h-4 rounded-full items-center justify-center text-[9px] font-bold flex-shrink-0 ${
-                      filters.selfContained ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
-                    }`}>?</span>
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowSelfContainedInfo(!showSelfContainedInfo); }}
-                    className={`md:hidden px-2 py-2 rounded-r-full text-xs font-bold transition-all active:scale-95 ${
-                      filters.selfContained 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                    ?
+                    <span 
+                      onClick={(e) => { e.stopPropagation(); setShowSelfContainedInfo(!showSelfContainedInfo); }}
+                      className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${
+                        filters.selfContained ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-blue-100 hover:text-blue-600'
+                      }`}>?</span>
                   </button>
                   {/* Tooltip */}
                   {showSelfContainedInfo && (
@@ -1390,31 +1382,24 @@ export default function KiwiVanMarket() {
                 {/* WOF Valid */}
                 <div 
                   className="relative w-full md:w-auto"
-                  onMouseEnter={() => setShowWofInfo(true)}
+                  onMouseEnter={() => window.innerWidth >= 768 && setShowWofInfo(true)}
                   onMouseLeave={() => setShowWofInfo(false)}
                 >
                   <button 
                     onClick={() => setFilters({...filters, wofValid: !filters.wofValid})}
-                    className={`px-3 md:px-4 py-2 rounded-l-full md:rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 md:gap-2 cursor-pointer active:scale-95 md:hover:scale-105 ${
+                    className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${
                       filters.wofValid 
                         ? 'bg-emerald-500 text-white shadow-md' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-emerald-100 hover:text-emerald-700 border border-transparent hover:border-emerald-300'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-emerald-400 hover:text-emerald-600'
                     }`}>
-                    <CheckCircle size={14} className="flex-shrink-0" />
+                    <CheckCircle size={16} className={filters.wofValid ? 'text-white' : 'text-emerald-500'} />
                     <span className="md:hidden">WOF</span>
                     <span className="hidden md:inline">WOF Valid</span>
-                    <span className={`hidden md:flex w-4 h-4 rounded-full items-center justify-center text-[9px] font-bold flex-shrink-0 ${
-                      filters.wofValid ? 'bg-white/30 text-white' : 'bg-gray-300 text-gray-600'
-                    }`}>?</span>
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setShowWofInfo(!showWofInfo); }}
-                    className={`md:hidden px-2 py-2 rounded-r-full text-xs font-bold transition-all active:scale-95 ${
-                      filters.wofValid 
-                        ? 'bg-emerald-600 text-white' 
-                        : 'bg-gray-200 text-gray-600'
-                    }`}>
-                    ?
+                    <span 
+                      onClick={(e) => { e.stopPropagation(); setShowWofInfo(!showWofInfo); }}
+                      className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${
+                        filters.wofValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600'
+                      }`}>?</span>
                   </button>
                   {/* Tooltip */}
                   {showWofInfo && (

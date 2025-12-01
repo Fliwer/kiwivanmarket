@@ -361,8 +361,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-      <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         <button 
           onClick={onClose}
