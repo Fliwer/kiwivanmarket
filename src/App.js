@@ -10,6 +10,7 @@ import FavoritesPage from './components/FavoritesPage';
 import { useFavorites } from './hooks/useFavorites';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import QuickMessageBox from './components/QuickMessageBox';
+import { ReserveButton } from './components/PaymentSystem';
 import MessagingPage from './components/MessagingPage';
 import Footer, { FAQModal } from './components/Footer';
 import TermsModal from './components/TermsModal';
@@ -858,7 +859,9 @@ export default function KiwiVanMarket() {
                   setShowMessagingPage(true);
                 }}
               />
-
+<div className="mt-4">
+  <ReserveButton van={van} seller={seller} />
+</div>
               {/* ⭐ NEW: Leave Review Button */}
               <div className="mt-4">
                 <LeaveReviewButton 

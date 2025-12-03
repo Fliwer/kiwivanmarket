@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@stripe/react-stripe-js": "^5.4.1",
+    "@stripe/stripe-js": "^8.5.3",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -27,13 +29,13 @@
       "react-app/jest"
     ]
   },
- "browserslist": {
-  "production": [
-    ">0.1%",
-    "last 2 versions",
-    "not dead",
-    "ie 11"
-  ],
+  "browserslist": {
+    "production": [
+      ">0.1%",
+      "last 2 versions",
+      "not dead",
+      "ie 11"
+    ],
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
