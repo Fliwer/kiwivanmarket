@@ -31,7 +31,6 @@ import { collection, addDoc, query, where, getDocs, doc, updateDoc, serverTimest
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { 
-  getStripe, 
   getPaymentSummary, 
   PAYMENT_CONFIG, 
   RESERVATION_STATUS,
@@ -337,18 +336,15 @@ function ReservationModal({ van, seller, existingReservation, onClose, onSuccess
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create checkout session');
       }
 
-      const { sessionId } = await response.json();
+      const { url } = await response.json();
 
-      // Rediriger vers Stripe Checkout
-      const stripe = await getStripe();
-      const { error: stripeError } = await stripe.redirectToCheckout({ sessionId });
-
-      if (stripeError) {
-        throw stripeError;
-      }
+      // Rediriger vers Stripe Checkout en utilisant l'URL directement
+      // (redirectToCheckout est déprécié)
+      window.location.href = url;
 
     } catch (err) {
       console.error('Payment error:', err);
