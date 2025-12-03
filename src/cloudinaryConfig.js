@@ -128,8 +128,8 @@ export const uploadToCloudinary = async (file, options = {}) => {
   formData.append('upload_preset', CLOUDINARY_CONFIG.uploadPreset);
   formData.append('folder', options.folder || CLOUDINARY_CONFIG.folder);
   
-  // Transformations automatiques pour optimisation
-  formData.append('transformation', 'q_auto,f_auto');
+  // Note: Les transformations ne sont pas autorisées avec unsigned upload
+  // L'optimisation sera faite via getOptimizedUrl() lors de l'affichage
   
   try {
     const response = await fetch(

@@ -16,7 +16,7 @@ admin.initializeApp();
 const db = admin.firestore();
 
 // Initialiser Stripe avec la clé secrète
-const stripe = require('stripe')('sk_test_51SaGyADf4aPEZKU6YuwYIOQf0xlSVDd5uR0x1ZYpcqqOLCmYYJxx3XSYPfJwgj0kt5uQ8dtTwLrZm1a7AVN0SlZd00W1EA9EVK');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 // ============================================
 // 💳 CREATE CHECKOUT SESSION
 // ============================================
