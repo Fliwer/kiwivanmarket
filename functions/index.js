@@ -17,6 +17,7 @@ const db = admin.firestore();
 
 // Initialiser Stripe avec la clé secrète
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 // ============================================
 // 💳 CREATE CHECKOUT SESSION
 // ============================================
@@ -101,13 +102,14 @@ exports.createCheckoutSession = functions.https.onRequest((req, res) => {
 
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   const sig = req.headers['stripe-signature'];
-  const webhookSecret = functions.config().stripe?.webhook_secret || process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   let event;
 
   try {
     // Vérifier la signature du webhook
     event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
+    console.log('✅ Webhook signature verified');
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -118,6 +120,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     case 'checkout.session.completed': {
       const session = event.data.object;
       const reservationId = session.metadata?.reservationId;
+      console.log(`Processing checkout.session.completed for reservation: ${reservationId}`);
 
       if (reservationId) {
         try {
@@ -201,7 +204,7 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
             status: 'expired',
             expiredAt: admin.firestore.FieldValue.serverTimestamp(),
           });
-          console.log(`⌛ Reservation ${reservationId} expired`);
+          console.log(`⏳ Reservation ${reservationId} expired`);
         } catch (error) {
           console.error('Error marking reservation as expired:', error);
         }
