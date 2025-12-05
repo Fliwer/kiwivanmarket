@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -19,6 +20,8 @@ import BuybackCalculator from './components/BuybackCalculator';
 import UserProfile from './components/UserProfile';
 import AdminDashboard from './components/AdminDashboard';
 import { LeaveReviewButton, SellerReviews } from './components/ReviewSystem';
+import ReservationSuccess from './components/ReservationSuccess';
+import ReservationCancelled from './components/ReservationCancelled';
 
 // 📍 Liste des emails admin autorisés
 const ADMIN_EMAILS = [
@@ -51,7 +54,7 @@ function WebViewWarning() {
   return (
     <div className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-6">
       <div className="bg-white rounded-2xl p-6 max-w-sm text-center shadow-2xl">
-        <div className="text-5xl mb-4">🌐</div>
+        <div className="text-5xl mb-4">🌐</div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">
           Open in Browser
         </h2>
@@ -73,7 +76,7 @@ function WebViewWarning() {
   );
 }
 
-// 🌐 Sélecteur de langue pour le header
+// 🌐 Sélecteur de langue pour le header
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
@@ -321,7 +324,10 @@ function MessageBadge() {
   );
 }
 
-export default function KiwiVanMarket() {
+// ========================================
+// COMPOSANT PRINCIPAL DE L'APPLICATION
+// ========================================
+function MainApp() {
   const [vans, setVans] = useState([]);
   const [filteredVans, setFilteredVans] = useState([]);
   const [selectedVan, setSelectedVan] = useState(null);
@@ -859,9 +865,9 @@ export default function KiwiVanMarket() {
                   setShowMessagingPage(true);
                 }}
               />
-<div className="mt-4">
-  <ReserveButton van={van} seller={seller} />
-</div>
+              <div className="mt-4">
+                <ReserveButton van={van} seller={seller} />
+              </div>
               {/* ⭐ NEW: Leave Review Button */}
               <div className="mt-4">
                 <LeaveReviewButton 
@@ -973,13 +979,13 @@ export default function KiwiVanMarket() {
       <WebViewWarning />
       <div className="min-h-screen bg-gray-50">
         
-        {/* ========== HEADER VERT + ICà”NES VISIBLES ========== */}
+        {/* ========== HEADER VERT + ICà"NES VISIBLES ========== */}
         <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-16">
               
               {/* Logo */}
-              <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.reload()}>
+              <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.href = '/'}>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
                   <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-9 h-9 object-contain" />
                 </div>
@@ -1030,7 +1036,7 @@ export default function KiwiVanMarket() {
                 {/* 💱 Sélecteur de devise */}
                 <CurrencySelector />
                 
-                {/* 🌐 Sélecteur de langue */}
+                {/* 🌐 Sélecteur de langue */}
                 <LanguageSelector />
                 
                 {/* Favoris - sans badge rouge (juste le coeur) */}
@@ -1552,7 +1558,7 @@ export default function KiwiVanMarket() {
                     </div>
                   </div>
 
-                  {/* Row 2: Location & Type - ✅ MODIFIà‰ avec villes */}
+                  {/* Row 2: Location & Type */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
@@ -1650,7 +1656,7 @@ export default function KiwiVanMarket() {
           </div>
         </div>
 
-        {/* ========== Rà‰SULTATS ========== */}
+        {/* ========== RÉSULTATS ========== */}
         <div className="max-w-7xl mx-auto px-4 py-6">
 
           {/* Results count + Sort */}
@@ -1810,7 +1816,7 @@ export default function KiwiVanMarket() {
           </div>
         </div>
 
-        {/* ✅ NOUVEAU FOOTER avec Disclaimer + FAQ + Google Translate */}
+        {/* Footer */}
         <HomeSeoSection />
 
         <Footer 
@@ -1981,11 +1987,26 @@ export default function KiwiVanMarket() {
           </div>
         )}
 
-        {/* 📍 Admin Dashboard Modal */}
+        {/* Admin Dashboard Modal */}
         {showAdminDashboard && (
           <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
         )}
       </div>
     </NotificationProvider>
+  );
+}
+
+// ========================================
+// EXPORT PAR DÉFAUT AVEC ROUTER
+// ========================================
+export default function KiwiVanMarket() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/reservation-success" element={<ReservationSuccess />} />
+        <Route path="/reservation-cancelled" element={<ReservationCancelled />} />
+        <Route path="*" element={<MainApp />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

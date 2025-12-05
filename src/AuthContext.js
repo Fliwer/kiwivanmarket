@@ -47,7 +47,6 @@ export const AuthProvider = ({ children }) => {
       const user = result.user;
       
       // Sauvegarder le profil en arriere-plan (ne pas attendre)
-      // Le modal se ferme immediatement apres la connexion Google
       saveUserProfile(user).catch(err => console.error('Erreur sauvegarde profil:', err));
       
       return user;
@@ -133,21 +132,29 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // L'utilisateur est connecte
-        // Recuperer les infos depuis Firestore
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
+        // ✅ OPTIMISATION: Connecter l'utilisateur IMMEDIATEMENT avec les infos Firebase Auth
+        // L'app devient reactive instantanement (pas d'attente Firestore)
+        setCurrentUser(user);
+        setLoading(false);
         
-        if (userSnap.exists()) {
-          setCurrentUser({ ...user, ...userSnap.data() });
-        } else {
-          setCurrentUser(user);
+        // Puis enrichir les donnees en arriere-plan (non-bloquant)
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+          
+          if (userSnap.exists()) {
+            // Fusionner les donnees Firestore avec l'user Firebase Auth
+            setCurrentUser(prev => ({ ...prev, ...userSnap.data() }));
+          }
+        } catch (error) {
+          // En cas d'erreur Firestore, on garde quand meme l'user connecte
+          console.error('Erreur chargement profil Firestore:', error);
         }
       } else {
         // L'utilisateur est deconnecte
         setCurrentUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     // Cleanup
