@@ -10,12 +10,10 @@ import {
   CheckCircle, 
   ArrowRight, 
   Mail, 
-  Phone, 
-  Calendar,
-  DollarSign,
   Clock,
   Home,
-  MessageCircle
+  MessageCircle,
+  DollarSign
 } from 'lucide-react';
 
 function ReservationSuccess() {
@@ -25,6 +23,15 @@ function ReservationSuccess() {
   const [loading, setLoading] = useState(true);
 
   const reservationId = searchParams.get('id');
+
+  // ⚡ Cacher le loader initial
+  useEffect(() => {
+    const loader = document.getElementById('app-loader');
+    if (loader) {
+      loader.classList.add('fade-out');
+      setTimeout(() => loader.remove(), 500);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchReservation = async () => {

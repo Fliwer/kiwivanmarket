@@ -1,27 +1,51 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
-import AuthModal from './components/AuthModal';
-import AddVanForm from './components/AddVanForm';
-import MyVans from './components/MyVans';
-import FavoritesPage from './components/FavoritesPage';
 import { useFavorites } from './hooks/useFavorites';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
-import QuickMessageBox from './components/QuickMessageBox';
-import { ReserveButton } from './components/PaymentSystem';
-import MessagingPage from './components/MessagingPage';
+
+// ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
+import AuthModal from './components/AuthModal';
 import Footer, { FAQModal } from './components/Footer';
-import TermsModal from './components/TermsModal';
-import HomeSeoSection from './components/HomeSeoSection';
-import BuybackCalculator from './components/BuybackCalculator';
-import UserProfile from './components/UserProfile';
-import AdminDashboard from './components/AdminDashboard';
-import { LeaveReviewButton, SellerReviews } from './components/ReviewSystem';
-import ReservationSuccess from './components/ReservationSuccess';
-import ReservationCancelled from './components/ReservationCancelled';
+
+// ✅ LAZY LOADING - Chargés uniquement quand nécessaires
+const AddVanForm = lazy(() => import('./components/AddVanForm'));
+const MyVans = lazy(() => import('./components/MyVans'));
+const FavoritesPage = lazy(() => import('./components/FavoritesPage'));
+const MessagingPage = lazy(() => import('./components/MessagingPage'));
+const BuybackCalculator = lazy(() => import('./components/BuybackCalculator'));
+const UserProfile = lazy(() => import('./components/UserProfile'));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+const TermsModal = lazy(() => import('./components/TermsModal'));
+const HomeSeoSection = lazy(() => import('./components/HomeSeoSection'));
+const QuickMessageBox = lazy(() => import('./components/QuickMessageBox'));
+const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
+const ReservationCancelled = lazy(() => import('./components/ReservationCancelled'));
+const LeaveReviewButton = lazy(() => import('./components/ReviewSystem').then(m => ({ default: m.LeaveReviewButton })));
+const SellerReviews = lazy(() => import('./components/ReviewSystem').then(m => ({ default: m.SellerReviews })));
+const ReserveButton = lazy(() => import('./components/PaymentSystem').then(m => ({ default: m.ReserveButton })));
+
+// ✅ LOADING COMPONENTS
+const LoadingSpinner = ({ text = "Loading..." }) => (
+  <div className="flex items-center justify-center py-12">
+    <div className="text-center">
+      <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mb-3"></div>
+      <p className="text-gray-500 text-sm">{text}</p>
+    </div>
+  </div>
+);
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4"></div>
+      <p className="text-xl text-gray-600 font-semibold">Loading...</p>
+    </div>
+  </div>
+);
 
 // 📍 Liste des emails admin autorisés
 const ADMIN_EMAILS = [
@@ -44,7 +68,6 @@ function WebViewWarning() {
 
   useEffect(() => {
     const ua = navigator.userAgent || navigator.vendor || window.opera;
-    // Détecte les WebViews de Facebook, Messenger, Instagram, etc.
     const isInAppBrowser = /FBAN|FBAV|Instagram|Messenger|WebView|wv/i.test(ua);
     setIsWebView(isInAppBrowser);
   }, []);
@@ -94,52 +117,42 @@ function LanguageSelector() {
     { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' }
   ];
 
-  // ✨ CORRECTION: Force Google Translate à  rafraîchir complètement
   const applyLanguage = useCallback((langCode) => {
-    // 1. Nettoyer TOUS les cookies Google Translate
     const domains = ['', '.' + window.location.hostname, '.kiwivanmarket.com'];
     domains.forEach(domain => {
       document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${domain ? ' domain=' + domain + ';' : ''}`;
     });
     
-    // 2. Supprimer aussi du localStorage
     try {
       localStorage.removeItem('googtrans');
       sessionStorage.clear();
     } catch (e) {}
 
-    // 3. Supprimer les éléments Google Translate du DOM
     const gtFrame = document.querySelector('.goog-te-banner-frame');
     if (gtFrame) gtFrame.remove();
     const gtElement = document.getElementById('google_translate_element');
     if (gtElement) gtElement.innerHTML = '';
     
-    // 4. Réinitialiser le body
     document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
     const html = document.documentElement;
     html.className = html.className.replace(/translated-[a-z]+/g, '');
     
-    // 5. Supprimer le script Google Translate pour forcer une réinitialisation
     const oldScript = document.getElementById('google-translate-script');
     if (oldScript) oldScript.remove();
     
-    // 6. Supprimer les iframes Google
     document.querySelectorAll('iframe.goog-te-menu-frame, iframe.goog-te-banner-frame').forEach(el => el.remove());
     
     if (langCode === 'en') {
-      // Retour à  l'anglais - reload COMPLET sans cache
       setTimeout(() => {
         window.location.replace(window.location.pathname + '?lang=en&t=' + Date.now());
       }, 100);
       return;
     }
 
-    // Définir le nouveau cookie de langue
     const langCookie = `/en/${langCode}`;
     document.cookie = `googtrans=${langCookie}; path=/;`;
     document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
     
-    // Force reload avec cache bypass
     setTimeout(() => {
       window.location.replace(window.location.pathname + '?lang=' + langCode + '&t=' + Date.now());
     }, 100);
@@ -156,7 +169,6 @@ function LanguageSelector() {
     const savedLang = localStorage.getItem('preferredLang') || 'en';
     setCurrentLang(savedLang);
 
-    // On injecte le script Google si ce n'est pas déjà  fait
     if (!document.getElementById('google-translate-script')) {
       const translateDiv = document.createElement('div');
       translateDiv.id = 'google_translate_element';
@@ -183,8 +195,7 @@ function LanguageSelector() {
     }
   }, []);
 
-  const currentLangData =
-    languages.find((l) => l.code === currentLang) || languages[0];
+  const currentLangData = languages.find((l) => l.code === currentLang) || languages[0];
 
   return (
     <div className="relative">
@@ -260,7 +271,6 @@ function CurrencySelector() {
     setIsOpen(false);
     setCurrentCurrency(code);
     localStorage.setItem('kiwivanmarket_currency', code);
-    // Dispatch event pour que les autres composants puissent réagir
     window.dispatchEvent(new CustomEvent('currencyChange', { detail: code }));
   };
 
@@ -311,7 +321,7 @@ function CurrencySelector() {
   );
 }
 
-// Petit composant pour le badge Messages (utilise useNotifications)
+// Petit composant pour le badge Messages
 function MessageBadge() {
   const { unreadCount } = useNotifications();
   
@@ -352,16 +362,13 @@ function MainApp() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // 📍 Check if current user is admin
   const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
   
-  // States pour Footer/FAQ/Terms
   const [showFAQ, setShowFAQ] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   
-  // État pour le tri des annonces
-  const [sortBy, setSortBy] = useState('newest'); // 'newest', 'price-asc', 'price-desc'
+  const [sortBy, setSortBy] = useState('newest');
   
   const [filters, setFilters] = useState({
     priceMin: 0,
@@ -373,7 +380,6 @@ function MainApp() {
     buyBack: false,
     wofValid: false,
     regoValid: false,
-    // Equipment filters - Simplified for backpackers
     equipment: {
       doubleBed: false,
       fridge: false,
@@ -390,10 +396,8 @@ function MainApp() {
     }
   });
 
-  // 💱 State pour la devise
   const [currency, setCurrency] = useState('NZD');
 
-  // 💱 Écouter les changements de devise
   useEffect(() => {
     const savedCurrency = localStorage.getItem('kiwivanmarket_currency') || 'NZD';
     setCurrency(savedCurrency);
@@ -406,7 +410,6 @@ function MainApp() {
     return () => window.removeEventListener('currencyChange', handleCurrencyChange);
   }, []);
 
-  // ⚡ Cache le loader initial dès que React a monté
   useEffect(() => {
     const loader = document.getElementById('app-loader');
     if (loader) {
@@ -481,7 +484,6 @@ function MainApp() {
     }
   };
 
-  // ✅ MODIFIà‰: Filtre par ville (location) au lieu de région
   useEffect(() => {
     let filtered = vans.filter(van => {
       const matchSearch = van.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -490,31 +492,20 @@ function MainApp() {
       const matchPrice = van.price >= filters.priceMin && van.price <= filters.priceMax;
       const matchYear = van.year >= filters.yearMin;
       const matchType = filters.type === 'all' || van.type === filters.type;
-      
-      // ✅ Filtre par ville (van.location) au lieu de région
       const matchLocation = filters.location === 'all' || van.location === filters.location;
-      
       const matchSelfContained = !filters.selfContained || van.selfContained;
       const matchBuyBack = !filters.buyBack || van.buyBack;
-      
-      // Vérifier WOF valide (date future)
       const matchWofValid = !filters.wofValid || (van.wofExpiry && new Date(van.wofExpiry) > new Date());
-      
-      // Vérifier REGO valide (date future)
       const matchRegoValid = !filters.regoValid || (van.regoExpiry && new Date(van.regoExpiry) > new Date());
       
-      // Vérifier les équipements sélectionnés
       const matchEquipment = Object.entries(filters.equipment).every(([key, required]) => {
-        if (!required) return true; // Si pas requis, on passe
-        // Cas spécial pour shower (indoor ou outdoor)
+        if (!required) return true;
         if (key === 'shower') {
           return van.equipment?.outdoorShower || van.equipment?.indoorShower;
         }
-        // Cas spécial pour surfRack (bike ou surf)
         if (key === 'surfRack') {
           return van.equipment?.surfRack || van.equipment?.bikeRack;
         }
-        // Cas spécial pour heater (normal ou diesel)
         if (key === 'heater') {
           return van.equipment?.heater || van.equipment?.dieselHeater;
         }
@@ -524,7 +515,6 @@ function MainApp() {
       return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid && matchEquipment;
     });
     
-    // 🔄 Tri des résultats
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
@@ -533,7 +523,6 @@ function MainApp() {
           return (b.price || 0) - (a.price || 0);
         case 'newest':
         default:
-          // Tri par date de création (plus récent en premier)
           const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
           const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
           return dateB - dateA;
@@ -543,7 +532,6 @@ function MainApp() {
     setFilteredVans(filtered);
   }, [searchTerm, filters, vans, sortBy]);
 
-  // 💱 Format price with selected currency
   const formatPrice = (price) => {
     const curr = CURRENCIES[currency];
     const converted = Math.round((price || 0) * curr.rate);
@@ -552,17 +540,13 @@ function MainApp() {
 
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
-  // ✅ FIX: VanDetailsModal avec protection contre les champs undefined
+  // ✅ VanDetailsModal
   const VanDetailsModal = ({ van }) => {
-    // ✅ Protection: S'assurer que images est toujours un tableau
     const images = van.images && van.images.length > 0 
       ? van.images 
       : (van.imageUrl ? [van.imageUrl] : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800']);
     
-    // ✅ Protection: S'assurer que features est toujours un tableau
     const features = van.features || [];
-    
-    // ✅ Protection: S'assurer que seller existe
     const seller = van.seller || { name: 'Unknown', rating: 5, email: '', phone: '' };
     
     const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
@@ -576,7 +560,7 @@ function MainApp() {
           className="bg-white w-full md:rounded-3xl md:max-w-7xl md:my-8 relative shadow-2xl overflow-hidden min-h-screen md:min-h-0"
           onClick={(e) => e.stopPropagation()}>
           
-          {/* Header mobile avec bouton retour */}
+          {/* Header mobile */}
           <div className="sticky top-0 z-[80] bg-gradient-to-b from-black/70 to-transparent md:hidden">
             <div className="flex items-center justify-between p-4">
               <button 
@@ -612,6 +596,7 @@ function MainApp() {
                 src={images[currentImageIndex]} 
                 alt={van.title || 'Van'} 
                 className="w-full h-full object-cover"
+                loading="lazy"
               />
               
               {images.length > 1 && (
@@ -717,7 +702,6 @@ function MainApp() {
                 <p className="text-gray-700 leading-relaxed">{van.description || 'No description available.'}</p>
               </div>
 
-              {/* ✅ FIX: Features avec protection */}
               {features.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -737,7 +721,6 @@ function MainApp() {
                 </div>
               )}
 
-              {/* Equipment Section - Si van a equipment */}
               {van.equipment && Object.values(van.equipment).some(v => v === true) && (
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
@@ -763,7 +746,6 @@ function MainApp() {
                 </div>
               )}
 
-              {/* Custom Features */}
               {van.customFeatures && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
                   <h4 className="text-sm font-bold text-gray-700 mb-2">✏️ Other Features</h4>
@@ -771,7 +753,7 @@ function MainApp() {
                 </div>
               )}
 
-              {/* WOF + REGO + Self-Contained - Style Facebook */}
+              {/* WOF + REGO + Self-Contained */}
               <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-4 rounded-xl border border-gray-200 mb-6">
                 <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                   <Shield size={16} className="text-emerald-600" />
@@ -799,7 +781,7 @@ function MainApp() {
                 </div>
               </div>
 
-              {/* Buy-Back Details si applicable */}
+              {/* Buy-Back Details */}
               {van.buyBack && (
                 <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
                   <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">
@@ -833,7 +815,7 @@ function MainApp() {
                 </div>
               )}
 
-              {/* ✅ FIX: Seller info avec protection */}
+              {/* Seller info */}
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl border border-gray-200 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full w-12 h-12 flex items-center justify-center text-white text-xl font-bold shadow-lg">
@@ -855,38 +837,48 @@ function MainApp() {
                 </div>
               </div>
 
-              {/* Quick Message Box */}
-              <QuickMessageBox 
-                van={van} 
-                seller={seller}
-                onOpenFullChat={() => {
-                  setSelectedVan(null);
-                  setCurrentImageIndex(0);
-                  setShowMessagingPage(true);
-                }}
-              />
-              <div className="mt-4">
-                <ReserveButton van={van} seller={seller} />
-              </div>
-              {/* ⭐ NEW: Leave Review Button */}
-              <div className="mt-4">
-                <LeaveReviewButton 
-                  sellerId={seller.uid || van.seller?.uid}
-                  sellerName={seller.name}
-                  vanId={van.id}
-                  vanTitle={van.title}
-                  className="w-full justify-center"
+              {/* Quick Message Box - Lazy */}
+              <Suspense fallback={<LoadingSpinner text="Loading..." />}>
+                <QuickMessageBox 
+                  van={van} 
+                  seller={seller}
+                  onOpenFullChat={() => {
+                    setSelectedVan(null);
+                    setCurrentImageIndex(0);
+                    setShowMessagingPage(true);
+                  }}
                 />
+              </Suspense>
+              
+              <div className="mt-4">
+                <Suspense fallback={<LoadingSpinner />}>
+                  <ReserveButton van={van} seller={seller} />
+                </Suspense>
+              </div>
+              
+              {/* Leave Review Button - Lazy */}
+              <div className="mt-4">
+                <Suspense fallback={null}>
+                  <LeaveReviewButton 
+                    sellerId={seller.uid || van.seller?.uid}
+                    sellerName={seller.name}
+                    vanId={van.id}
+                    vanTitle={van.title}
+                    className="w-full justify-center"
+                  />
+                </Suspense>
               </div>
 
-              {/* ⭐ NEW: Seller Reviews Section */}
+              {/* Seller Reviews - Lazy */}
               {(seller.uid || van.seller?.uid) && (
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Star size={18} className="text-yellow-500" />
                     Seller Reviews
                   </h3>
-                  <SellerReviews sellerId={seller.uid || van.seller?.uid} limit={3} />
+                  <Suspense fallback={<LoadingSpinner text="Loading reviews..." />}>
+                    <SellerReviews sellerId={seller.uid || van.seller?.uid} limit={3} />
+                  </Suspense>
                 </div>
               )}
             </div>
@@ -899,78 +891,81 @@ function MainApp() {
   // Si page Buyback Calculator ouverte
   if (showBuybackCalculator) {
     return (
-      <div className="min-h-screen relative">
-        <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              <button 
-                onClick={() => setShowBuybackCalculator(false)}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition text-white font-semibold"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                <span className="hidden sm:inline">Back to listings</span>
-              </button>
-
-              {/* Header simplifié - Devise gérée dans le BuybackCalculator */}
-              <div className="flex items-center gap-1">
+      <Suspense fallback={<PageLoader />}>
+        <div className="min-h-screen relative">
+          <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
+            <div className="max-w-7xl mx-auto px-4">
+              <div className="flex items-center justify-between h-16">
                 <button 
-                  onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowFavorites(true) : setShowAuthModal(true), 100); }}
-                  className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                  onClick={() => setShowBuybackCalculator(false)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition text-white font-semibold"
                 >
-                  <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
-                  <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="hidden sm:inline">Back to listings</span>
                 </button>
 
-                <button 
-                  onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true), 100); }}
-                  className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                >
-                  <MessageCircle size={22} className="text-white" />
-                  <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
-                </button>
+                <div className="flex items-center gap-1">
+                  <button 
+                    onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowFavorites(true) : setShowAuthModal(true), 100); }}
+                    className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                  >
+                    <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
+                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
+                  </button>
 
-                {!currentUser ? (
                   <button 
-                    onClick={() => setShowAuthModal(true)}
-                    className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                    onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true), 100); }}
+                    className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
                   >
-                    <Users size={22} className="text-white" />
-                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Sign in</span>
+                    <MessageCircle size={22} className="text-white" />
+                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
                   </button>
-                ) : (
-                  <button 
-                    onClick={() => { setShowBuybackCalculator(false); setShowUserMenu(true); }}
-                    className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                  >
-                    <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
-                      {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
-                    </div>
-                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
-                  </button>
-                )}
+
+                  {!currentUser ? (
+                    <button 
+                      onClick={() => setShowAuthModal(true)}
+                      className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                    >
+                      <Users size={22} className="text-white" />
+                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Sign in</span>
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => { setShowBuybackCalculator(false); setShowUserMenu(true); }}
+                      className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                    >
+                      <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
+                        {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
+                      </div>
+                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </header>
-        
-        <BuybackCalculator />
-        
-        <AuthModal 
-          isOpen={showAuthModal} 
-          onClose={() => setShowAuthModal(false)} 
-        />
-      </div>
+          </header>
+          
+          <BuybackCalculator />
+          
+          <AuthModal 
+            isOpen={showAuthModal} 
+            onClose={() => setShowAuthModal(false)} 
+          />
+        </div>
+      </Suspense>
     );
   }
 
   // Si page messagerie ouverte
   if (showMessagingPage) {
     return (
-      <NotificationProvider onOpenMessaging={() => {}}>
-        <MessagingPage onBack={() => setShowMessagingPage(false)} />
-      </NotificationProvider>
+      <Suspense fallback={<PageLoader />}>
+        <NotificationProvider onOpenMessaging={() => {}}>
+          <MessagingPage onBack={() => setShowMessagingPage(false)} />
+        </NotificationProvider>
+      </Suspense>
     );
   }
 
@@ -979,7 +974,7 @@ function MainApp() {
       <WebViewWarning />
       <div className="min-h-screen bg-gray-50">
         
-        {/* ========== HEADER VERT + ICà"NES VISIBLES ========== */}
+        {/* ========== HEADER ========== */}
         <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-16">
@@ -995,9 +990,8 @@ function MainApp() {
                 </div>
               </div>
 
-              {/* Boutons d'action - Desktop only */}
+              {/* Boutons d'action - Desktop */}
               <div className="hidden md:flex items-center gap-3 ml-10">
-                {/* Bouton Buyback Calculator */}
                 <button 
                   onClick={() => setShowBuybackCalculator(true)}
                   className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
@@ -1006,7 +1000,6 @@ function MainApp() {
                   <span className="hidden md:inline">Buyback Calculator</span>
                 </button>
 
-                {/* Bouton Vendre */}
                 <button 
                   onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
                   className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
@@ -1030,16 +1023,11 @@ function MainApp() {
                 </div>
               </div>
 
-              {/* Navigation Icons - Desktop only */}
+              {/* Navigation Icons - Desktop */}
               <div className="hidden md:flex items-center gap-1">
-                
-                {/* 💱 Sélecteur de devise */}
                 <CurrencySelector />
-                
-                {/* 🌐 Sélecteur de langue */}
                 <LanguageSelector />
                 
-                {/* Favoris - sans badge rouge (juste le coeur) */}
                 <button 
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
                   className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
@@ -1048,7 +1036,6 @@ function MainApp() {
                   <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
                 </button>
 
-                {/* Messages - avec badge notification */}
                 <button 
                   onClick={() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true)}
                   className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
@@ -1058,7 +1045,6 @@ function MainApp() {
                   <MessageBadge />
                 </button>
 
-                {/* Profil / Connexion */}
                 {!currentUser ? (
                   <button 
                     onClick={() => setShowAuthModal(true)}
@@ -1079,7 +1065,6 @@ function MainApp() {
                       <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
                     </button>
                     
-                    {/* Dropdown Menu */}
                     {showUserMenu && (
                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 text-gray-700 border border-gray-100 z-50">
                         <div className="px-4 py-3 border-b bg-gray-50 rounded-t-xl">
@@ -1105,7 +1090,6 @@ function MainApp() {
                             </svg>
                             <span>My Listings</span>
                           </a>
-                          {/* 📍 Admin Dashboard - Only visible for admins */}
                           {isAdmin && (
                             <a 
                               href="#"
@@ -1132,31 +1116,22 @@ function MainApp() {
                 )}
               </div>
 
-              {/* Mobile Menu Button + Quick Icons */}
+              {/* Mobile Menu Button */}
               <div className="flex md:hidden items-center gap-1">
-                {/* Sell button mobile */}
                 <button 
                   onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
                   className="bg-white text-emerald-600 p-2 rounded-xl"
                 >
                   <Plus size={20} />
                 </button>
-
-                {/* Currency selector mobile */}
                 <CurrencySelector />
-                
-                {/* Language selector mobile */}
                 <LanguageSelector />
-                
-                {/* Favorites mobile */}
                 <button 
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
                   className="p-2 hover:bg-white/10 rounded-xl"
                 >
                   <Heart size={20} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
                 </button>
-                
-                {/* Messages mobile */}
                 <button 
                   onClick={() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true)}
                   className="relative p-2 hover:bg-white/10 rounded-xl"
@@ -1164,8 +1139,6 @@ function MainApp() {
                   <MessageCircle size={20} className="text-white" />
                   <MessageBadge />
                 </button>
-
-                {/* Hamburger menu */}
                 <button 
                   onClick={() => setShowMobileMenu(!showMobileMenu)}
                   className="p-2 hover:bg-white/10 rounded-xl"
@@ -1178,7 +1151,6 @@ function MainApp() {
             {/* Mobile Menu Dropdown */}
             {showMobileMenu && (
               <div className="md:hidden border-t border-white/20 py-4 space-y-2">
-                {/* Buyback Calculator */}
                 <button 
                   onClick={() => { setShowBuybackCalculator(true); setShowMobileMenu(false); }}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
@@ -1187,7 +1159,6 @@ function MainApp() {
                   <span>Buyback Calculator</span>
                 </button>
                 
-                {/* Profile / Sign in */}
                 {!currentUser ? (
                   <button 
                     onClick={() => { setShowAuthModal(true); setShowMobileMenu(false); }}
@@ -1212,7 +1183,6 @@ function MainApp() {
                       <MapPin size={20} />
                       <span>My Listings</span>
                     </button>
-                    {/* Admin Dashboard - Mobile */}
                     {isAdmin && (
                       <button 
                         onClick={() => { setShowAdminDashboard(true); setShowMobileMenu(false); }}
@@ -1254,10 +1224,9 @@ function MainApp() {
               </div>
             </div>
 
-            {/* Quick Filters - Pills cliquables - Optimisé mobile */}
+            {/* Quick Filters */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               
-              {/* Quick Filters - Grille 2x2 sur mobile, ligne sur desktop */}
               <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:gap-3 md:overflow-visible md:pb-0 md:flex-wrap">
                 
                 {/* Buy-Back */}
@@ -1281,7 +1250,6 @@ function MainApp() {
                         filters.buyBack ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-green-100 hover:text-green-600'
                       }`}>?</span>
                   </button>
-                  {/* Tooltip */}
                   {showBuyBackInfo && (
                     <>
                       <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowBuyBackInfo(false)} />
@@ -1322,7 +1290,6 @@ function MainApp() {
                         filters.regoValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-purple-100 hover:text-purple-600'
                       }`}>?</span>
                   </button>
-                  {/* Tooltip */}
                   {showRegoInfo && (
                     <>
                       <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowRegoInfo(false)} />
@@ -1364,7 +1331,6 @@ function MainApp() {
                         filters.selfContained ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-blue-100 hover:text-blue-600'
                       }`}>?</span>
                   </button>
-                  {/* Tooltip */}
                   {showSelfContainedInfo && (
                     <>
                       <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowSelfContainedInfo(false)} />
@@ -1410,7 +1376,6 @@ function MainApp() {
                         filters.wofValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600'
                       }`}>?</span>
                   </button>
-                  {/* Tooltip */}
                   {showWofInfo && (
                     <>
                       <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowWofInfo(false)} />
@@ -1430,7 +1395,6 @@ function MainApp() {
                   )}
                 </div>
 
-                {/* Clear filters si au moins un actif */}
                 {(filters.selfContained || filters.buyBack || filters.wofValid || filters.regoValid) && (
                   <button 
                     onClick={() => setFilters({...filters, selfContained: false, buyBack: false, wofValid: false, regoValid: false})}
@@ -1441,7 +1405,6 @@ function MainApp() {
                 )}
               </div>
 
-              {/* Bouton Filtres à  droite */}
               <button 
                 onClick={() => setShowFilters(!showFilters)}
                 className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
@@ -1458,10 +1421,8 @@ function MainApp() {
             {/* Panel Filtres Expandable */}
             {showFilters && (
               <div className="mt-3 pt-3 border-t border-gray-200">
-                {/* Carte principale des filtres */}
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5">
                   
-                  {/* Titre + Reset button */}
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
                       🔍 Find your perfect campervan
@@ -1489,7 +1450,7 @@ function MainApp() {
                     )}
                   </div>
 
-                  {/* Row 1: Price Range & Year side by side */}
+                  {/* Price Range & Year */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1558,7 +1519,7 @@ function MainApp() {
                     </div>
                   </div>
 
-                  {/* Row 2: Location & Type */}
+                  {/* Location & Type */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
@@ -1595,7 +1556,7 @@ function MainApp() {
                     </div>
                   </div>
 
-                  {/* Row 3: Equipment filters - Accordéon */}
+                  {/* Equipment filters */}
                   <details className="group">
                     <summary className="cursor-pointer list-none">
                       <div className="flex items-center justify-between py-2 border-t border-gray-200">
@@ -1659,7 +1620,6 @@ function MainApp() {
         {/* ========== RÉSULTATS ========== */}
         <div className="max-w-7xl mx-auto px-4 py-6">
 
-          {/* Results count + Sort */}
           {!loading && (
             <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-xl font-bold text-gray-800">
@@ -1674,7 +1634,6 @@ function MainApp() {
                     ✕ Clear search
                   </button>
                 )}
-                {/* Sort dropdown */}
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500 hidden sm:inline">Sort by:</span>
                   <select 
@@ -1704,7 +1663,12 @@ function MainApp() {
                     onClick={() => setSelectedVan(van)}
                     className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:-translate-y-1">
                     <div className="relative">
-                      <img src={van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'} alt={van.title} className="w-full h-56 object-cover"/>
+                      <img 
+                        src={van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'} 
+                        alt={van.title} 
+                        className="w-full h-56 object-cover"
+                        loading="lazy"
+                      />
                       <button 
                         onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
                         className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition">
@@ -1719,7 +1683,6 @@ function MainApp() {
                     </div>
 
                     <div className="p-4">
-                      {/* Prix + Self-Contained badge */}
                       <div className="flex items-center justify-between mb-2">
                         <div className="text-2xl font-bold text-gray-900">
                           {formatPrice(van.price)}
@@ -1731,10 +1694,8 @@ function MainApp() {
                         )}
                       </div>
 
-                      {/* Titre */}
                       <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{van.title}</h3>
                       
-                      {/* Location + Year + Km */}
                       <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
                         <span>{van.year}</span>
                         <span>•</span>
@@ -1746,7 +1707,6 @@ function MainApp() {
                         </span>
                       </div>
 
-                      {/* WOF + REGO - Style clair */}
                       <div className="grid grid-cols-2 gap-2 mb-3">
                         <div className={`rounded-lg px-3 py-2 ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
                           <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'text-emerald-600' : 'text-gray-400'}`}>WOF until</div>
@@ -1762,7 +1722,6 @@ function MainApp() {
                         </div>
                       </div>
 
-                      {/* Footer simplifié */}
                       <div className="flex items-center justify-end pt-2 border-t border-gray-100">
                         {van.buyBack && (
                           <span className="text-xs font-semibold text-green-600 flex items-center gap-1">
@@ -1817,7 +1776,9 @@ function MainApp() {
         </div>
 
         {/* Footer */}
-        <HomeSeoSection />
+        <Suspense fallback={null}>
+          <HomeSeoSection />
+        </Suspense>
 
         <Footer 
           onOpenFAQ={() => setShowFAQ(true)} 
@@ -1826,43 +1787,57 @@ function MainApp() {
 
         {/* Modals */}
         {selectedVan && <VanDetailsModal van={selectedVan} />}
+        
         {showAddVanForm && (
-          <AddVanForm 
-            onClose={() => setShowAddVanForm(false)} 
-            onVanAdded={refreshVans}
-          />
+          <Suspense fallback={<PageLoader />}>
+            <AddVanForm 
+              onClose={() => setShowAddVanForm(false)} 
+              onVanAdded={refreshVans}
+            />
+          </Suspense>
         )}
+        
         {showMyVans && (
-          <MyVans onClose={() => setShowMyVans(false)} />
+          <Suspense fallback={<PageLoader />}>
+            <MyVans onClose={() => setShowMyVans(false)} />
+          </Suspense>
         )}
+        
         {showFavorites && (
-          <FavoritesPage 
-            onClose={() => setShowFavorites(false)}
-            onVanClick={(van) => setSelectedVan(van)}
-          />
+          <Suspense fallback={<PageLoader />}>
+            <FavoritesPage 
+              onClose={() => setShowFavorites(false)}
+              onVanClick={(van) => setSelectedVan(van)}
+            />
+          </Suspense>
         )}
+        
         {showUserProfile && (
-          <UserProfile onClose={() => setShowUserProfile(false)} />
+          <Suspense fallback={<PageLoader />}>
+            <UserProfile onClose={() => setShowUserProfile(false)} />
+          </Suspense>
         )}
+        
         <AuthModal 
           isOpen={showAuthModal} 
           onClose={() => setShowAuthModal(false)} 
         />
         
-        {/* FAQ Modal */}
         <FAQModal 
           isOpen={showFAQ} 
           onClose={() => setShowFAQ(false)} 
         />
         
-        {/* Terms Modal */}
-        <TermsModal 
-          isOpen={showTerms} 
-          onAccept={() => setShowTerms(false)} 
-          onClose={() => setShowTerms(false)} 
-        />
+        {showTerms && (
+          <Suspense fallback={<PageLoader />}>
+            <TermsModal 
+              isOpen={showTerms} 
+              onAccept={() => setShowTerms(false)} 
+              onClose={() => setShowTerms(false)} 
+            />
+          </Suspense>
+        )}
 
-        {/* How it works Modal */}
         {showHowItWorks && (
           <div 
             className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
@@ -1887,7 +1862,6 @@ function MainApp() {
               </div>
               
               <div className="p-6 space-y-6">
-                {/* For Buyers */}
                 <div>
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     🔍 For Buyers
@@ -1925,7 +1899,6 @@ function MainApp() {
 
                 <hr className="border-gray-200" />
 
-                {/* For Sellers */}
                 <div>
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     💰 For Sellers
@@ -1963,7 +1936,6 @@ function MainApp() {
 
                 <hr className="border-gray-200" />
 
-                {/* Tips */}
                 <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
                   <h3 className="font-bold text-amber-800 mb-2 flex items-center gap-2">
                     💡 Pro Tips for Backpackers
@@ -1987,9 +1959,10 @@ function MainApp() {
           </div>
         )}
 
-        {/* Admin Dashboard Modal */}
         {showAdminDashboard && (
-          <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
+          <Suspense fallback={<PageLoader />}>
+            <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
+          </Suspense>
         )}
       </div>
     </NotificationProvider>
@@ -2003,8 +1976,16 @@ export default function KiwiVanMarket() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/reservation-success" element={<ReservationSuccess />} />
-        <Route path="/reservation-cancelled" element={<ReservationCancelled />} />
+        <Route path="/reservation-success" element={
+          <Suspense fallback={<PageLoader />}>
+            <ReservationSuccess />
+          </Suspense>
+        } />
+        <Route path="/reservation-cancelled" element={
+          <Suspense fallback={<PageLoader />}>
+            <ReservationCancelled />
+          </Suspense>
+        } />
         <Route path="*" element={<MainApp />} />
       </Routes>
     </BrowserRouter>
