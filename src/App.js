@@ -6,6 +6,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
+import NotificationBell from './components/NotificationBell';
 
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
@@ -1027,6 +1028,20 @@ function MainApp() {
               <div className="hidden md:flex items-center gap-1">
                 <CurrencySelector />
                 <LanguageSelector />
+                {/* 🔔 AJOUTE CECI */}
+                {currentUser && (
+  <NotificationBell 
+    user={currentUser} 
+    onNotificationClick={(notif) => {
+      if (notif.type === 'reservation_paid' || notif.type === 'payment_confirmed') {
+        // Optionnel: ouvrir les messages ou une page réservation
+      }
+    }} 
+  />
+)}
+
+
+                
                 
                 <button 
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
@@ -1126,6 +1141,12 @@ function MainApp() {
                 </button>
                 <CurrencySelector />
                 <LanguageSelector />
+                {/* 🔔 AJOUTE CECI */}
+{currentUser && (
+  <NotificationBell 
+    user={currentUser} 
+  />
+)}
                 <button 
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
                   className="p-2 hover:bg-white/10 rounded-xl"
