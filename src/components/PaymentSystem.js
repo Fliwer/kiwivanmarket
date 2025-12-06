@@ -143,26 +143,33 @@ export function ReserveButton({ van, seller, onReservationCreated, className = '
     setLoading(true);
     
     try {
-      const summary = getPaymentSummary(van.price);
+      // 🔒 SÉCURITÉ: Récupérer le token d'authentification Firebase
+      const { auth } = await import('../firebase');
+      const idToken = await auth.currentUser?.getIdToken();
       
-      // Toujours créer une nouvelle session Stripe (l'ancienne peut avoir expiré)
+      if (!idToken) {
+        throw new Error('Authentication required');
+      }
+      
+      // Note: Le montant est maintenant calculé côté serveur depuis le prix du van
       const response = await fetch(API_ENDPOINTS.CREATE_CHECKOUT_SESSION, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}` // 🔒 Token d'auth
+        },
         body: JSON.stringify({
           reservationId: existingReservation.id,
           vanId: van.id,
-          vanTitle: van.title,
-          amount: summary.deposit * 100,
-          currency: 'nzd',
-          buyerEmail: currentUser.email,
+          // 🔒 Plus besoin d'envoyer le montant - calculé côté serveur
           successUrl: `${window.location.origin}/reservation-success?id=${existingReservation.id}`,
           cancelUrl: `${window.location.origin}/reservation-cancelled?id=${existingReservation.id}`,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create checkout session');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create checkout session');
       }
 
       const { url } = await response.json();
@@ -170,7 +177,7 @@ export function ReserveButton({ van, seller, onReservationCreated, className = '
       
     } catch (err) {
       console.error('Payment error:', err);
-      alert('Payment failed. Please try again.');
+      alert(err.message || 'Payment failed. Please try again.');
       setLoading(false);
     }
   };
@@ -374,19 +381,26 @@ function ReservationModal({ van, seller, existingReservation, onClose, onSuccess
     setError(null);
 
     try {
+      // 🔒 SÉCURITÉ: Récupérer le token d'authentification Firebase
+      const { auth } = await import('../firebase');
+      const idToken = await auth.currentUser?.getIdToken();
+      
+      if (!idToken) {
+        throw new Error('Authentication required');
+      }
+
       // Appeler la Firebase Function pour créer une session Checkout
+      // 🔒 Le montant est maintenant calculé côté serveur
       const response = await fetch(API_ENDPOINTS.CREATE_CHECKOUT_SESSION, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}` // 🔒 Token d'auth
         },
         body: JSON.stringify({
           reservationId: reservation.id,
           vanId: van.id,
-          vanTitle: van.title,
-          amount: summary.deposit * 100, // Stripe utilise les centimes
-          currency: 'nzd',
-          buyerEmail: currentUser.email,
+          // 🔒 Plus besoin d'envoyer le montant - calculé côté serveur
           successUrl: `${window.location.origin}/reservation-success?id=${reservation.id}`,
           cancelUrl: `${window.location.origin}/reservation-cancelled?id=${reservation.id}`,
         }),
@@ -405,44 +419,24 @@ function ReservationModal({ van, seller, existingReservation, onClose, onSuccess
 
     } catch (err) {
       console.error('Payment error:', err);
-      setError('Payment failed. Please try again.');
+      setError(err.message || 'Payment failed. Please try again.');
       setLoading(false);
     }
   };
 
-  // Simuler le paiement (pour les tests sans Stripe)
+  // Simuler le paiement (pour les tests - DÉSACTIVÉ EN PRODUCTION)
   const handleTestPayment = async () => {
-    if (!reservation) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Mettre à jour le statut de la réservation
-      await updateDoc(doc(db, 'reservations', reservation.id), {
-        status: RESERVATION_STATUS.PAID,
-        paidAt: serverTimestamp(),
-        paymentMethod: 'test',
-      });
-
-      const updatedReservation = {
-        ...reservation,
-        status: RESERVATION_STATUS.PAID,
-      };
-
-      setReservation(updatedReservation);
-      setStep('success');
-      
-      if (onSuccess) {
-        onSuccess(updatedReservation);
-      }
-
-    } catch (err) {
-      console.error('Test payment error:', err);
-      setError('Failed to process test payment.');
-    } finally {
-      setLoading(false);
+    // 🔒 SÉCURITÉ: En production, cette fonction ne fait rien
+    // Le statut "paid" ne peut être défini que par le webhook Stripe
+    if (process.env.NODE_ENV !== 'development') {
+      setError('Test payments are only available in development mode');
+      return;
     }
+    
+    alert('⚠️ Test mode: In production, payment status can only be set by Stripe webhook. Redirecting to Stripe test checkout...');
+    
+    // Même en dev, on utilise le vrai flow Stripe (avec clés test)
+    await handlePayment();
   };
 
   return (

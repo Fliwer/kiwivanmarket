@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { CheckCircle, XCircle, Loader2, Home, MessageCircle, ArrowRight } from 'lucide-react';
 import { RESERVATION_STATUS } from '../stripeConfig';
@@ -47,35 +47,29 @@ export function ReservationSuccess() {
 
         const reservationData = reservationDoc.data();
 
-        // Si la réservation est encore en pending, le webhook n'a pas encore été traité
-        // On peut mettre à jour manuellement (le webhook le fera aussi)
+        // 🔒 SÉCURITÉ: Ne JAMAIS modifier le statut côté client
+        // Le statut "paid" ne peut être défini que par le webhook Stripe
+        // On affiche simplement les données actuelles
+        
         if (reservationData.status === RESERVATION_STATUS.PENDING) {
           // Attendre un peu que le webhook se déclenche
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 3000));
           
-          // Re-vérifier
+          // Re-vérifier le statut (le webhook a peut-être mis à jour)
           const updatedDoc = await getDoc(doc(db, 'reservations', reservationId));
           const updatedData = updatedDoc.data();
           
           if (updatedData.status === RESERVATION_STATUS.PENDING) {
-            // Mettre à jour manuellement si le webhook n'a pas encore traité
-            await updateDoc(doc(db, 'reservations', reservationId), {
-              status: RESERVATION_STATUS.PAID,
-              paidAt: serverTimestamp(),
-              paymentConfirmedVia: 'success_page',
-            });
-            
-            setReservation({
-              id: reservationId,
-              ...updatedData,
-              status: RESERVATION_STATUS.PAID,
-            });
-          } else {
-            setReservation({
-              id: reservationId,
-              ...updatedData,
-            });
+            // Le webhook n'a pas encore traité - informer l'utilisateur
+            setError('Payment is being processed. Please refresh in a few moments or contact support if this persists.');
+            setLoading(false);
+            return;
           }
+          
+          setReservation({
+            id: reservationId,
+            ...updatedData,
+          });
         } else {
           setReservation({
             id: reservationId,
