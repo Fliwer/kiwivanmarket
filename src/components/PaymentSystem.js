@@ -57,12 +57,21 @@ export function ReserveButton({ van, seller, onReservationCreated, className = '
       }
 
       try {
+        // 🛡️ V2: Inclure tous les statuts actifs
+        const activeStatuses = [
+          RESERVATION_STATUS.PENDING, 
+          RESERVATION_STATUS.PAID, 
+          RESERVATION_STATUS.SELLER_CONFIRMED,
+          RESERVATION_STATUS.MEETING_SCHEDULED,
+          RESERVATION_STATUS.BUYER_CONFIRMED,
+        ];
+        
         // Vérifier si l'utilisateur a déjà réservé ce van
         const userReservationQuery = query(
           collection(db, 'reservations'),
           where('vanId', '==', van.id),
           where('buyerId', '==', currentUser.uid),
-          where('status', 'in', [RESERVATION_STATUS.PENDING, RESERVATION_STATUS.PAID, RESERVATION_STATUS.CONFIRMED])
+          where('status', 'in', activeStatuses)
         );
         
         const userSnapshot = await getDocs(userReservationQuery);
@@ -74,10 +83,17 @@ export function ReserveButton({ van, seller, onReservationCreated, className = '
           });
         } else {
           // Vérifier si quelqu'un d'autre a réservé
+          const blockedStatuses = [
+            RESERVATION_STATUS.PAID, 
+            RESERVATION_STATUS.SELLER_CONFIRMED,
+            RESERVATION_STATUS.MEETING_SCHEDULED,
+            RESERVATION_STATUS.BUYER_CONFIRMED,
+          ];
+          
           const anyReservationQuery = query(
             collection(db, 'reservations'),
             where('vanId', '==', van.id),
-            where('status', 'in', [RESERVATION_STATUS.PAID, RESERVATION_STATUS.CONFIRMED])
+            where('status', 'in', blockedStatuses)
           );
           
           const anySnapshot = await getDocs(anyReservationQuery);
@@ -219,12 +235,49 @@ export function ReserveButton({ van, seller, onReservationCreated, className = '
         )}
         
         {existingReservation.status === RESERVATION_STATUS.PAID && (
-          <p className="text-sm text-blue-600 text-center">
-            Waiting for seller confirmation. They will contact you soon!
-          </p>
+          <div className="text-sm text-blue-600 text-center">
+            <p className="font-semibold mb-1">💳 Deposit Secured</p>
+            <p>Waiting for seller confirmation (48h). Auto-refund if no response.</p>
+          </div>
         )}
         
-        {existingReservation.status === RESERVATION_STATUS.CONFIRMED && (
+        {existingReservation.status === RESERVATION_STATUS.SELLER_CONFIRMED && (
+          <div className="text-sm text-teal-600 text-center">
+            <p className="font-semibold mb-1">✅ Seller Confirmed!</p>
+            <p>Arrange a meeting to view the van. Then confirm the meeting.</p>
+          </div>
+        )}
+        
+        {existingReservation.status === RESERVATION_STATUS.BUYER_CONFIRMED && (
+          <div className="text-sm text-emerald-600 text-center">
+            <p className="font-semibold mb-1">🔒 Transaction Secured!</p>
+            <p>Funds will be released to seller in 7 days.</p>
+          </div>
+        )}
+        
+        {existingReservation.status === RESERVATION_STATUS.COMPLETED && (
+          <div className="text-sm text-green-600 text-center">
+            <p className="font-semibold mb-1">🎉 Transaction Complete!</p>
+            <p>Thank you for using Kiwi Van Market.</p>
+          </div>
+        )}
+        
+        {existingReservation.status === RESERVATION_STATUS.DISPUTED && (
+          <div className="text-sm text-orange-600 text-center">
+            <p className="font-semibold mb-1">⚠️ Dispute In Progress</p>
+            <p>Our team is reviewing your case. We'll contact you soon.</p>
+          </div>
+        )}
+        
+        {existingReservation.status === RESERVATION_STATUS.EXPIRED && (
+          <div className="text-sm text-gray-600 text-center">
+            <p className="font-semibold mb-1">⌛ Auto-Refunded</p>
+            <p>Seller didn't respond in time. Your deposit has been refunded.</p>
+          </div>
+        )}
+        
+        {/* Compatibilité avec l'ancien statut CONFIRMED */}
+        {existingReservation.status === 'confirmed' && (
           <div className="text-sm text-green-600 text-center">
             <p className="font-semibold mb-1">✅ Reservation confirmed!</p>
             <p>Contact the seller to arrange the viewing and finalize the sale.</p>

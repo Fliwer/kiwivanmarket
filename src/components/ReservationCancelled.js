@@ -1,21 +1,19 @@
 // ============================================
 // ❌ RESERVATION CANCELLED PAGE
 // ============================================
+// 
+// Page affichée quand l'utilisateur annule le paiement
+// ou quand la session Stripe expire
+//
+// ============================================
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { 
-  XCircle, 
-  ArrowLeft, 
-  RefreshCw, 
-  Home,
-  HelpCircle,
-  Clock
-} from 'lucide-react';
+import { XCircle, Home, RefreshCw, HelpCircle, Loader2 } from 'lucide-react';
 
-function ReservationCancelled() {
+export default function ReservationCancelled() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [reservation, setReservation] = useState(null);
@@ -31,9 +29,7 @@ function ReservationCancelled() {
       }
 
       try {
-        const docRef = doc(db, 'reservations', reservationId);
-        const docSnap = await getDoc(docRef);
-
+        const docSnap = await getDoc(doc(db, 'reservations', reservationId));
         if (docSnap.exists()) {
           setReservation({ id: docSnap.id, ...docSnap.data() });
         }
@@ -49,109 +45,111 @@ function ReservationCancelled() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-400 border-t-transparent"></div>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-gray-400 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4">
-      <div className="max-w-lg mx-auto">
-        {/* Cancelled Icon */}
-        <div className="text-center mb-8">
-          <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <XCircle size={48} className="text-amber-600" />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full">
+        {/* Header */}
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-10 h-10 text-gray-500" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Payment Cancelled
           </h1>
           <p className="text-gray-600">
-            Your payment was not completed
+            Your reservation has not been completed. No charges have been made.
           </p>
         </div>
 
         {/* Reservation Info */}
         {reservation && (
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
-            <div className="flex gap-4 p-6 border-b border-gray-100">
-              <img
-                src={reservation.van?.imageUrl || 'https://via.placeholder.com/100'}
-                alt={reservation.van?.title}
-                className="w-24 h-20 object-cover rounded-xl"
-              />
-              <div className="flex-1">
-                <h2 className="font-bold text-lg text-gray-900">
-                  {reservation.van?.title}
-                </h2>
-                <p className="text-gray-500 text-sm">
-                  {reservation.van?.year} • {reservation.van?.location}
-                </p>
-                <p className="text-xl font-bold text-emerald-600 mt-1">
-                  ${reservation.van?.price?.toLocaleString()} NZD
-                </p>
+          <div className="bg-gray-50 rounded-xl p-4 mb-6">
+            <h3 className="font-semibold text-gray-800 mb-3">Reservation Details</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Van:</span>
+                <span className="font-medium text-gray-900">{reservation.van?.title || 'N/A'}</span>
               </div>
-            </div>
-
-            {/* Status */}
-            <div className="bg-amber-50 px-6 py-4">
-              <div className="flex items-center gap-3">
-                <Clock size={20} className="text-amber-600" />
-                <div>
-                  <p className="font-medium text-amber-800">Reservation pending</p>
-                  <p className="text-sm text-amber-600">
-                    Your reservation is still active. Complete payment within 24 hours to secure it.
-                  </p>
-                </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Deposit Amount:</span>
+                <span className="font-medium text-gray-600">
+                  ${reservation.depositAmount || 500} NZD
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Status:</span>
+                <span className="font-medium text-gray-500">
+                  Not completed
+                </span>
               </div>
             </div>
           </div>
         )}
 
         {/* Info Box */}
-        <div className="bg-blue-50 rounded-xl p-4 mb-6">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
           <div className="flex gap-3">
-            <HelpCircle size={20} className="text-blue-600 flex-shrink-0 mt-0.5" />
+            <HelpCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium text-blue-900">What happened?</p>
-              <p className="text-sm text-blue-700 mt-1">
-                The payment process was cancelled or did not complete. Don't worry - no money has been charged to your account.
+              <h4 className="font-semibold text-amber-800 mb-1">What happened?</h4>
+              <p className="text-sm text-amber-700">
+                You cancelled the payment or the checkout session expired. 
+                The van is still available and you can try again anytime.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="space-y-3">
-          {reservation && (
+        {/* Why reserve? */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+          <h4 className="font-semibold text-blue-800 mb-2">Why reserve with a deposit?</h4>
+          <ul className="text-sm text-blue-700 space-y-1">
+            <li>✅ Your money is protected by Stripe</li>
+            <li>✅ Auto-refund if seller doesn't respond in 48h</li>
+            <li>✅ Secure the van before someone else does</li>
+            <li>✅ Shows the seller you're serious</li>
+          </ul>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={() => navigate('/')}
+            className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-xl font-semibold hover:bg-gray-200 transition"
+          >
+            <Home size={18} />
+            Back to Home
+          </button>
+          {reservation?.vanId && (
             <button
-              onClick={() => navigate(`/van/${reservation.vanId}`)}
-              className="w-full bg-emerald-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2"
+              onClick={() => {
+                // Retourner à l'annonce du van
+                navigate(`/?van=${reservation.vanId}`);
+              }}
+              className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition"
             >
               <RefreshCw size={18} />
               Try Again
             </button>
           )}
-          
-          <button
-            onClick={() => navigate('/')}
-            className="w-full bg-gray-100 text-gray-700 py-3 px-6 rounded-xl font-semibold hover:bg-gray-200 transition flex items-center justify-center gap-2"
-          >
-            <Home size={18} />
-            Back to Home
-          </button>
         </div>
 
-        {/* Help */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Having trouble? Contact us at{' '}
-          <a href="mailto:support@kiwivanmarket.com" className="text-emerald-600 hover:underline">
-            support@kiwivanmarket.com
-          </a>
-        </p>
+        {/* Reservation ID */}
+        {reservationId && (
+          <p className="text-center text-xs text-gray-400 mt-6">
+            Reference: {reservationId}
+          </p>
+        )}
       </div>
     </div>
   );
 }
-
-export default ReservationCancelled;

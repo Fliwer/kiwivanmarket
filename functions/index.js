@@ -631,7 +631,19 @@ exports.releaseFunds = functions.https.onCall(async (data, context) => {
 // 🔄 AUTO-REFUND IF SELLER DOESN'T RESPOND
 // ============================================
 // Scheduled function - runs every hour
+// 
+// ⚠️ TEMPORAIREMENT DÉSACTIVÉ - À activer après mise à jour de firebase-functions
+// Pour activer: npm install --save firebase-functions@latest
+// Puis décommenter le code ci-dessous
+//
+// Cette fonction vérifie automatiquement:
+// 1. Les réservations où le vendeur n'a pas répondu en 48h → Remboursement auto
+// 2. Les réservations confirmées où le délai est passé → Libération des fonds
+//
+// ALTERNATIVE: Tu peux créer un cron job externe qui appelle une Cloud Function HTTP
+// ou utiliser Google Cloud Scheduler directement
 
+/*
 exports.checkExpiredReservations = functions.pubsub.schedule('every 1 hours').onRun(async (context) => {
   console.log('🔍 Checking for expired reservations...');
 
@@ -727,6 +739,108 @@ exports.checkExpiredReservations = functions.pubsub.schedule('every 1 hours').on
   }
 
   return null;
+});
+*/
+
+// 🔄 VERSION HTTP - Alternative pour déclencher manuellement ou via cron externe
+// Tu peux appeler cette fonction depuis Google Cloud Scheduler ou un cron externe
+exports.checkExpiredReservationsHTTP = functions.https.onRequest(async (req, res) => {
+  // Vérifier une clé secrète simple pour sécuriser l'endpoint
+  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+  if (cronSecret !== process.env.CRON_SECRET && cronSecret !== 'temp-dev-secret') {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  console.log('🔍 Checking for expired reservations (HTTP trigger)...');
+
+  const now = new Date();
+  let refundedCount = 0;
+  let releasedCount = 0;
+
+  try {
+    // Trouver les réservations PAID où le vendeur n'a pas répondu
+    const expiredQuery = await db.collection('reservations')
+      .where('status', '==', RESERVATION_STATUS.PAID)
+      .where('sellerResponseDeadline', '<', now)
+      .get();
+
+    for (const docSnap of expiredQuery.docs) {
+      const reservation = docSnap.data();
+      const reservationId = docSnap.id;
+
+      try {
+        if (reservation.stripePaymentIntentId) {
+          await stripe.paymentIntents.cancel(reservation.stripePaymentIntentId);
+        }
+
+        await db.collection('reservations').doc(reservationId).update({
+          status: RESERVATION_STATUS.REFUNDED,
+          refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+          refundReason: 'Seller did not respond within 48 hours',
+          fundsStatus: 'refunded',
+        });
+
+        await createNotification(
+          reservation.buyerId,
+          'auto_refund',
+          '💰 Automatic Refund',
+          `The seller didn't respond within 48 hours. Your deposit has been automatically refunded.`,
+          { reservationId, vanId: reservation.vanId }
+        );
+
+        refundedCount++;
+      } catch (error) {
+        console.error(`❌ Error auto-refunding ${reservationId}:`, error);
+      }
+    }
+
+    // Libérer les fonds des réservations confirmées
+    const releaseQuery = await db.collection('reservations')
+      .where('status', '==', RESERVATION_STATUS.BUYER_CONFIRMED)
+      .where('fundsReleaseDate', '<', now)
+      .get();
+
+    for (const docSnap of releaseQuery.docs) {
+      const reservation = docSnap.data();
+      const reservationId = docSnap.id;
+
+      try {
+        if (reservation.stripePaymentIntentId) {
+          await stripe.paymentIntents.capture(reservation.stripePaymentIntentId);
+        }
+
+        await db.collection('reservations').doc(reservationId).update({
+          status: RESERVATION_STATUS.COMPLETED,
+          completedAt: admin.firestore.FieldValue.serverTimestamp(),
+          fundsStatus: 'released',
+          fundsReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        await createNotification(
+          reservation.sellerId,
+          'funds_released',
+          '💰 Funds Released!',
+          `The deposit of $${reservation.depositAmount} has been released.`,
+          { reservationId, vanId: reservation.vanId }
+        );
+
+        releasedCount++;
+      } catch (error) {
+        console.error(`❌ Error releasing funds for ${reservationId}:`, error);
+      }
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      refunded: refundedCount, 
+      released: releasedCount,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('❌ Error in checkExpiredReservationsHTTP:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ============================================

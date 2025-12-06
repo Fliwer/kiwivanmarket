@@ -2,6 +2,8 @@
 // 💳 STRIPE CONFIG - Configuration Stripe
 // ============================================
 // 
+// 🛡️ VERSION 2.0 - SYSTÈME ANTI-FRAUDE
+//
 // IMPORTANT: Ne jamais exposer la clé secrète côté client !
 // Seule la clé publique (pk_) est utilisée ici.
 // La clé secrète (sk_) reste côté Firebase Functions.
@@ -48,8 +50,12 @@ export const PAYMENT_CONFIG = {
   // Devise
   CURRENCY: 'nzd',
   
-  // Durée de validité de la réservation (en jours)
-  RESERVATION_VALIDITY_DAYS: 7,
+  // 🛡️ ANTI-FRAUDE: Délais de sécurité
+  SELLER_RESPONSE_DEADLINE_HOURS: 48,    // Vendeur doit répondre en 48h
+  BUYER_CONFIRMATION_DEADLINE_HOURS: 72, // Acheteur confirme rencontre en 72h
+  RELEASE_DELAY_DAYS: 7,                 // Argent libéré 7 jours après confirmation
+  RESERVATION_EXPIRY_HOURS: 24,          // Réservation expire si pas payée en 24h
+  DISPUTE_WINDOW_DAYS: 14,               // Fenêtre pour ouvrir un litige
 };
 
 // ============================================
@@ -119,28 +125,116 @@ export const getPaymentSummary = (vanPrice) => {
 };
 
 // ============================================
-// 📊 RESERVATION STATUS
+// 📊 RESERVATION STATUS - SYSTÈME ANTI-FRAUDE V2
 // ============================================
 
 export const RESERVATION_STATUS = {
-  PENDING: 'pending',         // En attente de paiement
-  PAID: 'paid',               // Acompte payé
-  CONFIRMED: 'confirmed',     // Confirmé par le vendeur
-  COMPLETED: 'completed',     // Transaction finalisée
-  CANCELLED: 'cancelled',     // Annulée
-  REFUNDED: 'refunded',       // Remboursée
-  EXPIRED: 'expired',         // Expirée
+  PENDING: 'pending',                     // En attente de paiement
+  PAID: 'paid',                           // Payé, attente confirmation vendeur
+  SELLER_CONFIRMED: 'seller_confirmed',   // 🆕 Vendeur a confirmé
+  MEETING_SCHEDULED: 'meeting_scheduled', // 🆕 Rencontre planifiée
+  BUYER_CONFIRMED: 'buyer_confirmed',     // 🆕 Acheteur confirme avoir vu le van
+  COMPLETED: 'completed',                 // Transaction finalisée, argent libéré
+  CANCELLED: 'cancelled',                 // Annulée
+  REFUNDED: 'refunded',                   // Remboursée
+  EXPIRED: 'expired',                     // Expirée (vendeur n'a pas répondu)
+  DISPUTED: 'disputed',                   // 🆕 Litige en cours
+  
+  // Aliases pour compatibilité avec l'ancien code
+  CONFIRMED: 'seller_confirmed',          // Alias
 };
 
 export const RESERVATION_STATUS_LABELS = {
-  [RESERVATION_STATUS.PENDING]: { label: 'Pending Payment', color: 'yellow', icon: '⏳' },
-  [RESERVATION_STATUS.PAID]: { label: 'Deposit Paid', color: 'blue', icon: '💳' },
-  [RESERVATION_STATUS.CONFIRMED]: { label: 'Confirmed', color: 'green', icon: '✅' },
-  [RESERVATION_STATUS.COMPLETED]: { label: 'Completed', color: 'emerald', icon: '🎉' },
-  [RESERVATION_STATUS.CANCELLED]: { label: 'Cancelled', color: 'red', icon: '❌' },
-  [RESERVATION_STATUS.REFUNDED]: { label: 'Refunded', color: 'purple', icon: '↩️' },
-  [RESERVATION_STATUS.EXPIRED]: { label: 'Expired', color: 'gray', icon: '⌛' },
+  [RESERVATION_STATUS.PENDING]: { 
+    label: 'Pending Payment', 
+    color: 'yellow', 
+    icon: '⏳',
+    description: 'Waiting for payment'
+  },
+  [RESERVATION_STATUS.PAID]: { 
+    label: 'Deposit Paid - Awaiting Seller', 
+    color: 'blue', 
+    icon: '💳',
+    description: 'Your deposit is secure. Seller has 48h to respond.'
+  },
+  [RESERVATION_STATUS.SELLER_CONFIRMED]: { 
+    label: 'Seller Confirmed', 
+    color: 'teal', 
+    icon: '✅',
+    description: 'Seller confirmed! Arrange a meeting to view the van.'
+  },
+  [RESERVATION_STATUS.MEETING_SCHEDULED]: { 
+    label: 'Meeting Scheduled', 
+    color: 'indigo', 
+    icon: '📅',
+    description: 'Meeting arranged. View the van and confirm.'
+  },
+  [RESERVATION_STATUS.BUYER_CONFIRMED]: { 
+    label: 'Confirmed - Funds Pending Release', 
+    color: 'emerald', 
+    icon: '🔒',
+    description: 'Transaction confirmed. Funds will be released in 7 days.'
+  },
+  [RESERVATION_STATUS.COMPLETED]: { 
+    label: 'Completed', 
+    color: 'green', 
+    icon: '🎉',
+    description: 'Transaction complete! Funds released to seller.'
+  },
+  [RESERVATION_STATUS.CANCELLED]: { 
+    label: 'Cancelled', 
+    color: 'red', 
+    icon: '❌',
+    description: 'Reservation cancelled.'
+  },
+  [RESERVATION_STATUS.REFUNDED]: { 
+    label: 'Refunded', 
+    color: 'purple', 
+    icon: '↩️',
+    description: 'Deposit refunded to your account.'
+  },
+  [RESERVATION_STATUS.EXPIRED]: { 
+    label: 'Expired - Auto Refunded', 
+    color: 'gray', 
+    icon: '⌛',
+    description: 'Seller did not respond in time. You have been refunded.'
+  },
+  [RESERVATION_STATUS.DISPUTED]: { 
+    label: 'Dispute In Progress', 
+    color: 'orange', 
+    icon: '⚠️',
+    description: 'A dispute has been opened. Our team is reviewing.'
+  },
 };
+
+// 🛡️ Statuts où l'argent est retenu par Stripe
+export const FUNDS_HELD_STATUSES = [
+  RESERVATION_STATUS.PAID,
+  RESERVATION_STATUS.SELLER_CONFIRMED,
+  RESERVATION_STATUS.MEETING_SCHEDULED,
+  RESERVATION_STATUS.BUYER_CONFIRMED,
+  RESERVATION_STATUS.DISPUTED,
+];
+
+// 🛡️ Statuts considérés comme "actifs" (van réservé)
+export const ACTIVE_RESERVATION_STATUSES = [
+  RESERVATION_STATUS.PENDING,
+  RESERVATION_STATUS.PAID,
+  RESERVATION_STATUS.SELLER_CONFIRMED,
+  RESERVATION_STATUS.MEETING_SCHEDULED,
+  RESERVATION_STATUS.BUYER_CONFIRMED,
+];
+
+// 🛡️ Statuts où l'acheteur peut annuler avec remboursement
+export const CANCELLABLE_WITH_REFUND_STATUSES = [
+  RESERVATION_STATUS.PENDING,
+  RESERVATION_STATUS.PAID,
+];
+
+// 🛡️ Statuts où seul l'admin peut intervenir
+export const ADMIN_ONLY_STATUSES = [
+  RESERVATION_STATUS.DISPUTED,
+];
 
 // ============================================
 // 🔗 API ENDPOINTS
@@ -150,12 +244,80 @@ export const RESERVATION_STATUS_LABELS = {
 const FUNCTIONS_BASE_URL = process.env.REACT_APP_FUNCTIONS_URL || 'https://us-central1-YOUR-PROJECT.cloudfunctions.net';
 
 export const API_ENDPOINTS = {
+  // Paiement
   CREATE_CHECKOUT_SESSION: `${FUNCTIONS_BASE_URL}/createCheckoutSession`,
-  CONFIRM_PAYMENT: `${FUNCTIONS_BASE_URL}/confirmPayment`,
+  
+  // 🆕 Actions vendeur
+  SELLER_CONFIRM: `${FUNCTIONS_BASE_URL}/sellerConfirmReservation`,
+  
+  // 🆕 Actions acheteur
+  BUYER_CONFIRM_MEETING: `${FUNCTIONS_BASE_URL}/buyerConfirmMeeting`,
+  
+  // Gestion
   CANCEL_RESERVATION: `${FUNCTIONS_BASE_URL}/cancelReservation`,
   GET_RESERVATION: `${FUNCTIONS_BASE_URL}/getReservation`,
+  
+  // 🆕 Disputes
+  OPEN_DISPUTE: `${FUNCTIONS_BASE_URL}/openDispute`,
+  
+  // 🆕 Admin
+  RELEASE_FUNDS: `${FUNCTIONS_BASE_URL}/releaseFunds`,
+  
+  // Webhook (utilisé par Stripe)
   WEBHOOK: `${FUNCTIONS_BASE_URL}/stripeWebhook`,
 };
+
+// ============================================
+// 🛡️ HELPERS ANTI-FRAUDE
+// ============================================
+
+/**
+ * Vérifie si une réservation peut être annulée avec remboursement
+ */
+export const canCancelWithRefund = (status) => {
+  return CANCELLABLE_WITH_REFUND_STATUSES.includes(status);
+};
+
+/**
+ * Vérifie si les fonds sont retenus
+ */
+export const areFundsHeld = (status) => {
+  return FUNDS_HELD_STATUSES.includes(status);
+};
+
+/**
+ * Vérifie si la réservation est active
+ */
+export const isReservationActive = (status) => {
+  return ACTIVE_RESERVATION_STATUSES.includes(status);
+};
+
+/**
+ * Calcule le temps restant avant une deadline
+ */
+export const getTimeRemaining = (deadline) => {
+  if (!deadline) return null;
+  
+  const deadlineDate = deadline.toDate ? deadline.toDate() : new Date(deadline);
+  const now = new Date();
+  const diff = deadlineDate - now;
+  
+  if (diff <= 0) return { expired: true, text: 'Expired' };
+  
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (hours > 24) {
+    const days = Math.floor(hours / 24);
+    return { expired: false, text: `${days} day${days > 1 ? 's' : ''} remaining` };
+  }
+  
+  return { expired: false, text: `${hours}h ${minutes}m remaining` };
+};
+
+// ============================================
+// EXPORT
+// ============================================
 
 export default {
   getStripe,
@@ -166,5 +328,11 @@ export default {
   getPaymentSummary,
   RESERVATION_STATUS,
   RESERVATION_STATUS_LABELS,
+  FUNDS_HELD_STATUSES,
+  ACTIVE_RESERVATION_STATUSES,
   API_ENDPOINTS,
+  canCancelWithRefund,
+  areFundsHeld,
+  isReservationActive,
+  getTimeRemaining,
 };
