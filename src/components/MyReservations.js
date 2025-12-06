@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, CreditCard, Clock, MapPin, User, CheckCircle, XCircle, AlertCircle, ChevronRight, Package, RefreshCw } from 'lucide-react';
+import { X, Calendar, CreditCard, Clock, MapPin, User, CheckCircle, XCircle, AlertCircle, ChevronRight, Package, RefreshCw, Camera, Shield } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../AuthContext';
+import { ConfirmMeetingButton, ConfirmBuyerButton, ConfirmationStatus } from './PhotoConfirmation';
+
+// ============================================================
+// 📦 MY RESERVATIONS PAGE - WITH DOUBLE CONFIRMATION SYSTEM
+// Shows all reservations for the current user (as buyer OR seller)
+// Includes photo proof confirmation for deposit release
+// ============================================================
 
 // ============================================================
 // 📦 MY RESERVATIONS PAGE
@@ -90,19 +97,25 @@ const MyReservations = ({ onClose, onViewVan }) => {
         bg: 'bg-emerald-100',
         text: 'text-emerald-700',
         icon: CheckCircle,
-        label: 'Paid'
+        label: 'Paid - Awaiting Viewing'
       },
       confirmed: {
         bg: 'bg-blue-100',
         text: 'text-blue-700',
         icon: CheckCircle,
-        label: 'Confirmed'
+        label: 'Seller Confirmed'
+      },
+      buyer_confirmed: {
+        bg: 'bg-purple-100',
+        text: 'text-purple-700',
+        icon: Camera,
+        label: 'Buyer Confirmed'
       },
       completed: {
         bg: 'bg-green-100',
         text: 'text-green-700',
         icon: Package,
-        label: 'Completed'
+        label: 'Completed ✓'
       },
       cancelled: {
         bg: 'bg-red-100',
@@ -143,8 +156,8 @@ const MyReservations = ({ onClose, onViewVan }) => {
   };
 
   const currentReservations = activeTab === 'buying' ? buyerReservations : sellerReservations;
-  const buyerUnread = buyerReservations.filter(r => r.status === 'paid' || r.status === 'pending').length;
-  const sellerUnread = sellerReservations.filter(r => r.status === 'paid').length;
+  const buyerUnread = buyerReservations.filter(r => r.status === 'paid' || r.status === 'pending' || r.status === 'confirmed').length;
+  const sellerUnread = sellerReservations.filter(r => r.status === 'paid' || r.status === 'buyer_confirmed').length;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 overflow-y-auto">
@@ -241,6 +254,11 @@ const MyReservations = ({ onClose, onViewVan }) => {
                 const vanTitle = reservation.vanTitle || reservation.van?.title || 'Van Reservation';
                 const vanLocation = reservation.vanLocation || reservation.van?.location;
 
+                // Vérifier si les confirmations sont nécessaires
+                const needsBuyerConfirmation = (reservation.status === 'paid' || reservation.status === 'confirmed') && !reservation.buyerConfirmed;
+                const needsSellerConfirmation = reservation.buyerConfirmed && !reservation.sellerConfirmed;
+                const isCompleted = reservation.buyerConfirmed && reservation.sellerConfirmed;
+
                 return (
                   <div 
                     key={reservation.id}
@@ -324,6 +342,13 @@ const MyReservations = ({ onClose, onViewVan }) => {
                             )}
                           </div>
 
+                          {/* 📸 CONFIRMATION STATUS - NEW */}
+                          {(reservation.status === 'paid' || reservation.status === 'confirmed' || reservation.status === 'buyer_confirmed' || reservation.status === 'completed') && (
+                            <div className="mb-3">
+                              <ConfirmationStatus reservation={reservation} />
+                            </div>
+                          )}
+
                           {/* Full Van Price */}
                           {(reservation.vanPrice || reservation.van?.price) && (
                             <div className="flex items-center justify-between pt-3 border-t border-gray-100">
@@ -366,12 +391,70 @@ const MyReservations = ({ onClose, onViewVan }) => {
                       </div>
                     )}
 
+                    {/* 📸 BUYER CONFIRMATION BUTTON - NEW */}
+                    {(reservation.status === 'paid' || reservation.status === 'confirmed') && activeTab === 'buying' && !reservation.buyerConfirmed && (
+                      <div className="bg-emerald-50 border-t border-emerald-200 px-4 sm:px-5 py-4">
+                        <div className="flex items-start gap-3 mb-3">
+                          <Camera className="text-emerald-600 flex-shrink-0 mt-0.5" size={20} />
+                          <div>
+                            <p className="font-semibold text-emerald-800">Have you seen the van?</p>
+                            <p className="text-sm text-emerald-600">Upload a photo to confirm your viewing and release the deposit to the seller.</p>
+                          </div>
+                        </div>
+                        <ConfirmMeetingButton reservation={reservation} />
+                      </div>
+                    )}
+
+                    {/* ✅ BUYER CONFIRMED - Waiting for seller */}
+                    {reservation.buyerConfirmed && !reservation.sellerConfirmed && activeTab === 'buying' && (
+                      <div className="bg-purple-50 border-t border-purple-200 px-4 sm:px-5 py-3 flex items-center gap-2 text-purple-700">
+                        <CheckCircle size={16} className="flex-shrink-0" />
+                        <span className="text-sm font-medium">
+                          ✓ You confirmed viewing. Waiting for seller to confirm and release deposit...
+                        </span>
+                      </div>
+                    )}
+
                     {/* Status Bar for Seller - New Paid Reservation */}
-                    {reservation.status === 'paid' && activeTab === 'selling' && (
+                    {reservation.status === 'paid' && activeTab === 'selling' && !reservation.buyerConfirmed && (
                       <div className="bg-emerald-50 border-t border-emerald-200 px-4 sm:px-5 py-3 flex items-center gap-2 text-emerald-700">
                         <CheckCircle size={16} className="flex-shrink-0" />
                         <span className="text-sm font-medium">
                           🎉 New reservation! Contact the buyer to arrange the viewing.
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 🛡️ SELLER CONFIRMATION BUTTON - NEW */}
+                    {reservation.buyerConfirmed && !reservation.sellerConfirmed && activeTab === 'selling' && (
+                      <div className="bg-blue-50 border-t border-blue-200 px-4 sm:px-5 py-4">
+                        <div className="flex items-start gap-3 mb-3">
+                          <Shield className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
+                          <div>
+                            <p className="font-semibold text-blue-800">Buyer has confirmed viewing!</p>
+                            <p className="text-sm text-blue-600">Review their photo and confirm to release the deposit to your account.</p>
+                          </div>
+                        </div>
+                        {reservation.buyerConfirmationPhoto && (
+                          <div className="mb-3">
+                            <p className="text-xs text-blue-600 mb-2 font-medium">📸 Buyer's photo proof:</p>
+                            <img 
+                              src={reservation.buyerConfirmationPhoto} 
+                              alt="Buyer confirmation" 
+                              className="w-full max-w-xs h-32 object-cover rounded-lg border-2 border-blue-200"
+                            />
+                          </div>
+                        )}
+                        <ConfirmBuyerButton reservation={reservation} />
+                      </div>
+                    )}
+
+                    {/* ✅ COMPLETED - Both confirmed */}
+                    {reservation.buyerConfirmed && reservation.sellerConfirmed && (
+                      <div className="bg-green-50 border-t border-green-200 px-4 sm:px-5 py-3 flex items-center gap-2 text-green-700">
+                        <CheckCircle size={16} className="flex-shrink-0" />
+                        <span className="text-sm font-medium">
+                          ✅ Transaction complete! Deposit of {formatPrice(reservation.depositAmount)} has been released.
                         </span>
                       </div>
                     )}

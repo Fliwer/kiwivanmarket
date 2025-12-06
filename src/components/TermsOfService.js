@@ -10,10 +10,18 @@
 import React, { useState } from 'react';
 import { X, Shield, AlertTriangle, CheckCircle, FileText, Scale } from 'lucide-react';
 
-export function TermsOfServiceModal({ isOpen, onClose }) {
+export function TermsOfServiceModal({ isOpen, onClose, onAccept }) {
   const [activeSection, setActiveSection] = useState('overview');
 
   if (!isOpen) return null;
+
+  const handleAccept = () => {
+    if (onAccept) {
+      onAccept();
+    } else {
+      onClose();
+    }
+  };
 
   const sections = [
     { id: 'overview', label: 'Overview', icon: <FileText size={16} /> },
@@ -196,13 +204,18 @@ export function TermsOfServiceModal({ isOpen, onClose }) {
                 </p>
 
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
-                  <h4 className="font-semibold text-emerald-800 mb-3">Deposit Release Timeline:</h4>
+                  <h4 className="font-semibold text-emerald-800 mb-3">Deposit Release Process:</h4>
                   <ol className="text-emerald-700 text-sm space-y-2">
                     <li><strong>1.</strong> Buyer pays deposit → Funds held by Stripe</li>
                     <li><strong>2.</strong> Seller confirms reservation (within 48h) → Or automatic refund</li>
-                    <li><strong>3.</strong> Buyer views vehicle and confirms → 7-day protection period starts</li>
-                    <li><strong>4.</strong> After 7 days with no dispute → Deposit released to seller</li>
+                    <li><strong>3.</strong> Buyer views vehicle, uploads photo proof, and confirms viewing</li>
+                    <li><strong>4.</strong> Seller confirms the buyer has seen the vehicle</li>
+                    <li><strong>5.</strong> Both confirmations received → Deposit released to seller</li>
                   </ol>
+                  <p className="text-emerald-600 text-xs mt-3 font-medium">
+                    ⚠️ Photo proof is required: The buyer must upload a photo showing them with the vehicle 
+                    as proof of the meeting. Without double confirmation from both parties, funds remain held.
+                  </p>
                 </div>
 
                 <h4 className="font-semibold text-slate-800 mt-6 mb-2">3.3 Refund Policy</h4>
@@ -224,19 +237,19 @@ export function TermsOfServiceModal({ isOpen, onClose }) {
                         <td className="p-3 border text-emerald-600 font-medium">✓ Full refund</td>
                       </tr>
                       <tr>
-                        <td className="p-3 border">Buyer confirms viewing</td>
+                        <td className="p-3 border">Buyer confirms viewing (with photo)</td>
                         <td className="p-3 border text-red-600 font-medium">✗ Non-refundable*</td>
                       </tr>
                       <tr>
-                        <td className="p-3 border">Dispute opened within 7 days</td>
+                        <td className="p-3 border">Dispute before double confirmation</td>
                         <td className="p-3 border text-amber-600 font-medium">⚠ Case-by-case review</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
                 <p className="text-slate-500 text-xs mt-2">
-                  * Once you confirm viewing the vehicle, the deposit becomes non-refundable as 
-                  the seller has fulfilled their obligation to make the vehicle available.
+                  * Once you confirm viewing the vehicle with photo proof and the seller confirms, 
+                  the deposit becomes non-refundable as both parties have fulfilled their obligations.
                 </p>
 
                 <h4 className="font-semibold text-slate-800 mt-6 mb-2">3.4 Platform Fee</h4>
@@ -305,23 +318,39 @@ export function TermsOfServiceModal({ isOpen, onClose }) {
                   the Platform or violation of these Terms.
                 </p>
 
-                <h4 className="font-semibold text-slate-800 mt-6 mb-2">4.5 Governing Law</h4>
+                <h4 className="font-semibold text-slate-800 mt-6 mb-2">4.5 Dispute Resolution & Arbitration</h4>
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-4">
+                  <p className="text-purple-700 text-sm mb-2">
+                    <strong>MANDATORY ARBITRATION:</strong> Any dispute, claim, or controversy arising out of 
+                    or relating to these Terms or your use of Kiwi Van Market shall be resolved through 
+                    binding arbitration in New Zealand, rather than in court.
+                  </p>
+                  <p className="text-purple-600 text-xs">
+                    By using this Platform, you waive your right to participate in class action lawsuits 
+                    or class-wide arbitration against Kiwi Van Market.
+                  </p>
+                </div>
+                <p className="text-slate-600 mb-4">
+                  Before initiating arbitration, you agree to first contact us at 
+                  kiwivanmarket.contact@gmail.com to attempt to resolve the dispute informally.
+                </p>
+
+                <h4 className="font-semibold text-slate-800 mt-6 mb-2">4.6 Governing Law</h4>
                 <p className="text-slate-600">
-                  These Terms are governed by the laws of New Zealand. Any disputes shall be 
-                  resolved in the courts of New Zealand.
+                  These Terms are governed by the laws of New Zealand. Subject to the arbitration 
+                  provision above, any disputes shall be resolved in the courts of New Zealand.
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer */}
         <div className="bg-slate-50 px-6 py-4 border-t flex items-center justify-between">
           <p className="text-xs text-slate-500">
             By using Kiwi Van Market, you agree to these Terms of Service.
           </p>
           <button
-            onClick={onClose}
+            onClick={handleAccept}
             className="bg-emerald-600 text-white px-6 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition"
           >
             I Understand

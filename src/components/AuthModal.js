@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User } from 'lucide-react';
 import { useAuth } from '../AuthContext';
-import TermsModal from './TermsModal';
+import { TermsOfServiceModal } from './TermsOfService';
 
 const AuthModal = ({ isOpen, onClose }) => {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
@@ -272,13 +272,13 @@ const AuthModal = ({ isOpen, onClose }) => {
       </div>
 
       {/* Terms Modal */}
-      <TermsModal 
+      <TermsOfServiceModal 
         isOpen={showTerms}
-        onAccept={handleTermsAccepted}
         onClose={() => {
           setShowTerms(false);
           setPendingAction(null);
         }}
+        onAccept={handleTermsAccepted}
       />
     </>
   );

@@ -7,11 +7,11 @@ import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import NotificationBell from './components/NotificationBell';
-import { TrustBanner } from './components/SecurityBadge';
 
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
 import Footer, { FAQModal } from './components/Footer';
+import { TrustBanner } from './components/SecurityBadge';
 
 // ✅ LAZY LOADING - Chargés uniquement quand nécessaires
 const AddVanForm = lazy(() => import('./components/AddVanForm'));
@@ -22,7 +22,7 @@ const MessagingPage = lazy(() => import('./components/MessagingPage'));
 const BuybackCalculator = lazy(() => import('./components/BuybackCalculator'));
 const UserProfile = lazy(() => import('./components/UserProfile'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
-const TermsModal = lazy(() => import('./components/TermsModal'));
+const TermsOfServiceModal = lazy(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfServiceModal })));
 const HomeSeoSection = lazy(() => import('./components/HomeSeoSection'));
 const QuickMessageBox = lazy(() => import('./components/QuickMessageBox'));
 const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
@@ -1262,7 +1262,7 @@ function MainApp() {
           </div>
         </header>
 
-        {/* ========== TRUST BANNER - Sécurité ========== */}
+        {/* ========== TRUST BANNER - Sécurité Stripe ========== */}
         <TrustBanner />
 
         {/* ========== SEARCH MOBILE + FILTRES ========== */}
@@ -1905,9 +1905,8 @@ function MainApp() {
         
         {showTerms && (
           <Suspense fallback={<PageLoader />}>
-            <TermsModal 
+            <TermsOfServiceModal 
               isOpen={showTerms} 
-              onAccept={() => setShowTerms(false)} 
               onClose={() => setShowTerms(false)} 
             />
           </Suspense>
