@@ -7,6 +7,7 @@ import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import NotificationBell from './components/NotificationBell';
+import { TrustBanner } from './components/SecurityBadge';
 
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
@@ -1260,6 +1261,9 @@ function MainApp() {
             )}
           </div>
         </header>
+
+        {/* ========== TRUST BANNER - Sécurité ========== */}
+        <TrustBanner />
 
         {/* ========== SEARCH MOBILE + FILTRES ========== */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
