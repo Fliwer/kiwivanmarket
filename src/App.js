@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle } from 'lucide-react';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
@@ -15,6 +15,7 @@ import Footer, { FAQModal } from './components/Footer';
 // ✅ LAZY LOADING - Chargés uniquement quand nécessaires
 const AddVanForm = lazy(() => import('./components/AddVanForm'));
 const MyVans = lazy(() => import('./components/MyVans'));
+const MyReservations = lazy(() => import('./components/MyReservations'));
 const FavoritesPage = lazy(() => import('./components/FavoritesPage'));
 const MessagingPage = lazy(() => import('./components/MessagingPage'));
 const BuybackCalculator = lazy(() => import('./components/BuybackCalculator'));
@@ -349,6 +350,7 @@ function MainApp() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showAddVanForm, setShowAddVanForm] = useState(false);
   const [showMyVans, setShowMyVans] = useState(false);
+  const [showMyReservations, setShowMyReservations] = useState(false);
   const [showMessagingPage, setShowMessagingPage] = useState(false);
   const [showBuybackCalculator, setShowBuybackCalculator] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -1028,20 +1030,29 @@ function MainApp() {
               <div className="hidden md:flex items-center gap-1">
                 <CurrencySelector />
                 <LanguageSelector />
-                {/* 🔔 AJOUTE CECI */}
-                {currentUser && (
-  <NotificationBell 
-    user={currentUser} 
-    onNotificationClick={(notif) => {
-      if (notif.type === 'reservation_paid' || notif.type === 'payment_confirmed') {
-        // Optionnel: ouvrir les messages ou une page réservation
-      }
-    }} 
-  />
-)}
-
-
                 
+                {currentUser && (
+                  <NotificationBell 
+                    user={currentUser} 
+                    onNotificationClick={(notif) => {
+                      if (notif.type === 'reservation_paid' || notif.type === 'payment_confirmed') {
+                        setShowMyReservations(true);
+                      }
+                    }} 
+                  />
+                )}
+
+                {/* 📦 BOUTON MES RESERVATIONS - Desktop */}
+                {currentUser && (
+                  <button 
+                    onClick={() => setShowMyReservations(true)}
+                    className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                    title="My Reservations"
+                  >
+                    <CalendarCheck size={22} className="text-white" />
+                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Bookings</span>
+                  </button>
+                )}
                 
                 <button 
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
@@ -1105,6 +1116,14 @@ function MainApp() {
                             </svg>
                             <span>My Listings</span>
                           </a>
+                          {/* 📦 MES RESERVATIONS - Menu utilisateur */}
+                          <a 
+                            href="#"
+                            onClick={(e) => { e.preventDefault(); setShowMyReservations(true); setShowUserMenu(false); }}
+                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
+                            <CalendarCheck className="w-[18px] h-[18px] text-emerald-500" />
+                            <span className="font-medium text-emerald-700">My Reservations</span>
+                          </a>
                           {isAdmin && (
                             <a 
                               href="#"
@@ -1141,12 +1160,19 @@ function MainApp() {
                 </button>
                 <CurrencySelector />
                 <LanguageSelector />
-                {/* 🔔 AJOUTE CECI */}
-{currentUser && (
-  <NotificationBell 
-    user={currentUser} 
-  />
-)}
+                {currentUser && (
+                  <NotificationBell user={currentUser} />
+                )}
+                {/* 📦 BOUTON MES RESERVATIONS - Mobile */}
+                {currentUser && (
+                  <button 
+                    onClick={() => setShowMyReservations(true)}
+                    className="p-2 hover:bg-white/10 rounded-xl"
+                    title="My Reservations"
+                  >
+                    <CalendarCheck size={20} className="text-white" />
+                  </button>
+                )}
                 <button 
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
                   className="p-2 hover:bg-white/10 rounded-xl"
@@ -1203,6 +1229,14 @@ function MainApp() {
                     >
                       <MapPin size={20} />
                       <span>My Listings</span>
+                    </button>
+                    {/* 📦 MES RESERVATIONS - Mobile Menu */}
+                    <button 
+                      onClick={() => { setShowMyReservations(true); setShowMobileMenu(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition text-emerald-300"
+                    >
+                      <CalendarCheck size={20} />
+                      <span className="font-medium">My Reservations</span>
                     </button>
                     {isAdmin && (
                       <button 
@@ -1821,6 +1855,22 @@ function MainApp() {
         {showMyVans && (
           <Suspense fallback={<PageLoader />}>
             <MyVans onClose={() => setShowMyVans(false)} />
+          </Suspense>
+        )}
+
+        {/* 📦 MODAL MES RESERVATIONS */}
+        {showMyReservations && (
+          <Suspense fallback={<PageLoader />}>
+            <MyReservations 
+              onClose={() => setShowMyReservations(false)} 
+              onViewVan={(vanId) => {
+                const van = vans.find(v => v.id === vanId);
+                if (van) {
+                  setSelectedVan(van);
+                  setShowMyReservations(false);
+                }
+              }}
+            />
           </Suspense>
         )}
         

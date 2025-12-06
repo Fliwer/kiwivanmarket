@@ -136,6 +136,45 @@ export function ReserveButton({ van, seller, onReservationCreated, className = '
     );
   }
 
+  // Fonction pour compléter le paiement d'une réservation existante
+  const handleCompleteExistingPayment = async () => {
+    if (!existingReservation) return;
+    
+    setLoading(true);
+    
+    try {
+      const summary = getPaymentSummary(van.price);
+      
+      // Toujours créer une nouvelle session Stripe (l'ancienne peut avoir expiré)
+      const response = await fetch(API_ENDPOINTS.CREATE_CHECKOUT_SESSION, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reservationId: existingReservation.id,
+          vanId: van.id,
+          vanTitle: van.title,
+          amount: summary.deposit * 100,
+          currency: 'nzd',
+          buyerEmail: currentUser.email,
+          successUrl: `${window.location.origin}/reservation-success?id=${existingReservation.id}`,
+          cancelUrl: `${window.location.origin}/reservation-cancelled?id=${existingReservation.id}`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create checkout session');
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+      
+    } catch (err) {
+      console.error('Payment error:', err);
+      alert('Payment failed. Please try again.');
+      setLoading(false);
+    }
+  };
+
   // L'utilisateur a déjà une réservation
   if (existingReservation && !existingReservation.isOtherUser) {
     const statusInfo = RESERVATION_STATUS_LABELS[existingReservation.status] || {};
@@ -154,11 +193,21 @@ export function ReserveButton({ van, seller, onReservationCreated, className = '
         
         {existingReservation.status === RESERVATION_STATUS.PENDING && (
           <button
-            onClick={() => setShowModal(true)}
-            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition flex items-center justify-center gap-2"
+            onClick={handleCompleteExistingPayment}
+            disabled={loading}
+            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            <CreditCard size={18} />
-            Complete Payment
+            {loading ? (
+              <>
+                <Loader2 size={18} className="animate-spin" />
+                Connecting to Stripe...
+              </>
+            ) : (
+              <>
+                <CreditCard size={18} />
+                Complete Payment
+              </>
+            )}
           </button>
         )}
         
@@ -266,6 +315,7 @@ function ReservationModal({ van, seller, existingReservation, onClose, onSuccess
       // Créer la réservation
       const reservationData = {
         vanId: van.id,
+        // Données du van (objet)
         van: {
           id: van.id,
           title: van.title,
@@ -274,6 +324,13 @@ function ReservationModal({ van, seller, existingReservation, onClose, onSuccess
           location: van.location,
           year: van.year,
         },
+        // Données du van (à plat pour compatibilité)
+        vanTitle: van.title,
+        vanPrice: van.price,
+        vanImage: van.imageUrl || van.images?.[0],
+        vanLocation: van.location,
+        vanYear: van.year,
+        // Données du vendeur
         sellerId: seller.uid,
         sellerName: seller.name || 'Seller',
         sellerEmail: seller.email || '',
