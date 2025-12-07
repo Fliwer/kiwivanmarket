@@ -1,80 +1,77 @@
-// ============================================
-// 📸 PHOTO CONFIRMATION COMPONENT
-// ============================================
-//
-// Ce composant gère la double confirmation avec photo
-// pour libérer le dépôt de manière sécurisée
-//
-// ============================================
+// ============================================================
+// 📸 PHOTO CONFIRMATION SYSTEM
+// Double confirmation with photo proof (license plate visible)
+// ============================================================
 
 import React, { useState, useRef } from 'react';
-import { X, Camera, Upload, CheckCircle, AlertTriangle, Image, Loader, Shield } from 'lucide-react';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { 
+  Camera, 
+  X, 
+  CheckCircle, 
+  Shield, 
+  RefreshCw, 
+  User, 
+  AlertCircle, 
+  DollarSign,
+  Image as ImageIcon,
+  CreditCard,
+  Check,
+  Clock
+} from 'lucide-react';
+import { db, storage } from '../firebase';
 import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-// ============================================
-// 📸 BUYER CONFIRMATION MODAL (avec photo)
-// ============================================
-
-export function BuyerPhotoConfirmationModal({ 
-  isOpen, 
-  onClose, 
-  reservation, 
-  onConfirmed 
-}) {
+// ============================================================
+// 📸 BUYER PHOTO CONFIRMATION MODAL
+// Buyer uploads photo of the van with LICENSE PLATE visible
+// ============================================================
+export const BuyerPhotoConfirmationModal = ({ isOpen, onClose, reservation, onConfirmed }) => {
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [isConfirmed, setIsConfirmed] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
-  if (!isOpen) return null;
+  if (!isOpen || !reservation) return null;
 
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Vérifier le type
-      if (!file.type.startsWith('image/')) {
-        setError('Please select an image file (JPG, PNG, etc.)');
-        return;
-      }
-      // Vérifier la taille (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        setError('Image too large. Maximum size is 10MB.');
-        return;
-      }
-      
-      setPhoto(file);
-      setError('');
-      
-      // Créer preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
     }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Photo must be less than 10MB');
+      return;
+    }
+
+    setError('');
+    setPhoto(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleConfirm = async () => {
-    if (!photo) {
-      setError('Please upload a photo first');
-      return;
-    }
-    if (!isConfirmed) {
-      setError('Please confirm that you have seen the vehicle');
-      return;
-    }
+    if (!photo || !confirmed) return;
 
     setIsUploading(true);
     setError('');
 
     try {
       // 1. Upload photo to Firebase Storage
-      const storage = getStorage();
-      const photoRef = ref(storage, `confirmations/${reservation.id}/buyer_${Date.now()}.jpg`);
+      const photoRef = ref(storage, `confirmations/${reservation.id}/${Date.now()}_buyer_proof.jpg`);
       await uploadBytes(photoRef, photo);
       const photoURL = await getDownloadURL(photoRef);
 
@@ -88,97 +85,77 @@ export function BuyerPhotoConfirmationModal({
         updatedAt: serverTimestamp()
       });
 
-      // 3. Callback
-      if (onConfirmed) {
-        onConfirmed();
-      }
-      
+      // 3. Success callback
+      if (onConfirmed) onConfirmed();
       onClose();
     } catch (err) {
       console.error('Error confirming:', err);
-      setError('Failed to confirm. Please try again.');
+      setError('Failed to upload confirmation. Please try again.');
     } finally {
       setIsUploading(false);
     }
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                <Camera size={24} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">Confirm Vehicle Viewing</h2>
-                <p className="text-emerald-100 text-sm">Upload photo proof</p>
-              </div>
-            </div>
-            <button 
-              onClick={onClose}
-              className="text-white/70 hover:text-white transition p-2"
-            >
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Camera size={24} />
+              Confirm Van Viewing
+            </h3>
+            <button onClick={onClose} className="text-white/80 hover:text-white">
               <X size={24} />
             </button>
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6">
-          {/* Info box */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-            <div className="flex gap-3">
-              <AlertTriangle className="text-amber-600 flex-shrink-0 mt-0.5" size={20} />
-              <div>
-                <h4 className="font-semibold text-amber-800 text-sm mb-1">Important</h4>
-                <p className="text-amber-700 text-xs">
-                  By confirming, the deposit will become <strong>non-refundable</strong>. 
-                  Make sure you have inspected the vehicle thoroughly.
-                </p>
-              </div>
+          {/* Instructions - LICENSE PLATE requirement */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+              <Shield size={18} />
+              Photo Proof Required
+            </h4>
+            <p className="text-blue-700 text-sm leading-relaxed">
+              Please upload a <strong>photo of the van showing the license plate</strong> as proof that you met with the seller and viewed the vehicle.
+            </p>
+            <div className="mt-3 bg-blue-100 rounded-lg p-3">
+              <p className="text-blue-800 text-xs font-medium">📸 Your photo should include:</p>
+              <ul className="text-blue-700 text-xs mt-1 space-y-0.5">
+                <li>• The van clearly visible</li>
+                <li>• The <strong>license plate readable</strong></li>
+                <li>• Taken at the meeting location</li>
+              </ul>
             </div>
           </div>
 
           {/* Photo Upload Area */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              📸 Upload a photo of you with the van
-            </label>
-            
-            {!photoPreview ? (
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition group"
-              >
-                <div className="w-16 h-16 bg-gray-100 group-hover:bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 transition">
-                  <Camera size={32} className="text-gray-400 group-hover:text-emerald-600 transition" />
-                </div>
-                <p className="text-gray-600 font-medium mb-1">Click to upload photo</p>
-                <p className="text-gray-400 text-sm">or drag and drop</p>
-                <p className="text-gray-400 text-xs mt-2">JPG, PNG up to 10MB</p>
-              </div>
-            ) : (
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhotoSelect}
+              ref={fileInputRef}
+              className="hidden"
+            />
+
+            {photoPreview ? (
               <div className="relative">
                 <img 
                   src={photoPreview} 
-                  alt="Confirmation photo" 
-                  className="w-full h-64 object-cover rounded-xl"
+                  alt="Confirmation" 
+                  className="w-full h-64 object-cover rounded-xl border-2 border-emerald-300"
                 />
                 <button
                   onClick={() => {
                     setPhoto(null);
                     setPhotoPreview(null);
                   }}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition"
+                  className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition"
                 >
                   <X size={16} />
                 </button>
@@ -187,61 +164,74 @@ export function BuyerPhotoConfirmationModal({
                   Photo ready
                 </div>
               </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-64 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-3 hover:border-emerald-400 hover:bg-emerald-50 transition cursor-pointer"
+              >
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Camera size={32} className="text-gray-400" />
+                </div>
+                <div className="text-center">
+                  <p className="font-semibold text-gray-700">Take or Upload Photo</p>
+                  <p className="text-sm text-gray-500">Van with license plate visible</p>
+                </div>
+                <div className="flex gap-2">
+                  <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                    📷 Camera
+                  </span>
+                  <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                    🖼️ Gallery
+                  </span>
+                </div>
+              </button>
             )}
-            
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
           </div>
 
           {/* Confirmation Checkbox */}
-          <label className="flex items-start gap-3 cursor-pointer mb-6 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition">
+          <label className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition mb-4">
             <input
               type="checkbox"
-              checked={isConfirmed}
-              onChange={(e) => setIsConfirmed(e.target.checked)}
-              className="mt-0.5 w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              checked={confirmed}
+              onChange={(e) => setConfirmed(e.target.checked)}
+              className="w-5 h-5 mt-0.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
             />
             <div>
-              <span className="text-gray-800 font-medium">I confirm that:</span>
-              <ul className="text-sm text-gray-600 mt-1 space-y-1">
-                <li>• I have physically seen and inspected the vehicle</li>
-                <li>• I have verified its condition</li>
-                <li>• I understand the deposit becomes non-refundable</li>
-              </ul>
+              <p className="font-semibold text-gray-800">I confirm I have seen the vehicle in person</p>
+              <p className="text-sm text-gray-500 mt-1">
+                I understand that after the seller confirms, the deposit becomes non-refundable.
+              </p>
             </div>
           </label>
 
-          {/* Error */}
+          {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
               {error}
             </div>
           )}
 
-          {/* Actions */}
+          {/* Action Buttons */}
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              disabled={isUploading}
-              className="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirm}
-              disabled={isUploading || !photo || !isConfirmed}
-              className="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={!photo || !confirmed || isUploading}
+              className={`flex-1 px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition ${
+                photo && confirmed && !isUploading
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
             >
               {isUploading ? (
                 <>
-                  <Loader size={18} className="animate-spin" />
-                  Confirming...
+                  <RefreshCw size={18} className="animate-spin" />
+                  Uploading...
                 </>
               ) : (
                 <>
@@ -255,32 +245,23 @@ export function BuyerPhotoConfirmationModal({
       </div>
     </div>
   );
-}
+};
 
-// ============================================
+// ============================================================
 // ✅ SELLER CONFIRMATION MODAL
-// ============================================
-
-export function SellerConfirmationModal({ 
-  isOpen, 
-  onClose, 
-  reservation,
-  buyerPhoto,
-  onConfirmed 
-}) {
-  const [isConfirmed, setIsConfirmed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+// Seller sees buyer's photo and confirms to release deposit
+// ============================================================
+export const SellerConfirmationModal = ({ isOpen, onClose, reservation, onConfirmed }) => {
+  const [confirmed, setConfirmed] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
 
-  if (!isOpen) return null;
+  if (!isOpen || !reservation) return null;
 
   const handleConfirm = async () => {
-    if (!isConfirmed) {
-      setError('Please confirm that the buyer has seen the vehicle');
-      return;
-    }
+    if (!confirmed) return;
 
-    setIsLoading(true);
+    setIsProcessing(true);
     setError('');
 
     try {
@@ -289,142 +270,151 @@ export function SellerConfirmationModal({
       await updateDoc(reservationRef, {
         sellerConfirmed: true,
         sellerConfirmedAt: serverTimestamp(),
-        status: 'completed', // Both confirmed = release deposit
+        status: 'completed',
         depositReleased: true,
         depositReleasedAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
 
-      // TODO: Trigger Stripe payout to seller here
-      // await releaseDepositToSeller(reservation.stripePaymentIntentId);
+      // TODO: Trigger Stripe payout to seller via Cloud Function
+      // This would call your backend to initiate the transfer
 
-      if (onConfirmed) {
-        onConfirmed();
-      }
-      
+      if (onConfirmed) onConfirmed();
       onClose();
     } catch (err) {
       console.error('Error confirming:', err);
       setError('Failed to confirm. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                <Shield size={24} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold">Confirm Buyer Meeting</h2>
-                <p className="text-blue-100 text-sm">Verify the buyer saw your van</p>
-              </div>
-            </div>
-            <button 
-              onClick={onClose}
-              className="text-white/70 hover:text-white transition p-2"
-            >
+            <h3 className="text-xl font-bold text-white flex items-center gap-2">
+              <Shield size={24} />
+              Confirm Buyer Meeting
+            </h3>
+            <button onClick={onClose} className="text-white/80 hover:text-white">
               <X size={24} />
             </button>
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6">
-          {/* Buyer's Photo */}
-          {buyerPhoto && (
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                📸 Photo uploaded by buyer:
-              </label>
-              <div className="relative">
-                <img 
-                  src={buyerPhoto} 
-                  alt="Buyer confirmation" 
-                  className="w-full h-48 object-cover rounded-xl border-2 border-gray-200"
-                />
-                <div className="absolute bottom-2 left-2 bg-emerald-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                  <CheckCircle size={14} />
-                  Buyer confirmed
-                </div>
+          {/* Buyer's Photo Proof */}
+          <div className="mb-6">
+            <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <ImageIcon size={18} />
+              Buyer's Photo Proof
+            </h4>
+            {reservation.buyerConfirmationPhoto ? (
+              <img 
+                src={reservation.buyerConfirmationPhoto} 
+                alt="Buyer confirmation" 
+                className="w-full h-64 object-cover rounded-xl border-2 border-blue-200"
+              />
+            ) : (
+              <div className="w-full h-64 bg-gray-100 rounded-xl flex items-center justify-center">
+                <p className="text-gray-500">No photo available</p>
               </div>
-            </div>
-          )}
+            )}
+            <p className="text-xs text-gray-500 mt-2">
+              ⚠️ Verify that this is your van and the license plate matches.
+            </p>
+          </div>
 
-          {/* Info box */}
+          {/* Buyer Info */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-            <div className="flex gap-3">
-              <Shield className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center">
+                <User size={20} className="text-blue-600" />
+              </div>
               <div>
-                <h4 className="font-semibold text-blue-800 text-sm mb-1">Release Deposit</h4>
-                <p className="text-blue-700 text-xs">
-                  By confirming, the deposit of <strong>${reservation?.depositAmount || 500} NZD</strong> will 
-                  be released to your account.
+                <p className="font-semibold text-blue-800">{reservation.buyerName || 'Buyer'}</p>
+                <p className="text-sm text-blue-600">
+                  Confirmed viewing on {reservation.buyerConfirmedAt?.toDate?.()?.toLocaleDateString() || 'recently'}
                 </p>
               </div>
             </div>
           </div>
 
+          {/* Warning */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+            <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+              <AlertCircle size={18} />
+              Important
+            </h4>
+            <p className="text-amber-700 text-sm leading-relaxed">
+              By confirming, you verify that this buyer physically came to see your van and the photo shows your vehicle with the correct license plate. 
+              The deposit will be released to you and cannot be refunded.
+            </p>
+          </div>
+
           {/* Confirmation Checkbox */}
-          <label className="flex items-start gap-3 cursor-pointer mb-6 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition">
+          <label className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition mb-4">
             <input
               type="checkbox"
-              checked={isConfirmed}
-              onChange={(e) => setIsConfirmed(e.target.checked)}
-              className="mt-0.5 w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              checked={confirmed}
+              onChange={(e) => setConfirmed(e.target.checked)}
+              className="w-5 h-5 mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
             <div>
-              <span className="text-gray-800 font-medium">I confirm that:</span>
-              <ul className="text-sm text-gray-600 mt-1 space-y-1">
-                <li>• The buyer came to see the vehicle in person</li>
-                <li>• The buyer had the opportunity to inspect it</li>
-                <li>• I recognize the person in the photo (if applicable)</li>
-              </ul>
+              <p className="font-semibold text-gray-800">I confirm this buyer viewed my van in person</p>
+              <p className="text-sm text-gray-500 mt-1">
+                The photo shows my van with the correct license plate.
+              </p>
             </div>
           </label>
 
-          {/* Error */}
+          {/* Deposit Amount */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <DollarSign size={20} className="text-emerald-600" />
+              <span className="font-semibold text-emerald-800">Deposit to receive:</span>
+            </div>
+            <span className="text-2xl font-bold text-emerald-600">
+              ${reservation.depositAmount || 500}
+            </span>
+          </div>
+
+          {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">
               {error}
             </div>
           )}
 
-          {/* Actions */}
+          {/* Action Buttons */}
           <div className="flex gap-3">
             <button
               onClick={onClose}
-              disabled={isLoading}
-              className="flex-1 px-4 py-3 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition disabled:opacity-50"
+              className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirm}
-              disabled={isLoading || !isConfirmed}
-              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              disabled={!confirmed || isProcessing}
+              className={`flex-1 px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition ${
+                confirmed && !isProcessing
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
             >
-              {isLoading ? (
+              {isProcessing ? (
                 <>
-                  <Loader size={18} className="animate-spin" />
-                  Confirming...
+                  <RefreshCw size={18} className="animate-spin" />
+                  Processing...
                 </>
               ) : (
                 <>
-                  <CheckCircle size={18} />
-                  Confirm & Release Deposit
+                  <DollarSign size={18} />
+                  Release Deposit
                 </>
               )}
             </button>
@@ -433,138 +423,96 @@ export function SellerConfirmationModal({
       </div>
     </div>
   );
-}
+};
 
-// ============================================
-// 📊 CONFIRMATION STATUS COMPONENT
-// ============================================
-
-export function ConfirmationStatus({ reservation }) {
-  const buyerConfirmed = reservation?.buyerConfirmed;
-  const sellerConfirmed = reservation?.sellerConfirmed;
+// ============================================================
+// 📊 CONFIRMATION STATUS TRACKER
+// Visual timeline of the confirmation process
+// ============================================================
+export const ConfirmationStatus = ({ reservation }) => {
+  const steps = [
+    {
+      id: 'paid',
+      label: 'Deposit Paid',
+      icon: CreditCard,
+      completed: ['paid', 'confirmed', 'buyer_confirmed', 'completed'].includes(reservation.status),
+      active: reservation.status === 'paid'
+    },
+    {
+      id: 'buyer_confirmed',
+      label: 'Buyer Confirmed',
+      icon: Camera,
+      completed: ['buyer_confirmed', 'completed'].includes(reservation.status) || reservation.buyerConfirmed,
+      active: reservation.status === 'confirmed' || (reservation.status === 'paid' && !reservation.buyerConfirmed)
+    },
+    {
+      id: 'seller_confirmed',
+      label: 'Seller Confirmed',
+      icon: Shield,
+      completed: reservation.status === 'completed' || reservation.sellerConfirmed,
+      active: reservation.status === 'buyer_confirmed' || (reservation.buyerConfirmed && !reservation.sellerConfirmed)
+    },
+    {
+      id: 'released',
+      label: 'Deposit Released',
+      icon: DollarSign,
+      completed: reservation.depositReleased,
+      active: reservation.sellerConfirmed && !reservation.depositReleased
+    }
+  ];
 
   return (
-    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-      <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-        <Shield size={16} className="text-emerald-600" />
-        Confirmation Status
+    <div className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-xl p-4">
+      <h4 className="text-sm font-semibold text-gray-600 mb-3 flex items-center gap-2">
+        <Shield size={14} />
+        Transaction Progress
       </h4>
-      
-      <div className="space-y-3">
-        {/* Buyer Status */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              buyerConfirmed ? 'bg-emerald-100' : 'bg-gray-200'
-            }`}>
-              {buyerConfirmed ? (
-                <CheckCircle size={16} className="text-emerald-600" />
-              ) : (
-                <span className="text-gray-400 text-sm font-bold">1</span>
+      <div className="flex items-center justify-between">
+        {steps.map((step, index) => {
+          const StepIcon = step.icon;
+          return (
+            <React.Fragment key={step.id}>
+              <div className="flex flex-col items-center">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  step.completed 
+                    ? 'bg-emerald-500 text-white' 
+                    : step.active 
+                      ? 'bg-blue-500 text-white animate-pulse' 
+                      : 'bg-gray-200 text-gray-400'
+                }`}>
+                  {step.completed ? <Check size={20} /> : <StepIcon size={18} />}
+                </div>
+                <span className={`text-xs mt-1.5 text-center max-w-[70px] ${
+                  step.completed ? 'text-emerald-600 font-medium' : step.active ? 'text-blue-600 font-medium' : 'text-gray-400'
+                }`}>
+                  {step.label}
+                </span>
+              </div>
+              {index < steps.length - 1 && (
+                <div className={`flex-1 h-1 mx-2 rounded ${
+                  steps[index + 1].completed ? 'bg-emerald-300' : 'bg-gray-200'
+                }`} />
               )}
-            </div>
-            <div>
-              <p className={`text-sm font-medium ${buyerConfirmed ? 'text-emerald-700' : 'text-gray-600'}`}>
-                Buyer Confirmation
-              </p>
-              <p className="text-xs text-gray-400">
-                {buyerConfirmed ? 'Photo uploaded ✓' : 'Waiting for photo...'}
-              </p>
-            </div>
-          </div>
-          {buyerConfirmed && (
-            <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded-full">
-              Done
-            </span>
-          )}
-        </div>
-
-        {/* Connector Line */}
-        <div className="ml-4 border-l-2 border-dashed border-gray-300 h-4"></div>
-
-        {/* Seller Status */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              sellerConfirmed ? 'bg-emerald-100' : buyerConfirmed ? 'bg-blue-100' : 'bg-gray-200'
-            }`}>
-              {sellerConfirmed ? (
-                <CheckCircle size={16} className="text-emerald-600" />
-              ) : (
-                <span className={`text-sm font-bold ${buyerConfirmed ? 'text-blue-500' : 'text-gray-400'}`}>2</span>
-              )}
-            </div>
-            <div>
-              <p className={`text-sm font-medium ${
-                sellerConfirmed ? 'text-emerald-700' : buyerConfirmed ? 'text-blue-600' : 'text-gray-400'
-              }`}>
-                Seller Confirmation
-              </p>
-              <p className="text-xs text-gray-400">
-                {sellerConfirmed ? 'Verified ✓' : buyerConfirmed ? 'Your turn!' : 'Waiting for buyer...'}
-              </p>
-            </div>
-          </div>
-          {sellerConfirmed && (
-            <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded-full">
-              Done
-            </span>
-          )}
-        </div>
-
-        {/* Connector Line */}
-        <div className="ml-4 border-l-2 border-dashed border-gray-300 h-4"></div>
-
-        {/* Deposit Status */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              buyerConfirmed && sellerConfirmed ? 'bg-emerald-500' : 'bg-gray-200'
-            }`}>
-              {buyerConfirmed && sellerConfirmed ? (
-                <CheckCircle size={16} className="text-white" />
-              ) : (
-                <span className="text-gray-400 text-sm font-bold">$</span>
-              )}
-            </div>
-            <div>
-              <p className={`text-sm font-medium ${
-                buyerConfirmed && sellerConfirmed ? 'text-emerald-700' : 'text-gray-400'
-              }`}>
-                Deposit Released
-              </p>
-              <p className="text-xs text-gray-400">
-                {buyerConfirmed && sellerConfirmed ? 'Payment sent to seller ✓' : 'Pending confirmations'}
-              </p>
-            </div>
-          </div>
-          {buyerConfirmed && sellerConfirmed && (
-            <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-              💰 Released
-            </span>
-          )}
-        </div>
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );
-}
+};
 
-// ============================================
-// 🔘 CONFIRM MEETING BUTTON (pour l'acheteur)
-// ============================================
-
-export function ConfirmMeetingButton({ reservation, onConfirmed }) {
+// ============================================================
+// 🔘 CONFIRM MEETING BUTTON (for buyer)
+// Button to trigger the photo confirmation modal
+// ============================================================
+export const ConfirmMeetingButton = ({ reservation }) => {
   const [showModal, setShowModal] = useState(false);
 
-  // Ne pas afficher si déjà confirmé par l'acheteur
-  if (reservation?.buyerConfirmed) {
+  if (reservation.buyerConfirmed) {
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-        <CheckCircle className="text-emerald-600" size={24} />
-        <div>
-          <p className="font-semibold text-emerald-700">You have confirmed viewing</p>
-          <p className="text-sm text-emerald-600">Waiting for seller confirmation...</p>
-        </div>
+      <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg">
+        <CheckCircle size={18} />
+        <span className="font-medium">You have confirmed viewing</span>
       </div>
     );
   }
@@ -573,56 +521,43 @@ export function ConfirmMeetingButton({ reservation, onConfirmed }) {
     <>
       <button
         onClick={() => setShowModal(true)}
-        className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 transition shadow-lg flex items-center justify-center gap-3"
+        className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition"
       >
-        <Camera size={24} />
+        <Camera size={18} />
         Confirm I Saw The Van
       </button>
-      
+
       <BuyerPhotoConfirmationModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         reservation={reservation}
-        onConfirmed={() => {
-          setShowModal(false);
-          if (onConfirmed) onConfirmed();
-        }}
+        onConfirmed={() => setShowModal(false)}
       />
     </>
   );
-}
+};
 
-// ============================================
-// 🔘 CONFIRM BUYER BUTTON (pour le vendeur)
-// ============================================
-
-export function ConfirmBuyerButton({ reservation, onConfirmed }) {
+// ============================================================
+// 🔘 CONFIRM BUYER BUTTON (for seller)
+// Button to trigger the seller confirmation modal
+// ============================================================
+export const ConfirmBuyerButton = ({ reservation }) => {
   const [showModal, setShowModal] = useState(false);
 
-  // Ne pas afficher si l'acheteur n'a pas confirmé
-  if (!reservation?.buyerConfirmed) {
+  if (!reservation.buyerConfirmed) {
     return (
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center gap-3">
-        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-          <Camera className="text-gray-400" size={20} />
-        </div>
-        <div>
-          <p className="font-medium text-gray-600">Waiting for buyer</p>
-          <p className="text-sm text-gray-400">The buyer must confirm first with a photo</p>
-        </div>
+      <div className="flex items-center gap-2 text-gray-500 bg-gray-100 px-4 py-2 rounded-lg">
+        <Clock size={18} />
+        <span className="font-medium">Waiting for buyer to confirm...</span>
       </div>
     );
   }
 
-  // Ne pas afficher si déjà confirmé par le vendeur
-  if (reservation?.sellerConfirmed) {
+  if (reservation.sellerConfirmed) {
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-        <CheckCircle className="text-emerald-600" size={24} />
-        <div>
-          <p className="font-semibold text-emerald-700">Transaction Complete!</p>
-          <p className="text-sm text-emerald-600">Deposit has been released to your account</p>
-        </div>
+      <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg">
+        <CheckCircle size={18} />
+        <span className="font-medium">Transaction Complete!</span>
       </div>
     );
   }
@@ -631,24 +566,29 @@ export function ConfirmBuyerButton({ reservation, onConfirmed }) {
     <>
       <button
         onClick={() => setShowModal(true)}
-        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-700 hover:to-indigo-700 transition shadow-lg flex items-center justify-center gap-3"
+        className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
       >
-        <Shield size={24} />
-        Confirm Buyer & Release Deposit
+        <Shield size={18} />
+        Confirm & Release Deposit
       </button>
-      
+
       <SellerConfirmationModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
         reservation={reservation}
-        buyerPhoto={reservation?.buyerConfirmationPhoto}
-        onConfirmed={() => {
-          setShowModal(false);
-          if (onConfirmed) onConfirmed();
-        }}
+        onConfirmed={() => setShowModal(false)}
       />
     </>
   );
-}
+};
 
-export default BuyerPhotoConfirmationModal;
+// ============================================================
+// EXPORTS
+// ============================================================
+export default {
+  BuyerPhotoConfirmationModal,
+  SellerConfirmationModal,
+  ConfirmationStatus,
+  ConfirmMeetingButton,
+  ConfirmBuyerButton
+};

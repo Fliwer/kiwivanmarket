@@ -2,15 +2,11 @@
 // 🔥 FIREBASE CLOUD FUNCTIONS - Kiwi Van Market
 // ============================================
 // 
-// 🛡️ VERSION 2.0 - SYSTÈME ANTI-FRAUDE COMPLET
-//
-// PROTECTIONS IMPLÉMENTÉES:
-// ✅ 1. Stripe Connect - L'argent reste chez Stripe (séquestre)
-// ✅ 2. Délai de libération - 7 jours après confirmation
-// ✅ 3. Remboursement automatique si vendeur ne répond pas
-// ✅ 4. Vérification vendeur obligatoire
-// ✅ 5. Système de disputes
-// ✅ 6. Expiration automatique des réservations
+// Backend SÉCURISÉ pour le système de paiement Stripe
+// Version avec:
+// ✅ Expiration automatique 48h
+// ✅ Stripe Connect pour payout vendeurs
+// ✅ Double confirmation + release automatique
 //
 // ============================================
 
@@ -26,7 +22,7 @@ const db = admin.firestore();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // ============================================
-// 🔒 CONFIGURATION SÉCURISÉE
+// 🔒 CORS SÉCURISÉ
 // ============================================
 
 const ALLOWED_ORIGINS = [
@@ -34,7 +30,7 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'https://kiwivanmarket.com',
   'https://www.kiwivanmarket.com',
-  // Ajoute ton domaine Vercel ici
+  // Ajoute ton domaine Vercel/Netlify ici
 ];
 
 const cors = require('cors')({
@@ -50,48 +46,26 @@ const cors = require('cors')({
 });
 
 // ============================================
-// 💰 CONFIGURATION PAIEMENT & ANTI-FRAUDE
+// 💰 CONFIG PAIEMENT
 // ============================================
 
 const PAYMENT_CONFIG = {
   MIN_DEPOSIT: 500,
   DEPOSIT_PERCENTAGE: 5,
   PERCENTAGE_THRESHOLD: 10000,
-  PLATFORM_FEE_PERCENTAGE: 5,
+  PLATFORM_FEE_PERCENTAGE: 5, // 5% commission
   CURRENCY: 'nzd',
-  
-  // 🛡️ ANTI-FRAUDE: Délais de sécurité
-  SELLER_RESPONSE_DEADLINE_HOURS: 48,    // Vendeur doit répondre en 48h
-  BUYER_CONFIRMATION_DEADLINE_HOURS: 72, // Acheteur confirme rencontre en 72h
-  RELEASE_DELAY_DAYS: 7,                 // Argent libéré 7 jours après confirmation
-  RESERVATION_EXPIRY_HOURS: 24,          // Réservation expire si pas payée en 24h
-  DISPUTE_WINDOW_DAYS: 14,               // Fenêtre pour ouvrir un litige
+  SELLER_RESPONSE_HOURS: 48, // Heures pour répondre
 };
-
-// Statuts des réservations
-const RESERVATION_STATUS = {
-  PENDING: 'pending',           // En attente de paiement
-  PAID: 'paid',                 // Payé, en attente confirmation vendeur
-  SELLER_CONFIRMED: 'seller_confirmed',  // Vendeur a confirmé
-  MEETING_SCHEDULED: 'meeting_scheduled', // Rencontre planifiée
-  BUYER_CONFIRMED: 'buyer_confirmed',    // Acheteur confirme avoir vu le van
-  COMPLETED: 'completed',       // Transaction finalisée, argent libéré
-  CANCELLED: 'cancelled',       // Annulée
-  REFUNDED: 'refunded',         // Remboursée
-  EXPIRED: 'expired',           // Expirée (vendeur n'a pas répondu)
-  DISPUTED: 'disputed',         // Litige en cours
-};
-
-// ============================================
-// 🔧 HELPERS
-// ============================================
 
 function calculateDepositFromPrice(vanPrice) {
   if (!vanPrice || vanPrice <= 0) return PAYMENT_CONFIG.MIN_DEPOSIT;
+  
   if (vanPrice >= PAYMENT_CONFIG.PERCENTAGE_THRESHOLD) {
     const percentageDeposit = Math.round(vanPrice * (PAYMENT_CONFIG.DEPOSIT_PERCENTAGE / 100));
     return Math.max(percentageDeposit, PAYMENT_CONFIG.MIN_DEPOSIT);
   }
+  
   return PAYMENT_CONFIG.MIN_DEPOSIT;
 }
 
@@ -99,62 +73,31 @@ function calculatePlatformFee(depositAmount) {
   return Math.round(depositAmount * (PAYMENT_CONFIG.PLATFORM_FEE_PERCENTAGE / 100));
 }
 
+// ============================================
+// 🔒 VÉRIFICATION AUTHENTIFICATION
+// ============================================
+
 async function verifyAuthToken(req) {
   const authHeader = req.headers.authorization;
+  
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     throw new Error('Missing authentication token');
   }
+  
   const idToken = authHeader.split('Bearer ')[1];
+  
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     return decodedToken;
   } catch (error) {
+    console.error('❌ Token invalide:', error.message);
     throw new Error('Invalid authentication token');
   }
 }
 
-async function createNotification(userId, type, title, message, data = {}) {
-  await db.collection('notifications').add({
-    userId,
-    type,
-    title,
-    message,
-    ...data,
-    read: false,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-}
-
-async function sendSystemMessage(conversationId, text) {
-  if (!conversationId) return;
-  
-  await db.collection('conversations').doc(conversationId).collection('messages').add({
-    text,
-    senderId: 'system',
-    senderName: 'Kiwi Van Market',
-    type: 'system',
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  await db.collection('conversations').doc(conversationId).update({
-    lastMessage: text.slice(0, 100),
-    lastMessageAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-}
-
-async function findConversation(vanId, buyerId) {
-  const conversationsQuery = await db.collection('conversations')
-    .where('vanId', '==', vanId)
-    .where('participants', 'array-contains', buyerId)
-    .get();
-  
-  return conversationsQuery.empty ? null : conversationsQuery.docs[0].id;
-}
-
 // ============================================
-// 💳 CREATE CHECKOUT SESSION - SÉCURISÉ
+// 💳 CREATE CHECKOUT SESSION
 // ============================================
-// 🛡️ L'argent est RETENU par Stripe, pas envoyé au vendeur
 
 exports.createCheckoutSession = functions.https.onRequest((req, res) => {
   cors(req, res, async () => {
@@ -177,8 +120,9 @@ exports.createCheckoutSession = functions.https.onRequest((req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
-      // Récupérer le van
+      // Récupérer le van depuis Firestore
       const vanDoc = await db.collection('vans').doc(vanId).get();
+      
       if (!vanDoc.exists) {
         return res.status(404).json({ error: 'Van not found' });
       }
@@ -198,15 +142,18 @@ exports.createCheckoutSession = functions.https.onRequest((req, res) => {
 
       // Vérifier la réservation
       const reservationDoc = await db.collection('reservations').doc(reservationId).get();
+      
       if (!reservationDoc.exists) {
         return res.status(404).json({ error: 'Reservation not found' });
       }
 
       const reservationData = reservationDoc.data();
+
       if (reservationData.buyerId !== user.uid) {
         return res.status(403).json({ error: 'Not authorized' });
       }
-      if (reservationData.status !== RESERVATION_STATUS.PENDING) {
+
+      if (reservationData.status !== 'pending') {
         return res.status(400).json({ error: 'Reservation is not pending' });
       }
 
@@ -215,31 +162,20 @@ exports.createCheckoutSession = functions.https.onRequest((req, res) => {
       const platformFee = calculatePlatformFee(depositAmount);
       const amountInCents = depositAmount * 100;
 
-      // 🛡️ SÉCURITÉ: Créer un PaymentIntent avec capture manuelle
-      // L'argent est AUTORISÉ mais pas CAPTURÉ - il reste sur le compte Stripe
+      console.log(`✅ Checkout: van=${vanId}, prix=${vanPrice}, dépôt=${depositAmount}`);
+
+      // Créer la session Stripe
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'payment',
         customer_email: user.email,
-        payment_intent_data: {
-          // 🛡️ CAPTURE MANUELLE - L'argent n'est pas transféré automatiquement
-          capture_method: 'manual',
-          metadata: {
-            reservationId,
-            vanId,
-            buyerId: user.uid,
-            sellerId,
-            depositAmount: String(depositAmount),
-            type: 'van_reservation_deposit',
-          },
-        },
         line_items: [
           {
             price_data: {
               currency: PAYMENT_CONFIG.CURRENCY,
               product_data: {
                 name: `Reservation Deposit - ${vanTitle}`,
-                description: `Secure deposit for van reservation. Funds held until transaction confirmed.`,
+                description: `Deposit for van reservation`,
               },
               unit_amount: amountInCents,
             },
@@ -250,7 +186,10 @@ exports.createCheckoutSession = functions.https.onRequest((req, res) => {
           reservationId,
           vanId,
           buyerId: user.uid,
-          sellerId,
+          sellerId: sellerId,
+          depositAmount: String(depositAmount),
+          platformFee: String(platformFee),
+          type: 'van_reservation_deposit',
         },
         success_url: successUrl,
         cancel_url: cancelUrl,
@@ -258,33 +197,30 @@ exports.createCheckoutSession = functions.https.onRequest((req, res) => {
       });
 
       // Mettre à jour la réservation
-      const sellerResponseDeadline = new Date(Date.now() + PAYMENT_CONFIG.SELLER_RESPONSE_DEADLINE_HOURS * 60 * 60 * 1000);
-      
       await db.collection('reservations').doc(reservationId).update({
         stripeSessionId: session.id,
         stripeSessionUrl: session.url,
-        depositAmount,
-        platformFee,
+        depositAmount: depositAmount,
+        platformFee: platformFee,
         remainingBalance: vanPrice - depositAmount,
-        sellerResponseDeadline,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
       res.status(200).json({
         sessionId: session.id,
         url: session.url,
-        depositAmount,
+        depositAmount: depositAmount,
       });
 
     } catch (error) {
-      console.error('❌ Error creating checkout session:', error);
+      console.error('❌ Error creating checkout:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
 });
 
 // ============================================
-// 🔔 STRIPE WEBHOOK - Gestion des paiements
+// 🔔 STRIPE WEBHOOK
 // ============================================
 
 exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
@@ -292,10 +228,12 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   let event;
+
   try {
     event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
+    console.log('✅ Webhook verified:', event.type);
   } catch (err) {
-    console.error('❌ Webhook signature failed:', err.message);
+    console.error('❌ Webhook error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -303,8 +241,6 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
     case 'checkout.session.completed': {
       const session = event.data.object;
       const reservationId = session.metadata?.reservationId;
-      const buyerId = session.metadata?.buyerId;
-      const sellerId = session.metadata?.sellerId;
 
       if (reservationId) {
         try {
@@ -313,47 +249,45 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
 
           if (reservationDoc.exists) {
             const reservationData = reservationDoc.data();
-            
-            // Calculer le deadline pour le vendeur
-            const sellerDeadline = new Date(Date.now() + PAYMENT_CONFIG.SELLER_RESPONSE_DEADLINE_HOURS * 60 * 60 * 1000);
 
-            // 🛡️ Statut "PAID" mais argent toujours chez Stripe
+            // Marquer comme payé + définir deadline 48h
+            const deadline = new Date();
+            deadline.setHours(deadline.getHours() + PAYMENT_CONFIG.SELLER_RESPONSE_HOURS);
+
             await reservationRef.update({
-              status: RESERVATION_STATUS.PAID,
+              status: 'paid',
               paidAt: admin.firestore.FieldValue.serverTimestamp(),
               stripePaymentIntentId: session.payment_intent,
               stripeCustomerId: session.customer,
               paymentMethod: 'stripe',
               paymentConfirmedVia: 'webhook',
-              fundsStatus: 'held_by_stripe', // 🛡️ Argent retenu
-              sellerResponseDeadline: sellerDeadline,
+              sellerResponseDeadline: admin.firestore.Timestamp.fromDate(deadline),
             });
 
-            // Notifier le vendeur avec urgence
-            await createNotification(
-              reservationData.sellerId,
-              'reservation_paid',
-              '🔔 New Reservation - Action Required!',
-              `${reservationData.buyerName || 'A buyer'} has paid a deposit for "${reservationData.van?.title}". You have 48 hours to confirm or the reservation will be automatically cancelled and refunded.`,
-              { reservationId, vanId: reservationData.vanId, urgent: true }
-            );
+            // Notifications
+            await db.collection('notifications').add({
+              userId: reservationData.sellerId,
+              type: 'reservation_paid',
+              title: 'New Reservation! 🎉',
+              message: `${reservationData.buyerName || 'A buyer'} has paid the deposit for "${reservationData.vanTitle || reservationData.van?.title}". You have 48 hours to respond.`,
+              reservationId: reservationId,
+              vanId: reservationData.vanId,
+              read: false,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
 
-            // Notifier l'acheteur
-            await createNotification(
-              reservationData.buyerId,
-              'payment_confirmed',
-              '✅ Payment Received - Funds Secured',
-              `Your deposit for "${reservationData.van?.title}" is securely held. The seller has 48 hours to confirm. If they don't respond, you'll be automatically refunded.`,
-              { reservationId, vanId: reservationData.vanId }
-            );
+            await db.collection('notifications').add({
+              userId: reservationData.buyerId,
+              type: 'payment_confirmed',
+              title: 'Payment Confirmed! ✅',
+              message: `Your deposit has been received. The seller has 48 hours to confirm.`,
+              reservationId: reservationId,
+              vanId: reservationData.vanId,
+              read: false,
+              createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
 
-            // Message système
-            const conversationId = await findConversation(reservationData.vanId, reservationData.buyerId);
-            await sendSystemMessage(conversationId, 
-              `💳 Deposit of $${reservationData.depositAmount || 500} NZD received and securely held.\n\n⏰ Seller must confirm within 48 hours.\n🛡️ Your money is protected - auto-refund if seller doesn't respond.`
-            );
-
-            console.log(`✅ Reservation ${reservationId} - Payment authorized, funds held`);
+            console.log(`✅ Reservation ${reservationId} marked as paid`);
           }
         } catch (error) {
           console.error('❌ Error processing payment:', error);
@@ -368,33 +302,363 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
 
       if (reservationId) {
         await db.collection('reservations').doc(reservationId).update({
-          status: RESERVATION_STATUS.EXPIRED,
+          status: 'expired',
           expiredAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        console.log(`⏳ Reservation ${reservationId} expired`);
+      }
+      break;
+    }
+
+    // Webhook pour Stripe Connect
+    case 'account.updated': {
+      const account = event.data.object;
+      console.log(`🏦 Stripe Connect account updated: ${account.id}`);
+      
+      // Trouver et mettre à jour le compte dans Firestore
+      const accountsQuery = await db.collection('stripeAccounts')
+        .where('stripeAccountId', '==', account.id)
+        .get();
+      
+      if (!accountsQuery.empty) {
+        const docId = accountsQuery.docs[0].id;
+        await db.collection('stripeAccounts').doc(docId).update({
+          chargesEnabled: account.charges_enabled,
+          payoutsEnabled: account.payouts_enabled,
+          detailsSubmitted: account.details_submitted,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
       break;
     }
 
-    case 'payment_intent.payment_failed': {
-      console.log(`❌ Payment failed: ${event.data.object.id}`);
-      break;
-    }
+    default:
+      console.log(`ℹ️ Unhandled event: ${event.type}`);
   }
 
   res.status(200).json({ received: true });
 });
 
 // ============================================
-// ✅ SELLER CONFIRMS RESERVATION
+// ⏰ EXPIRATION 48H - Scheduled Function
 // ============================================
-// Le vendeur confirme qu'il accepte la réservation
+// Tourne toutes les heures pour vérifier les réservations expirées
 
-exports.sellerConfirmReservation = functions.https.onCall(async (data, context) => {
+exports.checkExpiredReservations = functions.pubsub
+  .schedule('every 1 hours')
+  .timeZone('Pacific/Auckland')
+  .onRun(async (context) => {
+    console.log('⏰ Checking for expired reservations...');
+    
+    const now = admin.firestore.Timestamp.now();
+    
+    // Trouver les réservations payées dont la deadline est passée
+    const expiredQuery = await db.collection('reservations')
+      .where('status', '==', 'paid')
+      .where('sellerResponseDeadline', '<=', now)
+      .get();
+    
+    console.log(`Found ${expiredQuery.size} expired reservations`);
+    
+    for (const doc of expiredQuery.docs) {
+      const reservation = doc.data();
+      const reservationId = doc.id;
+      
+      console.log(`🔄 Processing expired reservation: ${reservationId}`);
+      
+      try {
+        // Effectuer le remboursement
+        if (reservation.stripePaymentIntentId) {
+          await stripe.refunds.create({
+            payment_intent: reservation.stripePaymentIntentId,
+          });
+          console.log(`💰 Refund processed for ${reservationId}`);
+        }
+        
+        // Mettre à jour la réservation
+        await db.collection('reservations').doc(reservationId).update({
+          status: 'refunded',
+          refundReason: 'seller_no_response_48h',
+          refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+          refunded: true,
+          refundAmount: reservation.depositAmount,
+        });
+        
+        // Notifier l'acheteur
+        await db.collection('notifications').add({
+          userId: reservation.buyerId,
+          type: 'reservation_refunded',
+          title: 'Deposit Refunded 💰',
+          message: `The seller didn't respond within 48 hours. Your $${reservation.depositAmount} deposit has been refunded.`,
+          reservationId: reservationId,
+          vanId: reservation.vanId,
+          read: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        // Notifier le vendeur
+        await db.collection('notifications').add({
+          userId: reservation.sellerId,
+          type: 'reservation_expired',
+          title: 'Reservation Expired ⏰',
+          message: `You didn't respond to the reservation for "${reservation.vanTitle}" within 48 hours. The buyer has been refunded.`,
+          reservationId: reservationId,
+          vanId: reservation.vanId,
+          read: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        
+        console.log(`✅ Reservation ${reservationId} refunded due to 48h expiration`);
+        
+      } catch (error) {
+        console.error(`❌ Error processing ${reservationId}:`, error);
+      }
+    }
+    
+    return null;
+  });
+
+// ============================================
+// 🏦 STRIPE CONNECT - Onboarding vendeur
+// ============================================
+// Crée un compte Stripe Connect pour un vendeur
+
+exports.createStripeConnectAccount = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Login required');
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
-  const { reservationId, proposedMeetingDate, proposedMeetingLocation } = data;
+  const userId = context.auth.uid;
+  const userEmail = context.auth.token.email;
+
+  try {
+    // Vérifier si le vendeur a déjà un compte
+    const existingAccount = await db.collection('stripeAccounts').doc(userId).get();
+    
+    if (existingAccount.exists && existingAccount.data().stripeAccountId) {
+      // Retourner le lien de connexion existant
+      const accountLink = await stripe.accountLinks.create({
+        account: existingAccount.data().stripeAccountId,
+        refresh_url: `${data.baseUrl}/seller/stripe/refresh`,
+        return_url: `${data.baseUrl}/seller/stripe/return`,
+        type: 'account_onboarding',
+      });
+      
+      return { url: accountLink.url, existing: true };
+    }
+
+    // Créer un nouveau compte Stripe Connect (Express)
+    const account = await stripe.accounts.create({
+      type: 'express',
+      country: 'NZ',
+      email: userEmail,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+      business_type: 'individual',
+      metadata: {
+        firebaseUserId: userId,
+      },
+    });
+
+    // Sauvegarder dans Firestore
+    await db.collection('stripeAccounts').doc(userId).set({
+      stripeAccountId: account.id,
+      userId: userId,
+      email: userEmail,
+      chargesEnabled: false,
+      payoutsEnabled: false,
+      detailsSubmitted: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Créer le lien d'onboarding
+    const accountLink = await stripe.accountLinks.create({
+      account: account.id,
+      refresh_url: `${data.baseUrl}/seller/stripe/refresh`,
+      return_url: `${data.baseUrl}/seller/stripe/return`,
+      type: 'account_onboarding',
+    });
+
+    console.log(`🏦 Stripe Connect account created for ${userId}`);
+
+    return { url: accountLink.url, accountId: account.id };
+
+  } catch (error) {
+    console.error('❌ Error creating Stripe account:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// ============================================
+// 🔗 GET STRIPE DASHBOARD LINK
+// ============================================
+// Permet au vendeur d'accéder à son dashboard Stripe
+
+exports.getStripeDashboardLink = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const userId = context.auth.uid;
+
+  try {
+    const accountDoc = await db.collection('stripeAccounts').doc(userId).get();
+    
+    if (!accountDoc.exists) {
+      throw new functions.https.HttpsError('not-found', 'No Stripe account found');
+    }
+
+    const stripeAccountId = accountDoc.data().stripeAccountId;
+
+    const loginLink = await stripe.accounts.createLoginLink(stripeAccountId);
+
+    return { url: loginLink.url };
+
+  } catch (error) {
+    console.error('❌ Error getting dashboard link:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// ============================================
+// 💸 RELEASE DEPOSIT - Trigger on seller confirm
+// ============================================
+// Déclenché automatiquement quand sellerConfirmed passe à true
+
+exports.onReservationCompleted = functions.firestore
+  .document('reservations/{reservationId}')
+  .onUpdate(async (change, context) => {
+    const before = change.before.data();
+    const after = change.after.data();
+    const reservationId = context.params.reservationId;
+
+    // Vérifier si la double confirmation vient d'être complétée
+    const wasNotCompleted = !before.sellerConfirmed || !before.buyerConfirmed;
+    const isNowCompleted = after.sellerConfirmed && after.buyerConfirmed;
+
+    if (wasNotCompleted && isNowCompleted && !after.depositReleased) {
+      console.log(`✅ Double confirmation completed for ${reservationId}`);
+
+      try {
+        // Récupérer le compte Stripe du vendeur
+        const sellerAccountDoc = await db.collection('stripeAccounts')
+          .doc(after.sellerId)
+          .get();
+
+        if (!sellerAccountDoc.exists) {
+          console.error(`❌ No Stripe account for seller ${after.sellerId}`);
+          
+          // Notifier l'admin qu'un payout manuel est nécessaire
+          await db.collection('notifications').add({
+            userId: 'admin', // ou ton userId admin
+            type: 'manual_payout_required',
+            title: '⚠️ Manual Payout Required',
+            message: `Seller ${after.sellerName} doesn't have Stripe Connect. Manual payout of $${after.depositAmount} needed.`,
+            reservationId: reservationId,
+            sellerId: after.sellerId,
+            amount: after.depositAmount,
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          
+          return;
+        }
+
+        const sellerStripeAccount = sellerAccountDoc.data();
+
+        // Vérifier que le compte peut recevoir des paiements
+        if (!sellerStripeAccount.payoutsEnabled) {
+          console.error(`❌ Seller ${after.sellerId} payouts not enabled`);
+          return;
+        }
+
+        // Calculer le montant à transférer (dépôt - commission)
+        const platformFee = after.platformFee || calculatePlatformFee(after.depositAmount);
+        const transferAmount = (after.depositAmount - platformFee) * 100; // En centimes
+
+        // Créer le transfert vers le compte du vendeur
+        const transfer = await stripe.transfers.create({
+          amount: transferAmount,
+          currency: PAYMENT_CONFIG.CURRENCY,
+          destination: sellerStripeAccount.stripeAccountId,
+          transfer_group: reservationId,
+          metadata: {
+            reservationId: reservationId,
+            vanId: after.vanId,
+            sellerId: after.sellerId,
+            buyerId: after.buyerId,
+          },
+        });
+
+        console.log(`💸 Transfer created: ${transfer.id} - $${transferAmount/100} to ${sellerStripeAccount.stripeAccountId}`);
+
+        // Mettre à jour la réservation
+        await change.after.ref.update({
+          depositReleased: true,
+          depositReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
+          stripeTransferId: transfer.id,
+          sellerPayout: after.depositAmount - platformFee,
+          platformFeeCollected: platformFee,
+        });
+
+        // Enregistrer le payout
+        await db.collection('payouts').add({
+          reservationId: reservationId,
+          sellerId: after.sellerId,
+          stripeAccountId: sellerStripeAccount.stripeAccountId,
+          stripeTransferId: transfer.id,
+          grossAmount: after.depositAmount,
+          platformFee: platformFee,
+          netAmount: after.depositAmount - platformFee,
+          currency: PAYMENT_CONFIG.CURRENCY,
+          status: 'completed',
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Notifier le vendeur
+        await db.collection('notifications').add({
+          userId: after.sellerId,
+          type: 'payout_sent',
+          title: 'Payment Received! 💰',
+          message: `$${after.depositAmount - platformFee} NZD has been sent to your Stripe account for "${after.vanTitle}".`,
+          reservationId: reservationId,
+          amount: after.depositAmount - platformFee,
+          read: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Notifier l'acheteur
+        await db.collection('notifications').add({
+          userId: after.buyerId,
+          type: 'transaction_complete',
+          title: 'Transaction Complete! ✅',
+          message: `Your transaction for "${after.vanTitle}" is complete. The deposit has been released to the seller.`,
+          reservationId: reservationId,
+          read: false,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        console.log(`✅ Payout completed for reservation ${reservationId}`);
+
+      } catch (error) {
+        console.error(`❌ Error releasing deposit for ${reservationId}:`, error);
+      }
+    }
+  });
+
+// ============================================
+// ✅ CONFIRM RESERVATION - Vendeur confirme
+// ============================================
+
+exports.confirmReservation = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const { reservationId } = data;
+
   if (!reservationId) {
     throw new functions.https.HttpsError('invalid-argument', 'Reservation ID required');
   }
@@ -409,502 +673,36 @@ exports.sellerConfirmReservation = functions.https.onCall(async (data, context) 
 
     const reservation = reservationDoc.data();
 
-    // Vérifier que c'est le vendeur
     if (reservation.sellerId !== context.auth.uid) {
       throw new functions.https.HttpsError('permission-denied', 'Only seller can confirm');
     }
 
-    // Vérifier le statut
-    if (reservation.status !== RESERVATION_STATUS.PAID) {
-      throw new functions.https.HttpsError('failed-precondition', 'Invalid reservation status');
-    }
-
-    // Deadline pour l'acheteur de confirmer la rencontre
-    const buyerDeadline = new Date(Date.now() + PAYMENT_CONFIG.BUYER_CONFIRMATION_DEADLINE_HOURS * 60 * 60 * 1000);
-
-    await reservationRef.update({
-      status: RESERVATION_STATUS.SELLER_CONFIRMED,
-      sellerConfirmedAt: admin.firestore.FieldValue.serverTimestamp(),
-      proposedMeetingDate: proposedMeetingDate || null,
-      proposedMeetingLocation: proposedMeetingLocation || null,
-      buyerConfirmationDeadline: buyerDeadline,
-      fundsStatus: 'held_by_stripe', // Toujours retenu
-    });
-
-    // Notifier l'acheteur
-    await createNotification(
-      reservation.buyerId,
-      'seller_confirmed',
-      '🎉 Seller Confirmed Your Reservation!',
-      `Great news! The seller has confirmed your reservation for "${reservation.van?.title}". Please arrange a meeting to view the van.`,
-      { reservationId, vanId: reservation.vanId }
-    );
-
-    const conversationId = await findConversation(reservation.vanId, reservation.buyerId);
-    await sendSystemMessage(conversationId, 
-      `✅ Seller has confirmed the reservation!\n\n📅 Next step: Arrange a meeting to view the van.\n🛡️ After viewing, confirm the meeting to proceed.`
-    );
-
-    return { success: true, message: 'Reservation confirmed' };
-
-  } catch (error) {
-    console.error('❌ Error:', error);
-    throw new functions.https.HttpsError('internal', error.message);
-  }
-});
-
-// ============================================
-// 👁️ BUYER CONFIRMS MEETING (a vu le van)
-// ============================================
-// L'acheteur confirme avoir rencontré le vendeur et vu le van
-
-exports.buyerConfirmMeeting = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Login required');
-  }
-
-  const { reservationId, meetingConfirmed, proceedWithPurchase } = data;
-  if (!reservationId) {
-    throw new functions.https.HttpsError('invalid-argument', 'Reservation ID required');
-  }
-
-  try {
-    const reservationRef = db.collection('reservations').doc(reservationId);
-    const reservationDoc = await reservationRef.get();
-
-    if (!reservationDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Reservation not found');
-    }
-
-    const reservation = reservationDoc.data();
-
-    if (reservation.buyerId !== context.auth.uid) {
-      throw new functions.https.HttpsError('permission-denied', 'Only buyer can confirm');
-    }
-
-    if (reservation.status !== RESERVATION_STATUS.SELLER_CONFIRMED) {
-      throw new functions.https.HttpsError('failed-precondition', 'Invalid status');
-    }
-
-    if (!meetingConfirmed) {
-      // L'acheteur dit ne pas avoir eu de rencontre -> ouvrir une dispute
-      await reservationRef.update({
-        status: RESERVATION_STATUS.DISPUTED,
-        disputeReason: 'Buyer reports meeting did not happen',
-        disputeOpenedAt: admin.firestore.FieldValue.serverTimestamp(),
-        disputeOpenedBy: context.auth.uid,
-      });
-
-      await createNotification(
-        reservation.sellerId,
-        'dispute_opened',
-        '⚠️ Dispute Opened',
-        `The buyer has opened a dispute for "${reservation.van?.title}". Our team will review.`,
-        { reservationId, vanId: reservation.vanId }
-      );
-
-      return { success: true, status: 'disputed' };
-    }
-
-    if (proceedWithPurchase) {
-      // 🛡️ L'acheteur confirme vouloir continuer
-      // Calculer quand l'argent sera libéré
-      const releaseDate = new Date(Date.now() + PAYMENT_CONFIG.RELEASE_DELAY_DAYS * 24 * 60 * 60 * 1000);
-      const disputeDeadline = new Date(Date.now() + PAYMENT_CONFIG.DISPUTE_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-
-      await reservationRef.update({
-        status: RESERVATION_STATUS.BUYER_CONFIRMED,
-        buyerConfirmedAt: admin.firestore.FieldValue.serverTimestamp(),
-        meetingConfirmed: true,
-        proceedWithPurchase: true,
-        fundsReleaseDate: releaseDate,
-        disputeDeadline: disputeDeadline,
-        fundsStatus: 'pending_release', // Sera libéré après délai
-      });
-
-      await createNotification(
-        reservation.sellerId,
-        'buyer_confirmed',
-        '✅ Buyer Confirmed Meeting!',
-        `The buyer has confirmed viewing "${reservation.van?.title}" and wants to proceed. Funds will be released in ${PAYMENT_CONFIG.RELEASE_DELAY_DAYS} days.`,
-        { reservationId, vanId: reservation.vanId }
-      );
-
-      const conversationId = await findConversation(reservation.vanId, reservation.buyerId);
-      await sendSystemMessage(conversationId, 
-        `✅ Buyer has confirmed the meeting and wants to proceed!\n\n💰 Deposit will be released to seller in ${PAYMENT_CONFIG.RELEASE_DELAY_DAYS} days.\n🛡️ Both parties have ${PAYMENT_CONFIG.DISPUTE_WINDOW_DAYS} days to report any issues.`
-      );
-
-      return { success: true, status: 'confirmed', releaseDate };
-
-    } else {
-      // L'acheteur a vu le van mais ne veut pas continuer
-      // Remboursement partiel ou selon les conditions
-      await reservationRef.update({
-        status: RESERVATION_STATUS.CANCELLED,
-        cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
-        cancelledBy: context.auth.uid,
-        cancellationReason: 'Buyer decided not to proceed after viewing',
-        refundEligible: false, // Selon tes conditions
-      });
-
-      return { success: true, status: 'cancelled' };
-    }
-
-  } catch (error) {
-    console.error('❌ Error:', error);
-    throw new functions.https.HttpsError('internal', error.message);
-  }
-});
-
-// ============================================
-// 💰 RELEASE FUNDS - Libérer l'argent au vendeur
-// ============================================
-// Appelé automatiquement par un cron job ou manuellement
-
-exports.releaseFunds = functions.https.onCall(async (data, context) => {
-  // Cette fonction peut être appelée par un admin ou automatiquement
-  const { reservationId } = data;
-
-  try {
-    const reservationRef = db.collection('reservations').doc(reservationId);
-    const reservationDoc = await reservationRef.get();
-
-    if (!reservationDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Reservation not found');
-    }
-
-    const reservation = reservationDoc.data();
-
-    // Vérifier que les conditions sont remplies
-    if (reservation.status !== RESERVATION_STATUS.BUYER_CONFIRMED) {
-      throw new functions.https.HttpsError('failed-precondition', 'Cannot release funds yet');
-    }
-
-    // Vérifier que le délai est passé
-    const releaseDate = reservation.fundsReleaseDate?.toDate?.() || reservation.fundsReleaseDate;
-    if (new Date() < new Date(releaseDate)) {
-      throw new functions.https.HttpsError('failed-precondition', 'Release date not reached');
-    }
-
-    // 🛡️ CAPTURER LE PAIEMENT (transférer l'argent)
-    const paymentIntentId = reservation.stripePaymentIntentId;
-    if (!paymentIntentId) {
-      throw new functions.https.HttpsError('failed-precondition', 'No payment intent');
-    }
-
-    await stripe.paymentIntents.capture(paymentIntentId);
-
-    await reservationRef.update({
-      status: RESERVATION_STATUS.COMPLETED,
-      completedAt: admin.firestore.FieldValue.serverTimestamp(),
-      fundsStatus: 'released',
-      fundsReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    // Notifier les deux parties
-    await createNotification(
-      reservation.sellerId,
-      'funds_released',
-      '💰 Funds Released!',
-      `The deposit of $${reservation.depositAmount} for "${reservation.van?.title}" has been released to your account.`,
-      { reservationId, vanId: reservation.vanId }
-    );
-
-    await createNotification(
-      reservation.buyerId,
-      'transaction_complete',
-      '✅ Transaction Complete',
-      `Your transaction for "${reservation.van?.title}" is complete. Thank you for using Kiwi Van Market!`,
-      { reservationId, vanId: reservation.vanId }
-    );
-
-    return { success: true, message: 'Funds released' };
-
-  } catch (error) {
-    console.error('❌ Error releasing funds:', error);
-    throw new functions.https.HttpsError('internal', error.message);
-  }
-});
-
-// ============================================
-// 🔄 AUTO-REFUND IF SELLER DOESN'T RESPOND
-// ============================================
-// Scheduled function - runs every hour
-// 
-// ⚠️ TEMPORAIREMENT DÉSACTIVÉ - À activer après mise à jour de firebase-functions
-// Pour activer: npm install --save firebase-functions@latest
-// Puis décommenter le code ci-dessous
-//
-// Cette fonction vérifie automatiquement:
-// 1. Les réservations où le vendeur n'a pas répondu en 48h → Remboursement auto
-// 2. Les réservations confirmées où le délai est passé → Libération des fonds
-//
-// ALTERNATIVE: Tu peux créer un cron job externe qui appelle une Cloud Function HTTP
-// ou utiliser Google Cloud Scheduler directement
-
-/*
-exports.checkExpiredReservations = functions.pubsub.schedule('every 1 hours').onRun(async (context) => {
-  console.log('🔍 Checking for expired reservations...');
-
-  const now = new Date();
-
-  // Trouver les réservations PAID où le vendeur n'a pas répondu
-  const expiredQuery = await db.collection('reservations')
-    .where('status', '==', RESERVATION_STATUS.PAID)
-    .where('sellerResponseDeadline', '<', now)
-    .get();
-
-  for (const doc of expiredQuery.docs) {
-    const reservation = doc.data();
-    const reservationId = doc.id;
-
-    console.log(`⏰ Auto-refunding reservation ${reservationId} - seller didn't respond`);
-
-    try {
-      // Annuler le PaymentIntent (rembourse automatiquement)
-      if (reservation.stripePaymentIntentId) {
-        await stripe.paymentIntents.cancel(reservation.stripePaymentIntentId);
-      }
-
-      await db.collection('reservations').doc(reservationId).update({
-        status: RESERVATION_STATUS.REFUNDED,
-        refundedAt: admin.firestore.FieldValue.serverTimestamp(),
-        refundReason: 'Seller did not respond within 48 hours',
-        fundsStatus: 'refunded',
-      });
-
-      // Notifier l'acheteur
-      await createNotification(
-        reservation.buyerId,
-        'auto_refund',
-        '💰 Automatic Refund',
-        `The seller didn't respond within 48 hours. Your deposit for "${reservation.van?.title}" has been automatically refunded.`,
-        { reservationId, vanId: reservation.vanId }
-      );
-
-      // Notifier le vendeur
-      await createNotification(
-        reservation.sellerId,
-        'reservation_expired',
-        '⏰ Reservation Expired',
-        `You didn't respond to the reservation for "${reservation.van?.title}" within 48 hours. The buyer has been refunded.`,
-        { reservationId, vanId: reservation.vanId }
-      );
-
-      console.log(`✅ Reservation ${reservationId} auto-refunded`);
-
-    } catch (error) {
-      console.error(`❌ Error auto-refunding ${reservationId}:`, error);
-    }
-  }
-
-  // Libérer les fonds des réservations confirmées dont le délai est passé
-  const releaseQuery = await db.collection('reservations')
-    .where('status', '==', RESERVATION_STATUS.BUYER_CONFIRMED)
-    .where('fundsReleaseDate', '<', now)
-    .get();
-
-  for (const doc of releaseQuery.docs) {
-    const reservation = doc.data();
-    const reservationId = doc.id;
-
-    console.log(`💰 Auto-releasing funds for reservation ${reservationId}`);
-
-    try {
-      if (reservation.stripePaymentIntentId) {
-        await stripe.paymentIntents.capture(reservation.stripePaymentIntentId);
-      }
-
-      await db.collection('reservations').doc(reservationId).update({
-        status: RESERVATION_STATUS.COMPLETED,
-        completedAt: admin.firestore.FieldValue.serverTimestamp(),
-        fundsStatus: 'released',
-        fundsReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      await createNotification(
-        reservation.sellerId,
-        'funds_released',
-        '💰 Funds Released!',
-        `The deposit of $${reservation.depositAmount} for "${reservation.van?.title}" has been released.`,
-        { reservationId, vanId: reservation.vanId }
-      );
-
-      console.log(`✅ Funds released for ${reservationId}`);
-
-    } catch (error) {
-      console.error(`❌ Error releasing funds for ${reservationId}:`, error);
-    }
-  }
-
-  return null;
-});
-*/
-
-// 🔄 VERSION HTTP - Alternative pour déclencher manuellement ou via cron externe
-// Tu peux appeler cette fonction depuis Google Cloud Scheduler ou un cron externe
-exports.checkExpiredReservationsHTTP = functions.https.onRequest(async (req, res) => {
-  // Vérifier une clé secrète simple pour sécuriser l'endpoint
-  const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
-  if (cronSecret !== process.env.CRON_SECRET && cronSecret !== 'temp-dev-secret') {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  console.log('🔍 Checking for expired reservations (HTTP trigger)...');
-
-  const now = new Date();
-  let refundedCount = 0;
-  let releasedCount = 0;
-
-  try {
-    // Trouver les réservations PAID où le vendeur n'a pas répondu
-    const expiredQuery = await db.collection('reservations')
-      .where('status', '==', RESERVATION_STATUS.PAID)
-      .where('sellerResponseDeadline', '<', now)
-      .get();
-
-    for (const docSnap of expiredQuery.docs) {
-      const reservation = docSnap.data();
-      const reservationId = docSnap.id;
-
-      try {
-        if (reservation.stripePaymentIntentId) {
-          await stripe.paymentIntents.cancel(reservation.stripePaymentIntentId);
-        }
-
-        await db.collection('reservations').doc(reservationId).update({
-          status: RESERVATION_STATUS.REFUNDED,
-          refundedAt: admin.firestore.FieldValue.serverTimestamp(),
-          refundReason: 'Seller did not respond within 48 hours',
-          fundsStatus: 'refunded',
-        });
-
-        await createNotification(
-          reservation.buyerId,
-          'auto_refund',
-          '💰 Automatic Refund',
-          `The seller didn't respond within 48 hours. Your deposit has been automatically refunded.`,
-          { reservationId, vanId: reservation.vanId }
-        );
-
-        refundedCount++;
-      } catch (error) {
-        console.error(`❌ Error auto-refunding ${reservationId}:`, error);
-      }
-    }
-
-    // Libérer les fonds des réservations confirmées
-    const releaseQuery = await db.collection('reservations')
-      .where('status', '==', RESERVATION_STATUS.BUYER_CONFIRMED)
-      .where('fundsReleaseDate', '<', now)
-      .get();
-
-    for (const docSnap of releaseQuery.docs) {
-      const reservation = docSnap.data();
-      const reservationId = docSnap.id;
-
-      try {
-        if (reservation.stripePaymentIntentId) {
-          await stripe.paymentIntents.capture(reservation.stripePaymentIntentId);
-        }
-
-        await db.collection('reservations').doc(reservationId).update({
-          status: RESERVATION_STATUS.COMPLETED,
-          completedAt: admin.firestore.FieldValue.serverTimestamp(),
-          fundsStatus: 'released',
-          fundsReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        await createNotification(
-          reservation.sellerId,
-          'funds_released',
-          '💰 Funds Released!',
-          `The deposit of $${reservation.depositAmount} has been released.`,
-          { reservationId, vanId: reservation.vanId }
-        );
-
-        releasedCount++;
-      } catch (error) {
-        console.error(`❌ Error releasing funds for ${reservationId}:`, error);
-      }
-    }
-
-    res.status(200).json({ 
-      success: true, 
-      refunded: refundedCount, 
-      released: releasedCount,
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-    console.error('❌ Error in checkExpiredReservationsHTTP:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ============================================
-// ⚠️ OPEN DISPUTE
-// ============================================
-
-exports.openDispute = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Login required');
-  }
-
-  const { reservationId, reason, description } = data;
-
-  if (!reservationId || !reason) {
-    throw new functions.https.HttpsError('invalid-argument', 'Missing fields');
-  }
-
-  try {
-    const reservationRef = db.collection('reservations').doc(reservationId);
-    const reservationDoc = await reservationRef.get();
-
-    if (!reservationDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Reservation not found');
-    }
-
-    const reservation = reservationDoc.data();
-    const userId = context.auth.uid;
-
-    // Vérifier que l'utilisateur est partie prenante
-    if (reservation.buyerId !== userId && reservation.sellerId !== userId) {
-      throw new functions.https.HttpsError('permission-denied', 'Not authorized');
-    }
-
-    // Vérifier qu'on peut encore ouvrir un litige
-    const disputeDeadline = reservation.disputeDeadline?.toDate?.() || reservation.disputeDeadline;
-    if (disputeDeadline && new Date() > new Date(disputeDeadline)) {
-      throw new functions.https.HttpsError('failed-precondition', 'Dispute window closed');
+    if (reservation.status !== 'paid') {
+      throw new functions.https.HttpsError('failed-precondition', 'Must be paid first');
     }
 
     await reservationRef.update({
-      status: RESERVATION_STATUS.DISPUTED,
-      disputeReason: reason,
-      disputeDescription: description || '',
-      disputeOpenedAt: admin.firestore.FieldValue.serverTimestamp(),
-      disputeOpenedBy: userId,
-      fundsStatus: 'frozen', // Geler les fonds
+      status: 'confirmed',
+      confirmedAt: admin.firestore.FieldValue.serverTimestamp(),
+      confirmedBy: context.auth.uid,
     });
 
-    // Notifier l'autre partie
-    const otherUserId = userId === reservation.buyerId ? reservation.sellerId : reservation.buyerId;
-    await createNotification(
-      otherUserId,
-      'dispute_opened',
-      '⚠️ Dispute Opened',
-      `A dispute has been opened for "${reservation.van?.title}". Our team will review and contact both parties.`,
-      { reservationId, vanId: reservation.vanId }
-    );
+    await db.collection('notifications').add({
+      userId: reservation.buyerId,
+      type: 'reservation_confirmed',
+      title: 'Reservation Confirmed! 🎉',
+      message: `The seller has confirmed your reservation. Contact them to arrange the viewing.`,
+      reservationId: reservationId,
+      vanId: reservation.vanId,
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
-    // TODO: Envoyer un email à l'admin pour review
-
-    return { success: true, message: 'Dispute opened' };
+    return { success: true };
 
   } catch (error) {
-    console.error('❌ Error opening dispute:', error);
+    console.error('❌ Error confirming:', error);
+    if (error instanceof functions.https.HttpsError) throw error;
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
@@ -915,7 +713,7 @@ exports.openDispute = functions.https.onCall(async (data, context) => {
 
 exports.cancelReservation = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Login required');
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
   const { reservationId, reason } = data;
@@ -941,72 +739,66 @@ exports.cancelReservation = functions.https.onCall(async (data, context) => {
       throw new functions.https.HttpsError('permission-denied', 'Not authorized');
     }
 
+    // Logique de remboursement
     let shouldRefund = false;
+    let refundAmount = 0;
 
-    // Logique de remboursement selon qui annule et quand
-    if (isSeller) {
-      // Vendeur annule -> toujours remboursement total
+    // Le vendeur annule AVANT confirmation acheteur → remboursement
+    if (isSeller && reservation.status === 'paid' && !reservation.buyerConfirmed) {
       shouldRefund = true;
-    } else if (isBuyer) {
-      // Acheteur annule -> dépend du statut
-      if (reservation.status === RESERVATION_STATUS.PENDING) {
-        shouldRefund = true; // Pas encore payé
-      } else if (reservation.status === RESERVATION_STATUS.PAID) {
-        shouldRefund = true; // Vendeur n'a pas encore confirmé
-      } else if (reservation.status === RESERVATION_STATUS.SELLER_CONFIRMED) {
-        shouldRefund = false; // Vendeur a déjà confirmé -> pas de remboursement
-      }
+      refundAmount = reservation.depositAmount;
     }
+    // L'acheteur annule AVANT le viewing → remboursement
+    else if (isBuyer && reservation.status === 'paid' && !reservation.buyerConfirmed) {
+      shouldRefund = true;
+      refundAmount = reservation.depositAmount;
+    }
+    // APRÈS buyerConfirmed → pas de remboursement
 
-    // Effectuer le remboursement si nécessaire
     if (shouldRefund && reservation.stripePaymentIntentId) {
       try {
-        // Annuler ou rembourser selon l'état
-        const paymentIntent = await stripe.paymentIntents.retrieve(reservation.stripePaymentIntentId);
-        
-        if (paymentIntent.status === 'requires_capture') {
-          // Pas encore capturé -> annuler
-          await stripe.paymentIntents.cancel(reservation.stripePaymentIntentId);
-        } else if (paymentIntent.status === 'succeeded') {
-          // Déjà capturé -> rembourser
-          await stripe.refunds.create({
-            payment_intent: reservation.stripePaymentIntentId,
-          });
-        }
+        await stripe.refunds.create({
+          payment_intent: reservation.stripePaymentIntentId,
+          amount: refundAmount * 100,
+        });
+        console.log(`💰 Refund: ${refundAmount} NZD`);
       } catch (refundError) {
         console.error('❌ Refund error:', refundError);
       }
     }
 
     await reservationRef.update({
-      status: shouldRefund ? RESERVATION_STATUS.REFUNDED : RESERVATION_STATUS.CANCELLED,
+      status: shouldRefund ? 'refunded' : 'cancelled',
       cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
       cancelledBy: userId,
-      cancellationReason: reason || 'No reason provided',
+      cancellationReason: reason || 'No reason',
       refunded: shouldRefund,
-      fundsStatus: shouldRefund ? 'refunded' : 'forfeited',
+      refundAmount: shouldRefund ? refundAmount : 0,
     });
 
     // Notifier l'autre partie
-    const otherUserId = isBuyer ? reservation.sellerId : reservation.buyerId;
+    const notifyUserId = isBuyer ? reservation.sellerId : reservation.buyerId;
     const cancellerName = isBuyer ? reservation.buyerName : reservation.sellerName;
 
-    await createNotification(
-      otherUserId,
-      'reservation_cancelled',
-      'Reservation Cancelled',
-      `${cancellerName || 'The other party'} has cancelled the reservation for "${reservation.van?.title}".${shouldRefund ? ' The deposit has been refunded.' : ''}`,
-      { reservationId, vanId: reservation.vanId }
-    );
+    await db.collection('notifications').add({
+      userId: notifyUserId,
+      type: 'reservation_cancelled',
+      title: 'Reservation Cancelled',
+      message: `${cancellerName || 'The other party'} cancelled the reservation.${shouldRefund ? ' The deposit has been refunded.' : ''}`,
+      reservationId: reservationId,
+      vanId: reservation.vanId,
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
     return { 
       success: true, 
       refunded: shouldRefund,
-      message: shouldRefund ? 'Cancelled and refunded' : 'Cancelled',
     };
 
   } catch (error) {
     console.error('❌ Error cancelling:', error);
+    if (error instanceof functions.https.HttpsError) throw error;
     throw new functions.https.HttpsError('internal', error.message);
   }
 });
@@ -1017,10 +809,14 @@ exports.cancelReservation = functions.https.onCall(async (data, context) => {
 
 exports.getReservation = functions.https.onCall(async (data, context) => {
   if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Login required');
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
   }
 
   const { reservationId } = data;
+
+  if (!reservationId) {
+    throw new functions.https.HttpsError('invalid-argument', 'Reservation ID required');
+  }
 
   try {
     const reservationDoc = await db.collection('reservations').doc(reservationId).get();
@@ -1030,8 +826,9 @@ exports.getReservation = functions.https.onCall(async (data, context) => {
     }
 
     const reservation = reservationDoc.data();
+    const userId = context.auth.uid;
 
-    if (reservation.buyerId !== context.auth.uid && reservation.sellerId !== context.auth.uid) {
+    if (reservation.buyerId !== userId && reservation.sellerId !== userId) {
       throw new functions.https.HttpsError('permission-denied', 'Not authorized');
     }
 
@@ -1040,13 +837,76 @@ exports.getReservation = functions.https.onCall(async (data, context) => {
       ...reservation,
       createdAt: reservation.createdAt?.toDate?.() || null,
       paidAt: reservation.paidAt?.toDate?.() || null,
-      sellerConfirmedAt: reservation.sellerConfirmedAt?.toDate?.() || null,
-      buyerConfirmedAt: reservation.buyerConfirmedAt?.toDate?.() || null,
-      fundsReleaseDate: reservation.fundsReleaseDate?.toDate?.() || null,
-      disputeDeadline: reservation.disputeDeadline?.toDate?.() || null,
     };
 
   } catch (error) {
+    console.error('❌ Error getting reservation:', error);
+    if (error instanceof functions.https.HttpsError) throw error;
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
+
+// ============================================
+// 🏦 CHECK SELLER STRIPE STATUS
+// ============================================
+
+exports.checkSellerStripeStatus = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+  }
+
+  const userId = context.auth.uid;
+
+  try {
+    const accountDoc = await db.collection('stripeAccounts').doc(userId).get();
+
+    if (!accountDoc.exists) {
+      return { 
+        hasAccount: false,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+      };
+    }
+
+    const accountData = accountDoc.data();
+
+    // Optionnel: refresh depuis Stripe API
+    if (accountData.stripeAccountId) {
+      try {
+        const stripeAccount = await stripe.accounts.retrieve(accountData.stripeAccountId);
+        
+        // Mettre à jour si différent
+        if (stripeAccount.charges_enabled !== accountData.chargesEnabled ||
+            stripeAccount.payouts_enabled !== accountData.payoutsEnabled) {
+          await db.collection('stripeAccounts').doc(userId).update({
+            chargesEnabled: stripeAccount.charges_enabled,
+            payoutsEnabled: stripeAccount.payouts_enabled,
+            detailsSubmitted: stripeAccount.details_submitted,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
+
+        return {
+          hasAccount: true,
+          chargesEnabled: stripeAccount.charges_enabled,
+          payoutsEnabled: stripeAccount.payouts_enabled,
+          detailsSubmitted: stripeAccount.details_submitted,
+        };
+      } catch (e) {
+        console.error('Error fetching Stripe account:', e);
+      }
+    }
+
+    return {
+      hasAccount: true,
+      chargesEnabled: accountData.chargesEnabled,
+      payoutsEnabled: accountData.payoutsEnabled,
+      detailsSubmitted: accountData.detailsSubmitted,
+    };
+
+  } catch (error) {
+    console.error('❌ Error checking status:', error);
     throw new functions.https.HttpsError('internal', error.message);
   }
 });

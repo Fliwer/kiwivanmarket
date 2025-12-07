@@ -9,6 +9,7 @@ import {
   Award, TrendingUp, Clock, Edit3, Save, Loader
 } from 'lucide-react';
 import { SellerReviews } from './ReviewSystem';
+import { StripeConnectSetup } from './StripeConnect';
 
 export default function UserProfile({ onClose }) {
   const { currentUser } = useAuth();
@@ -801,6 +802,20 @@ export default function UserProfile({ onClose }) {
                 <span className="bg-gray-200 text-gray-600 px-3 py-1.5 rounded-full text-sm font-semibold">
                   Coming Soon
                 </span>
+              </div>
+              
+              {/* 💳 Stripe Connect - Configuration des paiements */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <span className="text-xl">💳</span> Payment Setup
+                  <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium ml-2">
+                    Receive money
+                  </span>
+                </h4>
+                <p className="text-sm text-gray-500 mb-4">
+                  Set up your Stripe account to receive deposits when buyers reserve your vans.
+                </p>
+                <StripeConnectSetup />
               </div>
             </div>
           )}

@@ -5,6 +5,8 @@
 // Ce composant affiche les informations de sécurité pour rassurer
 // les acheteurs et vendeurs sur la protection de leurs transactions.
 //
+// UPDATED: Double Confirmation System (no more 7-day delay)
+//
 // ============================================
 
 import React, { useState } from 'react';
@@ -13,7 +15,7 @@ import {
   Lock, 
   CheckCircle, 
   Clock, 
-  RefreshCw, 
+  Camera,
   AlertTriangle,
   X,
   CreditCard,
@@ -21,7 +23,8 @@ import {
   Calendar,
   HelpCircle,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  UserCheck
 } from 'lucide-react';
 
 // ============================================
@@ -70,9 +73,14 @@ export function SecurityInfoCard({ variant = 'buyer' }) {
       description: 'Funds are only released after you confirm you\'ve seen the van in person.'
     },
     {
-      icon: <RefreshCw size={18} />,
-      title: '7-Day Safety Period',
-      description: 'After confirmation, there\'s a 7-day period before funds are released to report any issues.'
+      icon: <Camera size={18} />,
+      title: 'Photo Proof Required',
+      description: 'You upload a photo of the van with license plate as proof of the meeting.'
+    },
+    {
+      icon: <UserCheck size={18} />,
+      title: 'Double Confirmation',
+      description: 'Both buyer AND seller must confirm the meeting before funds are released.'
     },
     {
       icon: <AlertTriangle size={18} />,
@@ -93,6 +101,11 @@ export function SecurityInfoCard({ variant = 'buyer' }) {
       description: 'Only verified users can make reservations on your van.'
     },
     {
+      icon: <Camera size={18} />,
+      title: 'Photo Proof',
+      description: 'Buyer must upload photo of your van as proof they came to see it.'
+    },
+    {
       icon: <Calendar size={18} />,
       title: 'No-Show Protection',
       description: 'If a buyer doesn\'t confirm the meeting, you keep the deposit.'
@@ -100,7 +113,7 @@ export function SecurityInfoCard({ variant = 'buyer' }) {
     {
       icon: <CheckCircle size={18} />,
       title: 'Guaranteed Payment',
-      description: 'Once confirmed, funds are guaranteed to be released to you.'
+      description: 'Once you confirm the buyer saw the van, funds are released to you.'
     }
   ];
 
@@ -221,9 +234,9 @@ export function SecurityModal({ isOpen, onClose }) {
                   { step: 1, title: 'You Pay the Deposit', desc: 'Your money is securely held by Stripe — not sent to the seller yet.' },
                   { step: 2, title: 'Seller Confirms (48h)', desc: 'The seller has 48 hours to confirm. No response? Automatic refund.' },
                   { step: 3, title: 'You View the Van', desc: 'Meet the seller and inspect the van in person.' },
-                  { step: 4, title: 'You Confirm', desc: 'Only after you confirm viewing, the transaction proceeds.' },
-                  { step: 5, title: '7-Day Safety Period', desc: 'Funds are held for 7 more days in case of any issues.' },
-                  { step: 6, title: 'Funds Released', desc: 'After the safety period, the seller receives the deposit.' },
+                  { step: 4, title: 'You Upload Photo Proof', desc: 'Take a photo of the van showing the license plate as proof.' },
+                  { step: 5, title: 'Seller Confirms Meeting', desc: 'The seller verifies you came to see the van.' },
+                  { step: 6, title: 'Funds Released', desc: 'After both confirmations, the deposit goes to the seller.' },
                 ].map((item) => (
                   <div key={item.step} className="flex gap-4">
                     <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold text-sm z-10">
@@ -252,11 +265,11 @@ export function SecurityModal({ isOpen, onClose }) {
               </li>
               <li className="flex gap-2">
                 <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
-                <span><strong>Van not as described?</strong> Open a dispute within 14 days.</span>
+                <span><strong>Buyer no-show?</strong> Seller keeps the deposit after dispute review.</span>
               </li>
               <li className="flex gap-2">
                 <CheckCircle size={16} className="flex-shrink-0 mt-0.5" />
-                <span><strong>Seller disappears?</strong> Your money is still safe with Stripe.</span>
+                <span><strong>Dispute?</strong> Contact us before confirming the meeting.</span>
               </li>
             </ul>
           </div>
@@ -315,7 +328,7 @@ export function PaymentSecurityNotice() {
           <div className="flex-1">
             <h4 className="font-semibold text-blue-800 mb-1">Your Payment is Protected</h4>
             <p className="text-sm text-blue-700 mb-2">
-              Your deposit will be securely held until you confirm viewing the van. 
+              Your deposit will be securely held until both you AND the seller confirm the meeting. 
               If the seller doesn't respond within 48 hours, you'll be automatically refunded.
             </p>
             <button
@@ -380,7 +393,7 @@ export function TrustBanner() {
               </div>
               <div className="flex items-center gap-1.5 hover:text-white transition">
                 <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                <span>7-day protection</span>
+                <span>Double confirmation</span>
               </div>
             </div>
 
@@ -459,9 +472,9 @@ export function TrustBanner() {
                 },
                 {
                   color: 'from-amber-500 to-orange-500',
-                  title: '7-Day Safety Net',
-                  desc: 'Full protection period to report any issues',
-                  icon: <RefreshCw size={16} />
+                  title: 'Double Confirmation',
+                  desc: 'Both buyer AND seller must confirm the meeting',
+                  icon: <UserCheck size={16} />
                 }
               ].map((item, i) => (
                 <div key={i} className="relative flex gap-4 p-3 rounded-xl hover:bg-white/5 transition group">

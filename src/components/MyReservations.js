@@ -11,11 +11,6 @@ import { ConfirmMeetingButton, ConfirmBuyerButton, ConfirmationStatus } from './
 // Includes photo proof confirmation for deposit release
 // ============================================================
 
-// ============================================================
-// 📦 MY RESERVATIONS PAGE
-// Shows all reservations for the current user (as buyer OR seller)
-// ============================================================
-
 const MyReservations = ({ onClose, onViewVan }) => {
   const { currentUser, loading: authLoading } = useAuth();
   
@@ -249,7 +244,7 @@ const MyReservations = ({ onClose, onViewVan }) => {
                 const statusStyle = getStatusStyle(reservation.status);
                 const StatusIcon = statusStyle.icon;
                 
-                // ✅ FIX: Récupérer l'image correctement
+                // ✅ Récupérer l'image correctement
                 const vanImage = reservation.vanImage || reservation.van?.imageUrl || reservation.van?.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=400';
                 const vanTitle = reservation.vanTitle || reservation.van?.title || 'Van Reservation';
                 const vanLocation = reservation.vanLocation || reservation.van?.location;
@@ -264,7 +259,7 @@ const MyReservations = ({ onClose, onViewVan }) => {
                     key={reservation.id}
                     className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-emerald-200 transition-all group"
                   >
-                    {/* ✅ FIX: Layout corrigé - Flex row sur desktop, column sur mobile */}
+                    {/* Layout - Flex row sur desktop, column sur mobile */}
                     <div className="flex flex-col sm:flex-row">
                       
                       {/* Van Image - Taille fixe */}
@@ -342,7 +337,7 @@ const MyReservations = ({ onClose, onViewVan }) => {
                             )}
                           </div>
 
-                          {/* 📸 CONFIRMATION STATUS - NEW */}
+                          {/* 📸 CONFIRMATION STATUS */}
                           {(reservation.status === 'paid' || reservation.status === 'confirmed' || reservation.status === 'buyer_confirmed' || reservation.status === 'completed') && (
                             <div className="mb-3">
                               <ConfirmationStatus reservation={reservation} />
@@ -391,14 +386,14 @@ const MyReservations = ({ onClose, onViewVan }) => {
                       </div>
                     )}
 
-                    {/* 📸 BUYER CONFIRMATION BUTTON - NEW */}
+                    {/* 📸 BUYER CONFIRMATION BUTTON */}
                     {(reservation.status === 'paid' || reservation.status === 'confirmed') && activeTab === 'buying' && !reservation.buyerConfirmed && (
                       <div className="bg-emerald-50 border-t border-emerald-200 px-4 sm:px-5 py-4">
                         <div className="flex items-start gap-3 mb-3">
                           <Camera className="text-emerald-600 flex-shrink-0 mt-0.5" size={20} />
                           <div>
                             <p className="font-semibold text-emerald-800">Have you seen the van?</p>
-                            <p className="text-sm text-emerald-600">Upload a photo to confirm your viewing and release the deposit to the seller.</p>
+                            <p className="text-sm text-emerald-600">Upload a photo of the van with <strong>license plate visible</strong> to confirm your viewing.</p>
                           </div>
                         </div>
                         <ConfirmMeetingButton reservation={reservation} />
@@ -425,14 +420,14 @@ const MyReservations = ({ onClose, onViewVan }) => {
                       </div>
                     )}
 
-                    {/* 🛡️ SELLER CONFIRMATION BUTTON - NEW */}
+                    {/* 🛡️ SELLER CONFIRMATION BUTTON */}
                     {reservation.buyerConfirmed && !reservation.sellerConfirmed && activeTab === 'selling' && (
                       <div className="bg-blue-50 border-t border-blue-200 px-4 sm:px-5 py-4">
                         <div className="flex items-start gap-3 mb-3">
                           <Shield className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
                           <div>
                             <p className="font-semibold text-blue-800">Buyer has confirmed viewing!</p>
-                            <p className="text-sm text-blue-600">Review their photo and confirm to release the deposit to your account.</p>
+                            <p className="text-sm text-blue-600">Check if the photo shows your van with the correct license plate.</p>
                           </div>
                         </div>
                         {reservation.buyerConfirmationPhoto && (
