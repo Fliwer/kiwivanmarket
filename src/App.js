@@ -5,18 +5,21 @@ import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
-import { NotificationProvider, useNotifications } from './components/NotificationSystem';
-import NotificationBell from './components/NotificationBell';
+// MVP_DISABLED: Notifications
+// import { NotificationProvider, useNotifications } from './components/NotificationSystem';
+// import NotificationBell from './components/NotificationBell';
 
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
 import Footer, { FAQModal } from './components/Footer';
-import { TrustBanner } from './components/SecurityBadge';
+// MVP_DISABLED: Stripe/Payments
+// import { TrustBanner } from './components/SecurityBadge';
 
 // ✅ LAZY LOADING - Chargés uniquement quand nécessaires
 const AddVanForm = lazy(() => import('./components/AddVanForm'));
 const MyVans = lazy(() => import('./components/MyVans'));
-const MyReservations = lazy(() => import('./components/MyReservations'));
+// MVP_DISABLED: Reservations
+// const MyReservations = lazy(() => import('./components/MyReservations'));
 const FavoritesPage = lazy(() => import('./components/FavoritesPage'));
 const MessagingPage = lazy(() => import('./components/MessagingPage'));
 const BuybackCalculator = lazy(() => import('./components/BuybackCalculator'));
@@ -25,11 +28,13 @@ const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const TermsOfServiceModal = lazy(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfServiceModal })));
 const HomeSeoSection = lazy(() => import('./components/HomeSeoSection'));
 const QuickMessageBox = lazy(() => import('./components/QuickMessageBox'));
-const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
-const ReservationCancelled = lazy(() => import('./components/ReservationCancelled'));
+// MVP_DISABLED: Reservations
+// const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
+// const ReservationCancelled = lazy(() => import('./components/ReservationCancelled'));
 const LeaveReviewButton = lazy(() => import('./components/ReviewSystem').then(m => ({ default: m.LeaveReviewButton })));
 const SellerReviews = lazy(() => import('./components/ReviewSystem').then(m => ({ default: m.SellerReviews })));
-const ReserveButton = lazy(() => import('./components/PaymentSystem').then(m => ({ default: m.ReserveButton })));
+// MVP_DISABLED: Payments/Stripe
+// const ReserveButton = lazy(() => import('./components/PaymentSystem').then(m => ({ default: m.ReserveButton })));
 
 // ✅ LOADING COMPONENTS
 const LoadingSpinner = ({ text = "Loading..." }) => (
@@ -324,17 +329,20 @@ function CurrencySelector() {
   );
 }
 
-// Petit composant pour le badge Messages
+// MVP_DISABLED: Notifications - MessageBadge uses useNotifications
+// function MessageBadge() {
+//   const { unreadCount } = useNotifications();
+//   
+//   if (unreadCount === 0) return null;
+//   
+//   return (
+//     <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold border-2 border-white animate-pulse">
+//       {unreadCount > 9 ? '9+' : unreadCount}
+//     </span>
+//   );
+// }
 function MessageBadge() {
-  const { unreadCount } = useNotifications();
-  
-  if (unreadCount === 0) return null;
-  
-  return (
-    <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold border-2 border-white animate-pulse">
-      {unreadCount > 9 ? '9+' : unreadCount}
-    </span>
-  );
+  return null; // MVP_DISABLED: Notifications
 }
 
 // ========================================
@@ -351,7 +359,8 @@ function MainApp() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [showAddVanForm, setShowAddVanForm] = useState(false);
   const [showMyVans, setShowMyVans] = useState(false);
-  const [showMyReservations, setShowMyReservations] = useState(false);
+  // MVP_DISABLED: Reservations
+  // const [showMyReservations, setShowMyReservations] = useState(false);
   const [showMessagingPage, setShowMessagingPage] = useState(false);
   const [showBuybackCalculator, setShowBuybackCalculator] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -854,11 +863,13 @@ function MainApp() {
                 />
               </Suspense>
               
+              {/* MVP_DISABLED: Payments/Stripe
               <div className="mt-4">
                 <Suspense fallback={<LoadingSpinner />}>
                   <ReserveButton van={van} seller={seller} />
                 </Suspense>
               </div>
+              */}
               
               {/* Leave Review Button - Lazy */}
               <div className="mt-4">
@@ -966,15 +977,14 @@ function MainApp() {
   if (showMessagingPage) {
     return (
       <Suspense fallback={<PageLoader />}>
-        <NotificationProvider onOpenMessaging={() => {}}>
-          <MessagingPage onBack={() => setShowMessagingPage(false)} />
-        </NotificationProvider>
+        {/* MVP_DISABLED: Notifications - NotificationProvider removed */}
+        <MessagingPage onBack={() => setShowMessagingPage(false)} />
       </Suspense>
     );
   }
 
   return (
-    <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
+    <> {/* MVP_DISABLED: Notifications - was NotificationProvider */}
       <WebViewWarning />
       <div className="min-h-screen bg-gray-50">
         
@@ -1032,6 +1042,7 @@ function MainApp() {
                 <CurrencySelector />
                 <LanguageSelector />
                 
+                {/* MVP_DISABLED: Notifications
                 {currentUser && (
                   <NotificationBell 
                     user={currentUser} 
@@ -1042,8 +1053,9 @@ function MainApp() {
                     }} 
                   />
                 )}
+                */}
 
-                {/* 📦 BOUTON MES RESERVATIONS - Desktop */}
+                {/* MVP_DISABLED: Reservations
                 {currentUser && (
                   <button 
                     onClick={() => setShowMyReservations(true)}
@@ -1054,6 +1066,7 @@ function MainApp() {
                     <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Bookings</span>
                   </button>
                 )}
+                */}
                 
                 <button 
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
@@ -1117,7 +1130,7 @@ function MainApp() {
                             </svg>
                             <span>My Listings</span>
                           </a>
-                          {/* 📦 MES RESERVATIONS - Menu utilisateur */}
+                          {/* MVP_DISABLED: Reservations
                           <a 
                             href="#"
                             onClick={(e) => { e.preventDefault(); setShowMyReservations(true); setShowUserMenu(false); }}
@@ -1125,6 +1138,7 @@ function MainApp() {
                             <CalendarCheck className="w-[18px] h-[18px] text-emerald-500" />
                             <span className="font-medium text-emerald-700">My Reservations</span>
                           </a>
+                          */}
                           {isAdmin && (
                             <a 
                               href="#"
@@ -1161,10 +1175,12 @@ function MainApp() {
                 </button>
                 <CurrencySelector />
                 <LanguageSelector />
+                {/* MVP_DISABLED: Notifications
                 {currentUser && (
                   <NotificationBell user={currentUser} />
                 )}
-                {/* 📦 BOUTON MES RESERVATIONS - Mobile */}
+                */}
+                {/* MVP_DISABLED: Reservations
                 {currentUser && (
                   <button 
                     onClick={() => setShowMyReservations(true)}
@@ -1174,6 +1190,7 @@ function MainApp() {
                     <CalendarCheck size={20} className="text-white" />
                   </button>
                 )}
+                */}
                 <button 
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
                   className="p-2 hover:bg-white/10 rounded-xl"
@@ -1231,7 +1248,7 @@ function MainApp() {
                       <MapPin size={20} />
                       <span>My Listings</span>
                     </button>
-                    {/* 📦 MES RESERVATIONS - Mobile Menu */}
+                    {/* MVP_DISABLED: Reservations
                     <button 
                       onClick={() => { setShowMyReservations(true); setShowMobileMenu(false); }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition text-emerald-300"
@@ -1239,6 +1256,7 @@ function MainApp() {
                       <CalendarCheck size={20} />
                       <span className="font-medium">My Reservations</span>
                     </button>
+                    */}
                     {isAdmin && (
                       <button 
                         onClick={() => { setShowAdminDashboard(true); setShowMobileMenu(false); }}
@@ -1262,8 +1280,9 @@ function MainApp() {
           </div>
         </header>
 
-        {/* ========== TRUST BANNER - Sécurité Stripe ========== */}
+        {/* MVP_DISABLED: Stripe/Payments - TrustBanner
         <TrustBanner />
+        */}
 
         {/* ========== SEARCH MOBILE + FILTRES ========== */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
@@ -1862,7 +1881,7 @@ function MainApp() {
           </Suspense>
         )}
 
-        {/* 📦 MODAL MES RESERVATIONS */}
+        {/* MVP_DISABLED: Reservations
         {showMyReservations && (
           <Suspense fallback={<PageLoader />}>
             <MyReservations 
@@ -1877,6 +1896,7 @@ function MainApp() {
             />
           </Suspense>
         )}
+        */}
         
         {showFavorites && (
           <Suspense fallback={<PageLoader />}>
@@ -2039,7 +2059,7 @@ function MainApp() {
           </Suspense>
         )}
       </div>
-    </NotificationProvider>
+    </> /* MVP_DISABLED: was </NotificationProvider> */
   );
 }
 
@@ -2050,6 +2070,7 @@ export default function KiwiVanMarket() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* MVP_DISABLED: Reservations
         <Route path="/reservation-success" element={
           <Suspense fallback={<PageLoader />}>
             <ReservationSuccess />
@@ -2060,6 +2081,7 @@ export default function KiwiVanMarket() {
             <ReservationCancelled />
           </Suspense>
         } />
+        */}
         <Route path="*" element={<MainApp />} />
       </Routes>
     </BrowserRouter>
