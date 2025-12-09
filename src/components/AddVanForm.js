@@ -155,12 +155,15 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     const newIndex = images.length;
     setUploadingIndex(newIndex);
 
-    // Instant local preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImages(prev => [...prev, { url: e.target.result, uploading: true }]);
-    };
-    reader.readAsDataURL(file);
+    // Attendre que le preview soit ajouté AVANT d'uploader (évite race condition)
+    const previewUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+
+    // Ajouter le preview avec état "uploading"
+    setImages(prev => [...prev, { url: previewUrl, uploading: true }]);
 
     try {
       const result = await uploadToCloudinary(file);
@@ -172,8 +175,19 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       });
     } catch (error) {
       console.error('Upload error:', error);
+      
+      // Supprimer l'image qui a échoué
       setImages(prev => prev.filter((_, i) => i !== newIndex));
-      alert('❌ Upload error');
+      
+      // Afficher un message d'erreur clair avec la vraie raison
+      const errorMessage = error.message || 'Unknown error';
+      if (errorMessage.includes('4096')) {
+        alert('📸 Image too large!\n\nMaximum dimensions: 4096 x 4096 pixels.\n\nPlease resize your image and try again.');
+      } else if (errorMessage.includes('size')) {
+        alert('📸 File too large!\n\nMaximum file size: 10MB.\n\nPlease compress your image and try again.');
+      } else {
+        alert('❌ Upload failed: ' + errorMessage + '\n\nPlease try again with a different image.');
+      }
     } finally {
       setUploadingIndex(null);
     }
@@ -505,6 +519,12 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   <span>At least 1 photo required</span>
                 </p>
               )}
+              
+              {/* Info sur les limites d'upload */}
+              <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                <span>📷</span>
+                <span>Max 10MB per image • Max 4096×4096 pixels • JPG, PNG, WebP</span>
+              </p>
             </div>
 
             {/* BASIC INFO */}
