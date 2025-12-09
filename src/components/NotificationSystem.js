@@ -26,7 +26,8 @@ export function NotificationProvider({ children, onOpenMessaging }) {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [browserNotifEnabled, setBrowserNotifEnabled] = useState(false);
   const [lastMessageIds, setLastMessageIds] = useState(new Set());
-  const { currentUser, authLoading } = useAuth();
+  // ✅ CORRIGÉ : AuthContext exporte "loading", pas "authLoading"
+  const { currentUser, loading: authLoading } = useAuth();
 
   // Son de notification (base64 d'un son court)
   const playNotificationSound = useCallback(() => {
@@ -225,53 +226,52 @@ function NotificationToasts({ notifications, onDismiss, onOpenMessaging }) {
 // COMPOSANT TOAST INDIVIDUEL
 // ============================================
 function Toast({ notification, onDismiss, onClick, index }) {
-  const [isExiting, setIsExiting] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
-    const duration = 6000;
-    const interval = 50;
-    const decrement = (interval / duration) * 100;
-
-    const timer = setInterval(() => {
-      setProgress(prev => Math.max(0, prev - decrement));
-    }, interval);
-
-    return () => clearInterval(timer);
+    // Animation d'entrée
+    setTimeout(() => setIsVisible(true), 50);
+    
+    // Progress bar
+    const interval = setInterval(() => {
+      setProgress(prev => Math.max(0, prev - 1.67)); // 6 secondes
+    }, 100);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const handleDismiss = () => {
-    setIsExiting(true);
+    setIsVisible(false);
     setTimeout(onDismiss, 300);
-  };
-
-  const handleClick = () => {
-    setIsExiting(true);
-    setTimeout(onClick, 300);
   };
 
   return (
     <div
-      className={`pointer-events-auto transform transition-all duration-300 ease-out ${
-        isExiting 
-          ? 'opacity-0 translate-x-full scale-95' 
-          : 'opacity-100 translate-x-0 scale-100'
-      }`}
-      style={{
-        animation: `slideInRight 0.4s ease-out ${index * 0.1}s both`
+      onClick={onClick}
+      className={`
+        pointer-events-auto cursor-pointer
+        transform transition-all duration-300 ease-out
+        ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
+      `}
+      style={{ 
+        transitionDelay: `${index * 50}ms`,
+        animation: isVisible ? 'slideInRight 0.3s ease-out' : 'none'
       }}
     >
-      <div 
-        onClick={handleClick}
-        className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden cursor-pointer hover:shadow-3xl transition-all duration-200 hover:scale-[1.02] w-80 group"
-      >
-        {/* Contenu */}
+      <div className="bg-white rounded-2xl shadow-3xl border border-gray-100 overflow-hidden w-80 md:w-96">
         <div className="p-4">
           <div className="flex items-start gap-3">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                {notification.senderName?.[0]?.toUpperCase() || '?'}
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-500">
+                {notification.vanImage ? (
+                  <img src={notification.vanImage} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white text-xl">
+                    🚐
+                  </div>
+                )}
               </div>
               <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-white">
                 <MessageCircle size={10} className="text-white" />

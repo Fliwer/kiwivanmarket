@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Heart, MapPin, Calendar, Gauge, Star, TrendingUp, Clock, Trash2, Shield } from 'lucide-react';
+import { X, Heart, MapPin, Star, Trash2, Shield } from 'lucide-react';
+// MVP_DISABLED: Icons for future features (stats, time indicators)
+// import { Calendar, Gauge, TrendingUp, Clock } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useFavorites } from '../hooks/useFavorites';
@@ -9,7 +11,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
   const [vansData, setVansData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Charger les données des vans favoris
+  // Charger les donnÃ©es des vans favoris
   useEffect(() => {
     const loadFavoriteVans = async () => {
       if (favorites.length === 0) {
@@ -21,7 +23,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
       try {
         setLoading(true);
         const vansRef = collection(db, 'vans');
-        const q = query(vansRef, where('__name__', 'in', favorites.slice(0, 10))); // Firebase limite à 10
+        const q = query(vansRef, where('__name__', 'in', favorites.slice(0, 10))); // Firebase limite Ã  10
         const snapshot = await getDocs(q);
         
         const vans = snapshot.docs.map(doc => ({
@@ -30,9 +32,9 @@ export default function FavoritesPage({ onClose, onVanClick }) {
         }));
         
         setVansData(vans);
-        console.log('✅ Vans favoris chargés:', vans.length);
+        console.log('âœ… Vans favoris chargÃ©s:', vans.length);
       } catch (error) {
-        console.error('❌ Erreur lors du chargement des vans favoris:', error);
+        console.error('âŒ Erreur lors du chargement des vans favoris:', error);
       } finally {
         setLoading(false);
       }
@@ -138,7 +140,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
                       </div>
                       {van.selfContained && (
                         <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-xs font-bold">
-                          ✓ SC
+                          âœ“ SC
                         </span>
                       )}
                     </div>
@@ -149,9 +151,9 @@ export default function FavoritesPage({ onClose, onVanClick }) {
                     {/* Location + Year + Km */}
                     <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
                       <span>{van.year}</span>
-                      <span>•</span>
+                      <span>â€¢</span>
                       <span>{van.mileage?.toLocaleString()} km</span>
-                      <span>•</span>
+                      <span>â€¢</span>
                       <span className="flex items-center gap-1">
                         <MapPin size={12} />
                         {van.location}
@@ -194,7 +196,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
           <div className="border-t p-4 bg-gray-50">
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                💡 Tip: Click on any van to view details
+                ðŸ’¡ Tip: Click on any van to view details
               </p>
               <button 
                 onClick={onClose}

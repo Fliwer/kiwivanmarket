@@ -12,7 +12,8 @@ import { useAuth } from '../AuthContext';
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { currentUser, authLoading } = useAuth();
+  // ✅ CORRIGÉ : AuthContext exporte "loading", pas "authLoading"
+  const { currentUser, loading: authLoading } = useAuth();
 
   // 📡 Charger les favoris depuis Firebase au montage
   useEffect(() => {
