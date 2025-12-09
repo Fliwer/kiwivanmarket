@@ -3,7 +3,7 @@
 // ============================================
 // 
 // Backend SÉCURISÉ pour le système de paiement Stripe
-// Version avec:
+// Version compatible Firebase Functions v7
 // ✅ Expiration automatique 48h
 // ✅ Stripe Connect pour payout vendeurs
 // ✅ Double confirmation + release automatique
@@ -11,8 +11,12 @@
 // ============================================
 
 require('dotenv').config();
-const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+
+// Firebase Functions v2 imports
+const { onRequest, onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onDocumentUpdated } = require('firebase-functions/v2/firestore');
 
 // Initialiser Firebase Admin
 admin.initializeApp();
@@ -33,17 +37,18 @@ const ALLOWED_ORIGINS = [
   // Ajoute ton domaine Vercel/Netlify ici
 ];
 
-const cors = require('cors')({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (ALLOWED_ORIGINS.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn('❌ CORS bloqué pour:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-});
+function isOriginAllowed(origin) {
+  if (!origin) return true;
+  return ALLOWED_ORIGINS.includes(origin);
+}
+
+function setCorsHeaders(res, origin) {
+  const allowedOrigin = isOriginAllowed(origin) ? origin : ALLOWED_ORIGINS[0];
+  res.set('Access-Control-Allow-Origin', allowedOrigin);
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Max-Age', '3600');
+}
 
 // ============================================
 // 💰 CONFIG PAIEMENT
@@ -99,131 +104,142 @@ async function verifyAuthToken(req) {
 // 💳 CREATE CHECKOUT SESSION
 // ============================================
 
-exports.createCheckoutSession = functions.https.onRequest((req, res) => {
-  cors(req, res, async () => {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method not allowed' });
-    }
+exports.createCheckoutSession = onRequest(async (req, res) => {
+  // Handle preflight
+  if (req.method === 'OPTIONS') {
+    setCorsHeaders(res, req.headers.origin);
+    return res.status(204).send('');
+  }
 
+  setCorsHeaders(res, req.headers.origin);
+
+  if (!isOriginAllowed(req.headers.origin)) {
+    console.warn('❌ CORS bloqué pour:', req.headers.origin);
+    return res.status(403).json({ error: 'Origin not allowed' });
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    // Vérifier l'authentification
+    let user;
     try {
-      // Vérifier l'authentification
-      let user;
-      try {
-        user = await verifyAuthToken(req);
-      } catch (authError) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
-
-      const { reservationId, vanId, successUrl, cancelUrl } = req.body;
-
-      if (!reservationId || !vanId || !successUrl || !cancelUrl) {
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
-
-      // Récupérer le van depuis Firestore
-      const vanDoc = await db.collection('vans').doc(vanId).get();
-      
-      if (!vanDoc.exists) {
-        return res.status(404).json({ error: 'Van not found' });
-      }
-      
-      const vanData = vanDoc.data();
-      const vanPrice = vanData.price;
-      const vanTitle = vanData.title || 'Campervan';
-      const sellerId = vanData.seller?.uid;
-
-      if (!vanPrice || vanPrice <= 0) {
-        return res.status(400).json({ error: 'Invalid van price' });
-      }
-
-      if (sellerId === user.uid) {
-        return res.status(403).json({ error: 'You cannot reserve your own van' });
-      }
-
-      // Vérifier la réservation
-      const reservationDoc = await db.collection('reservations').doc(reservationId).get();
-      
-      if (!reservationDoc.exists) {
-        return res.status(404).json({ error: 'Reservation not found' });
-      }
-
-      const reservationData = reservationDoc.data();
-
-      if (reservationData.buyerId !== user.uid) {
-        return res.status(403).json({ error: 'Not authorized' });
-      }
-
-      if (reservationData.status !== 'pending') {
-        return res.status(400).json({ error: 'Reservation is not pending' });
-      }
-
-      // Calculer le montant
-      const depositAmount = calculateDepositFromPrice(vanPrice);
-      const platformFee = calculatePlatformFee(depositAmount);
-      const amountInCents = depositAmount * 100;
-
-      console.log(`✅ Checkout: van=${vanId}, prix=${vanPrice}, dépôt=${depositAmount}`);
-
-      // Créer la session Stripe
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        mode: 'payment',
-        customer_email: user.email,
-        line_items: [
-          {
-            price_data: {
-              currency: PAYMENT_CONFIG.CURRENCY,
-              product_data: {
-                name: `Reservation Deposit - ${vanTitle}`,
-                description: `Deposit for van reservation`,
-              },
-              unit_amount: amountInCents,
-            },
-            quantity: 1,
-          },
-        ],
-        metadata: {
-          reservationId,
-          vanId,
-          buyerId: user.uid,
-          sellerId: sellerId,
-          depositAmount: String(depositAmount),
-          platformFee: String(platformFee),
-          type: 'van_reservation_deposit',
-        },
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-        expires_at: Math.floor(Date.now() / 1000) + (30 * 60),
-      });
-
-      // Mettre à jour la réservation
-      await db.collection('reservations').doc(reservationId).update({
-        stripeSessionId: session.id,
-        stripeSessionUrl: session.url,
-        depositAmount: depositAmount,
-        platformFee: platformFee,
-        remainingBalance: vanPrice - depositAmount,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      res.status(200).json({
-        sessionId: session.id,
-        url: session.url,
-        depositAmount: depositAmount,
-      });
-
-    } catch (error) {
-      console.error('❌ Error creating checkout:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      user = await verifyAuthToken(req);
+    } catch (authError) {
+      return res.status(401).json({ error: 'Authentication required' });
     }
-  });
+
+    const { reservationId, vanId, successUrl, cancelUrl } = req.body;
+
+    if (!reservationId || !vanId || !successUrl || !cancelUrl) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Récupérer le van depuis Firestore
+    const vanDoc = await db.collection('vans').doc(vanId).get();
+    
+    if (!vanDoc.exists) {
+      return res.status(404).json({ error: 'Van not found' });
+    }
+    
+    const vanData = vanDoc.data();
+    const vanPrice = vanData.price;
+    const vanTitle = vanData.title || 'Campervan';
+    const sellerId = vanData.seller?.uid;
+
+    if (!vanPrice || vanPrice <= 0) {
+      return res.status(400).json({ error: 'Invalid van price' });
+    }
+
+    if (sellerId === user.uid) {
+      return res.status(403).json({ error: 'You cannot reserve your own van' });
+    }
+
+    // Vérifier la réservation
+    const reservationDoc = await db.collection('reservations').doc(reservationId).get();
+    
+    if (!reservationDoc.exists) {
+      return res.status(404).json({ error: 'Reservation not found' });
+    }
+
+    const reservationData = reservationDoc.data();
+
+    if (reservationData.buyerId !== user.uid) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    if (reservationData.status !== 'pending') {
+      return res.status(400).json({ error: 'Reservation is not pending' });
+    }
+
+    // Calculer le montant
+    const depositAmount = calculateDepositFromPrice(vanPrice);
+    const platformFee = calculatePlatformFee(depositAmount);
+    const amountInCents = depositAmount * 100;
+
+    console.log(`✅ Checkout: van=${vanId}, prix=${vanPrice}, dépôt=${depositAmount}`);
+
+    // Créer la session Stripe
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      customer_email: user.email,
+      line_items: [
+        {
+          price_data: {
+            currency: PAYMENT_CONFIG.CURRENCY,
+            product_data: {
+              name: `Reservation Deposit - ${vanTitle}`,
+              description: `Deposit for van reservation`,
+            },
+            unit_amount: amountInCents,
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        reservationId,
+        vanId,
+        buyerId: user.uid,
+        sellerId: sellerId,
+        depositAmount: String(depositAmount),
+        platformFee: String(platformFee),
+        type: 'van_reservation_deposit',
+      },
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      expires_at: Math.floor(Date.now() / 1000) + (30 * 60),
+    });
+
+    // Mettre à jour la réservation
+    await db.collection('reservations').doc(reservationId).update({
+      stripeSessionId: session.id,
+      stripeSessionUrl: session.url,
+      depositAmount: depositAmount,
+      platformFee: platformFee,
+      remainingBalance: vanPrice - depositAmount,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    res.status(200).json({
+      sessionId: session.id,
+      url: session.url,
+      depositAmount: depositAmount,
+    });
+
+  } catch (error) {
+    console.error('❌ Error creating checkout:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // ============================================
 // 🔔 STRIPE WEBHOOK
 // ============================================
 
-exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
+exports.stripeWebhook = onRequest(async (req, res) => {
   const sig = req.headers['stripe-signature'];
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -342,94 +358,91 @@ exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
 // ============================================
 // ⏰ EXPIRATION 48H - Scheduled Function
 // ============================================
-// Tourne toutes les heures pour vérifier les réservations expirées
 
-exports.checkExpiredReservations = functions.pubsub
-  .schedule('every 1 hours')
-  .timeZone('Pacific/Auckland')
-  .onRun(async (context) => {
-    console.log('⏰ Checking for expired reservations...');
+exports.checkExpiredReservations = onSchedule({
+  schedule: 'every 60 minutes',
+  timeZone: 'Pacific/Auckland',
+}, async (event) => {
+  console.log('⏰ Checking for expired reservations...');
+  
+  const now = admin.firestore.Timestamp.now();
+  
+  // Trouver les réservations payées dont la deadline est passée
+  const expiredQuery = await db.collection('reservations')
+    .where('status', '==', 'paid')
+    .where('sellerResponseDeadline', '<=', now)
+    .get();
+  
+  console.log(`Found ${expiredQuery.size} expired reservations`);
+  
+  for (const doc of expiredQuery.docs) {
+    const reservation = doc.data();
+    const reservationId = doc.id;
     
-    const now = admin.firestore.Timestamp.now();
+    console.log(`🔄 Processing expired reservation: ${reservationId}`);
     
-    // Trouver les réservations payées dont la deadline est passée
-    const expiredQuery = await db.collection('reservations')
-      .where('status', '==', 'paid')
-      .where('sellerResponseDeadline', '<=', now)
-      .get();
-    
-    console.log(`Found ${expiredQuery.size} expired reservations`);
-    
-    for (const doc of expiredQuery.docs) {
-      const reservation = doc.data();
-      const reservationId = doc.id;
-      
-      console.log(`🔄 Processing expired reservation: ${reservationId}`);
-      
-      try {
-        // Effectuer le remboursement
-        if (reservation.stripePaymentIntentId) {
-          await stripe.refunds.create({
-            payment_intent: reservation.stripePaymentIntentId,
-          });
-          console.log(`💰 Refund processed for ${reservationId}`);
-        }
-        
-        // Mettre à jour la réservation
-        await db.collection('reservations').doc(reservationId).update({
-          status: 'refunded',
-          refundReason: 'seller_no_response_48h',
-          refundedAt: admin.firestore.FieldValue.serverTimestamp(),
-          refunded: true,
-          refundAmount: reservation.depositAmount,
+    try {
+      // Effectuer le remboursement
+      if (reservation.stripePaymentIntentId) {
+        await stripe.refunds.create({
+          payment_intent: reservation.stripePaymentIntentId,
         });
-        
-        // Notifier l'acheteur
-        await db.collection('notifications').add({
-          userId: reservation.buyerId,
-          type: 'reservation_refunded',
-          title: 'Deposit Refunded 💰',
-          message: `The seller didn't respond within 48 hours. Your $${reservation.depositAmount} deposit has been refunded.`,
-          reservationId: reservationId,
-          vanId: reservation.vanId,
-          read: false,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        
-        // Notifier le vendeur
-        await db.collection('notifications').add({
-          userId: reservation.sellerId,
-          type: 'reservation_expired',
-          title: 'Reservation Expired ⏰',
-          message: `You didn't respond to the reservation for "${reservation.vanTitle}" within 48 hours. The buyer has been refunded.`,
-          reservationId: reservationId,
-          vanId: reservation.vanId,
-          read: false,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-        
-        console.log(`✅ Reservation ${reservationId} refunded due to 48h expiration`);
-        
-      } catch (error) {
-        console.error(`❌ Error processing ${reservationId}:`, error);
+        console.log(`💰 Refund processed for ${reservationId}`);
       }
+      
+      // Mettre à jour la réservation
+      await db.collection('reservations').doc(reservationId).update({
+        status: 'refunded',
+        refundReason: 'seller_no_response_48h',
+        refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+        refunded: true,
+        refundAmount: reservation.depositAmount,
+      });
+      
+      // Notifier l'acheteur
+      await db.collection('notifications').add({
+        userId: reservation.buyerId,
+        type: 'reservation_refunded',
+        title: 'Deposit Refunded 💰',
+        message: `The seller didn't respond within 48 hours. Your $${reservation.depositAmount} deposit has been refunded.`,
+        reservationId: reservationId,
+        vanId: reservation.vanId,
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      
+      // Notifier le vendeur
+      await db.collection('notifications').add({
+        userId: reservation.sellerId,
+        type: 'reservation_expired',
+        title: 'Reservation Expired ⏰',
+        message: `You didn't respond to the reservation for "${reservation.vanTitle}" within 48 hours. The buyer has been refunded.`,
+        reservationId: reservationId,
+        vanId: reservation.vanId,
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      
+      console.log(`✅ Reservation ${reservationId} refunded due to 48h expiration`);
+      
+    } catch (error) {
+      console.error(`❌ Error processing ${reservationId}:`, error);
     }
-    
-    return null;
-  });
+  }
+});
 
 // ============================================
 // 🏦 STRIPE CONNECT - Onboarding vendeur
 // ============================================
-// Crée un compte Stripe Connect pour un vendeur
 
-exports.createStripeConnectAccount = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+exports.createStripeConnectAccount = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be logged in');
   }
 
-  const userId = context.auth.uid;
-  const userEmail = context.auth.token.email;
+  const userId = request.auth.uid;
+  const userEmail = request.auth.token.email;
+  const { baseUrl } = request.data;
 
   try {
     // Vérifier si le vendeur a déjà un compte
@@ -439,8 +452,8 @@ exports.createStripeConnectAccount = functions.https.onCall(async (data, context
       // Retourner le lien de connexion existant
       const accountLink = await stripe.accountLinks.create({
         account: existingAccount.data().stripeAccountId,
-        refresh_url: `${data.baseUrl}/seller/stripe/refresh`,
-        return_url: `${data.baseUrl}/seller/stripe/return`,
+        refresh_url: `${baseUrl}/seller/stripe/refresh`,
+        return_url: `${baseUrl}/seller/stripe/return`,
         type: 'account_onboarding',
       });
       
@@ -476,8 +489,8 @@ exports.createStripeConnectAccount = functions.https.onCall(async (data, context
     // Créer le lien d'onboarding
     const accountLink = await stripe.accountLinks.create({
       account: account.id,
-      refresh_url: `${data.baseUrl}/seller/stripe/refresh`,
-      return_url: `${data.baseUrl}/seller/stripe/return`,
+      refresh_url: `${baseUrl}/seller/stripe/refresh`,
+      return_url: `${baseUrl}/seller/stripe/return`,
       type: 'account_onboarding',
     });
 
@@ -487,27 +500,26 @@ exports.createStripeConnectAccount = functions.https.onCall(async (data, context
 
   } catch (error) {
     console.error('❌ Error creating Stripe account:', error);
-    throw new functions.https.HttpsError('internal', error.message);
+    throw new HttpsError('internal', error.message);
   }
 });
 
 // ============================================
 // 🔗 GET STRIPE DASHBOARD LINK
 // ============================================
-// Permet au vendeur d'accéder à son dashboard Stripe
 
-exports.getStripeDashboardLink = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+exports.getStripeDashboardLink = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be logged in');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const accountDoc = await db.collection('stripeAccounts').doc(userId).get();
     
     if (!accountDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'No Stripe account found');
+      throw new HttpsError('not-found', 'No Stripe account found');
     }
 
     const stripeAccountId = accountDoc.data().stripeAccountId;
@@ -518,149 +530,149 @@ exports.getStripeDashboardLink = functions.https.onCall(async (data, context) =>
 
   } catch (error) {
     console.error('❌ Error getting dashboard link:', error);
-    throw new functions.https.HttpsError('internal', error.message);
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError('internal', error.message);
   }
 });
 
 // ============================================
-// 💸 RELEASE DEPOSIT - Trigger on seller confirm
+// 💸 RELEASE DEPOSIT - Trigger on double confirm
 // ============================================
-// Déclenché automatiquement quand sellerConfirmed passe à true
 
-exports.onReservationCompleted = functions.firestore
-  .document('reservations/{reservationId}')
-  .onUpdate(async (change, context) => {
-    const before = change.before.data();
-    const after = change.after.data();
-    const reservationId = context.params.reservationId;
+exports.onReservationCompleted = onDocumentUpdated('reservations/{reservationId}', async (event) => {
+  const before = event.data.before.data();
+  const after = event.data.after.data();
+  const reservationId = event.params.reservationId;
 
-    // Vérifier si la double confirmation vient d'être complétée
-    const wasNotCompleted = !before.sellerConfirmed || !before.buyerConfirmed;
-    const isNowCompleted = after.sellerConfirmed && after.buyerConfirmed;
+  // Vérifier si la double confirmation vient d'être complétée
+  const wasNotCompleted = !before.sellerConfirmed || !before.buyerConfirmed;
+  const isNowCompleted = after.sellerConfirmed && after.buyerConfirmed;
 
-    if (wasNotCompleted && isNowCompleted && !after.depositReleased) {
-      console.log(`✅ Double confirmation completed for ${reservationId}`);
+  if (wasNotCompleted && isNowCompleted && !after.depositReleased) {
+    console.log(`✅ Double confirmation completed for ${reservationId}`);
 
-      try {
-        // Récupérer le compte Stripe du vendeur
-        const sellerAccountDoc = await db.collection('stripeAccounts')
-          .doc(after.sellerId)
-          .get();
+    try {
+      // Récupérer le compte Stripe du vendeur
+      const sellerAccountDoc = await db.collection('stripeAccounts')
+        .doc(after.sellerId)
+        .get();
 
-        if (!sellerAccountDoc.exists) {
-          console.error(`❌ No Stripe account for seller ${after.sellerId}`);
-          
-          // Notifier l'admin qu'un payout manuel est nécessaire
-          await db.collection('notifications').add({
-            userId: 'admin', // ou ton userId admin
-            type: 'manual_payout_required',
-            title: '⚠️ Manual Payout Required',
-            message: `Seller ${after.sellerName} doesn't have Stripe Connect. Manual payout of $${after.depositAmount} needed.`,
-            reservationId: reservationId,
-            sellerId: after.sellerId,
-            amount: after.depositAmount,
-            read: false,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
-          
-          return;
-        }
-
-        const sellerStripeAccount = sellerAccountDoc.data();
-
-        // Vérifier que le compte peut recevoir des paiements
-        if (!sellerStripeAccount.payoutsEnabled) {
-          console.error(`❌ Seller ${after.sellerId} payouts not enabled`);
-          return;
-        }
-
-        // Calculer le montant à transférer (dépôt - commission)
-        const platformFee = after.platformFee || calculatePlatformFee(after.depositAmount);
-        const transferAmount = (after.depositAmount - platformFee) * 100; // En centimes
-
-        // Créer le transfert vers le compte du vendeur
-        const transfer = await stripe.transfers.create({
-          amount: transferAmount,
-          currency: PAYMENT_CONFIG.CURRENCY,
-          destination: sellerStripeAccount.stripeAccountId,
-          transfer_group: reservationId,
-          metadata: {
-            reservationId: reservationId,
-            vanId: after.vanId,
-            sellerId: after.sellerId,
-            buyerId: after.buyerId,
-          },
-        });
-
-        console.log(`💸 Transfer created: ${transfer.id} - $${transferAmount/100} to ${sellerStripeAccount.stripeAccountId}`);
-
-        // Mettre à jour la réservation
-        await change.after.ref.update({
-          depositReleased: true,
-          depositReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
-          stripeTransferId: transfer.id,
-          sellerPayout: after.depositAmount - platformFee,
-          platformFeeCollected: platformFee,
-        });
-
-        // Enregistrer le payout
-        await db.collection('payouts').add({
+      if (!sellerAccountDoc.exists) {
+        console.error(`❌ No Stripe account for seller ${after.sellerId}`);
+        
+        // Notifier l'admin qu'un payout manuel est nécessaire
+        await db.collection('notifications').add({
+          userId: 'admin',
+          type: 'manual_payout_required',
+          title: '⚠️ Manual Payout Required',
+          message: `Seller ${after.sellerName} doesn't have Stripe Connect. Manual payout of $${after.depositAmount} needed.`,
           reservationId: reservationId,
           sellerId: after.sellerId,
-          stripeAccountId: sellerStripeAccount.stripeAccountId,
-          stripeTransferId: transfer.id,
-          grossAmount: after.depositAmount,
-          platformFee: platformFee,
-          netAmount: after.depositAmount - platformFee,
-          currency: PAYMENT_CONFIG.CURRENCY,
-          status: 'completed',
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        // Notifier le vendeur
-        await db.collection('notifications').add({
-          userId: after.sellerId,
-          type: 'payout_sent',
-          title: 'Payment Received! 💰',
-          message: `$${after.depositAmount - platformFee} NZD has been sent to your Stripe account for "${after.vanTitle}".`,
-          reservationId: reservationId,
-          amount: after.depositAmount - platformFee,
+          amount: after.depositAmount,
           read: false,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
-
-        // Notifier l'acheteur
-        await db.collection('notifications').add({
-          userId: after.buyerId,
-          type: 'transaction_complete',
-          title: 'Transaction Complete! ✅',
-          message: `Your transaction for "${after.vanTitle}" is complete. The deposit has been released to the seller.`,
-          reservationId: reservationId,
-          read: false,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        console.log(`✅ Payout completed for reservation ${reservationId}`);
-
-      } catch (error) {
-        console.error(`❌ Error releasing deposit for ${reservationId}:`, error);
+        
+        return null;
       }
+
+      const sellerStripeAccount = sellerAccountDoc.data();
+
+      // Vérifier que le compte peut recevoir des paiements
+      if (!sellerStripeAccount.payoutsEnabled) {
+        console.error(`❌ Seller ${after.sellerId} payouts not enabled`);
+        return null;
+      }
+
+      // Calculer le montant à transférer (dépôt - commission)
+      const platformFee = after.platformFee || calculatePlatformFee(after.depositAmount);
+      const transferAmount = (after.depositAmount - platformFee) * 100; // En centimes
+
+      // Créer le transfert vers le compte du vendeur
+      const transfer = await stripe.transfers.create({
+        amount: transferAmount,
+        currency: PAYMENT_CONFIG.CURRENCY,
+        destination: sellerStripeAccount.stripeAccountId,
+        transfer_group: reservationId,
+        metadata: {
+          reservationId: reservationId,
+          vanId: after.vanId,
+          sellerId: after.sellerId,
+          buyerId: after.buyerId,
+        },
+      });
+
+      console.log(`💸 Transfer created: ${transfer.id} - $${transferAmount/100} to ${sellerStripeAccount.stripeAccountId}`);
+
+      // Mettre à jour la réservation
+      await event.data.after.ref.update({
+        depositReleased: true,
+        depositReleasedAt: admin.firestore.FieldValue.serverTimestamp(),
+        stripeTransferId: transfer.id,
+        sellerPayout: after.depositAmount - platformFee,
+        platformFeeCollected: platformFee,
+      });
+
+      // Enregistrer le payout
+      await db.collection('payouts').add({
+        reservationId: reservationId,
+        sellerId: after.sellerId,
+        stripeAccountId: sellerStripeAccount.stripeAccountId,
+        stripeTransferId: transfer.id,
+        grossAmount: after.depositAmount,
+        platformFee: platformFee,
+        netAmount: after.depositAmount - platformFee,
+        currency: PAYMENT_CONFIG.CURRENCY,
+        status: 'completed',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Notifier le vendeur
+      await db.collection('notifications').add({
+        userId: after.sellerId,
+        type: 'payout_sent',
+        title: 'Payment Received! 💰',
+        message: `$${after.depositAmount - platformFee} NZD has been sent to your Stripe account for "${after.vanTitle}".`,
+        reservationId: reservationId,
+        amount: after.depositAmount - platformFee,
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Notifier l'acheteur
+      await db.collection('notifications').add({
+        userId: after.buyerId,
+        type: 'transaction_complete',
+        title: 'Transaction Complete! ✅',
+        message: `Your transaction for "${after.vanTitle}" is complete. The deposit has been released to the seller.`,
+        reservationId: reservationId,
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log(`✅ Payout completed for reservation ${reservationId}`);
+
+    } catch (error) {
+      console.error(`❌ Error releasing deposit for ${reservationId}:`, error);
     }
-  });
+  }
+
+  return null;
+});
 
 // ============================================
 // ✅ CONFIRM RESERVATION - Vendeur confirme
 // ============================================
 
-exports.confirmReservation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+exports.confirmReservation = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be logged in');
   }
 
-  const { reservationId } = data;
+  const { reservationId } = request.data;
 
   if (!reservationId) {
-    throw new functions.https.HttpsError('invalid-argument', 'Reservation ID required');
+    throw new HttpsError('invalid-argument', 'Reservation ID required');
   }
 
   try {
@@ -668,23 +680,23 @@ exports.confirmReservation = functions.https.onCall(async (data, context) => {
     const reservationDoc = await reservationRef.get();
 
     if (!reservationDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Reservation not found');
+      throw new HttpsError('not-found', 'Reservation not found');
     }
 
     const reservation = reservationDoc.data();
 
-    if (reservation.sellerId !== context.auth.uid) {
-      throw new functions.https.HttpsError('permission-denied', 'Only seller can confirm');
+    if (reservation.sellerId !== request.auth.uid) {
+      throw new HttpsError('permission-denied', 'Only seller can confirm');
     }
 
     if (reservation.status !== 'paid') {
-      throw new functions.https.HttpsError('failed-precondition', 'Must be paid first');
+      throw new HttpsError('failed-precondition', 'Must be paid first');
     }
 
     await reservationRef.update({
       status: 'confirmed',
       confirmedAt: admin.firestore.FieldValue.serverTimestamp(),
-      confirmedBy: context.auth.uid,
+      confirmedBy: request.auth.uid,
     });
 
     await db.collection('notifications').add({
@@ -702,8 +714,8 @@ exports.confirmReservation = functions.https.onCall(async (data, context) => {
 
   } catch (error) {
     console.error('❌ Error confirming:', error);
-    if (error instanceof functions.https.HttpsError) throw error;
-    throw new functions.https.HttpsError('internal', error.message);
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError('internal', error.message);
   }
 });
 
@@ -711,15 +723,15 @@ exports.confirmReservation = functions.https.onCall(async (data, context) => {
 // ❌ CANCEL RESERVATION
 // ============================================
 
-exports.cancelReservation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+exports.cancelReservation = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be logged in');
   }
 
-  const { reservationId, reason } = data;
+  const { reservationId, reason } = request.data;
 
   if (!reservationId) {
-    throw new functions.https.HttpsError('invalid-argument', 'Reservation ID required');
+    throw new HttpsError('invalid-argument', 'Reservation ID required');
   }
 
   try {
@@ -727,16 +739,16 @@ exports.cancelReservation = functions.https.onCall(async (data, context) => {
     const reservationDoc = await reservationRef.get();
 
     if (!reservationDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Reservation not found');
+      throw new HttpsError('not-found', 'Reservation not found');
     }
 
     const reservation = reservationDoc.data();
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
     const isBuyer = reservation.buyerId === userId;
     const isSeller = reservation.sellerId === userId;
 
     if (!isBuyer && !isSeller) {
-      throw new functions.https.HttpsError('permission-denied', 'Not authorized');
+      throw new HttpsError('permission-denied', 'Not authorized');
     }
 
     // Logique de remboursement
@@ -798,8 +810,8 @@ exports.cancelReservation = functions.https.onCall(async (data, context) => {
 
   } catch (error) {
     console.error('❌ Error cancelling:', error);
-    if (error instanceof functions.https.HttpsError) throw error;
-    throw new functions.https.HttpsError('internal', error.message);
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError('internal', error.message);
   }
 });
 
@@ -807,29 +819,29 @@ exports.cancelReservation = functions.https.onCall(async (data, context) => {
 // 📊 GET RESERVATION
 // ============================================
 
-exports.getReservation = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+exports.getReservation = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be logged in');
   }
 
-  const { reservationId } = data;
+  const { reservationId } = request.data;
 
   if (!reservationId) {
-    throw new functions.https.HttpsError('invalid-argument', 'Reservation ID required');
+    throw new HttpsError('invalid-argument', 'Reservation ID required');
   }
 
   try {
     const reservationDoc = await db.collection('reservations').doc(reservationId).get();
 
     if (!reservationDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Reservation not found');
+      throw new HttpsError('not-found', 'Reservation not found');
     }
 
     const reservation = reservationDoc.data();
-    const userId = context.auth.uid;
+    const userId = request.auth.uid;
 
     if (reservation.buyerId !== userId && reservation.sellerId !== userId) {
-      throw new functions.https.HttpsError('permission-denied', 'Not authorized');
+      throw new HttpsError('permission-denied', 'Not authorized');
     }
 
     return {
@@ -841,8 +853,8 @@ exports.getReservation = functions.https.onCall(async (data, context) => {
 
   } catch (error) {
     console.error('❌ Error getting reservation:', error);
-    if (error instanceof functions.https.HttpsError) throw error;
-    throw new functions.https.HttpsError('internal', error.message);
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError('internal', error.message);
   }
 });
 
@@ -850,12 +862,12 @@ exports.getReservation = functions.https.onCall(async (data, context) => {
 // 🏦 CHECK SELLER STRIPE STATUS
 // ============================================
 
-exports.checkSellerStripeStatus = functions.https.onCall(async (data, context) => {
-  if (!context.auth) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in');
+exports.checkSellerStripeStatus = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Must be logged in');
   }
 
-  const userId = context.auth.uid;
+  const userId = request.auth.uid;
 
   try {
     const accountDoc = await db.collection('stripeAccounts').doc(userId).get();
@@ -871,7 +883,7 @@ exports.checkSellerStripeStatus = functions.https.onCall(async (data, context) =
 
     const accountData = accountDoc.data();
 
-    // Optionnel: refresh depuis Stripe API
+    // Refresh depuis Stripe API
     if (accountData.stripeAccountId) {
       try {
         const stripeAccount = await stripe.accounts.retrieve(accountData.stripeAccountId);
@@ -907,6 +919,7 @@ exports.checkSellerStripeStatus = functions.https.onCall(async (data, context) =
 
   } catch (error) {
     console.error('❌ Error checking status:', error);
-    throw new functions.https.HttpsError('internal', error.message);
+    if (error instanceof HttpsError) throw error;
+    throw new HttpsError('internal', error.message);
   }
 });

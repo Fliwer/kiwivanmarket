@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, doc, updateDoc, query, where, getDocs } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
@@ -218,23 +218,68 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       }
     }
 
-    if (!formData.title || !formData.price || !formData.location) {
-      alert('⚠️ Please fill all required fields!');
-      return;
-    }
-
-    if (!formData.wofExpiry || !formData.regoExpiry) {
-      alert('⚠️ Please enter WOF and REGO expiry dates!');
-      return;
-    }
-
-    if (formData.buyBack && !formData.buyBackPrice) {
-      alert('⚠️ Please enter the buy-back price!');
-      return;
-    }
-
+    // 🛡️ VALIDATION COMPLÈTE avec messages d'erreur détaillés
+    const errors = [];
+    
+    // Photos
     if (images.length === 0) {
-      alert('⚠️ Please add at least 1 photo!');
+      errors.push('📸 At least 1 photo is required');
+    }
+    
+    // Titre (min 3 caractères)
+    if (!formData.title) {
+      errors.push('📝 Title is required');
+    } else if (formData.title.length < 3) {
+      errors.push('📝 Title must be at least 3 characters');
+    }
+    
+    // Prix
+    if (!formData.price) {
+      errors.push('💰 Price is required');
+    } else if (parseInt(formData.price) < 1 || parseInt(formData.price) > 500000) {
+      errors.push('💰 Price must be between $1 and $500,000');
+    }
+    
+    // Ville
+    if (!formData.location) {
+      errors.push('📍 City is required');
+    }
+    
+    // Année
+    if (!formData.year) {
+      errors.push('📅 Year is required');
+    } else if (parseInt(formData.year) < 1950 || parseInt(formData.year) > 2026) {
+      errors.push('📅 Year must be between 1950 and 2026');
+    }
+    
+    // Kilométrage
+    if (!formData.mileage && formData.mileage !== 0) {
+      errors.push('🛣️ Mileage is required');
+    }
+    
+    // WOF & REGO
+    if (!formData.wofExpiry) {
+      errors.push('🔧 WOF expiry date is required');
+    }
+    if (!formData.regoExpiry) {
+      errors.push('📋 REGO expiry date is required');
+    }
+    
+    // Description (min 10 caractères)
+    if (!formData.description) {
+      errors.push('✏️ Description is required');
+    } else if (formData.description.length < 10) {
+      errors.push('✏️ Description must be at least 10 characters (currently ' + formData.description.length + ')');
+    }
+    
+    // Buy-back
+    if (formData.buyBack && !formData.buyBackPrice) {
+      errors.push('🛡️ Buy-back price is required when buy-back is enabled');
+    }
+    
+    // Afficher les erreurs
+    if (errors.length > 0) {
+      alert('⚠️ Please fix the following errors:\n\n' + errors.join('\n'));
       return;
     }
 
@@ -313,8 +358,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             phone: 'Not provided'
           },
           views: 0,
-          postedDays: 0,
-          createdAt: new Date(),
+          status: 'active',
+          createdAt: serverTimestamp(),
           updatedAt: new Date()
         };
 
@@ -465,15 +510,24 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             {/* BASIC INFO */}
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Title * <span className="font-normal text-gray-400">(min 3 chars)</span>
+                </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
                   placeholder="Toyota Hiace 2015"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                  className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors ${
+                    formData.title && formData.title.length < 3 
+                      ? 'border-red-300 focus:border-red-500' 
+                      : 'border-gray-200 focus:border-emerald-500'
+                  }`}
                   required
                 />
+                {formData.title && formData.title.length < 3 && (
+                  <p className="text-xs text-red-500 mt-1">⚠️ {formData.title.length}/3 characters minimum</p>
+                )}
               </div>
 
               <div>
@@ -617,15 +671,28 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
             {/* DESCRIPTION */}
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Description *</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Description * <span className="font-normal text-gray-400">(min 10 chars)</span>
+              </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Perfect backpacker van..."
+                placeholder="Perfect backpacker van, well maintained, ready for adventure..."
                 rows={4}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors resize-none ${
+                  formData.description && formData.description.length < 10 
+                    ? 'border-red-300 focus:border-red-500' 
+                    : 'border-gray-200 focus:border-emerald-500'
+                }`}
                 required
               />
+              <div className="flex justify-between mt-1">
+                {formData.description && formData.description.length < 10 ? (
+                  <p className="text-xs text-red-500">⚠️ {formData.description.length}/10 characters minimum</p>
+                ) : (
+                  <p className="text-xs text-gray-400">{formData.description.length || 0} characters</p>
+                )}
+              </div>
             </div>
 
             {/* EQUIPMENT - Simplifié */}

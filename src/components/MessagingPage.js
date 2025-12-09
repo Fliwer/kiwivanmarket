@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
-  ArrowLeft, Send, Search, MapPin,
-  MessageCircle, Check, CheckCheck, Archive,
+  ArrowLeft, Send, Search, MoreVertical, Phone, Mail, MapPin,
+  MessageCircle, Check, CheckCheck, Clock, Star, Archive,
   ChevronLeft, ChevronRight, DollarSign, Calendar, Gauge, Users,
-  MessageSquare, Eye, X, Shield, CheckCircle,
+  Circle, CheckCircle2, MessageSquare, Eye, Settings, Bell, BellOff, X,
   Heart, ChevronDown
 } from 'lucide-react';
 import { 
-  collection, query, where, onSnapshot, addDoc, 
+  collection, query, where, orderBy, onSnapshot, addDoc, 
   updateDoc, doc, serverTimestamp, getDocs
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -17,7 +17,7 @@ import { useAuth } from '../AuthContext';
 // MESSAGING PAGE - Full Page 3 Columns
 // ============================================
 
-// 🌐 Language Selector Component
+// 🌐 Language Selector Component - CORRIGÉ
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
@@ -35,42 +35,52 @@ function LanguageSelector() {
     { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' }
   ];
 
+  // ✨ CORRECTION: Force Google Translate à rafraîchir complètement
   const applyLanguage = useCallback((langCode) => {
+    // 1. Nettoyer TOUS les cookies Google Translate
     const domains = ['', '.' + window.location.hostname, '.kiwivanmarket.com'];
     domains.forEach(domain => {
       document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${domain ? ' domain=' + domain + ';' : ''}`;
     });
     
+    // 2. Supprimer aussi du localStorage
     try {
       localStorage.removeItem('googtrans');
       sessionStorage.clear();
     } catch (e) {}
 
+    // 3. Supprimer les éléments Google Translate du DOM
     const gtFrame = document.querySelector('.goog-te-banner-frame');
     if (gtFrame) gtFrame.remove();
     const gtElement = document.getElementById('google_translate_element');
     if (gtElement) gtElement.innerHTML = '';
     
+    // 4. Réinitialiser le body
     document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
     const html = document.documentElement;
     html.className = html.className.replace(/translated-[a-z]+/g, '');
     
+    // 5. Supprimer le script Google Translate pour forcer une réinitialisation
     const oldScript = document.getElementById('google-translate-script');
     if (oldScript) oldScript.remove();
     
+    // 6. Supprimer les iframes Google
     document.querySelectorAll('iframe.goog-te-menu-frame, iframe.goog-te-banner-frame').forEach(el => el.remove());
     
     if (langCode === 'en') {
+      // Retour à l'anglais - reload COMPLET sans cache
       setTimeout(() => {
         window.location.replace(window.location.pathname + '?lang=en&t=' + Date.now());
       }, 100);
       return;
     }
 
+    // Définir le nouveau cookie de langue
     const langCookie = `/en/${langCode}`;
     document.cookie = `googtrans=${langCookie}; path=/;`;
     document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
     
+    // Force reload avec cache bypass
     setTimeout(() => {
       window.location.replace(window.location.pathname + '?lang=' + langCode + '&t=' + Date.now());
     }, 100);
@@ -87,6 +97,7 @@ function LanguageSelector() {
     const savedLang = localStorage.getItem('preferredLang') || 'en';
     setCurrentLang(savedLang);
 
+    // On injecte le script Google si ce n'est pas déjà fait
     if (!document.getElementById('google-translate-script')) {
       const translateDiv = document.createElement('div');
       translateDiv.id = 'google_translate_element';
@@ -113,7 +124,8 @@ function LanguageSelector() {
     }
   }, []);
 
-  const currentLangData = languages.find((l) => l.code === currentLang) || languages[0];
+  const currentLangData =
+    languages.find((l) => l.code === currentLang) || languages[0];
 
   return (
     <div className="relative">
@@ -136,7 +148,11 @@ function LanguageSelector() {
 
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-[100]" onClick={() => setIsOpen(false)} />
+          <div
+            className="fixed inset-0 z-[100]"
+            onClick={() => setIsOpen(false)}
+          />
+
           <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[180px] z-[101]">
             {languages.map((lang) => (
               <button
@@ -148,7 +164,11 @@ function LanguageSelector() {
                     : 'hover:bg-gray-50 text-gray-700'
                 }`}
               >
-                <img src={lang.flag} alt={lang.name} className="w-6 h-4 object-cover rounded-sm shadow-sm" />
+                <img
+                  src={lang.flag}
+                  alt={lang.name}
+                  className="w-6 h-4 object-cover rounded-sm shadow-sm"
+                />
                 <span className="font-medium">{lang.name}</span>
               </button>
             ))}
@@ -164,16 +184,26 @@ export default function MessagingPage({ onBack }) {
   
   // Handle browser back button
   useEffect(() => {
+    // Push a state when opening
     window.history.pushState({ messaging: true }, '', window.location.href);
-    const handlePopState = () => onBack();
+    
+    const handlePopState = (event) => {
+      // When user clicks browser back, close messaging
+      onBack();
+    };
+    
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [onBack]);
 
-  // Force Google Translate
+  // 🔄 Force Google Translate à re-traduire au chargement de la page
   useEffect(() => {
     const savedLang = localStorage.getItem('preferredLang');
     if (savedLang && savedLang !== 'en') {
+      // Attendre que Google Translate soit prêt
       const intervalId = setInterval(() => {
         const combo = document.querySelector('.goog-te-combo');
         if (combo) {
@@ -182,7 +212,10 @@ export default function MessagingPage({ onBack }) {
           clearInterval(intervalId);
         }
       }, 500);
+      
+      // Timeout après 5 secondes
       setTimeout(() => clearInterval(intervalId), 5000);
+      
       return () => clearInterval(intervalId);
     }
   }, []);
@@ -206,6 +239,7 @@ export default function MessagingPage({ onBack }) {
   const inputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
+  // Quick replies
   const quickReplies = [
     { text: "Hi! Is this still available?", icon: "👋" },
     { text: "What's your best price?", icon: "💰" },
@@ -213,6 +247,7 @@ export default function MessagingPage({ onBack }) {
     { text: "Can you send more photos?", icon: "📸" },
   ];
 
+  // Status options
   const statusOptions = [
     { id: 'new', label: 'New', color: 'bg-blue-500' },
     { id: 'active', label: 'Active', color: 'bg-emerald-500' },
@@ -227,6 +262,9 @@ export default function MessagingPage({ onBack }) {
       return;
     }
 
+    console.log('🔄 Loading conversations for:', currentUser.uid);
+
+    // Simple query without orderBy to avoid index requirement
     const q = query(
       collection(db, 'conversations'),
       where('participants', 'array-contains', currentUser.uid)
@@ -234,6 +272,8 @@ export default function MessagingPage({ onBack }) {
 
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
+        console.log('✅ Found conversations:', snapshot.docs.length);
+        
         const convos = snapshot.docs.map(docSnap => {
           const data = docSnap.data();
           return {
@@ -244,6 +284,7 @@ export default function MessagingPage({ onBack }) {
           };
         });
         
+        // Sort client-side by lastMessageAt (newest first)
         convos.sort((a, b) => {
           const timeA = a.lastMessageAt?.toDate?.() || new Date(0);
           const timeB = b.lastMessageAt?.toDate?.() || new Date(0);
@@ -253,12 +294,14 @@ export default function MessagingPage({ onBack }) {
         setConversations(convos);
         setLoading(false);
 
+        // Auto-select first conversation on desktop
         if (convos.length > 0 && !selectedConversation && window.innerWidth >= 768) {
           setSelectedConversation(convos[0]);
         }
       },
       (error) => {
-        console.error('Firebase error:', error);
+        console.error('❌ Firebase error:', error);
+        console.error('💡 If index error, create index in Firebase Console');
         setLoading(false);
       }
     );
@@ -270,15 +313,21 @@ export default function MessagingPage({ onBack }) {
   useEffect(() => {
     if (!selectedConversation) return;
 
+    console.log('📨 Loading messages for conversation:', selectedConversation.id);
+
+    // Simple query without orderBy to avoid index issues
     const messagesRef = collection(db, 'conversations', selectedConversation.id, 'messages');
 
     const unsubscribe = onSnapshot(messagesRef, 
       (snapshot) => {
+        console.log('✅ Found messages:', snapshot.docs.length);
+        
         const msgs = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
         
+        // Sort client-side by createdAt (oldest first)
         msgs.sort((a, b) => {
           const timeA = a.createdAt?.toDate?.() || new Date(0);
           const timeB = b.createdAt?.toDate?.() || new Date(0);
@@ -287,9 +336,13 @@ export default function MessagingPage({ onBack }) {
         
         setMessages(msgs);
         markAsRead();
+      },
+      (error) => {
+        console.error('❌ Error loading messages:', error);
       }
     );
 
+    // Typing listener
     const typingUnsubscribe = onSnapshot(
       doc(db, 'conversations', selectedConversation.id),
       (doc) => {
@@ -304,10 +357,12 @@ export default function MessagingPage({ onBack }) {
     };
   }, [selectedConversation]);
 
+  // Auto scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Send message
   const sendMessage = async (text = newMessage) => {
     if (!text.trim() || !selectedConversation) return;
 
@@ -341,18 +396,22 @@ export default function MessagingPage({ onBack }) {
     }
   };
 
+  // Mark as read
   const markAsRead = async () => {
     if (!selectedConversation || !currentUser) return;
     try {
+      // Update conversation unread count
       await updateDoc(doc(db, 'conversations', selectedConversation.id), {
         [`unreadCount.${currentUser.uid}`]: 0
       });
       
+      // Mark all unread messages as read
       const messagesRef = collection(db, 'conversations', selectedConversation.id, 'messages');
       const snapshot = await getDocs(messagesRef);
       
       snapshot.docs.forEach(async (docSnap) => {
         const msgData = docSnap.data();
+        // Only mark messages from other user as read
         if (msgData.senderId !== currentUser.uid && !msgData.read) {
           await updateDoc(doc(db, 'conversations', selectedConversation.id, 'messages', docSnap.id), {
             read: true,
@@ -365,6 +424,7 @@ export default function MessagingPage({ onBack }) {
     }
   };
 
+  // Handle typing
   const handleTyping = useCallback(() => {
     if (!selectedConversation) return;
 
@@ -381,6 +441,7 @@ export default function MessagingPage({ onBack }) {
     }, 2000);
   }, [selectedConversation, currentUser]);
 
+  // Update status
   const updateStatus = async (status) => {
     if (!selectedConversation) return;
     try {
@@ -391,6 +452,7 @@ export default function MessagingPage({ onBack }) {
     }
   };
 
+  // Format time
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -404,19 +466,7 @@ export default function MessagingPage({ onBack }) {
     return date.toLocaleDateString();
   };
 
-  // ✅ Format date for WOF/REGO
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'Not specified';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' });
-  };
-
-  // ✅ Check if date is valid (future)
-  const isDateValid = (dateStr) => {
-    if (!dateStr) return false;
-    return new Date(dateStr) > new Date();
-  };
-
+  // Filter conversations
   const filteredConversations = conversations.filter(conv => {
     const matchesSearch = searchQuery === '' || 
       conv.van?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -425,9 +475,11 @@ export default function MessagingPage({ onBack }) {
     return matchesSearch && matchesFilter;
   });
 
+  // Helpers
   const getOtherUserName = (conv) => conv.participantNames?.[conv.otherUserId] || 'Unknown';
   const getInitials = (name) => name ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?';
 
+  // Not logged in
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -456,16 +508,8 @@ export default function MessagingPage({ onBack }) {
               <ArrowLeft size={20} />
             </button>
             <div className="flex items-center gap-3">
-              {/* ✅ Logo en rond avec couleur #f7eedd */}
-              <div 
-                className="w-10 h-10 rounded-full shadow-lg overflow-hidden flex items-center justify-center"
-                style={{ backgroundColor: '#f7eedd' }}
-              >
-                <img 
-                  src="/kiwi-van-logo.png" 
-                  alt="Kiwi Van Market" 
-                  className="w-8 h-8 object-contain"
-                />
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <MessageCircle size={22} />
               </div>
               <div>
                 <h1 className="text-xl font-bold">Messages</h1>
@@ -478,8 +522,10 @@ export default function MessagingPage({ onBack }) {
           
           {/* Navigation Icons */}
           <div className="flex items-center gap-1">
+            {/* Language Selector */}
             <LanguageSelector />
             
+            {/* Favoris */}
             <button 
               onClick={onBack}
               className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
@@ -489,6 +535,7 @@ export default function MessagingPage({ onBack }) {
               <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
             </button>
 
+            {/* Messages (actif) */}
             <button 
               className="relative flex flex-col items-center p-2.5 bg-white/20 rounded-xl transition"
               title="Messages"
@@ -497,6 +544,7 @@ export default function MessagingPage({ onBack }) {
               <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
             </button>
 
+            {/* Profil */}
             <button 
               onClick={onBack}
               className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
@@ -519,6 +567,7 @@ export default function MessagingPage({ onBack }) {
           w-full md:w-80 lg:w-96 border-r border-gray-200 flex flex-col bg-white
           ${mobileView !== 'list' ? 'hidden md:flex' : 'flex'}
         `}>
+          {/* Search & Filter */}
           <div className="p-4 border-b border-gray-200">
             <div className="relative mb-3">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
@@ -531,11 +580,14 @@ export default function MessagingPage({ onBack }) {
               />
             </div>
             
+            {/* Filter Tabs */}
             <div className="flex gap-1 overflow-x-auto pb-1">
               <button
                 onClick={() => setActiveFilter('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                  activeFilter === 'all' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'
+                  activeFilter === 'all' 
+                    ? 'bg-emerald-100 text-emerald-700' 
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 All
@@ -545,7 +597,9 @@ export default function MessagingPage({ onBack }) {
                   key={status.id}
                   onClick={() => setActiveFilter(status.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                    activeFilter === status.id ? 'bg-emerald-100 text-emerald-700' : 'text-gray-600 hover:bg-gray-100'
+                    activeFilter === status.id 
+                      ? 'bg-emerald-100 text-emerald-700' 
+                      : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
                   <span className={`w-2 h-2 rounded-full ${status.color}`}></span>
@@ -555,6 +609,7 @@ export default function MessagingPage({ onBack }) {
             </div>
           </div>
 
+          {/* Conversations List */}
           <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center h-40">
@@ -579,6 +634,7 @@ export default function MessagingPage({ onBack }) {
                   }`}
                 >
                   <div className="flex gap-3">
+                    {/* Van Image */}
                     <div className="relative flex-shrink-0">
                       <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-200">
                         {conv.van?.imageUrl ? (
@@ -594,6 +650,7 @@ export default function MessagingPage({ onBack }) {
                       }`}></div>
                     </div>
                     
+                    {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
@@ -631,6 +688,7 @@ export default function MessagingPage({ onBack }) {
         `}>
           {selectedConversation ? (
             <>
+              {/* Chat Header */}
               <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <button 
@@ -688,6 +746,7 @@ export default function MessagingPage({ onBack }) {
                 </div>
               </div>
 
+              {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
                 {messages.length === 0 && (
                   <div className="mb-4">
@@ -733,8 +792,10 @@ export default function MessagingPage({ onBack }) {
                             {isOwn && (
                               <span className="flex items-center ml-1">
                                 {msg.read ? (
+                                  // Double check bleu = Lu
                                   <CheckCheck size={16} className="text-blue-400" />
                                 ) : (
+                                  // Simple check gris = Envoyé
                                   <Check size={16} className={isOwn ? 'text-white/50' : 'text-gray-400'} />
                                 )}
                               </span>
@@ -761,7 +822,9 @@ export default function MessagingPage({ onBack }) {
                 <div ref={messagesEndRef} />
               </div>
 
+              {/* Input */}
               <div className="p-4 border-t border-gray-200 bg-white">
+                {/* Make an Offer with options */}
                 {selectedConversation.van && (
                   <div className="relative mb-3">
                     <button
@@ -773,6 +836,7 @@ export default function MessagingPage({ onBack }) {
                       <ChevronRight size={16} className={`transition-transform ${showOfferModal ? 'rotate-90' : ''}`} />
                     </button>
                     
+                    {/* Offer Options Modal */}
                     {showOfferModal && (
                       <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-10">
                         <p className="text-sm font-semibold text-gray-700 mb-3">
@@ -782,6 +846,7 @@ export default function MessagingPage({ onBack }) {
                           Listed price: <span className="font-bold text-emerald-600">${selectedConversation.van.price?.toLocaleString()}</span>
                         </p>
                         
+                        {/* Preset Options */}
                         <div className="grid grid-cols-2 gap-2 mb-3">
                           {[5, 10, 15, 20].map((percent) => {
                             const offerPrice = Math.round(selectedConversation.van.price * (1 - percent / 100));
@@ -802,6 +867,7 @@ export default function MessagingPage({ onBack }) {
                           })}
                         </div>
                         
+                        {/* Custom Amount */}
                         <div className="flex gap-2">
                           <div className="relative flex-1">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -829,6 +895,7 @@ export default function MessagingPage({ onBack }) {
                           </button>
                         </div>
                         
+                        {/* Close button */}
                         <button
                           onClick={() => setShowOfferModal(false)}
                           className="absolute top-2 right-2 text-gray-400 hover:text-gray-600"
@@ -877,7 +944,7 @@ export default function MessagingPage({ onBack }) {
           )}
         </div>
 
-        {/* Column 3: Details - ✅ AMÉLIORÉ avec WOF, REGO, Self-Contained, Buy-Back */}
+        {/* Column 3: Details */}
         {selectedConversation && showDetailsPanel && (
           <div className={`
             w-full md:w-80 lg:w-96 border-l border-gray-200 bg-white flex flex-col
@@ -887,143 +954,50 @@ export default function MessagingPage({ onBack }) {
               <button onClick={() => setMobileView('chat')} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
                 <ChevronLeft size={20} />
               </button>
-              <h3 className="font-semibold text-gray-900 ml-2">Listing Details</h3>
+              <h3 className="font-semibold text-gray-900 ml-2">Details</h3>
             </div>
             
             <div className="flex-1 overflow-y-auto">
               {selectedConversation.van && (
-                <>
-                  {/* Image with badges */}
-                  <div className="p-4 border-b border-gray-100">
-                    <div className="aspect-video rounded-xl overflow-hidden mb-4 shadow-lg relative">
-                      <img src={selectedConversation.van.imageUrl} alt="" className="w-full h-full object-cover" />
-                      
-                      {/* ✅ Badges sur l'image */}
-                      <div className="absolute top-2 left-2 flex flex-col gap-1">
-                        {selectedConversation.van.selfContained && (
-                          <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow">
-                            <CheckCircle size={12} />
-                            Self-Contained
-                          </span>
-                        )}
-                        {selectedConversation.van.buyBack && (
-                          <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow">
-                            <Shield size={12} />
-                            Buy-Back
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <h3 className="font-bold text-gray-900 text-lg mb-1">{selectedConversation.van.title}</h3>
-                    <p className="text-2xl font-black text-emerald-600 mb-4">
-                      NZ${selectedConversation.van.price?.toLocaleString()}
-                    </p>
-                    
-                    {/* Year & Mileage */}
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-2">
-                        <Calendar size={16} className="text-gray-400" />
-                        <div>
-                          <p className="text-[10px] text-gray-500 uppercase">Year</p>
-                          <p className="font-semibold text-gray-900 text-sm">{selectedConversation.van.year}</p>
-                        </div>
-                      </div>
-                      <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-2">
-                        <Gauge size={16} className="text-gray-400" />
-                        <div>
-                          <p className="text-[10px] text-gray-500 uppercase">Mileage</p>
-                          <p className="font-semibold text-gray-900 text-sm">{selectedConversation.van.mileage?.toLocaleString()} km</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Location */}
-                    <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-2 mb-4">
-                      <MapPin size={16} className="text-emerald-500" />
-                      <div>
-                        <p className="text-[10px] text-gray-500 uppercase">Location</p>
-                        <p className="font-semibold text-gray-900 text-sm">{selectedConversation.van.location}</p>
-                      </div>
-                    </div>
-
-                    {/* ✅ WOF & REGO Status */}
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className={`rounded-xl p-3 border ${
-                        isDateValid(selectedConversation.van.wofExpiry) 
-                          ? 'bg-emerald-50 border-emerald-200' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}>
-                        <div className={`text-[10px] font-semibold uppercase ${
-                          isDateValid(selectedConversation.van.wofExpiry) ? 'text-emerald-600' : 'text-gray-400'
-                        }`}>WOF Valid</div>
-                        <div className={`text-sm font-bold ${
-                          isDateValid(selectedConversation.van.wofExpiry) ? 'text-emerald-700' : 'text-gray-400'
-                        }`}>
-                          {formatDate(selectedConversation.van.wofExpiry)}
-                        </div>
-                        {isDateValid(selectedConversation.van.wofExpiry) && (
-                          <span className="text-emerald-600 text-[10px] flex items-center gap-1 mt-1">
-                            <CheckCircle size={10} /> Valid
-                          </span>
-                        )}
-                      </div>
-                      <div className={`rounded-xl p-3 border ${
-                        isDateValid(selectedConversation.van.regoExpiry) 
-                          ? 'bg-blue-50 border-blue-200' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}>
-                        <div className={`text-[10px] font-semibold uppercase ${
-                          isDateValid(selectedConversation.van.regoExpiry) ? 'text-blue-600' : 'text-gray-400'
-                        }`}>REGO Until</div>
-                        <div className={`text-sm font-bold ${
-                          isDateValid(selectedConversation.van.regoExpiry) ? 'text-blue-700' : 'text-gray-400'
-                        }`}>
-                          {formatDate(selectedConversation.van.regoExpiry)}
-                        </div>
-                        {isDateValid(selectedConversation.van.regoExpiry) && (
-                          <span className="text-blue-600 text-[10px] flex items-center gap-1 mt-1">
-                            <CheckCircle size={10} /> Valid
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* ✅ Buy-Back Details si applicable */}
-                    {selectedConversation.van.buyBack && (
-                      <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                        <h4 className="text-sm font-bold text-green-700 mb-2 flex items-center gap-2">
-                          <Shield size={16} />
-                          Buy-Back Guarantee
-                        </h4>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          {selectedConversation.van.buyBackPrice && (
-                            <div>
-                              <p className="text-[10px] text-gray-500">Buy-Back Price</p>
-                              <p className="font-bold text-green-600">
-                                NZ${selectedConversation.van.buyBackPrice.toLocaleString()}
-                              </p>
-                            </div>
-                          )}
-                          {selectedConversation.van.buyBackDuration && (
-                            <div>
-                              <p className="text-[10px] text-gray-500">Duration</p>
-                              <p className="font-bold text-green-600">
-                                {selectedConversation.van.buyBackDuration} months
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                <div className="p-4 border-b border-gray-100">
+                  <div className="aspect-video rounded-xl overflow-hidden mb-4 shadow-lg">
+                    <img src={selectedConversation.van.imageUrl} alt="" className="w-full h-full object-cover" />
                   </div>
-                </>
+                  
+                  <h3 className="font-bold text-gray-900 text-lg mb-1">{selectedConversation.van.title}</h3>
+                  <p className="text-2xl font-black text-emerald-600 mb-4">
+                    ${selectedConversation.van.price?.toLocaleString()}
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-2">
+                      <Calendar size={18} className="text-gray-400" />
+                      <div>
+                        <p className="text-xs text-gray-500">Year</p>
+                        <p className="font-semibold text-gray-900">{selectedConversation.van.year}</p>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-2">
+                      <Gauge size={18} className="text-gray-400" />
+                      <div>
+                        <p className="text-xs text-gray-500">Mileage</p>
+                        <p className="font-semibold text-gray-900">{selectedConversation.van.mileage?.toLocaleString()} km</p>
+                      </div>
+                    </div>
+                    <div className="col-span-2 bg-gray-50 rounded-xl p-3 flex items-center gap-2">
+                      <MapPin size={18} className="text-gray-400" />
+                      <div>
+                        <p className="text-xs text-gray-500">Location</p>
+                        <p className="font-semibold text-gray-900">{selectedConversation.van.location}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
 
-              {/* Contact Info */}
               <div className="p-4 border-b border-gray-100">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm">
-                  <Users size={16} /> Seller Info
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <Users size={16} /> Contact
                 </h4>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
@@ -1032,15 +1006,14 @@ export default function MessagingPage({ onBack }) {
                   <div>
                     <p className="font-medium text-gray-900">{getOtherUserName(selectedConversation)}</p>
                     <p className="text-xs text-gray-500">
-                      {selectedConversation.participantEmails?.[selectedConversation.otherUserId] || 'Contact via messages'}
+                      {selectedConversation.participantEmails?.[selectedConversation.otherUserId] || 'No email'}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Conversation Stats */}
               <div className="p-4">
-                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm">
+                <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                   <MessageSquare size={16} /> Conversation
                 </h4>
                 <div className="space-y-2 text-sm">
@@ -1067,13 +1040,12 @@ export default function MessagingPage({ onBack }) {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="p-4 border-t border-gray-200 space-y-2">
               <button className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-medium text-sm hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
-                <Eye size={18} /> View Full Listing
+                <Eye size={18} /> View Listing
               </button>
               <button className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
-                <Archive size={18} /> Archive Conversation
+                <Archive size={18} /> Archive
               </button>
             </div>
           </div>

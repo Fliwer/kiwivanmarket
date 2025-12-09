@@ -11,13 +11,13 @@
 // ============================================
 
 import { loadStripe } from '@stripe/stripe-js';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 // ============================================
 // 🔧 CONFIGURATION
 // ============================================
 
 // Clé publique Stripe (safe to expose)
-// REMPLACE par ta vraie clé publique !
 const STRIPE_PUBLIC_KEY = process.env.REACT_APP_STRIPE_PUBLIC_KEY || 'pk_test_XXXXXXXXXXXXXXXXXXXXXXXX';
 
 // Initialiser Stripe (singleton)
@@ -53,9 +53,7 @@ export const PAYMENT_CONFIG = {
   // 🛡️ ANTI-FRAUDE: Délais de sécurité
   SELLER_RESPONSE_DEADLINE_HOURS: 48,    // Vendeur doit répondre en 48h
   BUYER_CONFIRMATION_DEADLINE_HOURS: 72, // Acheteur confirme rencontre en 72h
-  RELEASE_DELAY_DAYS: 7,                 // Argent libéré 7 jours après confirmation
   RESERVATION_EXPIRY_HOURS: 24,          // Réservation expire si pas payée en 24h
-  DISPUTE_WINDOW_DAYS: 14,               // Fenêtre pour ouvrir un litige
 };
 
 // ============================================
@@ -125,23 +123,17 @@ export const getPaymentSummary = (vanPrice) => {
 };
 
 // ============================================
-// 📊 RESERVATION STATUS - SYSTÈME ANTI-FRAUDE V2
+// 📊 RESERVATION STATUS
 // ============================================
 
 export const RESERVATION_STATUS = {
-  PENDING: 'pending',                     // En attente de paiement
-  PAID: 'paid',                           // Payé, attente confirmation vendeur
-  SELLER_CONFIRMED: 'seller_confirmed',   // 🆕 Vendeur a confirmé
-  MEETING_SCHEDULED: 'meeting_scheduled', // 🆕 Rencontre planifiée
-  BUYER_CONFIRMED: 'buyer_confirmed',     // 🆕 Acheteur confirme avoir vu le van
-  COMPLETED: 'completed',                 // Transaction finalisée, argent libéré
-  CANCELLED: 'cancelled',                 // Annulée
-  REFUNDED: 'refunded',                   // Remboursée
-  EXPIRED: 'expired',                     // Expirée (vendeur n'a pas répondu)
-  DISPUTED: 'disputed',                   // 🆕 Litige en cours
-  
-  // Aliases pour compatibilité avec l'ancien code
-  CONFIRMED: 'seller_confirmed',          // Alias
+  PENDING: 'pending',           // En attente de paiement
+  PAID: 'paid',                 // Payé, attente confirmation vendeur
+  CONFIRMED: 'confirmed',       // Vendeur a confirmé
+  COMPLETED: 'completed',       // Transaction finalisée (double confirmation)
+  CANCELLED: 'cancelled',       // Annulée
+  REFUNDED: 'refunded',         // Remboursée
+  EXPIRED: 'expired',           // Expirée (vendeur n'a pas répondu 48h)
 };
 
 export const RESERVATION_STATUS_LABELS = {
@@ -157,23 +149,11 @@ export const RESERVATION_STATUS_LABELS = {
     icon: '💳',
     description: 'Your deposit is secure. Seller has 48h to respond.'
   },
-  [RESERVATION_STATUS.SELLER_CONFIRMED]: { 
+  [RESERVATION_STATUS.CONFIRMED]: { 
     label: 'Seller Confirmed', 
     color: 'teal', 
     icon: '✅',
     description: 'Seller confirmed! Arrange a meeting to view the van.'
-  },
-  [RESERVATION_STATUS.MEETING_SCHEDULED]: { 
-    label: 'Meeting Scheduled', 
-    color: 'indigo', 
-    icon: '📅',
-    description: 'Meeting arranged. View the van and confirm.'
-  },
-  [RESERVATION_STATUS.BUYER_CONFIRMED]: { 
-    label: 'Confirmed - Funds Pending Release', 
-    color: 'emerald', 
-    icon: '🔒',
-    description: 'Transaction confirmed. Funds will be released in 7 days.'
   },
   [RESERVATION_STATUS.COMPLETED]: { 
     label: 'Completed', 
@@ -199,30 +179,19 @@ export const RESERVATION_STATUS_LABELS = {
     icon: '⌛',
     description: 'Seller did not respond in time. You have been refunded.'
   },
-  [RESERVATION_STATUS.DISPUTED]: { 
-    label: 'Dispute In Progress', 
-    color: 'orange', 
-    icon: '⚠️',
-    description: 'A dispute has been opened. Our team is reviewing.'
-  },
 };
 
 // 🛡️ Statuts où l'argent est retenu par Stripe
 export const FUNDS_HELD_STATUSES = [
   RESERVATION_STATUS.PAID,
-  RESERVATION_STATUS.SELLER_CONFIRMED,
-  RESERVATION_STATUS.MEETING_SCHEDULED,
-  RESERVATION_STATUS.BUYER_CONFIRMED,
-  RESERVATION_STATUS.DISPUTED,
+  RESERVATION_STATUS.CONFIRMED,
 ];
 
 // 🛡️ Statuts considérés comme "actifs" (van réservé)
 export const ACTIVE_RESERVATION_STATUSES = [
   RESERVATION_STATUS.PENDING,
   RESERVATION_STATUS.PAID,
-  RESERVATION_STATUS.SELLER_CONFIRMED,
-  RESERVATION_STATUS.MEETING_SCHEDULED,
-  RESERVATION_STATUS.BUYER_CONFIRMED,
+  RESERVATION_STATUS.CONFIRMED,
 ];
 
 // 🛡️ Statuts où l'acheteur peut annuler avec remboursement
@@ -231,40 +200,103 @@ export const CANCELLABLE_WITH_REFUND_STATUSES = [
   RESERVATION_STATUS.PAID,
 ];
 
-// 🛡️ Statuts où seul l'admin peut intervenir
-export const ADMIN_ONLY_STATUSES = [
-  RESERVATION_STATUS.DISPUTED,
-];
-
 // ============================================
-// 🔗 API ENDPOINTS
+// 🔗 CLOUD FUNCTIONS - Callable Functions
 // ============================================
 
-// URL de base pour les Firebase Functions
-const FUNCTIONS_BASE_URL = process.env.REACT_APP_FUNCTIONS_URL || 'https://us-central1-YOUR-PROJECT.cloudfunctions.net';
+// URL de base pour les HTTP functions
+const FUNCTIONS_BASE_URL = process.env.REACT_APP_FUNCTIONS_URL || 'https://us-central1-kiwivanmarket.cloudfunctions.net';
 
+// Pour les fonctions HTTP (onRequest)
 export const API_ENDPOINTS = {
-  // Paiement
   CREATE_CHECKOUT_SESSION: `${FUNCTIONS_BASE_URL}/createCheckoutSession`,
-  
-  // 🆕 Actions vendeur
-  SELLER_CONFIRM: `${FUNCTIONS_BASE_URL}/sellerConfirmReservation`,
-  
-  // 🆕 Actions acheteur
-  BUYER_CONFIRM_MEETING: `${FUNCTIONS_BASE_URL}/buyerConfirmMeeting`,
-  
-  // Gestion
-  CANCEL_RESERVATION: `${FUNCTIONS_BASE_URL}/cancelReservation`,
-  GET_RESERVATION: `${FUNCTIONS_BASE_URL}/getReservation`,
-  
-  // 🆕 Disputes
-  OPEN_DISPUTE: `${FUNCTIONS_BASE_URL}/openDispute`,
-  
-  // 🆕 Admin
-  RELEASE_FUNDS: `${FUNCTIONS_BASE_URL}/releaseFunds`,
-  
-  // Webhook (utilisé par Stripe)
   WEBHOOK: `${FUNCTIONS_BASE_URL}/stripeWebhook`,
+};
+
+// ============================================
+// 🚀 CLOUD FUNCTIONS HELPERS
+// ============================================
+
+/**
+ * Appelle une Cloud Function callable
+ * @param {string} functionName - Nom de la fonction
+ * @param {Object} data - Données à envoyer
+ * @returns {Promise} Résultat de la fonction
+ */
+export const callCloudFunction = async (functionName, data = {}) => {
+  const functions = getFunctions();
+  const callable = httpsCallable(functions, functionName);
+  const result = await callable(data);
+  return result.data;
+};
+
+/**
+ * Confirmer une réservation (vendeur)
+ */
+export const confirmReservation = async (reservationId) => {
+  return callCloudFunction('confirmReservation', { reservationId });
+};
+
+/**
+ * Annuler une réservation
+ */
+export const cancelReservation = async (reservationId, reason = '') => {
+  return callCloudFunction('cancelReservation', { reservationId, reason });
+};
+
+/**
+ * Obtenir les détails d'une réservation
+ */
+export const getReservation = async (reservationId) => {
+  return callCloudFunction('getReservation', { reservationId });
+};
+
+/**
+ * Créer un compte Stripe Connect (vendeur)
+ */
+export const createStripeConnectAccount = async () => {
+  const baseUrl = window.location.origin;
+  return callCloudFunction('createStripeConnectAccount', { baseUrl });
+};
+
+/**
+ * Obtenir le lien vers le dashboard Stripe (vendeur)
+ */
+export const getStripeDashboardLink = async () => {
+  return callCloudFunction('getStripeDashboardLink', {});
+};
+
+/**
+ * Vérifier le statut Stripe Connect du vendeur
+ */
+export const checkSellerStripeStatus = async () => {
+  return callCloudFunction('checkSellerStripeStatus', {});
+};
+
+/**
+ * Créer une session de paiement Checkout
+ */
+export const createCheckoutSession = async (reservationId, vanId, successUrl, cancelUrl, authToken) => {
+  const response = await fetch(API_ENDPOINTS.CREATE_CHECKOUT_SESSION, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${authToken}`,
+    },
+    body: JSON.stringify({
+      reservationId,
+      vanId,
+      successUrl,
+      cancelUrl,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create checkout session');
+  }
+
+  return response.json();
 };
 
 // ============================================
@@ -335,4 +367,13 @@ export default {
   areFundsHeld,
   isReservationActive,
   getTimeRemaining,
+  // Cloud Functions
+  callCloudFunction,
+  confirmReservation,
+  cancelReservation,
+  getReservation,
+  createStripeConnectAccount,
+  getStripeDashboardLink,
+  checkSellerStripeStatus,
+  createCheckoutSession,
 };

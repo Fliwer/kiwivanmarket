@@ -389,8 +389,11 @@ service cloud.firestore {
                      currentUserId() == resource.data.sellerId ||
                      isAdmin());
       
-      // CRÉATION: Cloud Functions UNIQUEMENT
-      allow create: if false;
+      // CRÉATION: Utilisateur authentifié peut créer une réservation pending
+      allow create: if isAuthenticated() &&
+                      request.resource.data.buyerId == currentUserId() &&
+                      request.resource.data.status == 'pending' &&
+                      request.resource.data.keys().hasAll(['buyerId', 'sellerId', 'vanId', 'status', 'createdAt']);
       
       // MODIFICATION PAR BUYER
       allow update: if isAuthenticated() && 
