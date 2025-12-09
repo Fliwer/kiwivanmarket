@@ -197,7 +197,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       try {
         const userVansQuery = query(
           collection(db, 'vans'),
-          where('userId', '==', currentUser.uid)
+          where('seller.uid', '==', currentUser.uid)
         );
         const userVansSnapshot = await getDocs(userVansQuery);
         const userVanCount = userVansSnapshot.size;
