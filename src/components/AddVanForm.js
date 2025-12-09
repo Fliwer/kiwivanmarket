@@ -446,9 +446,17 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         localStorage.removeItem('kiwiVanMarket_timestamp');
 
         alert('✅ Van added successfully!');
-        onSuccess && onSuccess();
-        onClose();
-        window.location.reload();
+        
+        // Appeler le callback pour rafraîchir la liste (priorité à onVanAdded)
+        if (onVanAdded) {
+          await onVanAdded();
+          onClose();
+        } else {
+          // Fallback: ancien comportement avec reload
+          onSuccess && onSuccess();
+          onClose();
+          window.location.reload();
+        }
       }
       
     } catch (error) {
