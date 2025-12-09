@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, doc, updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
+import { X, Upload, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import { useRateLimit } from '../hooks/useRateLimit';
 
 
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = false, vanData = null }) {
   const { currentUser } = useAuth();
-  const { checkAndRecord } = useRateLimit(currentUser?.uid);
+  // ✅ Ajout de getRemainingActions pour afficher le compteur
+  const { checkAndRecord, getRemainingActions } = useRateLimit(currentUser?.uid);
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [uploadingIndex, setUploadingIndex] = useState(null);
@@ -432,6 +433,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     </div>
   );
 
+  // ✅ Récupérer le nombre de vans restants pour l'indicateur
+  const vanLimit = getRemainingActions('createVan');
+
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
@@ -452,9 +456,33 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           <h2 className="text-3xl font-black text-gray-900 mb-2">
             {editMode ? '✏️ Edit Van' : '🚐 Add New Van'}
           </h2>
-          <p className="text-gray-600 mb-8">
+          <p className="text-gray-600 mb-4">
             {editMode ? 'Update your van details' : 'Upload photos and fill in details'}
           </p>
+
+          {/* ✅ Indicateur de vans restants (seulement en mode création) */}
+          {!editMode && currentUser && (
+            <div className={`mb-6 p-3 rounded-xl flex items-center gap-2 ${
+              vanLimit.remaining === 0 
+                ? 'bg-red-50 border border-red-200 text-red-700' 
+                : vanLimit.remaining <= 2 
+                  ? 'bg-amber-50 border border-amber-200 text-amber-700' 
+                  : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+            }`}>
+              {vanLimit.remaining === 0 ? (
+                <>
+                  <AlertCircle size={18} />
+                  <span className="font-semibold">Daily limit reached (0/{vanLimit.total})</span>
+                  <span className="text-sm ml-auto">Try again tomorrow</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle size={18} />
+                  <span className="font-semibold">{vanLimit.remaining}/{vanLimit.total} listings remaining today</span>
+                </>
+              )}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             
@@ -1182,7 +1210,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               </button>
               <button
                 type="submit"
-                disabled={loading || images.length === 0}
+                disabled={loading || images.length === 0 || vanLimit.remaining === 0}
                 className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading 
                   ? (editMode ? '⏳ Saving...' : '⏳ Adding...') 

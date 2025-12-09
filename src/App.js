@@ -1041,7 +1041,9 @@ function MainApp() {
 
               {/* Navigation Icons - Desktop */}
               <div className="hidden md:flex items-center gap-1">
+                {/* MVP_DISABLED: Currency selector
                 <CurrencySelector />
+                */}
                 <LanguageSelector />
                 
                 {/* MVP_DISABLED: Notifications
@@ -1175,7 +1177,9 @@ function MainApp() {
                 >
                   <Plus size={20} />
                 </button>
+                {/* MVP_DISABLED: Currency selector
                 <CurrencySelector />
+                */}
                 <LanguageSelector />
                 {/* MVP_DISABLED: Notifications
                 {currentUser && (

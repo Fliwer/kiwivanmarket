@@ -1,159 +1,169 @@
 // ============================================
-// 🛡️ RATE LIMIT HOOK - Protection anti-spam
-// ============================================
-//
-// Version localStorage - Simple et efficace pour MVP
-// Limite le nombre d'actions par utilisateur par période
-//
+// useRateLimit.js - Hook de limitation de requêtes
+// Protège contre le spam côté client via localStorage
 // ============================================
 
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
-// Configuration des limites
+// Configuration des limites par action
 const RATE_LIMITS = {
-  // Création de vans : max 5 par jour
-  createVan: {
-    maxActions: 5,
+  createVan: { 
+    max: 5, 
     windowMs: 24 * 60 * 60 * 1000, // 24 heures
-    errorMessage: "⚠️ You've reached the limit of 5 van listings per day. Please try again tomorrow."
+    errorMessage: "You've reached the limit of 5 van listings per day. Please try again tomorrow."
   },
-  // Envoi de messages : max 30 par heure
-  sendMessage: {
-    maxActions: 30,
-    windowMs: 60 * 60 * 1000, // 1 heure
-    errorMessage: "⚠️ You're sending messages too fast. Please wait a few minutes."
+  sendMessage: { 
+    max: 30, 
+    windowMs: 60 * 60 * 1000, // 1 heure (30 msg/h)
+    errorMessage: "You're sending messages too fast. Please wait a few minutes before sending more."
   },
-  // Création de conversations : max 10 par heure
-  createConversation: {
-    maxActions: 10,
+  createConversation: { 
+    max: 10, 
     windowMs: 60 * 60 * 1000, // 1 heure
-    errorMessage: "⚠️ You've started too many conversations. Please wait a bit."
+    errorMessage: "You've started too many conversations. Please wait a bit."
   },
-  // Ajout aux favoris : max 50 par heure
-  addFavorite: {
-    maxActions: 50,
+  addFavorite: { 
+    max: 50, 
     windowMs: 60 * 60 * 1000, // 1 heure
-    errorMessage: "⚠️ You're adding favorites too fast. Please slow down."
+    errorMessage: "You're adding favorites too fast. Please slow down."
   }
 };
 
 /**
- * Hook pour gérer le rate limiting côté client (localStorage)
- * @param {string} userId - ID de l'utilisateur (optionnel, pour distinguer les users)
- * @returns {Object} - Fonctions de rate limiting
+ * Hook personnalisé pour le rate limiting côté client
+ * @param {string} userId - L'ID de l'utilisateur (pour isoler les limites)
+ * @returns {object} - Fonctions de vérification et d'enregistrement
  */
-export const useRateLimit = (userId = 'anonymous') => {
-  
+export function useRateLimit(userId) {
+  const [, forceUpdate] = useState(0);
+
   /**
-   * Vérifie si l'utilisateur peut effectuer une action
-   * @param {string} actionType - Type d'action (createVan, sendMessage, etc.)
-   * @returns {{ allowed: boolean, error?: string, remaining?: number }}
+   * Récupère la clé localStorage pour une action
+   */
+  const getStorageKey = useCallback((actionType) => {
+    return `rateLimit_${userId}_${actionType}`;
+  }, [userId]);
+
+  /**
+   * Récupère les timestamps des actions précédentes
+   */
+  const getActionTimestamps = useCallback((actionType) => {
+    if (!userId) return [];
+    
+    try {
+      const key = getStorageKey(actionType);
+      const stored = localStorage.getItem(key);
+      if (!stored) return [];
+      
+      const timestamps = JSON.parse(stored);
+      const limit = RATE_LIMITS[actionType];
+      const now = Date.now();
+      
+      // Filtrer les timestamps expirés
+      return timestamps.filter(ts => now - ts < limit.windowMs);
+    } catch (error) {
+      console.error('Erreur lecture rate limit:', error);
+      return [];
+    }
+  }, [userId, getStorageKey]);
+
+  /**
+   * Vérifie si l'action est autorisée
    */
   const checkRateLimit = useCallback((actionType) => {
-    const config = RATE_LIMITS[actionType];
-    if (!config) {
-      console.warn(`Unknown action type: ${actionType}`);
-      return { allowed: true };
+    if (!userId) {
+      return { allowed: true, remaining: RATE_LIMITS[actionType]?.max || 0 };
     }
-
-    const key = `rateLimit_${userId}_${actionType}`;
-    const now = Date.now();
-    const windowStart = now - config.windowMs;
-
-    try {
-      const stored = localStorage.getItem(key);
-      const timestamps = stored ? JSON.parse(stored) : [];
-      
-      // Filtrer les timestamps dans la fenêtre active
-      const recentTimestamps = timestamps.filter(ts => ts > windowStart);
-      
-      if (recentTimestamps.length >= config.maxActions) {
-        // Limite atteinte - calculer quand ça reset
-        const oldestTimestamp = Math.min(...recentTimestamps);
-        const resetTime = new Date(oldestTimestamp + config.windowMs);
-        
-        return { 
-          allowed: false, 
-          error: config.errorMessage,
-          resetAt: resetTime,
-          remaining: 0
-        };
-      }
-      
-      return { 
-        allowed: true, 
-        remaining: config.maxActions - recentTimestamps.length
-      };
-      
-    } catch (error) {
-      console.error('Rate limit check error:', error);
-      // En cas d'erreur localStorage, on autorise (fail-open)
-      return { allowed: true };
+    
+    const limit = RATE_LIMITS[actionType];
+    if (!limit) {
+      console.warn(`Rate limit non défini pour: ${actionType}`);
+      return { allowed: true, remaining: 999 };
     }
-  }, [userId]);
+    
+    const timestamps = getActionTimestamps(actionType);
+    const remaining = limit.max - timestamps.length;
+    
+    return {
+      allowed: timestamps.length < limit.max,
+      remaining: Math.max(0, remaining),
+      total: limit.max,
+      error: timestamps.length >= limit.max ? limit.errorMessage : null
+    };
+  }, [userId, getActionTimestamps]);
 
   /**
    * Enregistre une action effectuée
-   * @param {string} actionType - Type d'action
    */
   const recordAction = useCallback((actionType) => {
-    const config = RATE_LIMITS[actionType];
-    if (!config) return;
-
-    const key = `rateLimit_${userId}_${actionType}`;
-    const now = Date.now();
-    const windowStart = now - config.windowMs;
-
+    if (!userId) return;
+    
     try {
-      const stored = localStorage.getItem(key);
-      const timestamps = stored ? JSON.parse(stored) : [];
+      const key = getStorageKey(actionType);
+      const timestamps = getActionTimestamps(actionType);
+      timestamps.push(Date.now());
+      localStorage.setItem(key, JSON.stringify(timestamps));
       
-      // Nettoyer les vieux timestamps et ajouter le nouveau
-      const recentTimestamps = timestamps.filter(ts => ts > windowStart);
-      recentTimestamps.push(now);
-      
-      localStorage.setItem(key, JSON.stringify(recentTimestamps));
+      // Force re-render pour mettre à jour le compteur
+      forceUpdate(n => n + 1);
     } catch (error) {
-      console.error('Rate limit record error:', error);
-      // Ne pas bloquer l'action si l'enregistrement échoue
+      console.error('Erreur enregistrement rate limit:', error);
     }
-  }, [userId]);
+  }, [userId, getStorageKey, getActionTimestamps]);
 
   /**
-   * Vérifie ET enregistre une action en une seule fonction
-   * @param {string} actionType - Type d'action
-   * @returns {{ allowed: boolean, error?: string }}
+   * Vérifie ET enregistre en une seule opération
    */
   const checkAndRecord = useCallback((actionType) => {
-    const result = checkRateLimit(actionType);
+    const check = checkRateLimit(actionType);
     
-    if (result.allowed) {
+    if (check.allowed) {
       recordAction(actionType);
+      return { 
+        allowed: true, 
+        remaining: check.remaining - 1,
+        total: check.total
+      };
     }
     
-    return result;
+    return check;
   }, [checkRateLimit, recordAction]);
 
   /**
-   * Réinitialise le compteur pour un type d'action (utile pour tests)
-   * @param {string} actionType - Type d'action
+   * Récupère le nombre d'actions restantes (sans enregistrer)
+   */
+  const getRemainingActions = useCallback((actionType) => {
+    const check = checkRateLimit(actionType);
+    return {
+      remaining: check.remaining,
+      total: check.total || RATE_LIMITS[actionType]?.max || 0,
+      allowed: check.allowed
+    };
+  }, [checkRateLimit]);
+
+  /**
+   * Réinitialise le compteur d'une action (utile pour tests)
    */
   const resetLimit = useCallback((actionType) => {
-    const key = `rateLimit_${userId}_${actionType}`;
+    if (!userId) return;
+    
     try {
+      const key = getStorageKey(actionType);
       localStorage.removeItem(key);
+      forceUpdate(n => n + 1);
     } catch (error) {
-      console.error('Rate limit reset error:', error);
+      console.error('Erreur reset rate limit:', error);
     }
-  }, [userId]);
+  }, [userId, getStorageKey]);
 
   return {
     checkRateLimit,
     recordAction,
     checkAndRecord,
+    getRemainingActions,
     resetLimit,
-    limits: RATE_LIMITS
+    RATE_LIMITS
   };
-};
+}
 
 export default useRateLimit;

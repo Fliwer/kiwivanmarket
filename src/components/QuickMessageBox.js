@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Check, MessageCircle } from 'lucide-react';
+import { Send, Check, MessageCircle, AlertCircle } from 'lucide-react';
 import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -12,11 +12,14 @@ import { useRateLimit } from '../hooks/useRateLimit';
 
 export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFullChat }) {
   const { currentUser } = useAuth();
-  const { checkAndRecord } = useRateLimit(currentUser?.uid);
+  const { checkAndRecord, getRemainingActions } = useRateLimit(currentUser?.uid);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
+
+  // ✅ Récupérer le nombre de messages restants
+  const messageLimit = getRemainingActions('sendMessage');
 
   const quickReplies = [
     { text: "Hi! Is this still available?", icon: "👋" },
@@ -25,8 +28,43 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     { text: "Can you send more photos?", icon: "📸" },
   ];
 
+  // ✅ Récupère l'UID du vendeur (plusieurs sources possibles)
+  const getSellerUid = () => {
+    return seller?.uid || van?.seller?.uid || van?.userId || null;
+  };
+
+  // ✅ Récupère les infos du vendeur avec fallback
+  const getSellerInfo = () => {
+    return {
+      uid: getSellerUid(),
+      name: seller?.name || van?.seller?.name || 'Seller',
+      email: seller?.email || van?.seller?.email || ''
+    };
+  };
+
   const sendMessage = async (text) => {
-    if (!text.trim() || !currentUser || !van || !seller) return;
+    // ✅ Validation améliorée avec messages d'erreur explicites
+    if (!text.trim()) {
+      setError('Please enter a message');
+      return;
+    }
+    
+    if (!currentUser) {
+      setError('Please sign in to send messages');
+      return;
+    }
+    
+    if (!van) {
+      setError('Van information not available');
+      return;
+    }
+    
+    const sellerInfo = getSellerInfo();
+    if (!sellerInfo.uid) {
+      setError('Unable to contact seller. Please try again later.');
+      console.error('❌ Seller UID not found:', { seller, van });
+      return;
+    }
     
     // 🛡️ RATE LIMIT: Max 30 messages par heure
     const rateCheck = checkAndRecord('sendMessage');
@@ -51,7 +89,8 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       // Find existing conversation for this van
       for (const docSnap of snapshot.docs) {
         const data = docSnap.data();
-        if (data.vanId === van.id && data.participants.includes(seller.uid)) {
+        // ✅ Utilise sellerInfo.uid au lieu de seller.uid
+        if (data.vanId === van.id && data.participants.includes(sellerInfo.uid)) {
           conversationId = docSnap.id;
           break;
         }
@@ -60,14 +99,15 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       // Create new conversation if none exists
       if (!conversationId) {
         const convRef = await addDoc(collection(db, 'conversations'), {
-          participants: [currentUser.uid, seller.uid],
+          // ✅ Utilise sellerInfo partout
+          participants: [currentUser.uid, sellerInfo.uid],
           participantNames: {
             [currentUser.uid]: currentUser.displayName || 'Anonymous',
-            [seller.uid]: seller.name || 'Seller'
+            [sellerInfo.uid]: sellerInfo.name
           },
           participantEmails: {
             [currentUser.uid]: currentUser.email,
-            [seller.uid]: seller.email || ''
+            [sellerInfo.uid]: sellerInfo.email
           },
           vanId: van.id,
           van: {
@@ -77,7 +117,14 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
             imageUrl: van.imageUrl || van.images?.[0],
             year: van.year,
             mileage: van.mileage,
-            location: van.location
+            location: van.location,
+            // ✅ Ajoute aussi WOF/REGO pour l'affichage dans MessagingPage
+            wofExpiry: van.wofExpiry,
+            regoExpiry: van.regoExpiry,
+            selfContained: van.selfContained,
+            buyBack: van.buyBack,
+            buyBackPrice: van.buyBackPrice,
+            buyBackDuration: van.buyBackDuration
           },
           status: 'new',
           lastMessage: text.trim(),
@@ -85,7 +132,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
           createdAt: serverTimestamp(),
           unreadCount: {
             [currentUser.uid]: 0,
-            [seller.uid]: 1
+            [sellerInfo.uid]: 1
           }
         });
         conversationId = convRef.id;
@@ -105,7 +152,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
         lastMessage: text.trim(),
         lastMessageAt: serverTimestamp(),
         status: 'active',
-        [`unreadCount.${seller.uid}`]: 1
+        [`unreadCount.${sellerInfo.uid}`]: 1
       });
 
       setSent(true);
@@ -132,9 +179,27 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     );
   }
 
+  // ✅ Amélioration : vérifier avec getSellerUid() aussi
+  const sellerUid = getSellerUid();
+  
   // Don't show if user is the seller
-  if (currentUser.uid === seller?.uid) {
+  if (sellerUid && currentUser.uid === sellerUid) {
     return null;
+  }
+
+  // ✅ Afficher un message si seller.uid est manquant
+  if (!sellerUid) {
+    return (
+      <div className="bg-orange-50 rounded-xl p-4 text-center border border-orange-200">
+        <p className="text-orange-700 text-sm font-medium flex items-center justify-center gap-2">
+          <AlertCircle size={16} />
+          Unable to contact this seller directly.
+        </p>
+        <p className="text-orange-600 text-xs mt-1">
+          This listing may be outdated.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -145,6 +210,26 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
           <MessageCircle size={18} className="text-emerald-600" />
           Contact Seller
         </h4>
+        
+        {/* ✅ Indicateur de messages restants (visible si < 10) */}
+        {messageLimit.remaining <= 10 && (
+          <div className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
+            messageLimit.remaining === 0 
+              ? 'bg-red-100 text-red-700' 
+              : messageLimit.remaining <= 5 
+                ? 'bg-amber-100 text-amber-700' 
+                : 'bg-gray-100 text-gray-600'
+          }`}>
+            {messageLimit.remaining === 0 ? (
+              <>
+                <AlertCircle size={12} />
+                Limit reached
+              </>
+            ) : (
+              <>{messageLimit.remaining} msg left/h</>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Make an Offer */}
@@ -221,7 +306,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
 
       {/* Error Message */}
       {error && (
-        <div className="mt-2 text-center text-sm text-red-600">
+        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg text-center text-sm text-red-600">
           {error}
         </div>
       )}
