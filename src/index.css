@@ -1,9 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 /* ========================================
-   GOOGLE TRANSLATE - CACHER LA BARRE MOCHE
-   Ajoute ce CSS dans ton index.css
+   GOOGLE TRANSLATE - CACHER TOUS LES ÉLÉMENTS
    ======================================== */
 
 /* Cacher la barre Google Translate en haut */
@@ -16,10 +16,14 @@ body {
   top: 0 !important;
 }
 
-/* Cacher le tooltip Google */
-.goog-tooltip {
-  display: none !important;
+/* Fix pour html traduit */
+html.translated-ltr body,
+html.translated-rtl body {
+  top: 0 !important;
 }
+
+/* Cacher le tooltip Google */
+.goog-tooltip,
 .goog-tooltip:hover {
   display: none !important;
 }
@@ -35,7 +39,7 @@ body {
   display: none !important;
 }
 
-/* Optionnel: Cacher le logo "Powered by Google" dans le texte */
+/* Cacher le logo "Powered by Google" */
 .goog-logo-link {
   display: none !important;
 }
@@ -60,4 +64,62 @@ body > .skiptranslate {
 /* S'assurer que le iframe de Google est caché */
 .skiptranslate iframe {
   display: none !important;
+}
+
+/* ========================================
+   FIX LOGO GOOGLE FLOTTANT (ajouté)
+   ======================================== */
+
+/* Cacher le logo/icône Google Translate flottant */
+.goog-te-gadget-icon {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+.goog-te-gadget-simple {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Cacher le menu de sélection Google */
+.goog-te-menu-frame {
+  display: none !important;
+}
+
+.goog-te-menu2 {
+  display: none !important;
+}
+
+/* Cacher tous les nouveaux widgets Google 2024 (classes VIpgJd) */
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf-ti6hGc,
+.VIpgJd-ZVi9od-ORHb-OEVmcd,
+.VIpgJd-ZVi9od-aZ2wEe,
+.VIpgJd-ZVi9od-xl07Ob-OEVmcd,
+.VIpgJd-yAWNEb-L7lbkb,
+.VIpgJd-ZVi9od-aZ2wEe-OiiCO {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
+}
+
+/* Cacher TOUS les iframes Google Translate */
+iframe.skiptranslate,
+iframe[id^="goog-gt-"],
+iframe.goog-te-menu-frame,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+}
+
+/* Supprimer les styles inline ajoutés par Google sur le texte */
+font[style*="background-color"],
+font[style*="vertical-align: inherit"] {
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
