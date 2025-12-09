@@ -4,10 +4,12 @@ import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
+import { useRateLimit } from '../hooks/useRateLimit';
 
 
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = false, vanData = null }) {
   const { currentUser } = useAuth();
+  const { checkAndRecord } = useRateLimit(currentUser?.uid);
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [uploadingIndex, setUploadingIndex] = useState(null);
@@ -206,6 +208,15 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     if (!currentUser) {
       alert('⚠️ Please sign in to add a van!');
       return;
+    }
+
+    // 🛡️ RATE LIMIT: Max 5 vans par jour (anti-spam)
+    if (!editMode) {
+      const rateCheck = checkAndRecord('createVan');
+      if (!rateCheck.allowed) {
+        alert(rateCheck.error);
+        return;
+      }
     }
 
     // 🛡️ SÉCURITÉ: Limiter à 20 vans par utilisateur (anti-spam)

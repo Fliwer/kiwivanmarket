@@ -3,6 +3,7 @@ import { Send, Check, MessageCircle } from 'lucide-react';
 import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
+import { useRateLimit } from '../hooks/useRateLimit';
 
 // ============================================
 // QUICK MESSAGE BOX
@@ -11,6 +12,7 @@ import { useAuth } from '../AuthContext';
 
 export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFullChat }) {
   const { currentUser } = useAuth();
+  const { checkAndRecord } = useRateLimit(currentUser?.uid);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -25,6 +27,13 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
 
   const sendMessage = async (text) => {
     if (!text.trim() || !currentUser || !van || !seller) return;
+    
+    // 🛡️ RATE LIMIT: Max 30 messages par heure
+    const rateCheck = checkAndRecord('sendMessage');
+    if (!rateCheck.allowed) {
+      setError(rateCheck.error);
+      return;
+    }
     
     setSending(true);
     setError(null);

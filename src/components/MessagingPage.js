@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
+import { useRateLimit } from '../hooks/useRateLimit';
 
 // ============================================
 // MESSAGING PAGE - Full Page 3 Columns
@@ -181,6 +182,7 @@ function LanguageSelector() {
 
 export default function MessagingPage({ onBack }) {
   const { currentUser } = useAuth();
+  const { checkAndRecord } = useRateLimit(currentUser?.uid);
   
   // Handle browser back button
   useEffect(() => {
@@ -365,6 +367,13 @@ export default function MessagingPage({ onBack }) {
   // Send message
   const sendMessage = async (text = newMessage) => {
     if (!text.trim() || !selectedConversation) return;
+
+    // 🛡️ RATE LIMIT: Max 30 messages par heure
+    const rateCheck = checkAndRecord('sendMessage');
+    if (!rateCheck.allowed) {
+      alert(rateCheck.error);
+      return;
+    }
 
     setSendingMessage(true);
     const messageText = text.trim();
