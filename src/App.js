@@ -31,8 +31,9 @@ const QuickMessageBox = lazy(() => import('./components/QuickMessageBox'));
 // MVP_DISABLED: Reservations
 // const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
 // const ReservationCancelled = lazy(() => import('./components/ReservationCancelled'));
-const LeaveReviewButton = lazy(() => import('./components/ReviewSystem').then(m => ({ default: m.LeaveReviewButton })));
-const SellerReviews = lazy(() => import('./components/ReviewSystem').then(m => ({ default: m.SellerReviews })));
+// MVP_DISABLED: Reviews
+// const LeaveReviewButton = lazy(() => import('./components/ReviewSystem').then(m => ({ default: m.LeaveReviewButton })));
+// const SellerReviews = lazy(() => import('./components/ReviewSystem').then(m => ({ default: m.SellerReviews })));
 // MVP_DISABLED: Payments/Stripe
 // const ReserveButton = lazy(() => import('./components/PaymentSystem').then(m => ({ default: m.ReserveButton })));
 
@@ -871,7 +872,7 @@ function MainApp() {
               </div>
               */}
               
-              {/* Leave Review Button - Lazy */}
+              {/* MVP_DISABLED: Reviews
               <div className="mt-4">
                 <Suspense fallback={null}>
                   <LeaveReviewButton 
@@ -884,7 +885,6 @@ function MainApp() {
                 </Suspense>
               </div>
 
-              {/* Seller Reviews - Lazy */}
               {(seller.uid || van.seller?.uid) && (
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -896,6 +896,7 @@ function MainApp() {
                   </Suspense>
                 </div>
               )}
+              */}
             </div>
           </div>
         </div>
