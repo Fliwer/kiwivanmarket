@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Heart, MapPin, Star, Trash2, Shield } from 'lucide-react';
-// MVP_DISABLED: Icons for future features (stats, time indicators)
-// import { Calendar, Gauge, TrendingUp, Clock } from 'lucide-react';
+import { X, Heart, MapPin, Calendar, Gauge, Star, TrendingUp, Clock, Trash2, Shield } from 'lucide-react';
 import { db } from '../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useFavorites } from '../hooks/useFavorites';
@@ -64,7 +62,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
             <div>
               <h2 className="text-2xl font-bold">My Favorites</h2>
               <p className="text-sm text-gray-500">
-                {favorites.length} {favorites.length === 1 ? 'van' : 'vans'} saved
+                {vansData.length} {vansData.length === 1 ? 'van' : 'vans'} saved
               </p>
             </div>
           </div>
@@ -84,7 +82,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
                 <p className="text-gray-600">Loading your favorites...</p>
               </div>
             </div>
-          ) : favorites.length === 0 ? (
+          ) : vansData.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Heart size={64} className="text-gray-300 mb-4" />
               <h3 className="text-2xl font-bold text-gray-400 mb-2">No favorites yet</h3>
@@ -192,7 +190,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
         </div>
 
         {/* Footer */}
-        {!loading && !favoritesLoading && favorites.length > 0 && (
+        {!loading && !favoritesLoading && vansData.length > 0 && (
           <div className="border-t p-4 bg-gray-50">
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">

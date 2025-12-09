@@ -6,7 +6,7 @@ service cloud.firestore {
     // ║                                                                   ║
     // ║   🥝 KIWI VAN MARKET - FIRESTORE SECURITY RULES                  ║
     // ║                                                                   ║
-    // ║   Version: 2.0.0                                                  ║
+    // ║   Version: 2.1.0                                                  ║
     // ║   Last Updated: December 2024                                     ║
     // ║   Security Level: Production Ready                                ║
     // ║                                                                   ║
@@ -17,29 +17,24 @@ service cloud.firestore {
     // 🔐 SECTION 1: AUTHENTICATION FUNCTIONS
     // ═══════════════════════════════════════════════════════════════════
     
-    /// Vérifie si l'utilisateur est authentifié
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    /// Vérifie si l'utilisateur est le propriétaire du document
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
-    /// Vérifie si l'utilisateur est admin (par email ou custom claim)
     function isAdmin() {
       return isAuthenticated() && 
              (request.auth.token.email == 'p.morthier@gmail.com' ||
               request.auth.token.admin == true);
     }
     
-    /// Vérifie si l'email est vérifié
     function hasVerifiedEmail() {
       return isAuthenticated() && request.auth.token.email_verified == true;
     }
     
-    /// Récupère l'UID de l'utilisateur actuel
     function currentUserId() {
       return request.auth.uid;
     }
@@ -49,63 +44,52 @@ service cloud.firestore {
     // 📏 SECTION 2: VALIDATION FUNCTIONS
     // ═══════════════════════════════════════════════════════════════════
     
-    /// Vérifie qu'une chaîne respecte les limites de taille
     function isValidString(field, minLen, maxLen) {
       return field is string && 
              field.size() >= minLen && 
              field.size() <= maxLen;
     }
     
-    /// Vérifie qu'un string n'est pas vide
     function isNonEmptyString(field) {
       return field is string && field.size() > 0;
     }
     
-    /// Vérifie qu'un nombre est positif
     function isPositiveNumber(field) {
       return field is number && field > 0;
     }
     
-    /// Vérifie qu'un nombre est >= 0
     function isNonNegativeNumber(field) {
       return field is number && field >= 0;
     }
     
-    /// Vérifie un prix valide (1 - 500,000 NZD)
     function isValidPrice(price) {
       return price is number && price >= 1 && price <= 500000;
     }
     
-    /// Vérifie une année valide (1950 - 2026)
     function isValidYear(year) {
       return year is number && year >= 1950 && year <= 2026;
     }
     
-    /// Vérifie un kilométrage valide (0 - 1,000,000 km)
     function isValidMileage(mileage) {
       return mileage is number && mileage >= 0 && mileage <= 1000000;
     }
     
-    /// Vérifie un rating valide (1-5 étoiles)
     function isValidRating(rating) {
       return rating is number && rating >= 1 && rating <= 5;
     }
     
-    /// Vérifie une URL d'image valide (Cloudinary ou Firebase Storage)
     function isValidImageUrl(url) {
       return url is string && 
              (url.matches('https://res\\.cloudinary\\.com/.*') || 
               url.matches('https://firebasestorage\\.googleapis\\.com/.*'));
     }
     
-    /// Vérifie un tableau d'images (1-10 images)
     function hasValidImages(images) {
       return images is list && 
              images.size() >= 1 && 
              images.size() <= 10;
     }
     
-    /// Vérifie un email valide (format basique)
     function isValidEmail(email) {
       return email is string && 
              email.matches('.*@.*\\..*') &&
@@ -113,7 +97,6 @@ service cloud.firestore {
              email.size() <= 254;
     }
     
-    /// Vérifie un numéro de téléphone NZ (format basique)
     function isValidNZPhone(phone) {
       return phone is string &&
              phone.size() >= 8 &&
@@ -125,22 +108,18 @@ service cloud.firestore {
     // 🛡️ SECTION 3: SECURITY HELPER FUNCTIONS
     // ═══════════════════════════════════════════════════════════════════
     
-    /// Vérifie que seuls certains champs sont modifiés
     function onlyUpdating(allowedFields) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedFields);
     }
     
-    /// Vérifie qu'un champ spécifique n'a pas changé
     function fieldUnchanged(field) {
       return request.resource.data[field] == resource.data[field];
     }
     
-    /// Vérifie que plusieurs champs n'ont pas changé
     function fieldsUnchanged(fields) {
       return request.resource.data.diff(resource.data).affectedKeys().hasAny(fields) == false;
     }
     
-    /// Vérifie si un document existe
     function docExists(collection, docId) {
       return exists(/databases/$(database)/documents/$(collection)/$(docId));
     }
@@ -150,7 +129,6 @@ service cloud.firestore {
     // 📊 SECTION 4: BUSINESS LOGIC FUNCTIONS  
     // ═══════════════════════════════════════════════════════════════════
     
-    /// Vérifie si l'utilisateur est participant d'une conversation
     function isConversationParticipant(conversationId) {
       return isAuthenticated() &&
              currentUserId() in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
@@ -158,32 +136,12 @@ service cloud.firestore {
     
     
     // ═══════════════════════════════════════════════════════════════════
+    // 👤 USERS
     // ═══════════════════════════════════════════════════════════════════
-    //
-    //                    📁 COLLECTION RULES
-    //
-    // ═══════════════════════════════════════════════════════════════════
-    // ═══════════════════════════════════════════════════════════════════
-    
-    
-    // ═══════════════════════════════════════════════════════════════════
-    // 👤 USERS - Profils utilisateurs
-    // ═══════════════════════════════════════════════════════════════════
-    //
-    // Sécurité:
-    // ✅ Lecture: Tous les utilisateurs authentifiés (pour afficher vendeurs)
-    // ✅ Création: Seulement son propre profil avec champs obligatoires
-    // ✅ Modification: Champs limités, pas de données sensibles
-    // ❌ Suppression: Interdite (soft delete via admin)
-    // 🛡️ Protection: isAdmin, banned, createdAt non modifiables par l'utilisateur
-    //
     
     match /users/{userId} {
-      
-      // LECTURE: Utilisateur authentifié
       allow read: if isAuthenticated();
       
-      // CRÉATION: Son propre profil uniquement
       allow create: if isOwner(userId) &&
                       request.resource.data.keys().hasAll(['uid', 'email', 'displayName', 'createdAt']) &&
                       request.resource.data.uid == userId &&
@@ -192,28 +150,20 @@ service cloud.firestore {
                       request.resource.data.get('isAdmin', false) == false &&
                       request.resource.data.get('banned', false) == false;
       
-      // MODIFICATION: Champs limités par l'utilisateur
       allow update: if isOwner(userId) &&
                       onlyUpdating(['displayName', 'photoURL', 'phone', 'location', 'bio', 'lastLogin', 'updatedAt']) &&
                       (fieldUnchanged('displayName') || isValidString(request.resource.data.displayName, 1, 100)) &&
                       (fieldUnchanged('phone') || request.resource.data.phone == null || isValidNZPhone(request.resource.data.phone)) &&
                       (fieldUnchanged('bio') || request.resource.data.bio == null || isValidString(request.resource.data.bio, 0, 500));
       
-      // MODIFICATION: Admin peut tout modifier
       allow update: if isAdmin();
-      
-      // SUPPRESSION: Interdite
       allow delete: if false;
     }
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // 🏦 STRIPE ACCOUNTS - Comptes Stripe Connect
+    // 🏦 STRIPE ACCOUNTS
     // ═══════════════════════════════════════════════════════════════════
-    //
-    // 🛡️ ULTRA-SÉCURISÉ: Données financières sensibles
-    // Seules les Cloud Functions peuvent créer/modifier ces données
-    //
     
     match /stripeAccounts/{userId} {
       allow read: if isOwner(userId) || isAdmin();
@@ -222,23 +172,12 @@ service cloud.firestore {
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // 🚐 VANS - Annonces de véhicules
+    // 🚐 VANS
     // ═══════════════════════════════════════════════════════════════════
-    //
-    // Sécurité:
-    // ✅ Lecture: Publique (marketplace)
-    // ✅ Création: Utilisateur authentifié avec validation stricte
-    // ✅ Modification: Vendeur (champs limités) ou Admin (tout)
-    // ✅ Suppression: Vendeur ou Admin
-    // 🛡️ Protection: views, createdAt, seller non modifiables par vendeur
-    //
     
     match /vans/{vanId} {
-      
-      // LECTURE: Publique
       allow read: if true;
       
-      // CRÉATION: Utilisateur authentifié avec validation complète
       allow create: if isAuthenticated() &&
                       request.resource.data.seller.uid == currentUserId() &&
                       request.resource.data.keys().hasAll([
@@ -257,7 +196,6 @@ service cloud.firestore {
                       request.resource.data.status == 'active' &&
                       request.resource.data.createdAt == request.time;
       
-      // MODIFICATION: Vendeur (champs limités)
       allow update: if isAuthenticated() && 
                       currentUserId() == resource.data.seller.uid &&
                       fieldsUnchanged(['views', 'createdAt', 'seller']) &&
@@ -266,22 +204,19 @@ service cloud.firestore {
                       (fieldUnchanged('description') || isValidString(request.resource.data.description, 20, 5000)) &&
                       (fieldUnchanged('status') || request.resource.data.status in ['active', 'sold', 'paused', 'deleted']);
       
-      // MODIFICATION: Admin peut tout
       allow update: if isAdmin();
       
-      // MODIFICATION: Incrémentation des vues uniquement (+1)
       allow update: if isAuthenticated() &&
                       onlyUpdating(['views', 'lastViewedAt']) &&
                       request.resource.data.views == resource.data.views + 1;
       
-      // SUPPRESSION: Vendeur ou Admin
       allow delete: if isAdmin() || 
                       (isAuthenticated() && currentUserId() == resource.data.seller.uid);
     }
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // ❤️ FAVORITES - Favoris utilisateurs
+    // ❤️ FAVORITES
     // ═══════════════════════════════════════════════════════════════════
     
     match /favorites/{favoriteId} {
@@ -293,17 +228,15 @@ service cloud.firestore {
                       isNonEmptyString(request.resource.data.vanId);
       
       allow update: if false;
-      
       allow delete: if isAuthenticated() && currentUserId() == resource.data.userId;
     }
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // 💬 CONVERSATIONS - Messagerie
+    // 💬 CONVERSATIONS - FIX v2.1.0
     // ═══════════════════════════════════════════════════════════════════
     
     match /conversations/{conversationId} {
-      
       allow read: if isAuthenticated() && currentUserId() in resource.data.participants;
       
       allow create: if isAuthenticated() && 
@@ -315,14 +248,11 @@ service cloud.firestore {
                       currentUserId() in resource.data.participants &&
                       fieldUnchanged('participants') &&
                       fieldUnchanged('vanId') &&
-                      fieldUnchanged('createdAt') &&
-                      onlyUpdating(['lastMessage', 'lastMessageAt', 'updatedAt']);
+                      fieldUnchanged('createdAt');
       
       allow delete: if isAdmin();
       
-      // 📨 MESSAGES - Sous-collection
       match /messages/{messageId} {
-        
         allow read: if isConversationParticipant(conversationId);
         
         allow create: if isConversationParticipant(conversationId) &&
@@ -341,11 +271,10 @@ service cloud.firestore {
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // ⭐ REVIEWS - Avis sur les vendeurs
+    // ⭐ REVIEWS
     // ═══════════════════════════════════════════════════════════════════
     
     match /reviews/{reviewId} {
-      
       allow read: if true;
       
       allow create: if isAuthenticated() && 
@@ -369,37 +298,23 @@ service cloud.firestore {
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // 💳 RESERVATIONS - Double Confirmation System
+    // 💳 RESERVATIONS
     // ═══════════════════════════════════════════════════════════════════
-    //
-    // FLUX SÉCURISÉ:
-    // ┌─────────────────────────────────────────────────────────────┐
-    // │ 1. pending → paid         (Cloud Function après Stripe)    │
-    // │ 2. paid → buyer_confirmed (Buyer + photo obligatoire)      │
-    // │ 3. buyer_confirmed → completed (Seller confirme)           │
-    // │ 4. completed → payout     (Cloud Function auto)            │
-    // └─────────────────────────────────────────────────────────────┘
-    //
     
     match /reservations/{reservationId} {
-      
-      // LECTURE: Buyer, Seller, ou Admin
       allow read: if isAuthenticated() && 
                     (currentUserId() == resource.data.buyerId || 
                      currentUserId() == resource.data.sellerId ||
                      isAdmin());
       
-      // CRÉATION: Utilisateur authentifié peut créer une réservation pending
       allow create: if isAuthenticated() &&
                       request.resource.data.buyerId == currentUserId() &&
                       request.resource.data.status == 'pending' &&
                       request.resource.data.keys().hasAll(['buyerId', 'sellerId', 'vanId', 'status', 'createdAt']);
       
-      // MODIFICATION PAR BUYER
       allow update: if isAuthenticated() && 
                       currentUserId() == resource.data.buyerId &&
                       (
-                        // ANNULATION avant confirmation
                         (
                           resource.data.status in ['pending', 'paid'] &&
                           resource.data.buyerConfirmed != true &&
@@ -408,7 +323,6 @@ service cloud.firestore {
                           request.resource.data.cancelledBy == currentUserId()
                         )
                         ||
-                        // CONFIRMATION avec photo obligatoire
                         (
                           resource.data.status == 'paid' &&
                           (resource.data.buyerConfirmed == false || 
@@ -420,7 +334,6 @@ service cloud.firestore {
                           onlyUpdating(['status', 'buyerConfirmed', 'buyerConfirmedAt', 'buyerConfirmationPhoto', 'updatedAt'])
                         )
                         ||
-                        // DISPUTE
                         (
                           resource.data.status == 'buyer_confirmed' &&
                           resource.data.buyerConfirmed == true &&
@@ -431,11 +344,9 @@ service cloud.firestore {
                         )
                       );
       
-      // MODIFICATION PAR SELLER
       allow update: if isAuthenticated() && 
                       currentUserId() == resource.data.sellerId &&
                       (
-                        // ANNULATION avant confirmation buyer
                         (
                           resource.data.status in ['pending', 'paid'] &&
                           resource.data.buyerConfirmed != true &&
@@ -444,7 +355,6 @@ service cloud.firestore {
                           request.resource.data.cancelledBy == currentUserId()
                         )
                         ||
-                        // CONFIRMATION après buyer (déclenche payout)
                         (
                           resource.data.status == 'buyer_confirmed' &&
                           resource.data.buyerConfirmed == true &&
@@ -458,10 +368,7 @@ service cloud.firestore {
                         )
                       );
       
-      // MODIFICATION: Admin peut tout
       allow update: if isAdmin();
-      
-      // SUPPRESSION: Interdite (historique légal)
       allow delete: if false;
     }
     
@@ -482,7 +389,7 @@ service cloud.firestore {
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // 💰 PAYOUTS - Historique des paiements vendeurs
+    // 💰 PAYOUTS
     // ═══════════════════════════════════════════════════════════════════
     
     match /payouts/{payoutId} {
@@ -493,7 +400,7 @@ service cloud.firestore {
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // 📸 CONFIRMATIONS - Métadonnées photos de preuve
+    // 📸 CONFIRMATIONS
     // ═══════════════════════════════════════════════════════════════════
     
     match /confirmations/{confirmationId} {
@@ -503,7 +410,7 @@ service cloud.firestore {
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // 🚨 REPORTS - Signalements
+    // 🚨 REPORTS
     // ═══════════════════════════════════════════════════════════════════
     
     match /reports/{reportId} {
@@ -522,7 +429,7 @@ service cloud.firestore {
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // ⚙️ SETTINGS - Configuration système
+    // ⚙️ SETTINGS
     // ═══════════════════════════════════════════════════════════════════
     
     match /settings/{settingId} {
@@ -532,7 +439,7 @@ service cloud.firestore {
     
     
     // ═══════════════════════════════════════════════════════════════════
-    // 🚫 CATCH-ALL: BLOQUER TOUT LE RESTE
+    // 🚫 CATCH-ALL
     // ═══════════════════════════════════════════════════════════════════
     
     match /{document=**} {

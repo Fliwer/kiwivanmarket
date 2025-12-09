@@ -831,6 +831,7 @@ function MainApp() {
               )}
 
               {/* Seller info */}
+              {/* MVP_DISABLED: Reviews system - étoiles retirées */}
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl border border-gray-200 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full w-12 h-12 flex items-center justify-center text-white text-xl font-bold shadow-lg">
@@ -838,16 +839,7 @@ function MainApp() {
                   </div>
                   <div>
                     <p className="font-bold text-gray-900">{seller.name || 'Unknown Seller'}</p>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={14} 
-                          className={i < (seller.rating || 5) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'} 
-                        />
-                      ))}
-                      <span className="text-xs text-gray-600 ml-1">({seller.rating || 5}.0)</span>
-                    </div>
+                    <p className="text-sm text-gray-500">Private seller</p>
                   </div>
                 </div>
               </div>

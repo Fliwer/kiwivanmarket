@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, doc, setDoc, deleteDoc, getDocs, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, doc, setDoc, deleteDoc, query, where, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../AuthContext';
 
 /**
@@ -12,7 +12,6 @@ import { useAuth } from '../AuthContext';
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
-  // ✅ CORRIGÉ : AuthContext exporte "loading", pas "authLoading"
   const { currentUser, loading: authLoading } = useAuth();
 
   // 📡 Charger les favoris depuis Firebase au montage
@@ -64,16 +63,19 @@ export const useFavorites = () => {
         await deleteDoc(favoriteRef);
         console.log('💔 Retiré des favoris:', vanId);
       } else {
-        // Ajouter aux favoris
+        // ✅ CORRIGÉ : Utiliser 'createdAt' au lieu de 'addedAt'
+        // Les règles Firestore exigent exactement ces 3 champs: userId, vanId, createdAt
         await setDoc(favoriteRef, {
           userId: currentUser.uid,
           vanId: vanId,
-          addedAt: new Date().toISOString()
+          createdAt: new Date()  // ← CORRIGÉ ! (était 'addedAt')
         });
         console.log('❤️ Ajouté aux favoris:', vanId);
       }
     } catch (error) {
       console.error('❌ Erreur lors de la modification des favoris:', error);
+      console.error('Code erreur:', error.code);
+      console.error('Message:', error.message);
       alert('Error updating favorites. Please try again.');
     }
   };

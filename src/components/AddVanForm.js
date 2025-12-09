@@ -2,18 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, doc, updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { X, Upload, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Upload, Trash2, CheckCircle, Images } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
-import { useRateLimit } from '../hooks/useRateLimit';
+
+// ⚠️ Rate limit - import OPTIONNEL (ne bloque pas si le hook n'existe pas)
+let useRateLimit = () => ({ checkAndRecord: () => ({ allowed: true }) });
+try {
+  const rateLimitModule = require('../hooks/useRateLimit');
+  if (rateLimitModule && rateLimitModule.useRateLimit) {
+    useRateLimit = rateLimitModule.useRateLimit;
+  }
+} catch (e) {
+  console.warn('⚠️ useRateLimit hook not available, rate limiting disabled');
+}
 
 
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = false, vanData = null }) {
   const { currentUser } = useAuth();
-  // ✅ Ajout de getRemainingActions pour afficher le compteur
-  const { checkAndRecord, getRemainingActions } = useRateLimit(currentUser?.uid);
+  
+  // Rate limiting - avec fallback si le hook n'existe pas
+  const rateLimitResult = useRateLimit(currentUser?.uid);
+  const checkAndRecord = rateLimitResult?.checkAndRecord || (() => ({ allowed: true }));
+  
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
-  const [uploadingIndex, setUploadingIndex] = useState(null);
+  const [uploadingCount, setUploadingCount] = useState(0);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -138,63 +151,93 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
   const [showSelfContainedTooltip, setShowSelfContainedTooltip] = useState(false);
   const [showAdvancedEquipment, setShowAdvancedEquipment] = useState(false);
 
-  // Upload image
-  const handleImageUpload = async (file) => {
-    if (images.length >= 5) {
-      alert('⚠️ Maximum 5 photos!');
+  // Upload multiple images en parallèle
+  const handleMultipleImages = async (files) => {
+    const fileArray = Array.from(files);
+    const remainingSlots = 5 - images.length;
+    
+    if (remainingSlots <= 0) {
+      alert('⚠️ Maximum 5 photos reached!');
       return;
     }
-
-    if (!file.type.startsWith('image/')) {
-      alert('⚠️ Invalid file!');
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      alert('⚠️ Image too large (max 10MB)');
-      return;
-    }
-
-    const newIndex = images.length;
-    setUploadingIndex(newIndex);
-
-    // Attendre que le preview soit ajouté AVANT d'uploader (évite race condition)
-    const previewUrl = await new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.readAsDataURL(file);
-    });
-
-    // Ajouter le preview avec état "uploading"
-    setImages(prev => [...prev, { url: previewUrl, uploading: true }]);
-
-    try {
-      const result = await uploadToCloudinary(file);
-      
-      setImages(prev => {
-        const updated = [...prev];
-        updated[newIndex] = { url: result.url, uploading: false };
-        return updated;
-      });
-    } catch (error) {
-      console.error('Upload error:', error);
-      
-      // Supprimer l'image qui a échoué
-      setImages(prev => prev.filter((_, i) => i !== newIndex));
-      
-      // Afficher un message d'erreur clair avec la vraie raison
-      const errorMessage = error.message || 'Unknown error';
-      if (errorMessage.toLowerCase().includes('dimension') || errorMessage.includes('4096') || errorMessage.includes('too large')) {
-        alert('📸 Image dimensions too large!\n\nPlease resize your image to a smaller resolution and try again.');
-      } else if (errorMessage.toLowerCase().includes('size') || errorMessage.includes('MB')) {
-        alert('📸 File too large!\n\nMaximum file size: 10MB.\n\nPlease compress your image and try again.');
-      } else if (errorMessage.toLowerCase().includes('type') || errorMessage.toLowerCase().includes('format')) {
-        alert('📸 Invalid file type!\n\nOnly JPG, PNG and WebP images are accepted.');
-      } else {
-        alert('❌ Upload failed: ' + errorMessage + '\n\nPlease try again with a different image.');
+    
+    // Filtrer les fichiers valides
+    const validFiles = fileArray.slice(0, remainingSlots).filter(file => {
+      if (!file.type.startsWith('image/')) {
+        alert(`⚠️ "${file.name}" is not a valid image`);
+        return false;
       }
-    } finally {
-      setUploadingIndex(null);
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`⚠️ "${file.name}" is too large (max 10MB)`);
+        return false;
+      }
+      return true;
+    });
+    
+    if (validFiles.length === 0) return;
+    
+    // Ajouter les placeholders avec preview local
+    const startIndex = images.length;
+    setUploadingCount(validFiles.length);
+    
+    // Créer les previews locaux immédiatement
+    const previewPromises = validFiles.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve({ url: e.target.result, uploading: true });
+        reader.readAsDataURL(file);
+      });
+    });
+    
+    const previews = await Promise.all(previewPromises);
+    setImages(prev => [...prev, ...previews]);
+    
+    // Upload en parallèle
+    const uploadPromises = validFiles.map(async (file, i) => {
+      try {
+        const result = await uploadToCloudinary(file);
+        return { index: startIndex + i, url: result.url, success: true };
+      } catch (error) {
+        console.error(`Upload error for ${file.name}:`, error);
+        return { index: startIndex + i, success: false, error: error.message };
+      }
+    });
+    
+    const results = await Promise.all(uploadPromises);
+    
+    // Mettre à jour les images avec les URLs finales
+    setImages(prev => {
+      const updated = [...prev];
+      let failCount = 0;
+      
+      results.forEach(result => {
+        if (result.success) {
+          updated[result.index] = { url: result.url, uploading: false };
+        } else {
+          updated[result.index] = null;
+          failCount++;
+        }
+      });
+      
+      const filtered = updated.filter(img => img !== null);
+      
+      if (failCount > 0) {
+        setTimeout(() => {
+          alert(`📸 ${results.length - failCount} photo(s) uploaded.\n❌ ${failCount} failed.`);
+        }, 100);
+      }
+      
+      return filtered;
+    });
+    
+    setUploadingCount(0);
+  };
+
+  // Handler pour l'input file
+  const handleFileInputChange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleMultipleImages(e.target.files);
+      e.target.value = '';
     }
   };
 
@@ -211,12 +254,16 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       return;
     }
 
-    // 🛡️ RATE LIMIT: Max 5 vans par jour (anti-spam)
-    if (!editMode) {
-      const rateCheck = checkAndRecord('createVan');
-      if (!rateCheck.allowed) {
-        alert(rateCheck.error);
-        return;
+    // 🛡️ RATE LIMIT: Max 5 vans par jour (anti-spam) - optionnel
+    if (!editMode && checkAndRecord) {
+      try {
+        const rateCheck = checkAndRecord('createVan');
+        if (rateCheck && !rateCheck.allowed) {
+          alert(rateCheck.error || '⚠️ Too many vans created today. Please try again tomorrow.');
+          return;
+        }
+      } catch (e) {
+        console.warn('Rate limit check failed, continuing anyway:', e);
       }
     }
 
@@ -254,11 +301,11 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       errors.push('📸 At least 1 photo is required');
     }
     
-    // Titre (min 3 caractères)
+    // Titre (min 5 caractères - requis par Firestore)
     if (!formData.title) {
       errors.push('📝 Title is required');
-    } else if (formData.title.length < 3) {
-      errors.push('📝 Title must be at least 3 characters');
+    } else if (formData.title.length < 5) {
+      errors.push('📝 Title must be at least 5 characters');
     }
     
     // Prix
@@ -293,11 +340,11 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       errors.push('📋 REGO expiry date is required');
     }
     
-    // Description (min 10 caractères)
+    // Description (min 20 caractères - requis par Firestore)
     if (!formData.description) {
       errors.push('✏️ Description is required');
-    } else if (formData.description.length < 10) {
-      errors.push('✏️ Description must be at least 10 characters (currently ' + formData.description.length + ')');
+    } else if (formData.description.length < 20) {
+      errors.push('✏️ Description must be at least 20 characters (currently ' + formData.description.length + ')');
     }
     
     // Buy-back
@@ -385,6 +432,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             rating: 5,
             phone: 'Not provided'
           },
+          // ✅ Ajouter aussi le userId à la racine pour faciliter les requêtes
+          userId: currentUser.uid,
           views: 0,
           status: 'active',
           createdAt: serverTimestamp(),
@@ -404,7 +453,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       
     } catch (error) {
       console.error('Error:', error);
-      alert('❌ Error adding van');
+      alert('❌ Error adding van: ' + (error.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -433,9 +482,6 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     </div>
   );
 
-  // ✅ Récupérer le nombre de vans restants pour l'indicateur
-  const vanLimit = getRemainingActions('createVan');
-
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
@@ -456,40 +502,16 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           <h2 className="text-3xl font-black text-gray-900 mb-2">
             {editMode ? '✏️ Edit Van' : '🚐 Add New Van'}
           </h2>
-          <p className="text-gray-600 mb-4">
+          <p className="text-gray-600 mb-8">
             {editMode ? 'Update your van details' : 'Upload photos and fill in details'}
           </p>
-
-          {/* ✅ Indicateur de vans restants (seulement en mode création) */}
-          {!editMode && currentUser && (
-            <div className={`mb-6 p-3 rounded-xl flex items-center gap-2 ${
-              vanLimit.remaining === 0 
-                ? 'bg-red-50 border border-red-200 text-red-700' 
-                : vanLimit.remaining <= 2 
-                  ? 'bg-amber-50 border border-amber-200 text-amber-700' 
-                  : 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-            }`}>
-              {vanLimit.remaining === 0 ? (
-                <>
-                  <AlertCircle size={18} />
-                  <span className="font-semibold">Daily limit reached (0/{vanLimit.total})</span>
-                  <span className="text-sm ml-auto">Try again tomorrow</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle size={18} />
-                  <span className="font-semibold">{vanLimit.remaining}/{vanLimit.total} listings remaining today</span>
-                </>
-              )}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit}>
             
             {/* PHOTOS SECTION */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
-                Photos ({images.length}/5)
+                📸 Photos ({images.length}/5)
               </h3>
 
               {/* Photo grid */}
@@ -533,20 +555,24 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])}
+                      multiple
+                      onChange={handleFileInputChange}
                       className="hidden"
-                      disabled={uploadingIndex !== null}
+                      disabled={uploadingCount > 0}
                     />
-                    {uploadingIndex === images.length ? (
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+                    {uploadingCount > 0 ? (
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-2"></div>
+                        <span className="text-sm text-emerald-600 font-medium">Uploading {uploadingCount} photo(s)...</span>
+                      </div>
                     ) : (
                       <>
-                        <Upload size={32} className="text-emerald-600 mb-2 group-hover:scale-110 transition-transform" />
+                        <Images size={32} className="text-emerald-600 mb-2 group-hover:scale-110 transition-transform" />
                         <span className="text-sm font-semibold text-emerald-700">
-                          Upload Photo
+                          Upload Photos
                         </span>
                         <span className="text-xs text-gray-500 mt-1">
-                          Click to browse
+                          Select multiple at once
                         </span>
                       </>
                     )}
@@ -572,7 +598,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Title * <span className="font-normal text-gray-400">(min 3 chars)</span>
+                  Title * <span className="font-normal text-gray-400">(min 5 chars)</span>
                 </label>
                 <input
                   type="text"
@@ -580,14 +606,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
                   placeholder="Toyota Hiace 2015"
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors ${
-                    formData.title && formData.title.length < 3 
+                    formData.title && formData.title.length < 5 
                       ? 'border-red-300 focus:border-red-500' 
                       : 'border-gray-200 focus:border-emerald-500'
                   }`}
                   required
                 />
-                {formData.title && formData.title.length < 3 && (
-                  <p className="text-xs text-red-500 mt-1">⚠️ {formData.title.length}/3 characters minimum</p>
+                {formData.title && formData.title.length < 5 && (
+                  <p className="text-xs text-red-500 mt-1">⚠️ {formData.title.length}/5 characters minimum</p>
                 )}
               </div>
 
@@ -733,7 +759,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             {/* DESCRIPTION */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Description * <span className="font-normal text-gray-400">(min 10 chars)</span>
+                Description * <span className="font-normal text-gray-400">(min 20 chars)</span>
               </label>
               <textarea
                 value={formData.description}
@@ -741,15 +767,15 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 placeholder="Perfect backpacker van, well maintained, ready for adventure..."
                 rows={4}
                 className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors resize-none ${
-                  formData.description && formData.description.length < 10 
+                  formData.description && formData.description.length < 20 
                     ? 'border-red-300 focus:border-red-500' 
                     : 'border-gray-200 focus:border-emerald-500'
                 }`}
                 required
               />
               <div className="flex justify-between mt-1">
-                {formData.description && formData.description.length < 10 ? (
-                  <p className="text-xs text-red-500">⚠️ {formData.description.length}/10 characters minimum</p>
+                {formData.description && formData.description.length < 20 ? (
+                  <p className="text-xs text-red-500">⚠️ {formData.description.length}/20 characters minimum</p>
                 ) : (
                   <p className="text-xs text-gray-400">{formData.description.length || 0} characters</p>
                 )}
@@ -1210,11 +1236,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               </button>
               <button
                 type="submit"
-                disabled={loading || images.length === 0 || vanLimit.remaining === 0}
+                disabled={loading || images.length === 0 || uploadingCount > 0}
                 className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading 
                   ? (editMode ? '⏳ Saving...' : '⏳ Adding...') 
-                  : (editMode ? '✅ Save Changes' : '✅ Add Van')
+                  : uploadingCount > 0
+                    ? `📤 Uploading ${uploadingCount} photo(s)...`
+                    : (editMode ? '✅ Save Changes' : '✅ Add Van')
                 }
               </button>
             </div>
