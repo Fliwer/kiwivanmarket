@@ -181,10 +181,12 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       
       // Afficher un message d'erreur clair avec la vraie raison
       const errorMessage = error.message || 'Unknown error';
-      if (errorMessage.includes('4096')) {
-        alert('📸 Image too large!\n\nMaximum dimensions: 4096 x 4096 pixels.\n\nPlease resize your image and try again.');
-      } else if (errorMessage.includes('size')) {
+      if (errorMessage.toLowerCase().includes('dimension') || errorMessage.includes('4096') || errorMessage.includes('too large')) {
+        alert('📸 Image dimensions too large!\n\nPlease resize your image to a smaller resolution and try again.');
+      } else if (errorMessage.toLowerCase().includes('size') || errorMessage.includes('MB')) {
         alert('📸 File too large!\n\nMaximum file size: 10MB.\n\nPlease compress your image and try again.');
+      } else if (errorMessage.toLowerCase().includes('type') || errorMessage.toLowerCase().includes('format')) {
+        alert('📸 Invalid file type!\n\nOnly JPG, PNG and WebP images are accepted.');
       } else {
         alert('❌ Upload failed: ' + errorMessage + '\n\nPlease try again with a different image.');
       }
@@ -523,7 +525,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               {/* Info sur les limites d'upload */}
               <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                 <span>📷</span>
-                <span>Max 10MB per image • Max 4096×4096 pixels • JPG, PNG, WebP</span>
+                <span>Max 10MB per image • JPG, PNG, WebP accepted</span>
               </p>
             </div>
 

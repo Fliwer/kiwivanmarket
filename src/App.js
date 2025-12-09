@@ -5,6 +5,7 @@ import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
+import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
 // MVP_DISABLED: Notifications
 // import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 // import NotificationBell from './components/NotificationBell';
@@ -604,10 +605,10 @@ function MainApp() {
           
           <div className="grid lg:grid-cols-2">
             
-            {/* GALERIE PHOTO */}
+            {/* GALERIE PHOTO - Optimisé pour réduire le bandwidth */}
             <div className="relative bg-gray-900 h-[280px] md:h-[600px] lg:h-[800px] -mt-16 md:mt-0">
               <img 
-                src={images[currentImageIndex]} 
+                src={getLargeImage(images[currentImageIndex])} 
                 alt={van.title || 'Van'} 
                 className="w-full h-full object-cover"
                 loading="lazy"
@@ -1743,7 +1744,7 @@ function MainApp() {
                     className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:-translate-y-1">
                     <div className="relative">
                       <img 
-                        src={van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'} 
+                        src={getThumbnail(van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800')} 
                         alt={van.title} 
                         className="w-full h-56 object-cover"
                         loading="lazy"

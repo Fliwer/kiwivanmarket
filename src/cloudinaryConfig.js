@@ -24,12 +24,12 @@ const ALLOWED_TYPES = [
   'image/webp'
 ];
 
-// Taille max: 5MB
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
+// ✅ Taille max: 10MB (cohérent avec l'UI et Cloudinary Free plan)
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-// Dimensions min/max
+// ✅ Dimensions permissives - Cloudinary gère la vraie validation (25 megapixels)
 const MIN_DIMENSION = 200;
-const MAX_DIMENSION = 4096;
+const MAX_DIMENSION = 10000; // Cloudinary supporte jusqu'à 25 megapixels
 
 /**
  * Valide un fichier avant upload
@@ -41,15 +41,16 @@ export const validateImageFile = (file) => {
   if (!ALLOWED_TYPES.includes(file.type)) {
     return {
       isValid: false,
-      error: 'Invalid file type. Only JPEG, PNG and WebP are allowed.'
+      error: `Invalid file type! Only JPG, PNG, WebP are accepted. You uploaded: ${file.type || 'unknown'}`
     };
   }
   
   // Vérifier la taille
   if (file.size > MAX_FILE_SIZE) {
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
     return {
       isValid: false,
-      error: `File too large. Maximum size is ${MAX_FILE_SIZE / 1024 / 1024}MB.`
+      error: `File too large! Maximum 10MB allowed. Your file: ${sizeMB}MB`
     };
   }
   
@@ -60,7 +61,7 @@ export const validateImageFile = (file) => {
 /**
  * Valide les dimensions d'une image
  * @param {File} file 
- * @returns {Promise<{ isValid: boolean, error?: string }>}
+ * @returns {Promise<{ isValid: boolean, error?: string, width?: number, height?: number }>}
  */
 export const validateImageDimensions = (file) => {
   return new Promise((resolve) => {
@@ -73,15 +74,28 @@ export const validateImageDimensions = (file) => {
       if (img.width < MIN_DIMENSION || img.height < MIN_DIMENSION) {
         resolve({
           isValid: false,
-          error: `Image too small. Minimum ${MIN_DIMENSION}x${MIN_DIMENSION}px.`
+          error: `Image too small. Minimum ${MIN_DIMENSION}x${MIN_DIMENSION}px. Yours: ${img.width}x${img.height}px`
         });
       } else if (img.width > MAX_DIMENSION || img.height > MAX_DIMENSION) {
         resolve({
           isValid: false,
-          error: `Image too large. Maximum ${MAX_DIMENSION}x${MAX_DIMENSION}px.`
+          error: `Image dimensions too large. Maximum ~${MAX_DIMENSION}px per side. Yours: ${img.width}x${img.height}px`
         });
       } else {
-        resolve({ isValid: true });
+        // ✅ Vérification megapixels (Cloudinary limite à 25MP sur plan Free)
+        const megapixels = (img.width * img.height) / 1000000;
+        if (megapixels > 25) {
+          resolve({
+            isValid: false,
+            error: `Image too large (${megapixels.toFixed(1)} megapixels). Maximum 25 megapixels allowed. Try resizing.`
+          });
+        } else {
+          resolve({ 
+            isValid: true,
+            width: img.width,
+            height: img.height
+          });
+        }
       }
     };
     
@@ -89,7 +103,7 @@ export const validateImageDimensions = (file) => {
       URL.revokeObjectURL(url);
       resolve({
         isValid: false,
-        error: 'Could not read image file.'
+        error: 'Could not read image file. The file may be corrupted.'
       });
     };
     
@@ -142,7 +156,20 @@ export const uploadToCloudinary = async (file, options = {}) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error?.message || 'Upload failed');
+      const errorMessage = errorData.error?.message || 'Upload failed';
+      
+      // ✅ Messages d'erreur plus clairs
+      if (errorMessage.includes('File size too large')) {
+        throw new Error('File too large! Maximum 10MB allowed.');
+      }
+      if (errorMessage.includes('Invalid image file')) {
+        throw new Error('Invalid image file. Please try a different image.');
+      }
+      if (errorMessage.includes('Megapixels') || errorMessage.includes('megapixels')) {
+        throw new Error('Image dimensions too large! Please resize your image (max 25 megapixels).');
+      }
+      
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
