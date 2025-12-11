@@ -45,6 +45,15 @@ export default function FavoritesPage({ onClose, onVanClick }) {
 
   const formatPrice = (price) => `NZ$${price?.toLocaleString() || '0'}`;
 
+  // ✅ Fermeture avec touche Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
+
   const handleRemoveFavorite = async (e, vanId) => {
     e.stopPropagation();
     if (window.confirm('Remove from favorites?')) {
@@ -53,10 +62,16 @@ export default function FavoritesPage({ onClose, onVanClick }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-6xl w-full h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ✅ HEADER STICKY - Toujours visible */}
+        <div className="sticky top-0 z-20 bg-white rounded-t-2xl flex items-center justify-between p-6 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <Heart size={28} className="text-red-500 fill-red-500" />
             <div>
@@ -68,12 +83,12 @@ export default function FavoritesPage({ onClose, onVanClick }) {
           </div>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition">
-            <X size={24} />
+            className="bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-all hover:scale-110">
+            <X size={24} className="text-gray-600" />
           </button>
         </div>
 
-        {/* Content */}
+        {/* ✅ CONTENU SCROLLABLE */}
         <div className="flex-1 overflow-y-auto p-6">
           {loading || favoritesLoading ? (
             <div className="flex items-center justify-center h-full">
@@ -189,12 +204,12 @@ export default function FavoritesPage({ onClose, onVanClick }) {
           )}
         </div>
 
-        {/* Footer */}
+        {/* ✅ FOOTER STICKY */}
         {!loading && !favoritesLoading && vansData.length > 0 && (
-          <div className="border-t p-4 bg-gray-50">
+          <div className="sticky bottom-0 z-20 border-t p-4 bg-gray-50 rounded-b-2xl">
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
-                ðŸ’¡ Tip: Click on any van to view details
+                💡 Tip: Click on any van to view details
               </p>
               <button 
                 onClick={onClose}

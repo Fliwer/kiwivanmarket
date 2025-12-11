@@ -106,6 +106,15 @@ export default function MyVans({ onClose }) {
 
   const formatPrice = (price) => `NZ$${price.toLocaleString()}`;
 
+  // ✅ Fermeture avec touche Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && !editingVan && !showDeleteConfirm) onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose, editingVan, showDeleteConfirm]);
+
   if (editingVan) {
     return (
       <AddVanForm 
@@ -118,45 +127,57 @@ export default function MyVans({ onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-6xl w-full my-8 p-8 relative max-h-[90vh] overflow-y-auto">
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-white rounded-full p-2 shadow-lg z-10">
-          <X size={24} />
-        </button>
-        
-        <div className="flex items-center justify-between mb-6">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ✅ HEADER STICKY - Toujours visible */}
+        <div className="sticky top-0 z-20 bg-white rounded-t-2xl border-b border-gray-100 px-8 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-bold">Mes Vans 🚐</h2>
+            <h2 className="text-3xl font-bold">My Vans 🚐</h2>
             {userIsAdmin && <AdminBadge user={currentUser} />}
           </div>
           
-          {/* Toggle Admin Mode */}
-          {userIsAdmin && (
-            <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
-              <button
-                onClick={() => setViewMode('my')}
-                className={`px-4 py-2 rounded-lg font-semibold transition ${
-                  viewMode === 'my' 
-                    ? 'bg-white text-emerald-600 shadow' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}>
-                Mes Vans
-              </button>
-              <button
-                onClick={() => setViewMode('all')}
-                className={`px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${
-                  viewMode === 'all' 
-                    ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}>
-                <Crown size={16} />
-                Tous les Vans (Admin)
-              </button>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {/* Toggle Admin Mode */}
+            {userIsAdmin && (
+              <div className="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                <button
+                  onClick={() => setViewMode('my')}
+                  className={`px-4 py-2 rounded-lg font-semibold transition ${
+                    viewMode === 'my' 
+                      ? 'bg-white text-emerald-600 shadow' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}>
+                  My Vans
+                </button>
+                <button
+                  onClick={() => setViewMode('all')}
+                  className={`px-4 py-2 rounded-lg font-semibold transition flex items-center gap-2 ${
+                    viewMode === 'all' 
+                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}>
+                  <Crown size={16} />
+                  All Vans (Admin)
+                </button>
+              </div>
+            )}
+            
+            <button 
+              onClick={onClose}
+              className="bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-all hover:scale-110">
+              <X size={24} className="text-gray-600" />
+            </button>
+          </div>
         </div>
+        
+        {/* ✅ CONTENU SCROLLABLE */}
+        <div className="flex-1 overflow-y-auto px-8 py-6">
         
         {/* Statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -291,7 +312,7 @@ export default function MyVans({ onClose }) {
                         onClick={() => setShowDeleteConfirm(van)}
                         className={`${isOwner ? 'flex-1' : 'w-full'} bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2`}>
                         <Trash2 size={16} />
-                        {userIsAdmin && !isOwner ? 'Supprimer (Admin)' : 'Supprimer'}
+                        {userIsAdmin && !isOwner ? 'Delete (Admin)' : 'Delete'}
                       </button>
                     </div>
                   </div>
@@ -302,36 +323,39 @@ export default function MyVans({ onClose }) {
         )}
 
         {/* Confirmation de suppression */}
+        </div>
+        {/* ✅ FIN CONTENU SCROLLABLE */}
+        
         {showDeleteConfirm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6">
-              <h3 className="text-2xl font-bold mb-4 text-red-600">⚠️ Confirmer la suppression</h3>
+              <h3 className="text-2xl font-bold mb-4 text-red-600">⚠️ Confirm Deletion</h3>
               {userIsAdmin && showDeleteConfirm.seller?.uid !== currentUser.uid && (
                 <div className="bg-orange-100 border-2 border-orange-500 rounded-lg p-3 mb-4">
                   <p className="text-orange-800 font-bold text-sm flex items-center gap-2">
                     <Crown size={16} />
-                    MODE ADMIN : Suppression du van d'un autre utilisateur
+                    ADMIN MODE: Deleting another user's van
                   </p>
                 </div>
               )}
               <p className="text-gray-700 mb-2">
-                Êtes-vous sûr de vouloir supprimer ce van ?
+                Are you sure you want to delete this van?
               </p>
               <p className="font-bold mb-4">{showDeleteConfirm.title}</p>
               <p className="text-sm text-gray-500 mb-6">
-                Cette action est irréversible. Les images et toutes les données seront définitivement supprimées.
+                This action is irreversible. Images and all data will be permanently deleted.
               </p>
               
               <div className="flex gap-3">
                 <button 
                   onClick={() => setShowDeleteConfirm(null)}
                   className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
-                  Annuler
+                  Cancel
                 </button>
                 <button 
                   onClick={() => handleDelete(showDeleteConfirm)}
                   className="flex-1 bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition">
-                  Supprimer
+                  Delete
                 </button>
               </div>
             </div>

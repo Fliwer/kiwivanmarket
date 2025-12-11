@@ -76,7 +76,16 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     sellerFacebook: ''
   });
 
-  // Charger les donnÃ©es du van en mode Ã©dition
+  // ✅ Fermeture avec touche Escape
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
+
+  // Charger les données du van en mode édition
   useEffect(() => {
     if (editMode && vanData) {
       // Default equipment object - Simplified for backpackers
@@ -424,25 +433,31 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       onClick={onClose}
     >
       <div 
-        className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl"
+        className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col relative shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         
-        <button 
-          onClick={onClose}
-          className="absolute top-6 right-6 bg-white rounded-full p-3 shadow-xl z-[70] hover:bg-gray-100 transition-all hover:scale-110">
-          <X size={24} />
-        </button>
+        {/* ✅ HEADER STICKY - Toujours visible */}
+        <div className="sticky top-0 z-20 bg-white rounded-t-3xl border-b border-gray-100 px-8 py-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-black text-gray-900">
+              {editMode ? '✏️ Edit Van' : '🚐 Add New Van'}
+            </h2>
+            <p className="text-gray-600 mt-1">
+              {editMode ? 'Update your van details' : 'Upload photos and fill in details'}
+            </p>
+          </div>
+          <button 
+            onClick={onClose}
+            className="bg-gray-100 hover:bg-gray-200 rounded-full p-3 transition-all hover:scale-110">
+            <X size={24} className="text-gray-600" />
+          </button>
+        </div>
 
-        <div className="p-8 lg:p-10">
-          <h2 className="text-3xl font-black text-gray-900 mb-2">
-            {editMode ? 'âœï¸ Edit Van' : 'ðŸš Add New Van'}
-          </h2>
-          <p className="text-gray-600 mb-8">
-            {editMode ? 'Update your van details' : 'Upload photos and fill in details'}
-          </p>
+        {/* ✅ CONTENU SCROLLABLE */}
+        <div className="flex-1 overflow-y-auto px-8 lg:px-10 py-6">
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} id="addVanForm">
             
             {/* PHOTOS SECTION */}
             <div className="mb-8">
@@ -1199,26 +1214,31 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               </div>
             </div>
 
-            {/* BUTTONS */}
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={loading}
-                className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-300 transition-colors disabled:opacity-50">
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || images.length === 0}
-                className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                {loading 
-                  ? (editMode ? 'Saving...' : 'Adding...') 
-                  : (editMode ? 'Save Changes' : 'Add Van')
-                }
-              </button>
-            </div>
+            {/* BUTTONS moved to footer */}
           </form>
+        </div>
+
+        {/* ✅ FOOTER STICKY - Boutons toujours visibles */}
+        <div className="sticky bottom-0 z-20 bg-white border-t border-gray-100 px-8 py-4 rounded-b-3xl">
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 bg-gray-200 text-gray-700 py-4 rounded-xl font-bold text-lg hover:bg-gray-300 transition-colors disabled:opacity-50">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form="addVanForm"
+              disabled={loading || images.length === 0}
+              className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              {loading 
+                ? (editMode ? 'Saving...' : 'Adding...') 
+                : (editMode ? 'Save Changes' : 'Add Van')
+              }
+            </button>
+          </div>
         </div>
       </div>
     </div>
