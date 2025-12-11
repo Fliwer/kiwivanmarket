@@ -2,31 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, doc, updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { X, Upload, Trash2, CheckCircle, Images } from 'lucide-react';
+import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
-
-// ⚠️ Rate limit - import OPTIONNEL (ne bloque pas si le hook n'existe pas)
-let useRateLimit = () => ({ checkAndRecord: () => ({ allowed: true }) });
-try {
-  const rateLimitModule = require('../hooks/useRateLimit');
-  if (rateLimitModule && rateLimitModule.useRateLimit) {
-    useRateLimit = rateLimitModule.useRateLimit;
-  }
-} catch (e) {
-  console.warn('⚠️ useRateLimit hook not available, rate limiting disabled');
-}
 
 
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = false, vanData = null }) {
   const { currentUser } = useAuth();
-  
-  // Rate limiting - avec fallback si le hook n'existe pas
-  const rateLimitResult = useRateLimit(currentUser?.uid);
-  const checkAndRecord = rateLimitResult?.checkAndRecord || (() => ({ allowed: true }));
-  
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
-  const [uploadingCount, setUploadingCount] = useState(0);
+  const [uploadingIndex, setUploadingIndex] = useState(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -47,38 +31,38 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     buyBackMaxKm: '',
     buyBackConditions: '',
     equipment: {
-      // 🛏️ Sleeping - Essential
+      // ðŸ›ï¸ Sleeping - Essential
       doubleBed: false,
       singleBeds: false,
       roofBed: false,
       bedding: false,
       curtains: false,
-      // 🍳 Kitchen - Essential
+      // ðŸ³ Kitchen - Essential
       fridge: false,
       gasStove: false,
       sink: false,
       cookware: false,
-      // 💧 Water & Bathroom - Essential for self-contained
+      // ðŸ’§ Water & Bathroom - Essential for self-contained
       freshWaterTank: false,
       greyWaterTank: false,
       outdoorShower: false,
       indoorShower: false,
       toilet: false,
       portaPotti: false,
-      // ⚡ Power - Very important for backpackers
+      // âš¡ Power - Very important for backpackers
       solarPanel: false,
       leisureBattery: false,
       splitCharger: false,
       inverter: false,
       usb: false,
       ledLights: false,
-      // 🌡️ Comfort - Important in NZ climate
+      // ðŸŒ¡ï¸ Comfort - Important in NZ climate
       heater: false,
       dieselHeater: false,
       roofFan: false,
       insulation: false,
       awning: false,
-      // 🚗 Vehicle Features
+      // ðŸš— Vehicle Features
       reverseCamera: false,
       bluetooth: false,
       swivelSeats: false,
@@ -87,10 +71,12 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     },
     wofExpiry: '',
     regoExpiry: '',
-    customFeatures: ''
+    customFeatures: '',
+    sellerPhone: '',
+    sellerFacebook: ''
   });
 
-  // Charger les données du van en mode édition
+  // Charger les donnÃ©es du van en mode Ã©dition
   useEffect(() => {
     if (editMode && vanData) {
       // Default equipment object - Simplified for backpackers
@@ -132,7 +118,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         equipment: { ...defaultEquipment, ...(vanData.equipment || {}) },
         wofExpiry: vanData.wofExpiry ? vanData.wofExpiry.split('T')[0] : '',
         regoExpiry: vanData.regoExpiry ? vanData.regoExpiry.split('T')[0] : '',
-        customFeatures: vanData.customFeatures || ''
+        customFeatures: vanData.customFeatures || '',
+        sellerPhone: vanData.seller?.phone || '',
+        sellerFacebook: vanData.seller?.facebook || ''
       });
       
       // Charger les images existantes
@@ -144,100 +132,54 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     }
   }, [editMode, vanData]);
 
-  // États pour les tooltips
+  // Ã‰tats pour les tooltips
   const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
   const [showWofTooltip, setShowWofTooltip] = useState(false);
   const [showRegoTooltip, setShowRegoTooltip] = useState(false);
   const [showSelfContainedTooltip, setShowSelfContainedTooltip] = useState(false);
   const [showAdvancedEquipment, setShowAdvancedEquipment] = useState(false);
 
-  // Upload multiple images en parallèle
-  const handleMultipleImages = async (files) => {
-    const fileArray = Array.from(files);
-    const remainingSlots = 5 - images.length;
-    
-    if (remainingSlots <= 0) {
-      alert('⚠️ Maximum 5 photos reached!');
+  // Upload image
+  const handleImageUpload = async (file) => {
+    if (images.length >= 5) {
+      alert('âš ï¸ Maximum 5 photos!');
       return;
     }
-    
-    // Filtrer les fichiers valides
-    const validFiles = fileArray.slice(0, remainingSlots).filter(file => {
-      if (!file.type.startsWith('image/')) {
-        alert(`⚠️ "${file.name}" is not a valid image`);
-        return false;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        alert(`⚠️ "${file.name}" is too large (max 10MB)`);
-        return false;
-      }
-      return true;
-    });
-    
-    if (validFiles.length === 0) return;
-    
-    // Ajouter les placeholders avec preview local
-    const startIndex = images.length;
-    setUploadingCount(validFiles.length);
-    
-    // Créer les previews locaux immédiatement
-    const previewPromises = validFiles.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve({ url: e.target.result, uploading: true });
-        reader.readAsDataURL(file);
-      });
-    });
-    
-    const previews = await Promise.all(previewPromises);
-    setImages(prev => [...prev, ...previews]);
-    
-    // Upload en parallèle
-    const uploadPromises = validFiles.map(async (file, i) => {
-      try {
-        const result = await uploadToCloudinary(file);
-        return { index: startIndex + i, url: result.url, success: true };
-      } catch (error) {
-        console.error(`Upload error for ${file.name}:`, error);
-        return { index: startIndex + i, success: false, error: error.message };
-      }
-    });
-    
-    const results = await Promise.all(uploadPromises);
-    
-    // Mettre à jour les images avec les URLs finales
-    setImages(prev => {
-      const updated = [...prev];
-      let failCount = 0;
-      
-      results.forEach(result => {
-        if (result.success) {
-          updated[result.index] = { url: result.url, uploading: false };
-        } else {
-          updated[result.index] = null;
-          failCount++;
-        }
-      });
-      
-      const filtered = updated.filter(img => img !== null);
-      
-      if (failCount > 0) {
-        setTimeout(() => {
-          alert(`📸 ${results.length - failCount} photo(s) uploaded.\n❌ ${failCount} failed.`);
-        }, 100);
-      }
-      
-      return filtered;
-    });
-    
-    setUploadingCount(0);
-  };
 
-  // Handler pour l'input file
-  const handleFileInputChange = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleMultipleImages(e.target.files);
-      e.target.value = '';
+    if (!file.type.startsWith('image/')) {
+      alert('âš ï¸ Invalid file!');
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert('âš ï¸ Image too large (max 10MB)');
+      return;
+    }
+
+    const newIndex = images.length;
+    setUploadingIndex(newIndex);
+
+    // Instant local preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImages(prev => [...prev, { url: e.target.result, uploading: true }]);
+    };
+    reader.readAsDataURL(file);
+
+    try {
+      const result = await uploadToCloudinary(file);
+      
+      setImages(prev => {
+        const updated = [...prev];
+        updated[newIndex] = { url: result.url, uploading: false };
+        return updated;
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      setImages(prev => prev.filter((_, i) => i !== newIndex));
+      alert('âŒ Upload error');
+    } finally {
+      setUploadingIndex(null);
     }
   };
 
@@ -248,39 +190,26 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🛡️ SÉCURITÉ: Vérifier que l'utilisateur est connecté
+    // ðŸ›¡ï¸ SÃ‰CURITÃ‰: VÃ©rifier que l'utilisateur est connectÃ©
     if (!currentUser) {
-      alert('⚠️ Please sign in to add a van!');
+      alert('âš ï¸ Please sign in to add a van!');
       return;
     }
 
-    // 🛡️ RATE LIMIT: Max 5 vans par jour (anti-spam) - optionnel
-    if (!editMode && checkAndRecord) {
-      try {
-        const rateCheck = checkAndRecord('createVan');
-        if (rateCheck && !rateCheck.allowed) {
-          alert(rateCheck.error || '⚠️ Too many vans created today. Please try again tomorrow.');
-          return;
-        }
-      } catch (e) {
-        console.warn('Rate limit check failed, continuing anyway:', e);
-      }
-    }
-
-    // 🛡️ SÉCURITÉ: Limiter à 20 vans par utilisateur (anti-spam)
+    // ðŸ›¡ï¸ SÃ‰CURITÃ‰: Limiter Ã  20 vans par utilisateur (anti-spam)
     if (!editMode) {
       try {
         const userVansQuery = query(
           collection(db, 'vans'),
-          where('seller.uid', '==', currentUser.uid)
+          where('userId', '==', currentUser.uid)
         );
         const userVansSnapshot = await getDocs(userVansQuery);
         const userVanCount = userVansSnapshot.size;
         
         if (userVanCount >= 20) {
           const upgrade = window.confirm(
-            '🚐 You have reached the maximum of 20 free listings!\n\n' +
-            '💼 Need more? Upgrade to a Pro account for unlimited listings.\n\n' +
+            'ðŸš You have reached the maximum of 20 free listings!\n\n' +
+            'ðŸ’¼ Need more? Upgrade to a Pro account for unlimited listings.\n\n' +
             'Click OK to contact us about Pro accounts.'
           );
           if (upgrade) {
@@ -293,68 +222,68 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       }
     }
 
-    // 🛡️ VALIDATION COMPLÈTE avec messages d'erreur détaillés
+    // ðŸ›¡ï¸ VALIDATION COMPLÃˆTE avec messages d'erreur dÃ©taillÃ©s
     const errors = [];
     
     // Photos
     if (images.length === 0) {
-      errors.push('📸 At least 1 photo is required');
+      errors.push('ðŸ“¸ At least 1 photo is required');
     }
     
-    // Titre (min 5 caractères - requis par Firestore)
+    // Titre (min 3 caractÃ¨res)
     if (!formData.title) {
-      errors.push('📝 Title is required');
-    } else if (formData.title.length < 5) {
-      errors.push('📝 Title must be at least 5 characters');
+      errors.push('ðŸ“ Title is required');
+    } else if (formData.title.length < 3) {
+      errors.push('ðŸ“ Title must be at least 3 characters');
     }
     
     // Prix
     if (!formData.price) {
-      errors.push('💰 Price is required');
+      errors.push('ðŸ’° Price is required');
     } else if (parseInt(formData.price) < 1 || parseInt(formData.price) > 500000) {
-      errors.push('💰 Price must be between $1 and $500,000');
+      errors.push('ðŸ’° Price must be between $1 and $500,000');
     }
     
     // Ville
     if (!formData.location) {
-      errors.push('📍 City is required');
+      errors.push('ðŸ“ City is required');
     }
     
-    // Année
+    // AnnÃ©e
     if (!formData.year) {
-      errors.push('📅 Year is required');
+      errors.push('ðŸ“… Year is required');
     } else if (parseInt(formData.year) < 1950 || parseInt(formData.year) > 2026) {
-      errors.push('📅 Year must be between 1950 and 2026');
+      errors.push('ðŸ“… Year must be between 1950 and 2026');
     }
     
-    // Kilométrage
+    // KilomÃ©trage
     if (!formData.mileage && formData.mileage !== 0) {
-      errors.push('🛣️ Mileage is required');
+      errors.push('ðŸ›£ï¸ Mileage is required');
     }
     
     // WOF & REGO
     if (!formData.wofExpiry) {
-      errors.push('🔧 WOF expiry date is required');
+      errors.push('ðŸ”§ WOF expiry date is required');
     }
     if (!formData.regoExpiry) {
-      errors.push('📋 REGO expiry date is required');
+      errors.push('ðŸ“‹ REGO expiry date is required');
     }
     
-    // Description (min 20 caractères - requis par Firestore)
+    // Description (min 10 caractÃ¨res)
     if (!formData.description) {
-      errors.push('✏️ Description is required');
-    } else if (formData.description.length < 20) {
-      errors.push('✏️ Description must be at least 20 characters (currently ' + formData.description.length + ')');
+      errors.push('âœï¸ Description is required');
+    } else if (formData.description.length < 10) {
+      errors.push('âœï¸ Description must be at least 10 characters (currently ' + formData.description.length + ')');
     }
     
     // Buy-back
     if (formData.buyBack && !formData.buyBackPrice) {
-      errors.push('🛡️ Buy-back price is required when buy-back is enabled');
+      errors.push('ðŸ›¡ï¸ Buy-back price is required when buy-back is enabled');
     }
     
     // Afficher les erreurs
     if (errors.length > 0) {
-      alert('⚠️ Please fix the following errors:\n\n' + errors.join('\n'));
+      alert('âš ï¸ Please fix the following errors:\n\n' + errors.join('\n'));
       return;
     }
 
@@ -364,7 +293,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       const imageUrls = images.map(img => img.url);
 
       if (editMode && vanData) {
-        // MODE ÉDITION - Update existing van
+        // MODE Ã‰DITION - Update existing van
         const updateData = {
           title: formData.title,
           price: parseInt(formData.price),
@@ -388,6 +317,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           customFeatures: formData.customFeatures || '',
           imageUrl: imageUrls[0],
           images: imageUrls,
+          'seller.phone': formData.sellerPhone || '',
+          'seller.facebook': formData.sellerFacebook || '',
           updatedAt: new Date()
         };
 
@@ -396,12 +327,12 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         localStorage.removeItem('kiwiVanMarket_vans');
         localStorage.removeItem('kiwiVanMarket_timestamp');
 
-        alert('✅ Van updated successfully!');
+        alert('Van updated successfully!');
         onVanAdded && onVanAdded();
         onClose();
         
       } else {
-        // MODE CRÉATION - Add new van
+        // MODE CRÃ‰ATION - Add new van
         const newVanData = {
           title: formData.title,
           price: parseInt(formData.price),
@@ -429,11 +360,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             uid: currentUser.uid,
             name: currentUser.displayName || 'Anonymous',
             email: currentUser.email,
-            rating: 5,
-            phone: 'Not provided'
+            phone: formData.sellerPhone || '',
+            facebook: formData.sellerFacebook || ''
           },
-          // ✅ Ajouter aussi le userId à la racine pour faciliter les requêtes
-          userId: currentUser.uid,
           views: 0,
           status: 'active',
           createdAt: serverTimestamp(),
@@ -445,14 +374,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         localStorage.removeItem('kiwiVanMarket_vans');
         localStorage.removeItem('kiwiVanMarket_timestamp');
 
-        alert('✅ Van added successfully!');
+        alert('Van added successfully!');
         
-        // Appeler le callback pour rafraîchir la liste (priorité à onVanAdded)
+        // Appeler le callback pour rafraichir la liste
         if (onVanAdded) {
           await onVanAdded();
           onClose();
         } else {
-          // Fallback: ancien comportement avec reload
           onSuccess && onSuccess();
           onClose();
           window.location.reload();
@@ -461,13 +389,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       
     } catch (error) {
       console.error('Error:', error);
-      alert('❌ Error adding van: ' + (error.message || 'Unknown error'));
+      alert('âŒ Error adding van');
     } finally {
       setLoading(false);
     }
   };
 
-  // Composant Tooltip réutilisable
+  // Composant Tooltip rÃ©utilisable
   const InfoTooltip = ({ show, onMouseEnter, onMouseLeave, title, emoji, children }) => (
     <div className="relative inline-block">
       <div 
@@ -508,7 +436,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
         <div className="p-8 lg:p-10">
           <h2 className="text-3xl font-black text-gray-900 mb-2">
-            {editMode ? '✏️ Edit Van' : '🚐 Add New Van'}
+            {editMode ? 'âœï¸ Edit Van' : 'ðŸš Add New Van'}
           </h2>
           <p className="text-gray-600 mb-8">
             {editMode ? 'Update your van details' : 'Upload photos and fill in details'}
@@ -519,7 +447,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             {/* PHOTOS SECTION */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
-                📸 Photos ({images.length}/5)
+                Photos ({images.length}/5)
               </h3>
 
               {/* Photo grid */}
@@ -563,24 +491,20 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     <input
                       type="file"
                       accept="image/*"
-                      multiple
-                      onChange={handleFileInputChange}
+                      onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])}
                       className="hidden"
-                      disabled={uploadingCount > 0}
+                      disabled={uploadingIndex !== null}
                     />
-                    {uploadingCount > 0 ? (
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-2"></div>
-                        <span className="text-sm text-emerald-600 font-medium">Uploading {uploadingCount} photo(s)...</span>
-                      </div>
+                    {uploadingIndex === images.length ? (
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
                     ) : (
                       <>
-                        <Images size={32} className="text-emerald-600 mb-2 group-hover:scale-110 transition-transform" />
+                        <Upload size={32} className="text-emerald-600 mb-2 group-hover:scale-110 transition-transform" />
                         <span className="text-sm font-semibold text-emerald-700">
-                          Upload Photos
+                          Upload Photo
                         </span>
                         <span className="text-xs text-gray-500 mt-1">
-                          Select multiple at once
+                          Click to browse
                         </span>
                       </>
                     )}
@@ -590,23 +514,17 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
               {images.length === 0 && (
                 <p className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-xl p-3 flex items-center gap-2">
-                  <span>⚠️</span>
+                  <span>âš ï¸</span>
                   <span>At least 1 photo required</span>
                 </p>
               )}
-              
-              {/* Info sur les limites d'upload */}
-              <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                <span>📷</span>
-                <span>Max 10MB per image • JPG, PNG, WebP accepted</span>
-              </p>
             </div>
 
             {/* BASIC INFO */}
             <div className="grid md:grid-cols-2 gap-4 mb-6">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Title * <span className="font-normal text-gray-400">(min 5 chars)</span>
+                  Title * <span className="font-normal text-gray-400">(min 3 chars)</span>
                 </label>
                 <input
                   type="text"
@@ -614,14 +532,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   onChange={(e) => setFormData({...formData, title: e.target.value})}
                   placeholder="Toyota Hiace 2015"
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors ${
-                    formData.title && formData.title.length < 5 
+                    formData.title && formData.title.length < 3 
                       ? 'border-red-300 focus:border-red-500' 
                       : 'border-gray-200 focus:border-emerald-500'
                   }`}
                   required
                 />
-                {formData.title && formData.title.length < 5 && (
-                  <p className="text-xs text-red-500 mt-1">⚠️ {formData.title.length}/5 characters minimum</p>
+                {formData.title && formData.title.length < 3 && (
+                  <p className="text-xs text-red-500 mt-1">âš ï¸ {formData.title.length}/3 characters minimum</p>
                 )}
               </div>
 
@@ -697,9 +615,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                  <option value="Car">🚗 Car</option>
-                  <option value="Van">🚐 Van</option>
-                  <option value="Motorhome">🚌 Motorhome</option>
+                  <option value="Car">ðŸš— Car</option>
+                  <option value="Van">ðŸš Van</option>
+                  <option value="Motorhome">ðŸšŒ Motorhome</option>
                 </select>
               </div>
 
@@ -722,7 +640,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     onMouseEnter={() => setShowWofTooltip(true)}
                     onMouseLeave={() => setShowWofTooltip(false)}
                     title="Warrant of Fitness"
-                    emoji="🔧"
+                    emoji="ðŸ”§"
                   >
                     A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months for all vehicles in NZ. 
                     It checks brakes, lights, tyres, steering and other safety features. 
@@ -747,7 +665,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     onMouseEnter={() => setShowRegoTooltip(true)}
                     onMouseLeave={() => setShowRegoTooltip(false)}
                     title="Vehicle Registration"
-                    emoji="📋"
+                    emoji="ðŸ“‹"
                   >
                     <span className="text-white font-semibold">Registration fee</span> that must be paid to legally drive on NZ roads. 
                     Can be bought in 3, 6 or 12 month periods at any PostShop or online. 
@@ -767,7 +685,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             {/* DESCRIPTION */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Description * <span className="font-normal text-gray-400">(min 20 chars)</span>
+                Description * <span className="font-normal text-gray-400">(min 10 chars)</span>
               </label>
               <textarea
                 value={formData.description}
@@ -775,76 +693,124 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 placeholder="Perfect backpacker van, well maintained, ready for adventure..."
                 rows={4}
                 className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors resize-none ${
-                  formData.description && formData.description.length < 20 
+                  formData.description && formData.description.length < 10 
                     ? 'border-red-300 focus:border-red-500' 
                     : 'border-gray-200 focus:border-emerald-500'
                 }`}
                 required
               />
               <div className="flex justify-between mt-1">
-                {formData.description && formData.description.length < 20 ? (
-                  <p className="text-xs text-red-500">⚠️ {formData.description.length}/20 characters minimum</p>
+                {formData.description && formData.description.length < 10 ? (
+                  <p className="text-xs text-red-500">âš ï¸ {formData.description.length}/10 characters minimum</p>
                 ) : (
                   <p className="text-xs text-gray-400">{formData.description.length || 0} characters</p>
                 )}
               </div>
             </div>
 
-            {/* EQUIPMENT - Simplifié */}
+            {/* PHONE NUMBER */}
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">🔧 Equipment & Features</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Your Phone Number <span className="font-normal text-gray-400">(for WhatsApp contact)</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border-2 border-green-200 rounded-xl">
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                </div>
+                <input
+                  type="tel"
+                  value={formData.sellerPhone}
+                  onChange={(e) => setFormData({...formData, sellerPhone: e.target.value})}
+                  placeholder="+64 21 123 4567"
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Include country code (e.g. +64 for NZ). Buyers can contact you directly via WhatsApp or call.
+              </p>
+            </div>
+
+            {/* FACEBOOK */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Facebook Profile <span className="font-normal text-gray-400">(optional)</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                  <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 008.44-9.9c0-5.53-4.5-10.02-10-10.02z"/>
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  value={formData.sellerFacebook}
+                  onChange={(e) => setFormData({...formData, sellerFacebook: e.target.value})}
+                  placeholder="your.name or facebook.com/your.name"
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Your Facebook username or profile URL. Buyers can contact you via Messenger.
+              </p>
+            </div>
+
+            {/* EQUIPMENT - Simplifie */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">ðŸ”§ Equipment & Features</label>
               
               {/* ESSENTIELS - Toujours visible */}
               <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl mb-4">
-                <h4 className="text-sm font-bold text-emerald-700 mb-3">✨ Key Features <span className="font-normal text-emerald-600">(most searched by buyers)</span></h4>
+                <h4 className="text-sm font-bold text-emerald-700 mb-3">âœ¨ Key Features <span className="font-normal text-emerald-600">(most searched by buyers)</span></h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.doubleBed} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, doubleBed: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">🛏️ Double Bed</span>
+                    <span className="text-sm">ðŸ›ï¸ Double Bed</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.fridge} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, fridge: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">🧊 Fridge</span>
+                    <span className="text-sm">ðŸ§Š Fridge</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.gasStove} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, gasStove: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">🔥 Gas Stove</span>
+                    <span className="text-sm">ðŸ”¥ Gas Stove</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.sink} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, sink: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">🚰 Sink</span>
+                    <span className="text-sm">ðŸš° Sink</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.toilet} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, toilet: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">🚽 Toilet</span>
+                    <span className="text-sm">ðŸš½ Toilet</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.solarPanel} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, solarPanel: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">☀️ Solar Panel</span>
+                    <span className="text-sm">â˜€ï¸ Solar Panel</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.leisureBattery} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, leisureBattery: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">🔋 Leisure Battery</span>
+                    <span className="text-sm">ðŸ”‹ Leisure Battery</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.dieselHeater || formData.equipment.heater} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, heater: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">🌡️ Heater</span>
+                    <span className="text-sm">ðŸŒ¡ï¸ Heater</span>
                   </label>
                 </div>
               </div>
@@ -855,16 +821,16 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 onClick={() => setShowAdvancedEquipment(!showAdvancedEquipment)}
                 className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-600 transition flex items-center justify-center gap-2 mb-4"
               >
-                {showAdvancedEquipment ? '➖ Less options' : '➕ More options'}
+                {showAdvancedEquipment ? 'âž– Less options' : 'âž• More options'}
               </button>
 
-              {/* OPTIONS AVANCÉES - Simplifiées pour backpackers */}
+              {/* OPTIONS AVANCÃ‰ES - SimplifiÃ©es pour backpackers */}
               {showAdvancedEquipment && (
                 <div className="space-y-4 mb-4">
                   
-                  {/* 🛏️ Sleeping */}
+                  {/* ðŸ›ï¸ Sleeping */}
                   <div className="p-3 bg-indigo-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-indigo-600 mb-2">🛏️ Sleeping</h4>
+                    <h4 className="text-xs font-bold text-indigo-600 mb-2">ðŸ›ï¸ Sleeping</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.singleBeds} 
@@ -893,9 +859,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* 🍳 Kitchen */}
+                  {/* ðŸ³ Kitchen */}
                   <div className="p-3 bg-orange-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-orange-600 mb-2">🍳 Kitchen</h4>
+                    <h4 className="text-xs font-bold text-orange-600 mb-2">ðŸ³ Kitchen</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.cookware} 
@@ -906,9 +872,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* 💧 Water & Bathroom */}
+                  {/* ðŸ’§ Water & Bathroom */}
                   <div className="p-3 bg-cyan-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-cyan-600 mb-2">💧 Water & Bathroom</h4>
+                    <h4 className="text-xs font-bold text-cyan-600 mb-2">ðŸ’§ Water & Bathroom</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.freshWaterTank} 
@@ -943,9 +909,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* ⚡ Power */}
+                  {/* âš¡ Power */}
                   <div className="p-3 bg-yellow-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-yellow-600 mb-2">⚡ Power</h4>
+                    <h4 className="text-xs font-bold text-yellow-600 mb-2">âš¡ Power</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.splitCharger} 
@@ -974,15 +940,15 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* 🌡️ Comfort */}
+                  {/* ðŸŒ¡ï¸ Comfort */}
                   <div className="p-3 bg-rose-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-rose-600 mb-2">🌡️ Comfort</h4>
+                    <h4 className="text-xs font-bold text-rose-600 mb-2">ðŸŒ¡ï¸ Comfort</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.dieselHeater} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, dieselHeater: e.target.checked}})}
                           className="w-4 h-4 text-rose-600 rounded" />
-                        🔥 Diesel Heater (Webasto)
+                        ðŸ”¥ Diesel Heater (Webasto)
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.roofFan} 
@@ -1005,9 +971,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* 🚗 Vehicle */}
+                  {/* ðŸš— Vehicle */}
                   <div className="p-3 bg-gray-100 rounded-xl">
-                    <h4 className="text-xs font-bold text-gray-600 mb-2">🚗 Vehicle</h4>
+                    <h4 className="text-xs font-bold text-gray-600 mb-2">ðŸš— Vehicle</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.reverseCamera} 
@@ -1044,10 +1010,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 </div>
               )}
 
-              {/* CHAMP LIBRE - Autres équipements */}
+              {/* CHAMP LIBRE - Autres Ã©quipements */}
               <div className="p-4 bg-gray-50 rounded-xl">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  ✏️ Other features <span className="font-normal text-gray-400">(optional)</span>
+                  âœï¸ Other features <span className="font-normal text-gray-400">(optional)</span>
                 </label>
                 <input
                   type="text"
@@ -1062,7 +1028,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
             {/* OPTIONS */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">📋 Certifications & Options</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">ðŸ“‹ Certifications & Options</label>
               <div className="space-y-3">
                 
                 {/* Self-Contained avec tooltip */}
@@ -1083,7 +1049,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                       onMouseEnter={() => setShowSelfContainedTooltip(true)}
                       onMouseLeave={() => setShowSelfContainedTooltip(false)}
                       title="Self-Contained"
-                      emoji="🏕️"
+                      emoji="ðŸ•ï¸"
                     >
                       A certified van with <span className="text-white font-semibold">toilet, fresh water tank & grey water tank</span>. 
                       Required for freedom camping in most areas of NZ. 
@@ -1093,7 +1059,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </InfoTooltip>
                   </div>
                   
-                  {/* Choix Vert ou Bleu si coché */}
+                  {/* Choix Vert ou Bleu si cochÃ© */}
                   {formData.selfContained && (
                     <div className="mt-3 ml-8 flex gap-4 flex-wrap">
                       <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${
@@ -1106,7 +1072,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                           onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})}
                           className="hidden" />
                         <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">✓</span>
+                          <span className="text-white text-xs font-bold">âœ“</span>
                         </div>
                         <div>
                           <span className="font-semibold text-green-700">Green Sticker</span>
@@ -1124,7 +1090,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                           onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})}
                           className="hidden" />
                         <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">✓</span>
+                          <span className="text-white text-xs font-bold">âœ“</span>
                         </div>
                         <div>
                           <span className="font-semibold text-blue-700">Blue Sticker</span>
@@ -1153,18 +1119,18 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                       onMouseEnter={() => setShowBuyBackTooltip(true)}
                       onMouseLeave={() => setShowBuyBackTooltip(false)}
                       title="Buy-Back Guarantee"
-                      emoji="🛡️"
+                      emoji="ðŸ›¡ï¸"
                     >
                       Offer to buy back the van at an agreed price if the buyer returns it within a specified period. 
                       <span className="text-white font-semibold"> Great for attracting backpackers!</span>
                     </InfoTooltip>
                   </div>
 
-                {/* Options Buy-Back (affichées si coché) */}
+                {/* Options Buy-Back (affichÃ©es si cochÃ©) */}
                 {formData.buyBack && (
                   <div className="ml-8 mt-3 p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl space-y-4">
                     <h4 className="font-bold text-emerald-700 flex items-center gap-2">
-                      🛡️ Buy-Back Details
+                      ðŸ›¡ï¸ Buy-Back Details
                     </h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1244,13 +1210,11 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               </button>
               <button
                 type="submit"
-                disabled={loading || images.length === 0 || uploadingCount > 0}
+                disabled={loading || images.length === 0}
                 className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 {loading 
-                  ? (editMode ? '⏳ Saving...' : '⏳ Adding...') 
-                  : uploadingCount > 0
-                    ? `📤 Uploading ${uploadingCount} photo(s)...`
-                    : (editMode ? '✅ Save Changes' : '✅ Add Van')
+                  ? (editMode ? 'Saving...' : 'Adding...') 
+                  : (editMode ? 'Save Changes' : 'Add Van')
                 }
               </button>
             </div>
