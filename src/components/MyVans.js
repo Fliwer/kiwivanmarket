@@ -60,9 +60,9 @@ export default function MyVans({ onClose }) {
         avgPrice: Math.round(avgPrice)
       });
       
-      console.log('✅ Vans chargés:', vansData.length);
+      console.log('✅ Vans loaded:', vansData.length);
     } catch (error) {
-      console.error('❌ Erreur chargement vans:', error);
+      console.error('❌ Error loading vans:', error);
     } finally {
       setLoading(false);
     }
@@ -71,11 +71,11 @@ export default function MyVans({ onClose }) {
   // Supprimer un van
   const handleDelete = async (van) => {
     try {
-      console.log('🗑️ Suppression du van:', van.id);
+      console.log('🗑️ Deleting van:', van.id);
       
       // 1. Supprimer le document Firestore
       await deleteDoc(doc(db, 'vans', van.id));
-      console.log('✅ Van supprimé de Firestore');
+      console.log('✅ Van deleted from Firestore');
       
       // 2. Mettre à jour l'état local
       setMyVans(prev => prev.filter(v => v.id !== van.id));
@@ -84,13 +84,13 @@ export default function MyVans({ onClose }) {
       // 3. ✨ INVALIDER LE CACHE AUTOMATIQUEMENT ✨
       localStorage.removeItem('kiwiVanMarket_vans');
       localStorage.removeItem('kiwiVanMarket_timestamp');
-      console.log('🧹 Cache invalidé automatiquement');
+      console.log('🧹 Cache invalidated automatically');
       
-      alert('✅ Van supprimé avec succès !');
+      alert('✅ Van deleted successfully!');
       
     } catch (error) {
-      console.error('❌ Erreur suppression:', error);
-      alert('❌ Erreur lors de la suppression. Vérifiez vos permissions.');
+      console.error('❌ Error deleting:', error);
+      alert('❌ Error during deletion. Check your permissions.');
     }
   };
 
@@ -184,7 +184,7 @@ export default function MyVans({ onClose }) {
           <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-2">
               <span className="text-emerald-600 font-semibold">
-                {viewMode === 'all' ? 'Total Vans (Plateforme)' : 'Mes Vans'}
+                {viewMode === 'all' ? 'Total Vans (Platform)' : 'My Vans'}
               </span>
               <Plus size={24} className="text-emerald-600" />
             </div>
@@ -193,7 +193,7 @@ export default function MyVans({ onClose }) {
           
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-blue-600 font-semibold">Total Vues</span>
+              <span className="text-blue-600 font-semibold">Total Views</span>
               <Eye size={24} className="text-blue-600" />
             </div>
             <p className="text-3xl font-bold text-blue-700">{stats.totalViews}</p>
@@ -201,7 +201,7 @@ export default function MyVans({ onClose }) {
           
           <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-purple-600 font-semibold">Prix Moyen</span>
+              <span className="text-purple-600 font-semibold">Average Price</span>
               <DollarSign size={24} className="text-purple-600" />
             </div>
             <p className="text-3xl font-bold text-purple-700">{formatPrice(stats.avgPrice)}</p>
@@ -212,7 +212,7 @@ export default function MyVans({ onClose }) {
         {loading && (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-emerald-600 mb-4"></div>
-            <p className="text-gray-600 font-semibold">Chargement des vans...</p>
+            <p className="text-gray-600 font-semibold">Loading vans...</p>
           </div>
         )}
 
@@ -224,15 +224,15 @@ export default function MyVans({ onClose }) {
                 <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z"/>
               </svg>
             </div>
-            <p className="text-xl font-bold text-gray-400 mb-2">Aucun van</p>
+            <p className="text-xl font-bold text-gray-400 mb-2">No vans</p>
             <p className="text-gray-500 mb-4">
-              {viewMode === 'all' ? 'Aucun van sur la plateforme' : 'Commencez par ajouter votre premier van !'}
+              {viewMode === 'all' ? 'No vans on the platform' : 'Start by adding your first van!'}
             </p>
             {viewMode === 'my' && (
               <button 
                 onClick={onClose}
                 className="bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition">
-                Ajouter un Van
+                Add a Van
               </button>
             )}
           </div>
@@ -261,7 +261,7 @@ export default function MyVans({ onClose }) {
                     )}
                     {!isOwner && viewMode === 'all' && (
                       <div className="absolute top-3 left-3 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                        👤 {van.seller?.name || 'Autre vendeur'}
+                        👤 {van.seller?.name || 'Other seller'}
                       </div>
                     )}
                     <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
@@ -290,7 +290,7 @@ export default function MyVans({ onClose }) {
                     <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
                       <span className="flex items-center gap-1">
                         <Calendar size={14} />
-                        Posté il y a {van.postedDays || 0}j
+                        Posted {van.postedDays || 0}d ago
                       </span>
                       {van.selfContained && (
                         <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">
@@ -300,17 +300,17 @@ export default function MyVans({ onClose }) {
                     </div>
 
                     <div className="flex gap-2">
-                      {isOwner && (
+                      {(isOwner || userIsAdmin) && (
                         <button 
                           onClick={() => setEditingVan(van)}
                           className="flex-1 bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2">
                           <Edit2 size={16} />
-                          Éditer
+                          {userIsAdmin && !isOwner ? 'Edit (Admin)' : 'Edit'}
                         </button>
                       )}
                       <button 
                         onClick={() => setShowDeleteConfirm(van)}
-                        className={`${isOwner ? 'flex-1' : 'w-full'} bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2`}>
+                        className={`${(isOwner || userIsAdmin) ? 'flex-1' : 'w-full'} bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2`}>
                         <Trash2 size={16} />
                         {userIsAdmin && !isOwner ? 'Delete (Admin)' : 'Delete'}
                       </button>

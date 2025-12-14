@@ -5,6 +5,18 @@ import { useAuth } from '../AuthContext';
 import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 
+// Helper pour convertir les dates Firestore (Timestamp) en format input HTML
+const formatDateForInput = (date) => {
+  if (!date) return '';
+  // Firestore Timestamp
+  if (date.toDate) return date.toDate().toISOString().split('T')[0];
+  // String ISO
+  if (typeof date === 'string') return date.split('T')[0];
+  // JavaScript Date
+  if (date instanceof Date) return date.toISOString().split('T')[0];
+  return '';
+};
+
 
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = false, vanData = null }) {
   const { currentUser } = useAuth();
@@ -125,8 +137,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         buyBackMaxKm: vanData.buyBackMaxKm?.toString() || '',
         buyBackConditions: vanData.buyBackConditions || '',
         equipment: { ...defaultEquipment, ...(vanData.equipment || {}) },
-        wofExpiry: vanData.wofExpiry ? vanData.wofExpiry.split('T')[0] : '',
-        regoExpiry: vanData.regoExpiry ? vanData.regoExpiry.split('T')[0] : '',
+        wofExpiry: formatDateForInput(vanData.wofExpiry),
+        regoExpiry: formatDateForInput(vanData.regoExpiry),
         customFeatures: vanData.customFeatures || '',
         sellerPhone: vanData.seller?.phone || '',
         sellerFacebook: vanData.seller?.facebook || ''
