@@ -4,7 +4,7 @@ import { useAuth } from '../AuthContext';
 import { TermsOfServiceModal } from './TermsOfService';
 
 const AuthModal = ({ isOpen, onClose }) => {
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resendVerificationEmail } = useAuth();
   
   const [mode, setMode] = useState('signin'); // 'signin' ou 'signup'
   const [email, setEmail] = useState('');
@@ -12,6 +12,13 @@ const AuthModal = ({ isOpen, onClose }) => {
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
+  // ✅ État pour afficher l'écran de vérification email
+  const [showVerifyEmail, setShowVerifyEmail] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [emailResent, setEmailResent] = useState(false);
+  const [tempPassword, setTempPassword] = useState(''); // Pour permettre resend
   
   // Terms state
   const [showTerms, setShowTerms] = useState(false);
@@ -68,7 +75,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     await executeAfterTerms(action);
   };
 
-  // Connexion avec Email
+  // Connexion avec Email - ✅ Gère le cas email non vérifié
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
     const action = async () => {
@@ -78,7 +85,15 @@ const AuthModal = ({ isOpen, onClose }) => {
         await signInWithEmail(email, password);
         onClose();
       } catch (error) {
-        setError('Email ou mot de passe incorrect');
+        // ✅ Cas spécial : email non vérifié
+        if (error.code === 'auth/email-not-verified') {
+          setRegisteredEmail(error.email || email);
+          setShowVerifyEmail(true);
+        } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+          setError('Invalid email or password');
+        } else {
+          setError('Error signing in. Please try again.');
+        }
         console.error(error);
       } finally {
         setLoading(false);
@@ -87,7 +102,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     await executeAfterTerms(action);
   };
 
-  // Inscription avec Email
+  // Inscription avec Email - ✅ AFFICHE L'ÉCRAN DE VÉRIFICATION
   const handleEmailSignUp = async (e) => {
     e.preventDefault();
     
@@ -101,12 +116,19 @@ const AuthModal = ({ isOpen, onClose }) => {
         setError('');
         setLoading(true);
         await signUpWithEmail(email, password, displayName);
-        onClose();
+        
+        // ✅ Ne pas fermer le modal - afficher l'écran de vérification
+        setRegisteredEmail(email);
+        setTempPassword(password); // Stocker pour permettre resend
+        setShowVerifyEmail(true);
+        
       } catch (error) {
         if (error.code === 'auth/email-already-in-use') {
-          setError('Cet email est déjà utilisé');
+          setError('This email is already in use');
+        } else if (error.code === 'auth/weak-password') {
+          setError('Password must be at least 6 characters');
         } else {
-          setError('Erreur lors de l\'inscription');
+          setError('Error during registration');
         }
         console.error(error);
       } finally {
@@ -116,19 +138,128 @@ const AuthModal = ({ isOpen, onClose }) => {
     await executeAfterTerms(action);
   };
 
+  // Nettoyer et fermer le modal
+  const handleClose = () => {
+    setTempPassword(''); // Sécurité : ne pas garder le mot de passe
+    setShowVerifyEmail(false);
+    setRegisteredEmail('');
+    setEmailResent(false);
+    onClose();
+  };
+
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl max-w-md w-full p-8 relative">
           {/* Bouton fermer */}
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
           >
             <X size={24} />
           </button>
 
-          {/* Titre */}
+          {/* ✅ ÉCRAN DE VÉRIFICATION EMAIL */}
+          {showVerifyEmail ? (
+            <div className="text-center py-4">
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Mail size={40} className="text-emerald-600" />
+              </div>
+              
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Verify your email 📧
+              </h2>
+              
+              <p className="text-gray-600 mb-4">
+                We sent a verification link to:
+              </p>
+              
+              <p className="font-semibold text-emerald-600 text-lg mb-6 bg-emerald-50 py-2 px-4 rounded-lg inline-block">
+                {registeredEmail}
+              </p>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4 text-left">
+                <p className="text-blue-800 text-sm font-medium mb-2">
+                  📋 Next steps:
+                </p>
+                <ol className="text-blue-700 text-sm space-y-1 list-decimal list-inside">
+                  <li>Check your inbox</li>
+                  <li>Click the verification link</li>
+                  <li>Come back here and sign in</li>
+                </ol>
+              </div>
+              
+              <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 mb-4 flex items-center gap-3">
+                <span className="text-2xl">📂</span>
+                <p className="text-amber-800 text-sm">
+                  <strong>Can't find it?</strong> Check your <strong>Spam</strong> or <strong>Junk</strong> folder!
+                </p>
+              </div>
+              
+              {emailResent ? (
+                <p className="text-emerald-600 text-sm font-medium mb-4 flex items-center justify-center gap-2">
+                  ✓ New verification email sent!
+                </p>
+              ) : (
+                <button
+                  onClick={async () => {
+                    setResendingEmail(true);
+                    try {
+                      // Se reconnecter temporairement pour renvoyer l'email
+                      const { signInWithEmailAndPassword, sendEmailVerification, signOut } = await import('firebase/auth');
+                      const { auth } = await import('../firebase');
+                      
+                      // On utilise le mot de passe stocké temporairement
+                      if (tempPassword) {
+                        const result = await signInWithEmailAndPassword(auth, registeredEmail, tempPassword);
+                        await sendEmailVerification(result.user, {
+                          url: window.location.origin,
+                          handleCodeInApp: false
+                        });
+                        await signOut(auth);
+                        setEmailResent(true);
+                        setTimeout(() => setEmailResent(false), 10000);
+                      } else {
+                        // Si pas de mot de passe, demander de se reconnecter
+                        setError('Please sign in again to resend the verification email');
+                      }
+                    } catch (err) {
+                      console.error('Resend error:', err);
+                      if (err.code === 'auth/too-many-requests') {
+                        setError('Too many attempts. Please wait a few minutes.');
+                      } else {
+                        setError('Failed to resend email. Please try again.');
+                      }
+                    } finally {
+                      setResendingEmail(false);
+                    }
+                  }}
+                  disabled={resendingEmail}
+                  className="text-emerald-600 text-sm font-medium hover:underline mb-4 disabled:opacity-50"
+                >
+                  {resendingEmail ? 'Sending...' : "Didn't receive it? Click to resend"}
+                </button>
+              )}
+              
+              <button
+                onClick={() => {
+                  setShowVerifyEmail(false);
+                  setMode('signin');
+                  setEmail(registeredEmail);
+                  setPassword('');
+                }}
+                className="w-full bg-emerald-600 text-white rounded-lg py-3 font-medium hover:bg-emerald-700 transition-colors"
+              >
+                I've verified, let me sign in
+              </button>
+              
+              <p className="text-gray-400 text-xs mt-4">
+                Already verified? Click the button above to sign in.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Titre */}
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             {mode === 'signin' ? 'Welcome back!' : 'Create account'}
           </h2>
@@ -236,9 +367,16 @@ const AuthModal = ({ isOpen, onClose }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-emerald-600 text-white rounded-lg py-3 font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50"
+              className="w-full bg-emerald-600 text-white rounded-lg py-3 font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {loading ? 'Loading...' : (mode === 'signin' ? 'Sign In' : 'Sign Up')}
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <span>{mode === 'signup' ? 'Creating account...' : 'Signing in...'}</span>
+                </>
+              ) : (
+                mode === 'signin' ? 'Sign In' : 'Sign Up'
+              )}
             </button>
           </form>
 
@@ -268,6 +406,8 @@ const AuthModal = ({ isOpen, onClose }) => {
               Terms of Use
             </button>
           </p>
+            </>
+          )}
         </div>
       </div>
 

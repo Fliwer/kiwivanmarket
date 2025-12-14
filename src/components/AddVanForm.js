@@ -31,38 +31,38 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     buyBackMaxKm: '',
     buyBackConditions: '',
     equipment: {
-      // ðŸ›ï¸ Sleeping - Essential
+      //  Sleeping - Essential
       doubleBed: false,
       singleBeds: false,
       roofBed: false,
       bedding: false,
       curtains: false,
-      // ðŸ³ Kitchen - Essential
+      //  Kitchen - Essential
       fridge: false,
       gasStove: false,
       sink: false,
       cookware: false,
-      // ðŸ’§ Water & Bathroom - Essential for self-contained
+      //  Water & Bathroom - Essential for self-contained
       freshWaterTank: false,
       greyWaterTank: false,
       outdoorShower: false,
       indoorShower: false,
       toilet: false,
       portaPotti: false,
-      // âš¡ Power - Very important for backpackers
+      //  Power - Very important for backpackers
       solarPanel: false,
       leisureBattery: false,
       splitCharger: false,
       inverter: false,
       usb: false,
       ledLights: false,
-      // ðŸŒ¡ï¸ Comfort - Important in NZ climate
+      //  Comfort - Important in NZ climate
       heater: false,
       dieselHeater: false,
       roofFan: false,
       insulation: false,
       awning: false,
-      // ðŸš— Vehicle Features
+      //  Vehicle Features
       reverseCamera: false,
       bluetooth: false,
       swivelSeats: false,
@@ -76,7 +76,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     sellerFacebook: ''
   });
 
-  // ✅ Fermeture avec touche Escape
+  //  Fermeture avec touche Escape
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape') onClose();
@@ -85,7 +85,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
-  // Charger les données du van en mode édition
+  // Charger les donnes du van en mode dition
   useEffect(() => {
     if (editMode && vanData) {
       // Default equipment object - Simplified for backpackers
@@ -141,7 +141,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     }
   }, [editMode, vanData]);
 
-  // Ã‰tats pour les tooltips
+  // tats pour les tooltips
   const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
   const [showWofTooltip, setShowWofTooltip] = useState(false);
   const [showRegoTooltip, setShowRegoTooltip] = useState(false);
@@ -151,17 +151,17 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
   // Upload image
   const handleImageUpload = async (file) => {
     if (images.length >= 5) {
-      alert('âš ï¸ Maximum 5 photos!');
+      alert(' Maximum 5 photos!');
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      alert('âš ï¸ Invalid file!');
+      alert(' Invalid file!');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert('âš ï¸ Image too large (max 10MB)');
+      alert(' Image too large (max 10MB)');
       return;
     }
 
@@ -186,7 +186,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     } catch (error) {
       console.error('Upload error:', error);
       setImages(prev => prev.filter((_, i) => i !== newIndex));
-      alert('âŒ Upload error');
+      alert(' Upload error');
     } finally {
       setUploadingIndex(null);
     }
@@ -199,13 +199,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // ðŸ›¡ï¸ SÃ‰CURITÃ‰: VÃ©rifier que l'utilisateur est connectÃ©
+    //  SCURIT: Vrifier que l'utilisateur est connect
     if (!currentUser) {
-      alert('âš ï¸ Please sign in to add a van!');
+      alert(' Please sign in to add a van!');
       return;
     }
 
-    // ðŸ›¡ï¸ SÃ‰CURITÃ‰: Limiter Ã  20 vans par utilisateur (anti-spam)
+    //  SCURIT: Limiter  20 vans par utilisateur (anti-spam)
     if (!editMode) {
       try {
         const userVansQuery = query(
@@ -217,8 +217,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         
         if (userVanCount >= 20) {
           const upgrade = window.confirm(
-            'ðŸš You have reached the maximum of 20 free listings!\n\n' +
-            'ðŸ’¼ Need more? Upgrade to a Pro account for unlimited listings.\n\n' +
+            ' You have reached the maximum of 20 free listings!\n\n' +
+            ' Need more? Upgrade to a Pro account for unlimited listings.\n\n' +
             'Click OK to contact us about Pro accounts.'
           );
           if (upgrade) {
@@ -231,68 +231,68 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       }
     }
 
-    // ðŸ›¡ï¸ VALIDATION COMPLÃˆTE avec messages d'erreur dÃ©taillÃ©s
+    //  VALIDATION COMPLTE avec messages d'erreur dtaills
     const errors = [];
     
     // Photos
     if (images.length === 0) {
-      errors.push('ðŸ“¸ At least 1 photo is required');
+      errors.push(' At least 1 photo is required');
     }
     
-    // Titre (min 3 caractÃ¨res)
+    // Titre (min 3 caractres)
     if (!formData.title) {
-      errors.push('ðŸ“ Title is required');
+      errors.push(' Title is required');
     } else if (formData.title.length < 3) {
-      errors.push('ðŸ“ Title must be at least 3 characters');
+      errors.push(' Title must be at least 3 characters');
     }
     
     // Prix
     if (!formData.price) {
-      errors.push('ðŸ’° Price is required');
+      errors.push(' Price is required');
     } else if (parseInt(formData.price) < 1 || parseInt(formData.price) > 500000) {
-      errors.push('ðŸ’° Price must be between $1 and $500,000');
+      errors.push(' Price must be between $1 and $500,000');
     }
     
     // Ville
     if (!formData.location) {
-      errors.push('ðŸ“ City is required');
+      errors.push(' City is required');
     }
     
-    // AnnÃ©e
+    // Anne
     if (!formData.year) {
-      errors.push('ðŸ“… Year is required');
+      errors.push(' Year is required');
     } else if (parseInt(formData.year) < 1950 || parseInt(formData.year) > 2026) {
-      errors.push('ðŸ“… Year must be between 1950 and 2026');
+      errors.push(' Year must be between 1950 and 2026');
     }
     
-    // KilomÃ©trage
+    // Kilomtrage
     if (!formData.mileage && formData.mileage !== 0) {
-      errors.push('ðŸ›£ï¸ Mileage is required');
+      errors.push(' Mileage is required');
     }
     
     // WOF & REGO
     if (!formData.wofExpiry) {
-      errors.push('ðŸ”§ WOF expiry date is required');
+      errors.push(' WOF expiry date is required');
     }
     if (!formData.regoExpiry) {
-      errors.push('ðŸ“‹ REGO expiry date is required');
+      errors.push(' REGO expiry date is required');
     }
     
-    // Description (min 10 caractÃ¨res)
+    // Description (min 10 caractres)
     if (!formData.description) {
-      errors.push('âœï¸ Description is required');
+      errors.push(' Description is required');
     } else if (formData.description.length < 10) {
-      errors.push('âœï¸ Description must be at least 10 characters (currently ' + formData.description.length + ')');
+      errors.push(' Description must be at least 10 characters (currently ' + formData.description.length + ')');
     }
     
     // Buy-back
     if (formData.buyBack && !formData.buyBackPrice) {
-      errors.push('ðŸ›¡ï¸ Buy-back price is required when buy-back is enabled');
+      errors.push(' Buy-back price is required when buy-back is enabled');
     }
     
     // Afficher les erreurs
     if (errors.length > 0) {
-      alert('âš ï¸ Please fix the following errors:\n\n' + errors.join('\n'));
+      alert(' Please fix the following errors:\n\n' + errors.join('\n'));
       return;
     }
 
@@ -302,7 +302,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       const imageUrls = images.map(img => img.url);
 
       if (editMode && vanData) {
-        // MODE Ã‰DITION - Update existing van
+        // MODE DITION - Update existing van
         const updateData = {
           title: formData.title,
           price: parseInt(formData.price),
@@ -341,7 +341,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         onClose();
         
       } else {
-        // MODE CRÃ‰ATION - Add new van
+        // MODE CRATION - Add new van
         const newVanData = {
           title: formData.title,
           price: parseInt(formData.price),
@@ -398,13 +398,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       
     } catch (error) {
       console.error('Error:', error);
-      alert('âŒ Error adding van');
+      alert(' Error adding van');
     } finally {
       setLoading(false);
     }
   };
 
-  // Composant Tooltip rÃ©utilisable
+  // Composant Tooltip rutilisable
   const InfoTooltip = ({ show, onMouseEnter, onMouseLeave, title, emoji, children }) => (
     <div className="relative inline-block">
       <div 
@@ -437,11 +437,11 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* ✅ HEADER STICKY - Toujours visible */}
+        {/*  HEADER STICKY - Toujours visible */}
         <div className="sticky top-0 z-20 bg-white rounded-t-3xl border-b border-gray-100 px-8 py-6 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-black text-gray-900">
-              {editMode ? '✏️ Edit Van' : '🚐 Add New Van'}
+              {editMode ? 'Edit Van' : 'Add New Van'}
             </h2>
             <p className="text-gray-600 mt-1">
               {editMode ? 'Update your van details' : 'Upload photos and fill in details'}
@@ -454,7 +454,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           </button>
         </div>
 
-        {/* ✅ CONTENU SCROLLABLE */}
+        {/*  CONTENU SCROLLABLE */}
         <div className="flex-1 overflow-y-auto px-8 lg:px-10 py-6">
 
           <form onSubmit={handleSubmit} id="addVanForm">
@@ -529,7 +529,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
               {images.length === 0 && (
                 <p className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-xl p-3 flex items-center gap-2">
-                  <span>âš ï¸</span>
+                  <span></span>
                   <span>At least 1 photo required</span>
                 </p>
               )}
@@ -554,7 +554,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   required
                 />
                 {formData.title && formData.title.length < 3 && (
-                  <p className="text-xs text-red-500 mt-1">âš ï¸ {formData.title.length}/3 characters minimum</p>
+                  <p className="text-xs text-red-500 mt-1"> {formData.title.length}/3 characters minimum</p>
                 )}
               </div>
 
@@ -630,9 +630,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
-                  <option value="Car">ðŸš— Car</option>
-                  <option value="Van">ðŸš Van</option>
-                  <option value="Motorhome">ðŸšŒ Motorhome</option>
+                  <option value="Car">Car</option>
+                  <option value="Van">Van</option>
+                  <option value="Motorhome">Motorhome</option>
                 </select>
               </div>
 
@@ -655,7 +655,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     onMouseEnter={() => setShowWofTooltip(true)}
                     onMouseLeave={() => setShowWofTooltip(false)}
                     title="Warrant of Fitness"
-                    emoji="ðŸ”§"
+                    emoji=""
                   >
                     A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months for all vehicles in NZ. 
                     It checks brakes, lights, tyres, steering and other safety features. 
@@ -680,7 +680,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     onMouseEnter={() => setShowRegoTooltip(true)}
                     onMouseLeave={() => setShowRegoTooltip(false)}
                     title="Vehicle Registration"
-                    emoji="ðŸ“‹"
+                    emoji=""
                   >
                     <span className="text-white font-semibold">Registration fee</span> that must be paid to legally drive on NZ roads. 
                     Can be bought in 3, 6 or 12 month periods at any PostShop or online. 
@@ -716,7 +716,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               />
               <div className="flex justify-between mt-1">
                 {formData.description && formData.description.length < 10 ? (
-                  <p className="text-xs text-red-500">âš ï¸ {formData.description.length}/10 characters minimum</p>
+                  <p className="text-xs text-red-500"> {formData.description.length}/10 characters minimum</p>
                 ) : (
                   <p className="text-xs text-gray-400">{formData.description.length || 0} characters</p>
                 )}
@@ -773,59 +773,59 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
             {/* EQUIPMENT - Simplifie */}
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">ðŸ”§ Equipment & Features</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-3"> Equipment & Features</label>
               
               {/* ESSENTIELS - Toujours visible */}
               <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl mb-4">
-                <h4 className="text-sm font-bold text-emerald-700 mb-3">âœ¨ Key Features <span className="font-normal text-emerald-600">(most searched by buyers)</span></h4>
+                <h4 className="text-sm font-bold text-emerald-700 mb-3">{"✨"} Key Features <span className="font-normal text-emerald-600">(most searched by buyers)</span></h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.doubleBed} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, doubleBed: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">ðŸ›ï¸ Double Bed</span>
+                    <span className="text-sm">{"🛏️"} Double Bed</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.fridge} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, fridge: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">ðŸ§Š Fridge</span>
+                    <span className="text-sm">{"🧊"} Fridge</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.gasStove} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, gasStove: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">ðŸ”¥ Gas Stove</span>
+                    <span className="text-sm">{"🔥"} Gas Stove</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.sink} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, sink: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">ðŸš° Sink</span>
+                    <span className="text-sm">{"🚰"} Sink</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.toilet} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, toilet: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">ðŸš½ Toilet</span>
+                    <span className="text-sm">{"🚽"} Toilet</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.solarPanel} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, solarPanel: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">â˜€ï¸ Solar Panel</span>
+                    <span className="text-sm">{"☀️"} Solar Panel</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.leisureBattery} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, leisureBattery: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">ðŸ”‹ Leisure Battery</span>
+                    <span className="text-sm">{"🔋"} Leisure Battery</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                     <input type="checkbox" checked={formData.equipment.dieselHeater || formData.equipment.heater} 
                       onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, heater: e.target.checked}})}
                       className="w-4 h-4 text-emerald-600 rounded" />
-                    <span className="text-sm">ðŸŒ¡ï¸ Heater</span>
+                    <span className="text-sm">{"🌡️"} Heater</span>
                   </label>
                 </div>
               </div>
@@ -836,16 +836,16 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 onClick={() => setShowAdvancedEquipment(!showAdvancedEquipment)}
                 className="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-600 transition flex items-center justify-center gap-2 mb-4"
               >
-                {showAdvancedEquipment ? 'âž– Less options' : 'âž• More options'}
+                {showAdvancedEquipment ? '➖ Less options' : '➕ More options'}
               </button>
 
-              {/* OPTIONS AVANCÃ‰ES - SimplifiÃ©es pour backpackers */}
+              {/* OPTIONS AVANCES - Simplifies pour backpackers */}
               {showAdvancedEquipment && (
                 <div className="space-y-4 mb-4">
                   
-                  {/* ðŸ›ï¸ Sleeping */}
+                  {/* Sleeping */}
                   <div className="p-3 bg-indigo-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-indigo-600 mb-2">ðŸ›ï¸ Sleeping</h4>
+                    <h4 className="text-xs font-bold text-indigo-600 mb-2">{"🛏️"} Sleeping</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.singleBeds} 
@@ -874,9 +874,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* ðŸ³ Kitchen */}
+                  {/* Kitchen */}
                   <div className="p-3 bg-orange-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-orange-600 mb-2">ðŸ³ Kitchen</h4>
+                    <h4 className="text-xs font-bold text-orange-600 mb-2">{"🍳"} Kitchen</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.cookware} 
@@ -887,9 +887,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* ðŸ’§ Water & Bathroom */}
+                  {/* Water & Bathroom */}
                   <div className="p-3 bg-cyan-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-cyan-600 mb-2">ðŸ’§ Water & Bathroom</h4>
+                    <h4 className="text-xs font-bold text-cyan-600 mb-2">{"💧"} Water & Bathroom</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.freshWaterTank} 
@@ -924,9 +924,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* âš¡ Power */}
+                  {/* Power */}
                   <div className="p-3 bg-yellow-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-yellow-600 mb-2">âš¡ Power</h4>
+                    <h4 className="text-xs font-bold text-yellow-600 mb-2">{"⚡"} Power</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.splitCharger} 
@@ -955,15 +955,15 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* ðŸŒ¡ï¸ Comfort */}
+                  {/* Comfort */}
                   <div className="p-3 bg-rose-50 rounded-xl">
-                    <h4 className="text-xs font-bold text-rose-600 mb-2">ðŸŒ¡ï¸ Comfort</h4>
+                    <h4 className="text-xs font-bold text-rose-600 mb-2">{"🌡️"} Comfort</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.dieselHeater} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, dieselHeater: e.target.checked}})}
                           className="w-4 h-4 text-rose-600 rounded" />
-                        ðŸ”¥ Diesel Heater (Webasto)
+                        {"🔥"} Diesel Heater (Webasto)
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.roofFan} 
@@ -986,9 +986,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </div>
                   </div>
 
-                  {/* ðŸš— Vehicle */}
+                  {/* Vehicle */}
                   <div className="p-3 bg-gray-100 rounded-xl">
-                    <h4 className="text-xs font-bold text-gray-600 mb-2">ðŸš— Vehicle</h4>
+                    <h4 className="text-xs font-bold text-gray-600 mb-2">{"🚗"} Vehicle</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.reverseCamera} 
@@ -1025,10 +1025,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 </div>
               )}
 
-              {/* CHAMP LIBRE - Autres Ã©quipements */}
+              {/* CHAMP LIBRE - Autres quipements */}
               <div className="p-4 bg-gray-50 rounded-xl">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  âœï¸ Other features <span className="font-normal text-gray-400">(optional)</span>
+                   Other features <span className="font-normal text-gray-400">(optional)</span>
                 </label>
                 <input
                   type="text"
@@ -1043,7 +1043,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
             {/* OPTIONS */}
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">ðŸ“‹ Certifications & Options</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-3"> Certifications & Options</label>
               <div className="space-y-3">
                 
                 {/* Self-Contained avec tooltip */}
@@ -1064,7 +1064,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                       onMouseEnter={() => setShowSelfContainedTooltip(true)}
                       onMouseLeave={() => setShowSelfContainedTooltip(false)}
                       title="Self-Contained"
-                      emoji="ðŸ•ï¸"
+                      emoji=""
                     >
                       A certified van with <span className="text-white font-semibold">toilet, fresh water tank & grey water tank</span>. 
                       Required for freedom camping in most areas of NZ. 
@@ -1074,7 +1074,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     </InfoTooltip>
                   </div>
                   
-                  {/* Choix Vert ou Bleu si cochÃ© */}
+                  {/* Choix Vert ou Bleu si coch */}
                   {formData.selfContained && (
                     <div className="mt-3 ml-8 flex gap-4 flex-wrap">
                       <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${
@@ -1087,7 +1087,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                           onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})}
                           className="hidden" />
                         <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">âœ“</span>
+                          <span className="text-white text-xs font-bold"></span>
                         </div>
                         <div>
                           <span className="font-semibold text-green-700">Green Sticker</span>
@@ -1105,7 +1105,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                           onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})}
                           className="hidden" />
                         <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">âœ“</span>
+                          <span className="text-white text-xs font-bold"></span>
                         </div>
                         <div>
                           <span className="font-semibold text-blue-700">Blue Sticker</span>
@@ -1134,18 +1134,18 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                       onMouseEnter={() => setShowBuyBackTooltip(true)}
                       onMouseLeave={() => setShowBuyBackTooltip(false)}
                       title="Buy-Back Guarantee"
-                      emoji="ðŸ›¡ï¸"
+                      emoji=""
                     >
                       Offer to buy back the van at an agreed price if the buyer returns it within a specified period. 
                       <span className="text-white font-semibold"> Great for attracting backpackers!</span>
                     </InfoTooltip>
                   </div>
 
-                {/* Options Buy-Back (affichÃ©es si cochÃ©) */}
+                {/* Options Buy-Back (affiches si coch) */}
                 {formData.buyBack && (
                   <div className="ml-8 mt-3 p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl space-y-4">
                     <h4 className="font-bold text-emerald-700 flex items-center gap-2">
-                      ðŸ›¡ï¸ Buy-Back Details
+                       Buy-Back Details
                     </h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1218,7 +1218,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           </form>
         </div>
 
-        {/* ✅ FOOTER STICKY - Boutons toujours visibles */}
+        {/*  FOOTER STICKY - Boutons toujours visibles */}
         <div className="sticky bottom-0 z-20 bg-white border-t border-gray-100 px-8 py-4 rounded-b-3xl">
           <div className="flex gap-4">
             <button

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Check, MessageCircle, AlertCircle } from 'lucide-react';
+import { Send, Check, MessageCircle, AlertCircle, Mail, RefreshCw } from 'lucide-react';
 import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -8,15 +8,21 @@ import { useRateLimit } from '../hooks/useRateLimit';
 // ============================================
 // QUICK MESSAGE BOX
 // For sending quick messages from van modal
+// ✅ Avec vérification email + textarea multi-lignes
 // ============================================
 
 export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFullChat }) {
-  const { currentUser } = useAuth();
+  const { currentUser, resendVerificationEmail, refreshEmailVerification } = useAuth();
   const { checkAndRecord, getRemainingActions } = useRateLimit(currentUser?.uid);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
+  
+  // ✅ États pour la vérification email
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [emailResent, setEmailResent] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // ✅ Récupérer le nombre de messages restants
   const messageLimit = getRemainingActions('sendMessage');
@@ -42,6 +48,40 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     };
   };
 
+  // ✅ Renvoyer l'email de vérification
+  const handleResendEmail = async () => {
+    setResendingEmail(true);
+    setError(null);
+    try {
+      await resendVerificationEmail();
+      setEmailResent(true);
+      setTimeout(() => setEmailResent(false), 5000);
+    } catch (err) {
+      setError(err.message || 'Failed to send verification email');
+    } finally {
+      setResendingEmail(false);
+    }
+  };
+
+  // ✅ Rafraîchir le statut de vérification
+  const handleRefreshVerification = async () => {
+    setRefreshing(true);
+    setError(null);
+    try {
+      const isVerified = await refreshEmailVerification();
+      if (isVerified) {
+        // Force le re-render en rechargeant la page
+        window.location.reload();
+      } else {
+        setError('Email not verified yet. Please check your inbox.');
+      }
+    } catch (err) {
+      setError('Failed to check verification status');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const sendMessage = async (text) => {
     // ✅ Validation améliorée avec messages d'erreur explicites
     if (!text.trim()) {
@@ -51,6 +91,12 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     
     if (!currentUser) {
       setError('Please sign in to send messages');
+      return;
+    }
+
+    // ✅ NOUVEAU: Bloquer si email non vérifié
+    if (!currentUser.emailVerified) {
+      setError('Please verify your email before sending messages');
       return;
     }
     
@@ -89,7 +135,6 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       // Find existing conversation for this van
       for (const docSnap of snapshot.docs) {
         const data = docSnap.data();
-        // ✅ Utilise sellerInfo.uid au lieu de seller.uid
         if (data.vanId === van.id && data.participants.includes(sellerInfo.uid)) {
           conversationId = docSnap.id;
           break;
@@ -99,7 +144,6 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       // Create new conversation if none exists
       if (!conversationId) {
         const convRef = await addDoc(collection(db, 'conversations'), {
-          // ✅ Utilise sellerInfo partout
           participants: [currentUser.uid, sellerInfo.uid],
           participantNames: {
             [currentUser.uid]: currentUser.displayName || 'Anonymous',
@@ -118,7 +162,6 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
             year: van.year,
             mileage: van.mileage,
             location: van.location,
-            // ✅ Ajoute aussi WOF/REGO pour l'affichage dans MessagingPage
             wofExpiry: van.wofExpiry,
             regoExpiry: van.regoExpiry,
             selfContained: van.selfContained,
@@ -171,6 +214,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     }
   };
 
+  // ✅ Si pas connecté
   if (!currentUser) {
     return (
       <div className="bg-gray-50 rounded-xl p-4 text-center">
@@ -179,7 +223,6 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     );
   }
 
-  // ✅ Amélioration : vérifier avec getSellerUid() aussi
   const sellerUid = getSellerUid();
   
   // Don't show if user is the seller
@@ -198,6 +241,76 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
         <p className="text-orange-600 text-xs mt-1">
           This listing may be outdated.
         </p>
+      </div>
+    );
+  }
+
+  // ✅ NOUVEAU: Bloquer si email non vérifié
+  if (!currentUser.emailVerified) {
+    return (
+      <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200">
+        <div className="flex items-start gap-3">
+          <div className="bg-amber-100 rounded-full p-2 flex-shrink-0">
+            <Mail size={20} className="text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <h4 className="font-semibold text-amber-800 mb-1">
+              📧 Verify your email to contact sellers
+            </h4>
+            <p className="text-amber-700 text-sm mb-3">
+              We sent a verification link to <strong>{currentUser.email}</strong>. 
+              Please check your inbox (and spam folder).
+            </p>
+            
+            {emailResent ? (
+              <p className="text-emerald-600 text-sm font-medium flex items-center gap-1">
+                <Check size={16} />
+                Verification email sent!
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={handleResendEmail}
+                  disabled={resendingEmail}
+                  className="text-sm bg-amber-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-700 transition disabled:opacity-50 flex items-center gap-2"
+                >
+                  {resendingEmail ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Mail size={16} />
+                      Resend email
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleRefreshVerification}
+                  disabled={refreshing}
+                  className="text-sm bg-white text-amber-700 px-4 py-2 rounded-lg font-medium hover:bg-amber-100 transition border border-amber-300 flex items-center gap-2"
+                >
+                  {refreshing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-amber-400/30 border-t-amber-600 rounded-full animate-spin" />
+                      Checking...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw size={16} />
+                      I've verified
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+            
+            {error && (
+              <p className="text-red-600 text-sm mt-2">{error}</p>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
@@ -267,21 +380,27 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
         ))}
       </div>
 
-      {/* Input */}
-      <div className="flex gap-2">
-        <input
-          type="text"
+      {/* ✅ TEXTAREA multi-lignes au lieu de input */}
+      <div className="flex gap-2 items-end">
+        <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage(message)}
+          onKeyDown={(e) => {
+            // Envoyer avec Enter (sans Shift)
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              sendMessage(message);
+            }
+          }}
           placeholder="Type your message..."
           disabled={sending}
-          className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:opacity-50"
+          rows={2}
+          className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:opacity-50 resize-none"
         />
         <button
           onClick={() => sendMessage(message)}
           disabled={!message.trim() || sending}
-          className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
+          className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
             sent 
               ? 'bg-emerald-500 text-white' 
               : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50'

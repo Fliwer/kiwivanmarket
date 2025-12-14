@@ -446,8 +446,18 @@ function MainApp() {
         
         if (cachedData) {
           const cachedVans = JSON.parse(cachedData);
-          setVans(cachedVans);
-          setFilteredVans(cachedVans);
+          // Sort cache immediately (newest first)
+          const sortedCache = [...cachedVans].sort((a, b) => {
+            const getTs = (v) => {
+              if (!v.createdAt) return 0;
+              if (v.createdAt.seconds) return v.createdAt.seconds * 1000;
+              if (typeof v.createdAt === 'string') return new Date(v.createdAt).getTime();
+              return 0;
+            };
+            return getTs(b) - getTs(a);
+          });
+          setVans(sortedCache);
+          setFilteredVans(sortedCache);
           setLoading(false);
         }
         
@@ -465,14 +475,25 @@ function MainApp() {
           ...doc.data()
         }));
         
-        localStorage.setItem('kiwiVanMarket_vans', JSON.stringify(vansData));
+        // Sort before saving to cache (newest first)
+        const sortedVans = [...vansData].sort((a, b) => {
+          const getTs = (v) => {
+            if (!v.createdAt) return 0;
+            if (v.createdAt.toDate) return v.createdAt.toDate().getTime();
+            if (v.createdAt.seconds) return v.createdAt.seconds * 1000;
+            return 0;
+          };
+          return getTs(b) - getTs(a);
+        });
+        
+        localStorage.setItem('kiwiVanMarket_vans', JSON.stringify(sortedVans));
         localStorage.setItem('kiwiVanMarket_timestamp', now.toString());
         
-        setVans(vansData);
-        setFilteredVans(vansData);
+        setVans(sortedVans);
+        setFilteredVans(sortedVans);
         
       } catch (error) {
-        console.error('❌ Erreur chargement vans:', error);
+        console.error('Error loading vans:', error);
       } finally {
         setLoading(false);
       }
@@ -489,13 +510,24 @@ function MainApp() {
         ...doc.data()
       }));
       
-      localStorage.setItem('kiwiVanMarket_vans', JSON.stringify(vansData));
+      // Sort before saving (newest first)
+      const sortedVans = [...vansData].sort((a, b) => {
+        const getTs = (v) => {
+          if (!v.createdAt) return 0;
+          if (v.createdAt.toDate) return v.createdAt.toDate().getTime();
+          if (v.createdAt.seconds) return v.createdAt.seconds * 1000;
+          return 0;
+        };
+        return getTs(b) - getTs(a);
+      });
+      
+      localStorage.setItem('kiwiVanMarket_vans', JSON.stringify(sortedVans));
       localStorage.setItem('kiwiVanMarket_timestamp', Date.now().toString());
       
-      setVans(vansData);
-      setFilteredVans(vansData);
+      setVans(sortedVans);
+      setFilteredVans(sortedVans);
     } catch (error) {
-      console.error('❌ Error reloading vans:', error);
+      console.error('Error reloading vans:', error);
     }
   };
 
@@ -530,6 +562,15 @@ function MainApp() {
       return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid && matchEquipment;
     });
     
+    // Helper to get timestamp from any date format
+    const getTimestamp = (van) => {
+      if (!van.createdAt) return 0;
+      if (van.createdAt.toDate) return van.createdAt.toDate().getTime();
+      if (van.createdAt.seconds) return van.createdAt.seconds * 1000;
+      if (typeof van.createdAt === 'string') return new Date(van.createdAt).getTime();
+      return 0;
+    };
+    
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
@@ -538,9 +579,7 @@ function MainApp() {
           return (b.price || 0) - (a.price || 0);
         case 'newest':
         default:
-          const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
-          const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
-          return dateB - dateA;
+          return getTimestamp(b) - getTimestamp(a);
       }
     });
     

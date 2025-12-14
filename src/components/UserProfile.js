@@ -309,9 +309,9 @@ export default function UserProfile({ onClose }) {
         onClick={(e) => e.stopPropagation()}  // ✅ Empêche la fermeture au clic sur le contenu
       >
         
-        {/* ✅ HEADER STICKY avec bouton X toujours visible */}
-        <div className="sticky top-0 z-20 bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 h-32 relative shrink-0">
-          {/* Bouton X toujours visible */}
+        {/* ✅ HEADER - z-index bas pour que l'avatar passe au-dessus */}
+        <div className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 h-32 relative shrink-0">
+          {/* Bouton X toujours visible - z-index élevé */}
           <button 
             onClick={onClose}
             className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full p-2 transition z-30"
@@ -327,8 +327,8 @@ export default function UserProfile({ onClose }) {
         
         {/* ✅ CONTENU SCROLLABLE */}
         <div className="flex-1 overflow-y-auto">
-          {/* Profile photo - positioned relative to scroll container */}
-          <div className="relative -mt-16 px-6">
+          {/* Profile photo - z-index élevé pour passer AU-DESSUS du header */}
+          <div className="relative -mt-16 px-6 z-10">
             <div className="relative inline-block">
               <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-500">
                 {profile.photoURL ? (
