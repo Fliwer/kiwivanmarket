@@ -851,25 +851,25 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                         <input type="checkbox" checked={formData.equipment.singleBeds} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, singleBeds: e.target.checked}})}
                           className="w-4 h-4 text-indigo-600 rounded" />
-                        Single Beds
+                        {"🛏️"} Single Beds
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.roofBed} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, roofBed: e.target.checked}})}
                           className="w-4 h-4 text-indigo-600 rounded" />
-                        Pop-top / Roof Bed
+                        {"🏕️"} Pop-top / Roof Bed
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.bedding} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, bedding: e.target.checked}})}
                           className="w-4 h-4 text-indigo-600 rounded" />
-                        Bedding Included
+                        {"🛌"} Bedding Included
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.curtains} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, curtains: e.target.checked}})}
                           className="w-4 h-4 text-indigo-600 rounded" />
-                        Privacy Curtains
+                        {"🪟"} Privacy Curtains
                       </label>
                     </div>
                   </div>
@@ -882,7 +882,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                         <input type="checkbox" checked={formData.equipment.cookware} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, cookware: e.target.checked}})}
                           className="w-4 h-4 text-orange-600 rounded" />
-                        Pots, Pans & Utensils
+                        {"🍳"} Pots, Pans & Utensils
                       </label>
                     </div>
                   </div>
@@ -895,31 +895,31 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                         <input type="checkbox" checked={formData.equipment.freshWaterTank} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, freshWaterTank: e.target.checked}})}
                           className="w-4 h-4 text-cyan-600 rounded" />
-                        Fresh Water Tank
+                        {"💧"} Fresh Water Tank
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.greyWaterTank} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, greyWaterTank: e.target.checked}})}
                           className="w-4 h-4 text-cyan-600 rounded" />
-                        Grey Water Tank
+                        {"🚿"} Grey Water Tank
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.outdoorShower} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, outdoorShower: e.target.checked}})}
                           className="w-4 h-4 text-cyan-600 rounded" />
-                        Outdoor Shower
+                        {"🚿"} Outdoor Shower
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.indoorShower} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, indoorShower: e.target.checked}})}
                           className="w-4 h-4 text-cyan-600 rounded" />
-                        Indoor Shower
+                        {"🛁"} Indoor Shower
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.portaPotti} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, portaPotti: e.target.checked}})}
                           className="w-4 h-4 text-cyan-600 rounded" />
-                        Porta Potti
+                        {"🚽"} Porta Potti
                       </label>
                     </div>
                   </div>
@@ -932,25 +932,25 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                         <input type="checkbox" checked={formData.equipment.splitCharger} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, splitCharger: e.target.checked}})}
                           className="w-4 h-4 text-yellow-600 rounded" />
-                        Charges While Driving
+                        {"🔌"} Charges While Driving
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.inverter} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, inverter: e.target.checked}})}
                           className="w-4 h-4 text-yellow-600 rounded" />
-                        230V Inverter
+                        {"🔌"} 230V Inverter
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.usb} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, usb: e.target.checked}})}
                           className="w-4 h-4 text-yellow-600 rounded" />
-                        USB Charging Ports
+                        {"🔋"} USB Charging Ports
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.ledLights} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, ledLights: e.target.checked}})}
                           className="w-4 h-4 text-yellow-600 rounded" />
-                        LED Lights
+                        {"💡"} LED Lights
                       </label>
                     </div>
                   </div>
@@ -969,19 +969,19 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                         <input type="checkbox" checked={formData.equipment.roofFan} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, roofFan: e.target.checked}})}
                           className="w-4 h-4 text-rose-600 rounded" />
-                        Roof Vent / Fan
+                        {"🌀"} Roof Vent / Fan
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.insulation} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, insulation: e.target.checked}})}
                           className="w-4 h-4 text-rose-600 rounded" />
-                        Insulated
+                        {"🧥"} Insulated
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.awning} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, awning: e.target.checked}})}
                           className="w-4 h-4 text-rose-600 rounded" />
-                        Awning
+                        {"⛺"} Awning
                       </label>
                     </div>
                   </div>
@@ -994,31 +994,31 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                         <input type="checkbox" checked={formData.equipment.reverseCamera} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, reverseCamera: e.target.checked}})}
                           className="w-4 h-4 text-gray-600 rounded" />
-                        Reverse Camera
+                        {"📷"} Reverse Camera
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.bluetooth} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, bluetooth: e.target.checked}})}
                           className="w-4 h-4 text-gray-600 rounded" />
-                        Bluetooth Audio
+                        {"🔊"} Bluetooth Audio
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.swivelSeats} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, swivelSeats: e.target.checked}})}
                           className="w-4 h-4 text-gray-600 rounded" />
-                        Swivel Front Seats
+                        {"💺"} Swivel Front Seats
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.bikeRack} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, bikeRack: e.target.checked}})}
                           className="w-4 h-4 text-gray-600 rounded" />
-                        Bike Rack
+                        {"🚴"} Bike Rack
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
                         <input type="checkbox" checked={formData.equipment.surfRack} 
                           onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, surfRack: e.target.checked}})}
                           className="w-4 h-4 text-gray-600 rounded" />
-                        Surf / Kayak Rack
+                        {"🏄"} Surf / Kayak Rack
                       </label>
                     </div>
                   </div>

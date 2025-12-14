@@ -644,12 +644,12 @@ function MainApp() {
           
           <div className="grid lg:grid-cols-2">
             
-            {/* GALERIE PHOTO - Optimisé pour réduire le bandwidth */}
+            {/* GALERIE PHOTO - Optimise pour reduire le bandwidth */}
             <div className="relative bg-gray-900 h-[280px] md:h-[600px] lg:h-[800px] -mt-16 md:mt-0">
               <img 
                 src={getLargeImage(images[currentImageIndex])} 
                 alt={van.title || 'Van'} 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 loading="lazy"
               />
               
@@ -1018,7 +1018,7 @@ function MainApp() {
 
   return (
     <> {/* MVP_DISABLED: Notifications - was NotificationProvider */}
-      <WebViewWarning />
+      {/* WebViewWarning desactive - le site s'affiche directement */}
       <div className="min-h-screen bg-gray-50">
         
         {/* ========== HEADER ========== */}
