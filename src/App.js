@@ -1349,6 +1349,7 @@ function MainApp() {
                   className="relative w-full md:w-auto"
                   onMouseEnter={() => setShowBuyBackInfo(true)}
                   onMouseLeave={() => setShowBuyBackInfo(false)}
+                  onTouchStart={(e) => { if (window.innerWidth < 768) { e.preventDefault(); setShowBuyBackInfo(true); }}}
                 >
                   <button 
                     onClick={() => setFilters({...filters, buyBack: !filters.buyBack})}
@@ -1389,6 +1390,7 @@ function MainApp() {
                   className="relative w-full md:w-auto"
                   onMouseEnter={() => window.innerWidth >= 768 && setShowRegoInfo(true)}
                   onMouseLeave={() => setShowRegoInfo(false)}
+                  onTouchStart={(e) => { if (window.innerWidth < 768) { e.preventDefault(); setShowRegoInfo(true); }}}
                 >
                   <button 
                     onClick={() => setFilters({...filters, regoValid: !filters.regoValid})}
@@ -1429,6 +1431,7 @@ function MainApp() {
                   className="relative w-full md:w-auto"
                   onMouseEnter={() => window.innerWidth >= 768 && setShowSelfContainedInfo(true)}
                   onMouseLeave={() => setShowSelfContainedInfo(false)}
+                  onTouchStart={(e) => { if (window.innerWidth < 768) { e.preventDefault(); setShowSelfContainedInfo(true); }}}
                 >
                   <button 
                     onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
@@ -1438,7 +1441,7 @@ function MainApp() {
                         : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:text-blue-600'
                     }`}>
                     <CheckCircle size={16} className={filters.selfContained ? 'text-white' : 'text-blue-500'} />
-                    <span className="md:hidden">Self-Cont.</span>
+                    <span className="md:hidden">Self-Cont</span>
                     <span className="hidden md:inline">Self-Contained</span>
                     <span 
                       onClick={(e) => { e.stopPropagation(); setShowSelfContainedInfo(!showSelfContainedInfo); }}
@@ -1474,6 +1477,7 @@ function MainApp() {
                   className="relative w-full md:w-auto"
                   onMouseEnter={() => window.innerWidth >= 768 && setShowWofInfo(true)}
                   onMouseLeave={() => setShowWofInfo(false)}
+                  onTouchStart={(e) => { if (window.innerWidth < 768) { e.preventDefault(); setShowWofInfo(true); }}}
                 >
                   <button 
                     onClick={() => setFilters({...filters, wofValid: !filters.wofValid})}
