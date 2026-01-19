@@ -29,6 +29,8 @@ const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const TermsOfServiceModal = lazy(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfServiceModal })));
 const HomeSeoSection = lazy(() => import('./components/HomeSeoSection'));
 const QuickMessageBox = lazy(() => import('./components/QuickMessageBox'));
+// ✅ SEO: Page van individuelle avec URL propre
+const VanPage = lazy(() => import('./components/VanPage'));
 // MVP_DISABLED: Reservations
 // const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
 // const ReservationCancelled = lazy(() => import('./components/ReservationCancelled'));
@@ -2107,6 +2109,13 @@ export default function KiwiVanMarket() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ✅ SEO: Page van individuelle avec URL propre */}
+        <Route path="/van/:id" element={
+          <Suspense fallback={<PageLoader />}>
+            <VanPage />
+          </Suspense>
+        } />
+        
         {/* MVP_DISABLED: Reservations
         <Route path="/reservation-success" element={
           <Suspense fallback={<PageLoader />}>
