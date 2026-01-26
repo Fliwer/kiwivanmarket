@@ -158,6 +158,15 @@ export default function VanPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
+  // Fermer le loader initial
+  useEffect(() => {
+    const loader = document.getElementById('app-loader');
+    if (loader) {
+      loader.classList.add('fade-out');
+      setTimeout(() => loader.remove(), 500);
+    }
+  }, []);
+
   // Charger le van depuis Firebase
   useEffect(() => {
     const fetchVan = async () => {

@@ -96,6 +96,15 @@ export default function BrandPage() {
   const brandConfig = BRANDS_CONFIG[brand];
   const url = `https://kiwivanmarket.com/brand/${brand}`;
 
+  // Fermer le loader initial
+  useEffect(() => {
+    const loader = document.getElementById('app-loader');
+    if (loader) {
+      loader.classList.add('fade-out');
+      setTimeout(() => loader.remove(), 500);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchVans = async () => {
       try {
