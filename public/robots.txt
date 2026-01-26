@@ -15,3 +15,5 @@ Disallow: /admin/
 
 Sitemap: https://kiwivanmarket.com/sitemap.xml
 Sitemap: https://kiwivanmarket.com/sitemap-vehicles.xml
+Sitemap: https://kiwivanmarket.com/sitemap-brands.xml
+Sitemap: https://kiwivanmarket.com/sitemap-locations.xml
