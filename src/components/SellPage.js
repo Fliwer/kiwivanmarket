@@ -142,6 +142,7 @@ export default function SellPage() {
     // Validation
     const errors = [];
     if (images.length === 0) errors.push('At least 1 photo is required');
+    if (images.some(img => img.uploading)) errors.push('Please wait for all images to finish uploading');
     if (!formData.title || formData.title.length < 3) errors.push('Title must be at least 3 characters');
     if (!formData.price || parseInt(formData.price) < 1) errors.push('Price is required');
     if (!formData.location) errors.push('City is required');
@@ -196,7 +197,7 @@ export default function SellPage() {
         views: 0,
         status: 'active',
         createdAt: serverTimestamp(),
-        updatedAt: new Date()
+        updatedAt: serverTimestamp()
       };
 
       const docRef = await addDoc(collection(db, 'vans'), newVanData);
@@ -207,8 +208,8 @@ export default function SellPage() {
 
       setShowSuccess(true);
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error adding van');
+      console.error('Error adding van:', error);
+      alert('Error adding van: ' + (error.message || error.code || 'Unknown error'));
     } finally {
       setLoading(false);
     }
