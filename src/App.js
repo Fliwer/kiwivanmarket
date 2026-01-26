@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink } from 'lucide-react';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink, BookOpen } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
@@ -1051,7 +1051,19 @@ function MainApp() {
 
       {/* WebViewWarning desactive - le site s'affiche directement */}
       <div className="min-h-screen bg-gray-50">
-        
+
+        {/* ========== ANNOUNCEMENT BANNER ========== */}
+        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 px-4 text-center text-sm font-medium">
+          <span className="hidden sm:inline">List your campervan for FREE and reach thousands of backpackers! </span>
+          <span className="sm:hidden">Sell your van for FREE! </span>
+          <button
+            onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
+            className="underline font-bold hover:no-underline"
+          >
+            Post your ad now
+          </button>
+        </div>
+
         {/* ========== HEADER ========== */}
         <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4">
@@ -1070,21 +1082,28 @@ function MainApp() {
 
               {/* Boutons d'action - Desktop */}
               <div className="hidden md:flex items-center gap-3 ml-10">
-                <button 
+                <Link
+                  to="/guide/buying-campervan-nz"
+                  className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
+                >
+                  <BookOpen size={18} />
+                  <span className="hidden lg:inline">Guides</span>
+                </Link>
+
+                <button
                   onClick={() => setShowBuybackCalculator(true)}
                   className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
                 >
                   <Calculator size={18} />
-                  <span className="hidden md:inline">Buyback Calculator</span>
+                  <span className="hidden lg:inline">Calculator</span>
                 </button>
 
                 <button
                   onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
-                  className="relative bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 px-5 py-2.5 rounded-xl font-bold hover:from-yellow-300 hover:to-orange-400 transition flex items-center gap-2 text-sm shadow-lg animate-pulse hover:animate-none"
+                  className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
                 >
                   <Plus size={18} />
                   <span>Sell your van</span>
-                  <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">FREE</span>
                 </button>
               </div>
 
@@ -1285,7 +1304,26 @@ function MainApp() {
             {/* Mobile Menu Dropdown */}
             {showMobileMenu && (
               <div className="md:hidden border-t border-white/20 py-4 space-y-2">
-                <button 
+                {/* CTA Mobile - Sell your van */}
+                <button
+                  onClick={() => { currentUser ? setShowAddVanForm(true) : setShowAuthModal(true); setShowMobileMenu(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-white/20 rounded-xl transition font-semibold"
+                >
+                  <Plus size={20} />
+                  <span>Sell your van</span>
+                  <span className="ml-auto text-xs bg-orange-500 px-2 py-0.5 rounded-full">FREE</span>
+                </button>
+
+                <Link
+                  to="/guide/buying-campervan-nz"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
+                >
+                  <BookOpen size={20} />
+                  <span>Guides</span>
+                </Link>
+
+                <button
                   onClick={() => { setShowBuybackCalculator(true); setShowMobileMenu(false); }}
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
                 >
