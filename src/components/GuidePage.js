@@ -410,7 +410,7 @@ export default function GuidePage() {
           <div className="max-w-4xl mx-auto px-4 text-center">
             <Link to="/" className="inline-flex items-center gap-2 mb-4">
               <div className="w-10 h-10 rounded-full overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
-                <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-full h-full object-contain" />
+                <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-full h-full object-contain" />
               </div>
               <span className="font-bold text-xl">Kiwi Van Market</span>
             </Link>

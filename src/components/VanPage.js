@@ -338,7 +338,7 @@ export default function VanPage() {
               {/* Logo centré */}
               <Link to="/" className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
-                  <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-8 h-8 object-contain" />
+                  <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-8 h-8 object-contain" />
                 </div>
                 <span className="hidden md:block font-bold">Kiwi Van Market</span>
               </Link>
@@ -699,7 +699,7 @@ export default function VanPage() {
           <div className="max-w-7xl mx-auto px-4 text-center">
             <Link to="/" className="inline-flex items-center gap-2 mb-4">
               <div className="w-10 h-10 rounded-full overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
-                <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-full h-full object-contain" />
+                <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-full h-full object-contain" />
               </div>
               <span className="font-bold text-xl">Kiwi Van Market</span>
             </Link>

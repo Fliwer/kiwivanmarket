@@ -45,17 +45,14 @@
 
   <meta name="theme-color" content="#10b981" />
 
-  <!-- Preconnect to critical domains -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://firestore.googleapis.com" />
-  <link rel="preconnect" href="https://firebase.googleapis.com" />
-  <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
+  <!-- Preconnect to critical domains (used at page load) -->
+  <link rel="preconnect" href="https://res.cloudinary.com" />
+  <link rel="preconnect" href="https://flagcdn.com" crossorigin />
   <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
 
-  <!-- Preload critical assets -->
-  <link rel="preload" href="%PUBLIC_URL%/kiwi-van-logo.png" as="image" />
-  <link rel="preload" href="%PUBLIC_URL%/nz-background.jpg" as="image" />
+  <!-- Preload LCP image -->
+  <link rel="preload" href="%PUBLIC_URL%/nz-background.webp" as="image" type="image/webp" fetchpriority="high" />
 
   <script type="application/ld+json">
   {
@@ -153,7 +150,7 @@
       #app-loader {
         position: fixed;
         inset: 0;
-        background-image: url('%PUBLIC_URL%/nz-background.jpg');
+        background-image: url('%PUBLIC_URL%/nz-background.webp');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -162,6 +159,19 @@
         align-items: center;
         justify-content: center;
         z-index: 99999;
+      }
+      /* Fallback for browsers without WebP support */
+      .no-webp #app-loader {
+        background-image: url('%PUBLIC_URL%/nz-background.jpg');
+      }
+      /* Mobile optimization - smaller image */
+      @media (max-width: 768px) {
+        #app-loader {
+          background-image: url('%PUBLIC_URL%/nz-background-mobile.webp');
+        }
+        .no-webp #app-loader {
+          background-image: url('%PUBLIC_URL%/nz-background.jpg');
+        }
       }
       
       /* Overlay sombre pour rendre le texte plus lisible */
@@ -240,13 +250,17 @@
 </head>
 
   <body>
+    <script>
+      // WebP detection - add fallback class if not supported
+      (function(){var i=new Image();i.onload=i.onerror=function(){if(i.height!==1)document.documentElement.classList.add('no-webp')};i.src='data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA='})();
+    </script>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    
+
     <!-- Loading Screen -->
     <div id="app-loader">
       <div class="loader-content">
         <div class="loader-van">
-          <img src="%PUBLIC_URL%/kiwi-van-logo.png" alt="Kiwi Van Market" />
+          <img src="%PUBLIC_URL%/kiwi-van-logo-128.webp" alt="Kiwi Van Market" width="88" height="88" />
         </div>
         <div class="loader-spinner"></div>
         <p class="loader-text">Kiwi Van Market</p>

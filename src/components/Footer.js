@@ -2,29 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, Globe, HelpCircle, FileText, Mail } from 'lucide-react';
 
-// Widget Google Translate
+// Widget Google Translate - LAZY LOADED on user interaction
 export function GoogleTranslate() {
   const [isOpen, setIsOpen] = useState(false);
-  
-  useEffect(() => {
-    // Charger le script Google Translate une seule fois
-    if (!document.getElementById('google-translate-script')) {
-      const script = document.createElement('script');
-      script.id = 'google-translate-script';
-      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-      script.async = true;
-      document.body.appendChild(script);
-      
-      window.googleTranslateElementInit = function() {
-        new window.google.translate.TranslateElement({
-          pageLanguage: 'en',
-          includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,it,nl',
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false
-        }, 'google_translate_element');
-      };
-    }
-  }, []);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const languages = [
     { code: 'en', flag: '🇬🇧', name: 'English' },
@@ -36,6 +17,34 @@ export function GoogleTranslate() {
     { code: 'ko', flag: '🇰🇷', name: '한국어' },
     { code: 'pt', flag: '🇧🇷', name: 'Português' },
   ];
+
+  // Load Google Translate only when user opens the menu
+  const loadGoogleTranslate = () => {
+    if (!isLoaded && !document.getElementById('google-translate-script')) {
+      const script = document.createElement('script');
+      script.id = 'google-translate-script';
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.body.appendChild(script);
+
+      window.googleTranslateElementInit = function() {
+        new window.google.translate.TranslateElement({
+          pageLanguage: 'en',
+          includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,it,nl',
+          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false
+        }, 'google_translate_element');
+      };
+      setIsLoaded(true);
+    }
+  };
+
+  const handleOpen = () => {
+    if (!isOpen) {
+      loadGoogleTranslate();
+    }
+    setIsOpen(!isOpen);
+  };
 
   const changeLanguage = (langCode) => {
     const select = document.querySelector('.goog-te-combo');
@@ -49,13 +58,14 @@ export function GoogleTranslate() {
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleOpen}
         className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full transition text-sm font-medium"
+        aria-label="Change language"
       >
-        <Globe size={16} />
+        <Globe size={16} aria-hidden="true" />
         <span>Language</span>
       </button>
-      
+
       {isOpen && (
         <div className="absolute bottom-full mb-2 right-0 bg-white rounded-xl shadow-2xl border p-2 min-w-[150px] z-50">
           {languages.map(lang => (
@@ -63,16 +73,17 @@ export function GoogleTranslate() {
               key={lang.code}
               onClick={() => changeLanguage(lang.code)}
               className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-left text-gray-700 text-sm"
+              aria-label={`Switch to ${lang.name}`}
             >
-              <span className="text-lg">{lang.flag}</span>
+              <span className="text-lg" aria-hidden="true">{lang.flag}</span>
               <span>{lang.name}</span>
             </button>
           ))}
         </div>
       )}
-      
-      {/* Élément caché pour Google Translate */}
-      <div id="google_translate_element" className="hidden"></div>
+
+      {/* Hidden element for Google Translate */}
+      <div id="google_translate_element" className="hidden" aria-hidden="true"></div>
     </div>
   );
 }
@@ -189,9 +200,9 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
                 className="w-14 h-14 rounded-full shadow-lg overflow-hidden flex items-center justify-center"
                 style={{ backgroundColor: '#f7eedd' }}
               >
-                <img 
-                  src="/kiwi-van-logo.png" 
-                  alt="Kiwi Van Market" 
+                <img
+                  src="/kiwi-van-logo-96.webp"
+                  alt="Kiwi Van Market"
                   className="w-11 h-11 object-contain"
                 />
               </div>
@@ -347,9 +358,9 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
               className="w-8 h-8 rounded-full shadow overflow-hidden flex items-center justify-center"
               style={{ backgroundColor: '#f7eedd' }}
             >
-              <img 
-                src="/kiwi-van-logo.png" 
-                alt="Kiwi Van Market" 
+              <img
+                src="/kiwi-van-logo-48.webp"
+                alt="Kiwi Van Market"
                 className="w-6 h-6 object-contain"
               />
             </div>

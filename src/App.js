@@ -1069,7 +1069,7 @@ function MainApp() {
               {/* Logo */}
               <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.href = '/'}>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
-                  <img src="/kiwi-van-logo.png" alt="Kiwi Van Market" className="w-9 h-9 object-contain" />
+                  <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-9 h-9 object-contain" width="36" height="36" />
                 </div>
                 <div className="hidden sm:block">
                   <h1 className="text-xl font-bold">Kiwi Van Market</h1>
