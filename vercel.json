@@ -1,5 +1,20 @@
 {
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "npm run build",
-  "outputDirectory": "build"
+  "outputDirectory": "build",
+  "rewrites": [
+    {
+      "source": "/sitemap-vehicles.xml",
+      "destination": "/api/sitemap-vehicles"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/sitemap-vehicles.xml",
+      "headers": [
+        { "key": "Content-Type", "value": "application/xml" },
+        { "key": "Cache-Control", "value": "s-maxage=3600, stale-while-revalidate=86400" }
+      ]
+    }
+  ]
 }

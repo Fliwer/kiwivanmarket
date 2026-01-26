@@ -324,15 +324,15 @@ export default function VanPage() {
 
         {/* Contenu principal */}
         <main className="max-w-7xl mx-auto px-4 pb-12">
-          <div className="grid lg:grid-cols-2 gap-8">
-            
-            {/* GALERIE PHOTOS */}
-            <div className="relative bg-gray-900 rounded-2xl overflow-hidden shadow-xl">
-              <div className="aspect-[4/3]">
-                <img 
-                  src={images[currentImageIndex]} 
-                  alt={`${van.title} - Photo ${currentImageIndex + 1}`}
-                  className="w-full h-full object-contain"
+          <div className="grid lg:grid-cols-2 gap-8 items-start">
+
+            {/* GALERIE PHOTOS - sticky pour rester visible au scroll */}
+            <div className="lg:sticky lg:top-20 relative bg-gray-900 rounded-2xl overflow-hidden shadow-xl">
+              <div className="aspect-[4/3] flex items-center justify-center">
+                <img
+                  src={images[currentImageIndex]}
+                  alt={`${van.title} - ${currentImageIndex + 1}`}
+                  className="max-w-full max-h-full object-contain"
                 />
               </div>
               

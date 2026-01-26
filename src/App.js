@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck } from 'lucide-react';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
@@ -353,6 +353,7 @@ function MessageBadge() {
 // COMPOSANT PRINCIPAL DE L'APPLICATION
 // ========================================
 function MainApp() {
+  const navigate = useNavigate();
   const [vans, setVans] = useState([]);
   const [filteredVans, setFilteredVans] = useState([]);
   const [selectedVan, setSelectedVan] = useState(null);
@@ -619,30 +620,45 @@ function MainApp() {
           {/* Header mobile */}
           <div className="sticky top-0 z-[80] bg-gradient-to-b from-black/70 to-transparent md:hidden">
             <div className="flex items-center justify-between p-4">
-              <button 
-                onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }} 
+              <button
+                onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }}
                 className="bg-white/20 backdrop-blur-sm rounded-full p-2 text-white">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
-                className="bg-white/20 backdrop-blur-sm rounded-full p-2">
-                <Heart 
-                  size={22} 
-                  className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-white'} 
-                />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate(`/van/${van.id}`); setSelectedVan(null); }}
+                  className="bg-white/20 backdrop-blur-sm rounded-full p-2 text-white">
+                  <ExternalLink size={22} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
+                  className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                  <Heart
+                    size={22}
+                    className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-white'}
+                  />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Bouton fermer desktop */}
-          <button 
-            onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }} 
-            className="hidden md:block absolute top-6 right-6 bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl z-[70] hover:bg-white transition-all hover:scale-110">
-            <X size={24} className="text-gray-700" />
-          </button>
+          {/* Boutons desktop: page complète + fermer */}
+          <div className="hidden md:flex absolute top-6 right-6 gap-2 z-[70]">
+            <button
+              onClick={() => { navigate(`/van/${van.id}`); setSelectedVan(null); }}
+              className="bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all hover:scale-110 group"
+              title="Open full page">
+              <ExternalLink size={24} className="text-gray-700 group-hover:text-emerald-600" />
+            </button>
+            <button
+              onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }}
+              className="bg-white/95 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
+              <X size={24} className="text-gray-700" />
+            </button>
+          </div>
           
           <div className="grid lg:grid-cols-2">
             
@@ -1776,8 +1792,8 @@ function MainApp() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredVans.map(van => (
-                  <div key={van.id} 
-                    onClick={() => setSelectedVan(van)}
+                  <div key={van.id}
+                    onClick={() => navigate(`/van/${van.id}`)}
                     className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:-translate-y-1">
                     <div className="relative">
                       <img 
