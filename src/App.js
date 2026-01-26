@@ -416,8 +416,8 @@ function MainApp() {
   
   const [filters, setFilters] = useState({
     priceMin: 0,
-    priceMax: 50000,
-    yearMin: 1990,
+    priceMax: 100000,
+    yearMin: 1980,
     type: 'all',
     location: 'all',
     selfContained: false,
@@ -1647,13 +1647,13 @@ function MainApp() {
                     <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
                       🔍 Find your perfect campervan
                     </h3>
-                    {(Object.values(filters.equipment).some(v => v) || filters.priceMin > 0 || filters.priceMax < 50000 || filters.yearMin > 1990 || filters.location !== 'all' || filters.type !== 'all') && (
+                    {(Object.values(filters.equipment).some(v => v) || filters.priceMin > 0 || filters.priceMax < 100000 || filters.yearMin > 1980 || filters.location !== 'all' || filters.type !== 'all') && (
                       <button
                         onClick={() => setFilters({
                           ...filters,
                           priceMin: 0,
-                          priceMax: 50000,
-                          yearMin: 1990,
+                          priceMax: 100000,
+                          yearMin: 1980,
                           location: 'all',
                           type: 'all',
                           equipment: {

@@ -499,11 +499,19 @@ export default function SellPage() {
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => { setFormData({...formData, title: e.target.value}); if (e.target.value.length >= 3) setCurrentStep(3); }}
+                    onChange={(e) => { setFormData({...formData, title: e.target.value}); if (e.target.value.length >= 5) setCurrentStep(3); }}
                     placeholder="Toyota Hiace 2015"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors ${
+                      formData.title.length > 0 && formData.title.length < 5
+                        ? 'border-red-300'
+                        : 'border-gray-200'
+                    }`}
                     required
+                    maxLength={200}
                   />
+                  {formData.title.length > 0 && formData.title.length < 5 && (
+                    <span className="text-xs text-red-500 mt-1">Minimum 5 characters ({formData.title.length}/5)</span>
+                  )}
                 </div>
 
                 <div>
@@ -649,9 +657,25 @@ export default function SellPage() {
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   placeholder="Perfect backpacker van, well maintained, ready for adventure..."
                   rows={4}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
+                  className={`w-full px-4 py-3 border-2 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none ${
+                    formData.description.length > 0 && formData.description.length < 20
+                      ? 'border-red-300'
+                      : 'border-gray-200'
+                  }`}
                   required
                 />
+                <div className="flex justify-between mt-1">
+                  <span className={`text-xs ${
+                    formData.description.length < 20
+                      ? 'text-red-500'
+                      : 'text-green-600'
+                  }`}>
+                    {formData.description.length < 20
+                      ? `Minimum 20 characters (${formData.description.length}/20)`
+                      : `${formData.description.length} characters`}
+                  </span>
+                  <span className="text-xs text-gray-400">Max 5000</span>
+                </div>
               </div>
 
               {/* Contact Info */}
