@@ -92,6 +92,56 @@ const VanSEO = ({ van }) => {
     ]
   };
 
+  // FAQ Schema contextuel basé sur les caractéristiques du van
+  const faqItems = [
+    {
+      "@type": "Question",
+      "name": `Is this ${van.title?.split(' ')[0] || 'campervan'} a good choice for backpackers?`,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": `This ${van.year} ${van.title} is located in ${van.location}, New Zealand. ${van.selfContained ? 'It is self-contained, meaning you can freedom camp in designated areas.' : 'It is not self-contained, so you will need to stay at campsites with facilities.'} ${van.buyBack ? 'The seller offers a buy-back guarantee, which is great for travellers on a working holiday visa.' : ''}`
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What should I check before buying a campervan in New Zealand?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Always verify the WOF (Warrant of Fitness) and REGO (registration) expiry dates. This van's WOF is valid until " + (van.wofExpiry ? new Date(van.wofExpiry).toLocaleDateString('en-NZ') : 'not specified') + ". Meet the seller in person, inspect the vehicle thoroughly, and consider getting a mechanical inspection for peace of mind."
+      }
+    }
+  ];
+
+  // Ajouter FAQ sur self-contained si applicable
+  if (van.selfContained) {
+    faqItems.push({
+      "@type": "Question",
+      "name": "What does self-contained mean for campervans in New Zealand?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A self-contained campervan has a toilet, fresh water tank, and grey water tank that meets NZ standards (NZS 5465). This allows you to freedom camp in many scenic locations across New Zealand. This van is certified self-contained."
+      }
+    });
+  }
+
+  // Ajouter FAQ sur buy-back si applicable
+  if (van.buyBack) {
+    faqItems.push({
+      "@type": "Question",
+      "name": "How does the buy-back guarantee work?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": `This seller offers a buy-back option${van.buyBackPrice ? ` at NZ$${van.buyBackPrice.toLocaleString()}` : ''}${van.buyBackDuration ? ` valid for ${van.buyBackDuration} months` : ''}. Buy-back guarantees are agreements between you and the seller - contact them directly for specific terms and conditions.`
+      }
+    });
+  }
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqItems
+  };
+
   return (
     <Helmet>
       {/* Balises meta de base */}
@@ -123,6 +173,9 @@ const VanSEO = ({ van }) => {
       </script>
       <script type="application/ld+json">
         {JSON.stringify(breadcrumbSchema)}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify(faqSchema)}
       </script>
     </Helmet>
   );
@@ -591,6 +644,54 @@ export default function VanPage() {
 
             </div>
           </div>
+          {/* Browse More - Internal Links for SEO */}
+          <section className="mt-12 bg-gray-50 rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Browse More Campervans</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* By Brand */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Popular Brands</h3>
+                <div className="flex flex-wrap gap-2">
+                  <Link to="/brand/toyota-hiace" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Toyota Hiace
+                  </Link>
+                  <Link to="/brand/nissan-caravan" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Nissan Caravan
+                  </Link>
+                  <Link to="/brand/mitsubishi-delica" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Mitsubishi Delica
+                  </Link>
+                  <Link to="/brand/mazda-bongo" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Mazda Bongo
+                  </Link>
+                  <Link to="/brand/ford-transit" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Ford Transit
+                  </Link>
+                </div>
+              </div>
+              {/* By Location */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Popular Locations</h3>
+                <div className="flex flex-wrap gap-2">
+                  <Link to="/location/auckland" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Auckland
+                  </Link>
+                  <Link to="/location/wellington" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Wellington
+                  </Link>
+                  <Link to="/location/christchurch" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Christchurch
+                  </Link>
+                  <Link to="/location/queenstown" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Queenstown
+                  </Link>
+                  <Link to="/location/rotorua" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                    Rotorua
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
         </main>
 
         {/* Footer simple */}
