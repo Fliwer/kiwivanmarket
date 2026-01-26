@@ -36,6 +36,7 @@ const VanPage = lazy(() => import('./components/VanPage'));
 const BrandPage = lazy(() => import('./components/BrandPage'));
 const LocationPage = lazy(() => import('./components/LocationPage'));
 const GuidePage = lazy(() => import('./components/GuidePage'));
+const SellPage = lazy(() => import('./components/SellPage'));
 // MVP_DISABLED: Reservations
 // const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
 // const ReservationCancelled = lazy(() => import('./components/ReservationCancelled'));
@@ -1055,7 +1056,7 @@ function MainApp() {
         {/* ========== ANNOUNCEMENT BANNER ========== */}
         <div
           className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 px-4 text-center text-sm font-medium cursor-pointer hover:from-orange-600 hover:to-amber-600 transition-all"
-          onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
+          onClick={() => navigate('/sell')}
         >
           🚐 Sell your van FOR FREE → List now
         </div>
@@ -1095,7 +1096,7 @@ function MainApp() {
                 </button>
 
                 <button
-                  onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
+                  onClick={() => navigate('/sell')}
                   className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
                 >
                   <Plus size={18} />
@@ -1249,8 +1250,8 @@ function MainApp() {
 
               {/* Mobile Menu Button */}
               <div className="flex md:hidden items-center gap-1">
-                <button 
-                  onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
+                <button
+                  onClick={() => navigate('/sell')}
                   className="bg-white text-emerald-600 p-2 rounded-xl"
                 >
                   <Plus size={20} />
@@ -1302,7 +1303,7 @@ function MainApp() {
               <div className="md:hidden border-t border-white/20 py-4 space-y-2">
                 {/* CTA Mobile - Sell your van */}
                 <button
-                  onClick={() => { currentUser ? setShowAddVanForm(true) : setShowAuthModal(true); setShowMobileMenu(false); }}
+                  onClick={() => { navigate('/sell'); setShowMobileMenu(false); }}
                   className="w-full flex items-center gap-3 px-4 py-3 bg-white/20 rounded-xl transition font-semibold"
                 >
                   <Plus size={20} />
@@ -2120,6 +2121,11 @@ export default function KiwiVanMarket() {
         <Route path="/guide/:slug" element={
           <Suspense fallback={<PageLoader />}>
             <GuidePage />
+          </Suspense>
+        } />
+        <Route path="/sell" element={
+          <Suspense fallback={<PageLoader />}>
+            <SellPage />
           </Suspense>
         } />
 
