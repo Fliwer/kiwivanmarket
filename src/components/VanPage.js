@@ -16,11 +16,21 @@ const QuickMessageBox = lazy(() => import('./QuickMessageBox'));
 // ✅ Composant SEO avec Schema.org pour les vans
 const VanSEO = ({ van }) => {
   if (!van) return null;
-  
+
   const url = `https://kiwivanmarket.com/van/${van.id}`;
   const image = van.images?.[0] || van.imageUrl || 'https://kiwivanmarket.com/default-van.jpg';
-  const title = `${van.title} - $${van.price?.toLocaleString()} | Kiwi Van Market`;
-  const description = `${van.year} ${van.title} for sale in ${van.location}, New Zealand. ${van.mileage?.toLocaleString()}km. ${van.selfContained ? 'Self-contained certified.' : ''} ${van.buyBack ? 'Buy-back guarantee available.' : ''} Perfect for backpackers!`;
+  const title = `${van.title} - NZ$${van.price?.toLocaleString()} | Kiwi Van Market`;
+
+  // Description SEO enrichie avec équipements
+  const features = [];
+  if (van.selfContained) features.push('self-contained');
+  if (van.buyBack) features.push('buy-back guarantee');
+  if (van.equipment?.doubleBed) features.push('double bed');
+  if (van.equipment?.solarPanel) features.push('solar panel');
+  if (van.equipment?.fridge) features.push('fridge');
+
+  const featuresText = features.length > 0 ? ` Features: ${features.join(', ')}.` : '';
+  const description = `${van.year} ${van.title} for sale in ${van.location}, New Zealand. ${van.mileage?.toLocaleString()}km, ${van.capacity || 2} berth.${featuresText} Perfect campervan for backpackers and travellers.`.slice(0, 160);
   
   // Schema.org JSON-LD pour Google Rich Snippets
   const schemaData = {
@@ -88,7 +98,8 @@ const VanSEO = ({ van }) => {
       <title>{title}</title>
       <meta name="description" content={description} />
       <link rel="canonical" href={url} />
-      
+      <meta name="robots" content="index, follow, max-image-preview:large" />
+
       {/* Open Graph pour Facebook/LinkedIn */}
       <meta property="og:type" content="product" />
       <meta property="og:title" content={title} />
@@ -96,15 +107,16 @@ const VanSEO = ({ van }) => {
       <meta property="og:image" content={image} />
       <meta property="og:url" content={url} />
       <meta property="og:site_name" content="Kiwi Van Market" />
+      <meta property="og:locale" content="en_NZ" />
       <meta property="product:price:amount" content={van.price} />
       <meta property="product:price:currency" content="NZD" />
-      
+
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
-      
+
       {/* Schema.org JSON-LD */}
       <script type="application/ld+json">
         {JSON.stringify(schemaData)}
