@@ -15,6 +15,7 @@ import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
 import AuthModal from './components/AuthModal';
 import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
+import SellPage from './components/SellPage'; // Non-lazy pour éviter le loading infini
 // MVP_DISABLED: Stripe/Payments
 // import { TrustBanner } from './components/SecurityBadge';
 
@@ -36,7 +37,6 @@ const VanPage = lazy(() => import('./components/VanPage'));
 const BrandPage = lazy(() => import('./components/BrandPage'));
 const LocationPage = lazy(() => import('./components/LocationPage'));
 const GuidePage = lazy(() => import('./components/GuidePage'));
-const SellPage = lazy(() => import('./components/SellPage'));
 // MVP_DISABLED: Reservations
 // const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
 // const ReservationCancelled = lazy(() => import('./components/ReservationCancelled'));
@@ -2123,11 +2123,7 @@ export default function KiwiVanMarket() {
             <GuidePage />
           </Suspense>
         } />
-        <Route path="/sell" element={
-          <Suspense fallback={<PageLoader />}>
-            <SellPage />
-          </Suspense>
-        } />
+        <Route path="/sell" element={<SellPage />} />
 
         {/* MVP_DISABLED: Reservations
         <Route path="/reservation-success" element={
