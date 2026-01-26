@@ -1848,6 +1848,105 @@ function MainApp() {
           </div>
         </div>
 
+        {/* Social Proof */}
+        <div className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 py-16">
+          <div className="max-w-7xl mx-auto px-4">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-4 md:gap-8 mb-16">
+              <div className="text-center">
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 md:p-6">
+                  <div className="text-3xl md:text-5xl font-black text-white mb-1">50+</div>
+                  <div className="text-white/80 text-sm md:text-base font-medium">Vans Listed</div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 md:p-6">
+                  <div className="text-3xl md:text-5xl font-black text-white mb-1">200+</div>
+                  <div className="text-white/80 text-sm md:text-base font-medium">Happy Backpackers</div>
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-4 md:p-6">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <span className="text-3xl md:text-5xl font-black text-white">4.8</span>
+                    <Star size={24} className="text-yellow-400 fill-yellow-400 md:w-8 md:h-8" />
+                  </div>
+                  <div className="text-white/80 text-sm md:text-base font-medium">Average Rating</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonials */}
+            <h3 className="text-2xl md:text-3xl font-bold text-white text-center mb-8">
+              What Backpackers Say
+            </h3>
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Testimonial 1 */}
+              <div className="bg-white rounded-2xl p-6 shadow-xl">
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4 italic">
+                  "Found my perfect van in 2 days! The filters made it so easy to find exactly what I needed."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-rose-500 rounded-full flex items-center justify-center text-white font-bold">
+                    S
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Sarah</p>
+                    <p className="text-sm text-gray-500">United Kingdom</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial 2 */}
+              <div className="bg-white rounded-2xl p-6 shadow-xl">
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4 italic">
+                  "Great prices and the buy-back option saved me so much stress. Sold my van back at the end of my trip!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                    T
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Tom</p>
+                    <p className="text-sm text-gray-500">Germany</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial 3 */}
+              <div className="bg-white rounded-2xl p-6 shadow-xl">
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />
+                  ))}
+                </div>
+                <p className="text-gray-700 mb-4 italic">
+                  "Way better than TradeMe for backpackers. Everything is focused on what travellers actually need!"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-violet-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                    E
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Emma</p>
+                    <p className="text-sm text-gray-500">France</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Footer */}
         <Suspense fallback={null}>
           <HomeSeoSection />
