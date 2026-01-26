@@ -78,40 +78,40 @@ const ImageCarousel = ({ images, title, onNavigate }) => {
         draggable={false}
       />
 
-      {/* Navigation arrows - visible on hover (desktop) */}
+      {/* Navigation arrows - always visible on mobile, hover on desktop */}
       {allImages.length > 1 && (
         <>
           <button
             onClick={goPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10"
             aria-label="Previous image"
           >
             <ChevronLeft size={20} className="text-gray-700" />
           </button>
           <button
             onClick={goNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10"
             aria-label="Next image"
           >
             <ChevronRight size={20} className="text-gray-700" />
           </button>
 
           {/* Dots indicator */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             {allImages.slice(0, 5).map((_, idx) => (
               <button
                 key={idx}
                 onClick={(e) => goTo(idx, e)}
-                className={`w-2 h-2 rounded-full transition-all ${
+                className={`h-2 rounded-full transition-all ${
                   idx === currentIndex
-                    ? 'bg-white w-4'
-                    : 'bg-white/60 hover:bg-white/80'
+                    ? 'bg-white w-5'
+                    : 'bg-white/70 w-2 hover:bg-white/90'
                 }`}
                 aria-label={`Go to image ${idx + 1}`}
               />
             ))}
             {allImages.length > 5 && (
-              <span className="text-white text-xs font-semibold ml-1">+{allImages.length - 5}</span>
+              <span className="text-white text-xs font-semibold ml-1 drop-shadow">+{allImages.length - 5}</span>
             )}
           </div>
         </>
