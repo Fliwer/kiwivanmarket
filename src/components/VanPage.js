@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
@@ -211,6 +211,9 @@ export default function VanPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showShareMenu, setShowShareMenu] = useState(false);
 
+  // Ref pour éviter d'incrémenter les vues 2x (React StrictMode)
+  const viewIncremented = useRef(false);
+
   // Fermer le loader initial
   useEffect(() => {
     const loader = document.getElementById('app-loader');
@@ -232,8 +235,11 @@ export default function VanPage() {
           const vanData = { id: vanSnap.id, ...vanSnap.data() };
           setVan(vanData);
           
-          // Incrémenter le compteur de vues (en arrière-plan)
-          updateDoc(vanRef, { views: increment(1) }).catch(() => {});
+          // Incrémenter le compteur de vues (une seule fois)
+          if (!viewIncremented.current) {
+            viewIncremented.current = true;
+            updateDoc(vanRef, { views: increment(1) }).catch(() => {});
+          }
         } else {
           setError('Van not found');
         }
@@ -314,7 +320,8 @@ export default function VanPage() {
     );
   }
 
-  const seller = van.seller || { name: 'Unknown', rating: 5 };
+  const seller = van.seller || { name: 'Unknown' };
+  const hasRating = seller.rating !== undefined && seller.rating !== null && seller.reviewCount > 0;
 
   return (
     <>
@@ -400,315 +407,505 @@ export default function VanPage() {
         <main className="max-w-7xl mx-auto px-4 pb-12">
           <div className="grid lg:grid-cols-2 gap-8 items-start">
 
-            {/* GALERIE PHOTOS - sticky pour rester visible au scroll */}
-            <div className="lg:sticky lg:top-20 relative bg-gray-900 rounded-2xl overflow-hidden shadow-xl">
-              <div className="aspect-[4/3] flex items-center justify-center">
-                <img
-                  src={images[currentImageIndex]}
-                  alt={`${van.title} - ${currentImageIndex + 1}`}
-                  className="max-w-full max-h-full object-contain"
-                />
-              </div>
-              
-              {/* Navigation images */}
-              {images.length > 1 && (
-                <>
-                  <button 
-                    onClick={prevImage}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow-lg hover:bg-white transition"
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-                  <button 
-                    onClick={nextImage}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow-lg hover:bg-white transition"
-                  >
-                    <ChevronRight size={24} />
-                  </button>
-                  
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                    {currentImageIndex + 1} / {images.length}
+            {/* GALERIE PHOTOS - Design premium */}
+            <div className="lg:sticky lg:top-20 space-y-3">
+              {/* Main Image */}
+              <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl overflow-hidden shadow-2xl group">
+                <div className="aspect-[4/3] flex items-center justify-center p-2">
+                  <img
+                    src={images[currentImageIndex]}
+                    alt={`${van.title} - ${currentImageIndex + 1}`}
+                    className="max-w-full max-h-full object-contain rounded-2xl"
+                  />
+                </div>
+
+                {/* Navigation images */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur rounded-full p-3 shadow-xl hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <ChevronLeft size={24} className="text-gray-800" />
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur rounded-full p-3 shadow-xl hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <ChevronRight size={24} className="text-gray-800" />
+                    </button>
+                  </>
+                )}
+
+                {/* Badges */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  {van.featured && (
+                    <span className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 text-gray-900 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg animate-pulse">
+                      <Star size={16} fill="currentColor" /> FEATURED
+                    </span>
+                  )}
+                  {van.selfContained && (
+                    <span className={`text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur ${
+                      van.selfContainedType === 'blue'
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-400'
+                        : 'bg-gradient-to-r from-green-500 to-emerald-400'
+                    }`}>
+                      ✓ Self-Contained {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
+                    </span>
+                  )}
+                  {van.buyBack && (
+                    <span className="bg-gradient-to-r from-emerald-500 to-green-400 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
+                      <Shield size={16} /> Buy-Back
+                    </span>
+                  )}
+                </div>
+
+                {/* Image counter */}
+                {images.length > 1 && (
+                  <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold">
+                    📷 {currentImageIndex + 1} / {images.length}
                   </div>
-                </>
-              )}
-              
-              {/* Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
-                {van.featured && (
-                  <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 shadow-lg">
-                    <Star size={14} fill="currentColor" /> FEATURED
-                  </span>
-                )}
-                {van.selfContained && (
-                  <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg">
-                    ✓ Self-Contained
-                  </span>
-                )}
-                {van.buyBack && (
-                  <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-1.5 shadow-lg">
-                    <Shield size={14} /> Buy-Back
-                  </span>
                 )}
               </div>
 
-              {/* Thumbnails */}
+              {/* Thumbnails - Outside main image */}
               {images.length > 1 && (
-                <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2">
-                  {images.slice(0, 5).map((img, idx) => (
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {images.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
-                      className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition ${
-                        idx === currentImageIndex ? 'border-white' : 'border-transparent opacity-70 hover:opacity-100'
+                      className={`flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden transition-all duration-200 ${
+                        idx === currentImageIndex
+                          ? 'ring-3 ring-emerald-500 ring-offset-2 scale-105'
+                          : 'opacity-60 hover:opacity-100 hover:scale-105'
                       }`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
-                  {images.length > 5 && (
-                    <div className="w-12 h-12 rounded-lg bg-black/60 flex items-center justify-center text-white text-sm font-bold">
-                      +{images.length - 5}
-                    </div>
-                  )}
                 </div>
               )}
             </div>
 
             {/* INFORMATIONS */}
             <div className="space-y-6">
-              
-              {/* Titre & Prix */}
-              <div>
-                <h1 className="text-3xl lg:text-4xl font-black text-gray-900 mb-3">
-                  {van.title}
-                </h1>
-                <div className="flex items-center gap-2 text-gray-600 mb-4">
-                  <MapPin size={20} className="text-emerald-600" />
-                  <span className="font-medium">{van.location}, {van.region || 'New Zealand'}</span>
+
+              {/* Titre & Prix - Premium Design */}
+              <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 p-6 text-white">
+                  <h1 className="text-2xl lg:text-3xl font-black mb-2 leading-tight">
+                    {van.title}
+                  </h1>
+                  <div className="flex items-center gap-2 text-white/90">
+                    <MapPin size={18} />
+                    <span className="font-medium">{van.location}, {van.region || 'New Zealand'}</span>
+                  </div>
                 </div>
-                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-2xl border-2 border-emerald-200">
-                  <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-1">Price</p>
-                  <p className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                    {formatPrice(van.price)}
+                <div className="p-6 bg-gradient-to-br from-gray-50 to-white">
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Asking Price</p>
+                      <p className="text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                        {formatPrice(van.price)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-gray-400 uppercase tracking-wide">Views</p>
+                      <p className="text-2xl font-bold text-gray-600">{van.views || 0}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats rapides - Premium Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-2xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center mb-3 shadow-lg">
+                    <Calendar className="text-white" size={20} />
+                  </div>
+                  <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">Year</p>
+                  <p className="text-2xl font-black text-gray-900">{van.year || 'N/A'}</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mb-3 shadow-lg">
+                    <Gauge className="text-white" size={20} />
+                  </div>
+                  <p className="text-[10px] text-blue-700 font-bold uppercase tracking-wider">Mileage</p>
+                  <p className="text-2xl font-black text-gray-900">{(van.mileage || 0).toLocaleString()}<span className="text-sm font-medium text-gray-500"> km</span></p>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-2xl border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-lg">
+                    <Users className="text-white" size={20} />
+                  </div>
+                  <p className="text-[10px] text-purple-700 font-bold uppercase tracking-wider">Sleeps</p>
+                  <p className="text-2xl font-black text-gray-900">{van.capacity || 2}<span className="text-sm font-medium text-gray-500"> people</span></p>
+                </div>
+                <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-2xl border border-amber-200 shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center mb-3 shadow-lg">
+                    <Clock className="text-white" size={20} />
+                  </div>
+                  <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">Posted</p>
+                  <p className="text-2xl font-black text-gray-900">{getDaysAgo(van.createdAt)}<span className="text-sm font-medium text-gray-500"> days ago</span></p>
+                </div>
+              </div>
+
+              {/* WOF & REGO - Premium Status Cards */}
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-3">
+                  <h3 className="text-white font-bold flex items-center gap-2">
+                    <Shield size={18} />
+                    Vehicle Compliance
+                  </h3>
+                </div>
+                <div className="p-4">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className={`p-4 rounded-xl text-center transition-all ${
+                      van.wofExpiry && new Date(van.wofExpiry) > new Date()
+                        ? 'bg-gradient-to-br from-emerald-50 to-green-100 border-2 border-emerald-300'
+                        : 'bg-gray-100 border-2 border-gray-200'
+                    }`}>
+                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${
+                        van.wofExpiry && new Date(van.wofExpiry) > new Date() ? 'bg-emerald-500' : 'bg-gray-400'
+                      }`}>
+                        <CheckCircle size={20} className="text-white" />
+                      </div>
+                      <div className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">WOF Valid</div>
+                      <div className={`text-sm font-bold ${van.wofExpiry && new Date(van.wofExpiry) > new Date() ? 'text-emerald-700' : 'text-gray-500'}`}>
+                        {formatDate(van.wofExpiry)}
+                      </div>
+                    </div>
+                    <div className={`p-4 rounded-xl text-center transition-all ${
+                      van.regoExpiry && new Date(van.regoExpiry) > new Date()
+                        ? 'bg-gradient-to-br from-blue-50 to-cyan-100 border-2 border-blue-300'
+                        : 'bg-gray-100 border-2 border-gray-200'
+                    }`}>
+                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${
+                        van.regoExpiry && new Date(van.regoExpiry) > new Date() ? 'bg-blue-500' : 'bg-gray-400'
+                      }`}>
+                        <CheckCircle size={20} className="text-white" />
+                      </div>
+                      <div className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">REGO Until</div>
+                      <div className={`text-sm font-bold ${van.regoExpiry && new Date(van.regoExpiry) > new Date() ? 'text-blue-700' : 'text-gray-500'}`}>
+                        {formatDate(van.regoExpiry)}
+                      </div>
+                    </div>
+                    <div className={`p-4 rounded-xl text-center transition-all ${
+                      van.selfContained
+                        ? van.selfContainedType === 'blue'
+                          ? 'bg-gradient-to-br from-blue-50 to-cyan-100 border-2 border-blue-300'
+                          : 'bg-gradient-to-br from-green-50 to-teal-100 border-2 border-green-300'
+                        : 'bg-gray-100 border-2 border-gray-200'
+                    }`}>
+                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${
+                        van.selfContained
+                          ? van.selfContainedType === 'blue' ? 'bg-blue-500' : 'bg-green-500'
+                          : 'bg-gray-400'
+                      }`}>
+                        {van.selfContained ? <CheckCircle size={20} className="text-white" /> : <X size={20} className="text-white" />}
+                      </div>
+                      <div className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">Self-Contained</div>
+                      <div className={`text-sm font-bold ${
+                        van.selfContained
+                          ? van.selfContainedType === 'blue' ? 'text-blue-700' : 'text-green-700'
+                          : 'text-gray-500'
+                      }`}>
+                        {van.selfContained ? (van.selfContainedType === 'blue' ? 'Blue Sticker' : 'Green Sticker') : 'No'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description - Premium Card */}
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3">
+                  <h2 className="text-white font-bold flex items-center gap-2">
+                    <MessageCircle size={18} />
+                    About This Van
+                  </h2>
+                </div>
+                <div className="p-5">
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
+                    {van.description || 'No description available.'}
                   </p>
                 </div>
               </div>
 
-              {/* Stats rapides */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <Calendar className="text-emerald-600 mb-2" size={20} />
-                  <p className="text-xs text-gray-500 font-semibold">YEAR</p>
-                  <p className="text-xl font-bold text-gray-900">{van.year || 'N/A'}</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <Gauge className="text-emerald-600 mb-2" size={20} />
-                  <p className="text-xs text-gray-500 font-semibold">MILEAGE</p>
-                  <p className="text-xl font-bold text-gray-900">{(van.mileage || 0).toLocaleString()} km</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <Users className="text-emerald-600 mb-2" size={20} />
-                  <p className="text-xs text-gray-500 font-semibold">CAPACITY</p>
-                  <p className="text-xl font-bold text-gray-900">{van.capacity || 2} people</p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <Clock className="text-emerald-600 mb-2" size={20} />
-                  <p className="text-xs text-gray-500 font-semibold">POSTED</p>
-                  <p className="text-xl font-bold text-gray-900">{getDaysAgo(van.createdAt)}d ago</p>
-                </div>
-              </div>
-
-              {/* WOF & REGO */}
-              <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-4 rounded-xl border border-gray-200">
-                <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                  <Shield size={16} className="text-emerald-600" />
-                  Vehicle Status
-                </h3>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className={`bg-white p-3 rounded-lg border text-center ${van.wofExpiry && new Date(van.wofExpiry) > new Date() ? 'border-emerald-200' : 'border-gray-200'}`}>
-                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">WOF Valid</div>
-                    <div className={`text-sm font-bold ${van.wofExpiry && new Date(van.wofExpiry) > new Date() ? 'text-emerald-600' : 'text-gray-400'}`}>
-                      {formatDate(van.wofExpiry)}
-                    </div>
-                  </div>
-                  <div className={`bg-white p-3 rounded-lg border text-center ${van.regoExpiry && new Date(van.regoExpiry) > new Date() ? 'border-blue-200' : 'border-gray-200'}`}>
-                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">REGO Until</div>
-                    <div className={`text-sm font-bold ${van.regoExpiry && new Date(van.regoExpiry) > new Date() ? 'text-blue-600' : 'text-gray-400'}`}>
-                      {formatDate(van.regoExpiry)}
-                    </div>
-                  </div>
-                  <div className={`p-3 rounded-lg border text-center ${van.selfContained ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
-                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">Self-Contained</div>
-                    <div className={`text-sm font-bold ${van.selfContained ? 'text-green-600' : 'text-gray-400'}`}>
-                      {van.selfContained ? '✓ Yes' : '✗ No'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
-                  Description
-                </h2>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {van.description || 'No description available.'}
-                </p>
-              </div>
-
-              {/* Equipment */}
+              {/* Equipment - Premium Grid */}
               {van.equipment && Object.values(van.equipment).some(v => v === true) && (
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
-                    Equipment
-                  </h2>
-                  <div className="grid grid-cols-2 gap-2">
-                    {van.equipment.doubleBed && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛏️ Double Bed</div>}
-                    {van.equipment.fridge && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🧊 Fridge</div>}
-                    {van.equipment.gasStove && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔥 Gas Stove</div>}
-                    {van.equipment.sink && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚰 Sink</div>}
-                    {van.equipment.toilet && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚽 Toilet</div>}
-                    {van.equipment.solarPanel && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">☀️ Solar Panel</div>}
-                    {van.equipment.leisureBattery && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔋 Leisure Battery</div>}
-                    {van.equipment.heater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🌡️ Heater</div>}
-                    {van.equipment.dieselHeater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔥 Diesel Heater</div>}
-                    {van.equipment.outdoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚿 Outdoor Shower</div>}
-                    {van.equipment.indoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛁 Indoor Shower</div>}
-                    {van.equipment.awning && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">⛺ Awning</div>}
-                    {van.equipment.reverseCamera && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📷 Reverse Camera</div>}
-                    {van.equipment.bluetooth && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📻 Bluetooth</div>}
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                  <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3">
+                    <h2 className="text-white font-bold flex items-center gap-2">
+                      <CheckCircle size={18} />
+                      Features & Equipment
+                    </h2>
+                  </div>
+                  <div className="p-5">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {van.equipment.doubleBed && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🛏️</span>
+                          <span className="font-semibold text-gray-800 text-sm">Double Bed</span>
+                        </div>
+                      )}
+                      {van.equipment.fridge && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🧊</span>
+                          <span className="font-semibold text-gray-800 text-sm">Fridge</span>
+                        </div>
+                      )}
+                      {van.equipment.gasStove && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🔥</span>
+                          <span className="font-semibold text-gray-800 text-sm">Gas Stove</span>
+                        </div>
+                      )}
+                      {van.equipment.sink && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🚰</span>
+                          <span className="font-semibold text-gray-800 text-sm">Sink</span>
+                        </div>
+                      )}
+                      {van.equipment.toilet && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-slate-50 to-gray-100 border border-slate-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🚽</span>
+                          <span className="font-semibold text-gray-800 text-sm">Toilet</span>
+                        </div>
+                      )}
+                      {van.equipment.solarPanel && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">☀️</span>
+                          <span className="font-semibold text-gray-800 text-sm">Solar Panel</span>
+                        </div>
+                      )}
+                      {van.equipment.leisureBattery && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🔋</span>
+                          <span className="font-semibold text-gray-800 text-sm">Leisure Battery</span>
+                        </div>
+                      )}
+                      {van.equipment.heater && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🌡️</span>
+                          <span className="font-semibold text-gray-800 text-sm">Heater</span>
+                        </div>
+                      )}
+                      {van.equipment.dieselHeater && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🔥</span>
+                          <span className="font-semibold text-gray-800 text-sm">Diesel Heater</span>
+                        </div>
+                      )}
+                      {van.equipment.outdoorShower && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🚿</span>
+                          <span className="font-semibold text-gray-800 text-sm">Outdoor Shower</span>
+                        </div>
+                      )}
+                      {van.equipment.indoorShower && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">🛁</span>
+                          <span className="font-semibold text-gray-800 text-sm">Indoor Shower</span>
+                        </div>
+                      )}
+                      {van.equipment.awning && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">⛺</span>
+                          <span className="font-semibold text-gray-800 text-sm">Awning</span>
+                        </div>
+                      )}
+                      {van.equipment.reverseCamera && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">📷</span>
+                          <span className="font-semibold text-gray-800 text-sm">Reverse Camera</span>
+                        </div>
+                      )}
+                      {van.equipment.bluetooth && (
+                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
+                          <span className="text-2xl">📻</span>
+                          <span className="font-semibold text-gray-800 text-sm">Bluetooth</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Buy-Back Details */}
+              {/* Buy-Back Details - Premium Card */}
               {van.buyBack && (
-                <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
-                  <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">
-                    <Shield size={20} />
-                    Buy-Back Guarantee
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3 mb-3">
-                    <div className="bg-white p-3 rounded-lg border border-green-200">
-                      <div className="text-xs text-gray-500 font-semibold">Buy-Back Price</div>
-                      <div className="text-xl font-bold text-green-600">
-                        {van.buyBackPrice ? formatPrice(van.buyBackPrice) : 'Contact seller'}
-                      </div>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg border border-green-200">
-                      <div className="text-xs text-gray-500 font-semibold">Valid For</div>
-                      <div className="text-xl font-bold text-green-600">
-                        {van.buyBackDuration ? `${van.buyBackDuration} months` : 'Contact seller'}
-                      </div>
-                    </div>
+                <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-green-300">
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-4">
+                    <h3 className="text-white font-bold flex items-center gap-2 text-lg">
+                      <Shield size={22} />
+                      Buy-Back Guarantee
+                    </h3>
+                    <p className="text-green-100 text-sm mt-1">Peace of mind for your travel adventure</p>
                   </div>
-                  {van.buyBackConditions && (
-                    <p className="text-sm text-gray-600">
-                      <strong>Conditions:</strong> {van.buyBackConditions}
-                    </p>
-                  )}
+                  <div className="p-5">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-4 rounded-xl border border-green-200">
+                        <div className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">Buy-Back Price</div>
+                        <div className="text-2xl font-black text-green-600">
+                          {van.buyBackPrice ? formatPrice(van.buyBackPrice) : 'Contact seller'}
+                        </div>
+                      </div>
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-4 rounded-xl border border-green-200">
+                        <div className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">Valid For</div>
+                        <div className="text-2xl font-black text-green-600">
+                          {van.buyBackDuration ? `${van.buyBackDuration} months` : 'Contact'}
+                        </div>
+                      </div>
+                    </div>
+                    {van.buyBackConditions && (
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <p className="text-sm text-gray-600">
+                          <span className="font-bold text-gray-800">Conditions:</span> {van.buyBackConditions}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Seller Info */}
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-5 rounded-xl border border-gray-200">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="bg-gradient-to-br from-emerald-600 to-teal-600 rounded-full w-12 h-12 flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                    {seller.name?.[0] || 'U'}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">{seller.name || 'Unknown Seller'}</p>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={14} 
-                          className={i < (seller.rating || 5) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'} 
-                        />
-                      ))}
-                      <span className="text-xs text-gray-600 ml-1">({seller.rating || 5}.0)</span>
+              {/* Seller Info - Premium Card */}
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-slate-700 to-slate-600 px-5 py-3">
+                  <h3 className="text-white font-bold">Contact Seller</h3>
+                </div>
+                <div className="p-5">
+                  <div className="flex items-center gap-4 mb-5 pb-5 border-b border-gray-100">
+                    <div className="relative">
+                      <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl w-16 h-16 flex items-center justify-center text-white text-2xl font-black shadow-xl">
+                        {seller.name?.[0] || 'U'}
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-lg text-gray-900">{seller.name || 'Unknown Seller'}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        {hasRating ? (
+                          <>
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                size={16}
+                                className={i < seller.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
+                              />
+                            ))}
+                            <span className="text-sm text-gray-600 ml-2 font-semibold">({seller.rating.toFixed(1)})</span>
+                          </>
+                        ) : (
+                          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">New seller</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Usually responds quickly</p>
                     </div>
                   </div>
-                </div>
 
-                {/* Quick Message Box */}
-                <Suspense fallback={<div className="animate-pulse bg-gray-200 h-32 rounded-xl"></div>}>
-                  <QuickMessageBox 
-                    van={van} 
-                    seller={seller}
-                  />
-                </Suspense>
+                  {/* Quick Message Box */}
+                  <Suspense fallback={<div className="animate-pulse bg-gray-200 h-32 rounded-xl"></div>}>
+                    <QuickMessageBox
+                      van={van}
+                      seller={seller}
+                    />
+                  </Suspense>
+                </div>
               </div>
 
             </div>
           </div>
           {/* Browse More - Internal Links for SEO */}
-          <section className="mt-12 bg-gray-50 rounded-2xl p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Browse More Campervans</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* By Brand */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Popular Brands</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Link to="/brand/toyota-hiace" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Toyota Hiace
-                  </Link>
-                  <Link to="/brand/nissan-caravan" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Nissan Caravan
-                  </Link>
-                  <Link to="/brand/mitsubishi-delica" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Mitsubishi Delica
-                  </Link>
-                  <Link to="/brand/mazda-bongo" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Mazda Bongo
-                  </Link>
-                  <Link to="/brand/ford-transit" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Ford Transit
-                  </Link>
+          <section className="mt-12 bg-white rounded-3xl shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 px-6 py-4">
+              <h2 className="text-xl font-bold text-white">Browse More Campervans</h2>
+              <p className="text-white/80 text-sm">Discover your perfect adventure vehicle</p>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* By Brand */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                    Popular Brands
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    <Link to="/brand/toyota-hiace" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                      Toyota Hiace
+                    </Link>
+                    <Link to="/brand/nissan-caravan" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                      Nissan Caravan
+                    </Link>
+                    <Link to="/brand/mitsubishi-delica" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                      Mitsubishi Delica
+                    </Link>
+                    <Link to="/brand/mazda-bongo" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                      Mazda Bongo
+                    </Link>
+                    <Link to="/brand/ford-transit" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                      Ford Transit
+                    </Link>
+                  </div>
                 </div>
-              </div>
-              {/* By Location */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Popular Locations</h3>
-                <div className="flex flex-wrap gap-2">
-                  <Link to="/location/auckland" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Auckland
-                  </Link>
-                  <Link to="/location/wellington" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Wellington
-                  </Link>
-                  <Link to="/location/christchurch" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Christchurch
-                  </Link>
-                  <Link to="/location/queenstown" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Queenstown
-                  </Link>
-                  <Link to="/location/rotorua" className="px-3 py-1.5 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                    Rotorua
-                  </Link>
+                {/* By Location */}
+                <div>
+                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                    Popular Locations
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    <Link to="/location/auckland" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                      Auckland
+                    </Link>
+                    <Link to="/location/wellington" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                      Wellington
+                    </Link>
+                    <Link to="/location/christchurch" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                      Christchurch
+                    </Link>
+                    <Link to="/location/queenstown" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                      Queenstown
+                    </Link>
+                    <Link to="/location/rotorua" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                      Rotorua
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
           </section>
         </main>
 
-        {/* Footer simple */}
-        <footer className="bg-gray-900 text-white py-8 mt-12">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <Link to="/" className="inline-flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-full overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
-                <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-full h-full object-contain" />
+        {/* Footer - Premium */}
+        <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-white py-12 mt-12">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex flex-col items-center">
+              <Link to="/" className="inline-flex items-center gap-3 mb-4 group">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-xl group-hover:scale-105 transition-transform" style={{ backgroundColor: '#f7eedd' }}>
+                  <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <span className="font-black text-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Kiwi Van Market</span>
+                  <p className="text-gray-400 text-xs font-medium">Your Adventure Starts Here</p>
+                </div>
+              </Link>
+              <p className="text-gray-400 text-sm text-center max-w-md mb-6">
+                New Zealand's premier marketplace for campervans and motorhomes. Find your perfect home on wheels.
+              </p>
+              <div className="flex items-center gap-4 mb-6">
+                <Link to="/" className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition">
+                  Browse Vans
+                </Link>
+                <Link to="/sell" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-medium transition">
+                  Sell Your Van
+                </Link>
               </div>
-              <span className="font-bold text-xl">Kiwi Van Market</span>
-            </Link>
-            <p className="text-gray-400 text-sm">
-              The #1 marketplace for campervans in New Zealand 🇳🇿
-            </p>
-            <p className="text-gray-500 text-xs mt-4">
-              © {new Date().getFullYear()} Kiwi Van Market. All rights reserved.
-            </p>
+              <div className="border-t border-gray-800 pt-6 w-full text-center">
+                <p className="text-gray-500 text-xs">
+                  © {new Date().getFullYear()} Kiwi Van Market. All rights reserved. Made with love in New Zealand
+                </p>
+              </div>
+            </div>
           </div>
         </footer>
       </div>

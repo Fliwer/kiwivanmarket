@@ -633,7 +633,7 @@ function MainApp() {
       : (van.imageUrl ? [van.imageUrl] : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800']);
     
     const features = van.features || [];
-    const seller = van.seller || { name: 'Unknown', rating: 5, email: '', phone: '' };
+    const seller = van.seller || { name: 'Unknown', email: '', phone: '' };
     
     const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
     const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
@@ -731,8 +731,12 @@ function MainApp() {
                   </div>
                 )}
                 {van.selfContained && (
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg">
-                    ✓ Self-Contained
+                  <div className={`text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg ${
+                    van.selfContainedType === 'blue'
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                      : 'bg-gradient-to-r from-green-500 to-emerald-500'
+                  }`}>
+                    ✓ Self-Contained {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
                   </div>
                 )}
                 {van.buyBack && (

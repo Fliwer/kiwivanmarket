@@ -12,9 +12,13 @@ const admin = require('firebase-admin');
 
 // Firebase Functions v2 imports
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { defineSecret } = require('firebase-functions/params');
 
 // Resend for email notifications
 const { Resend } = require('resend');
+
+// ✅ Define secrets for Firebase Functions v2
+const resendApiKey = defineSecret('RESEND_API_KEY');
 
 // Initialiser Firebase Admin
 admin.initializeApp();
@@ -26,55 +30,74 @@ const db = admin.firestore();
 // Sends ONE email per new conversation (not per message)
 // Uses Resend (free: 100 emails/day)
 
-exports.onNewConversation = onDocumentCreated('conversations/{conversationId}', async (event) => {
+exports.onNewConversation = onDocumentCreated(
+  {
+    document: 'conversations/{conversationId}',
+    secrets: [resendApiKey], // ✅ Declare secret dependency
+  },
+  async (event) => {
   const conversation = event.data.data();
   const conversationId = event.params.conversationId;
 
   console.log(`📧 New conversation created: ${conversationId}`);
+  console.log('📝 Conversation data:', JSON.stringify(conversation, null, 2));
 
-  // Vérifier que les données nécessaires sont présentes
-  if (!conversation.sellerId || !conversation.vanId) {
-    console.log('❌ Missing sellerId or vanId');
+  // ✅ Support multiple ways to get sellerId (backward compatibility)
+  const sellerId = conversation.sellerId ||
+                   conversation.participants?.find(p => p !== conversation.buyerId) ||
+                   null;
+
+  if (!sellerId || !conversation.vanId) {
+    console.log('❌ Missing sellerId or vanId', { sellerId, vanId: conversation.vanId });
     return null;
   }
 
   try {
-    // Initialiser Resend
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
+    // Initialiser Resend avec le secret Firebase
+    const apiKey = resendApiKey.value();
+    if (!apiKey) {
       console.error('❌ RESEND_API_KEY not configured');
       return null;
     }
-    const resend = new Resend(resendApiKey);
+    const resend = new Resend(apiKey);
 
-    // Récupérer les infos du vendeur
-    const sellerDoc = await db.collection('users').doc(conversation.sellerId).get();
-    if (!sellerDoc.exists) {
-      console.log('❌ Seller not found');
-      return null;
-    }
-    const seller = sellerDoc.data();
+    // ✅ D'abord essayer de récupérer l'email depuis participantEmails (plus fiable)
+    let sellerEmail = conversation.participantEmails?.[sellerId];
+    let sellerName = conversation.participantNames?.[sellerId] || 'there';
 
-    // Récupérer les infos du van
-    const vanDoc = await db.collection('vans').doc(conversation.vanId).get();
-    if (!vanDoc.exists) {
-      console.log('❌ Van not found');
-      return null;
+    // Si pas d'email dans la conversation, chercher dans users
+    if (!sellerEmail) {
+      const sellerDoc = await db.collection('users').doc(sellerId).get();
+      if (!sellerDoc.exists) {
+        console.log('❌ Seller not found in users collection');
+        return null;
+      }
+      const seller = sellerDoc.data();
+      sellerEmail = seller.email;
+      sellerName = seller.displayName || seller.name || 'there';
     }
-    const van = vanDoc.data();
+
+    // ✅ Utiliser les infos du van de la conversation (plus rapide) ou récupérer depuis DB
+    let van = conversation.van;
+    if (!van || !van.title) {
+      const vanDoc = await db.collection('vans').doc(conversation.vanId).get();
+      if (!vanDoc.exists) {
+        console.log('❌ Van not found');
+        return null;
+      }
+      van = vanDoc.data();
+    }
 
     // Récupérer le nom de l'acheteur
-    const buyerName = conversation.buyerName || conversation.participants?.find(p => p !== conversation.sellerId) || 'Someone';
+    const buyerName = conversation.buyerName ||
+                      conversation.participantNames?.[conversation.buyerId] ||
+                      'Someone';
 
     // Premier message (preview)
     const firstMessage = conversation.lastMessage || conversation.firstMessage || '';
     const messagePreview = firstMessage.length > 100
       ? firstMessage.substring(0, 100) + '...'
       : firstMessage;
-
-    // Email du vendeur
-    const sellerEmail = seller.email;
-    const sellerName = seller.displayName || seller.name || 'there';
 
     if (!sellerEmail) {
       console.log('❌ Seller has no email');
@@ -83,7 +106,7 @@ exports.onNewConversation = onDocumentCreated('conversations/{conversationId}', 
 
     // Envoyer l'email
     const { data, error } = await resend.emails.send({
-      from: 'Kiwi Van Market <onboarding@resend.dev>',
+      from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
       to: sellerEmail,
       subject: `💬 New inquiry about your ${van.title}`,
       html: `

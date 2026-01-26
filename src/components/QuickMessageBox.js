@@ -145,6 +145,10 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       if (!conversationId) {
         const convRef = await addDoc(collection(db, 'conversations'), {
           participants: [currentUser.uid, sellerInfo.uid],
+          // ✅ IMPORTANT: Ces champs sont requis par la Cloud Function pour les emails
+          sellerId: sellerInfo.uid,
+          buyerId: currentUser.uid,
+          buyerName: currentUser.displayName || 'Someone',
           participantNames: {
             [currentUser.uid]: currentUser.displayName || 'Anonymous',
             [sellerInfo.uid]: sellerInfo.name
