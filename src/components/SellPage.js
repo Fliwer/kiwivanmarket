@@ -57,6 +57,15 @@ export default function SellPage() {
   const [showRegoTooltip, setShowRegoTooltip] = useState(false);
   const [showSelfContainedTooltip, setShowSelfContainedTooltip] = useState(false);
 
+  // Hide the initial HTML loader
+  useEffect(() => {
+    const loader = document.getElementById('app-loader');
+    if (loader) {
+      loader.classList.add('fade-out');
+      setTimeout(() => loader.remove(), 500);
+    }
+  }, []);
+
   // Show auth modal if not logged in
   useEffect(() => {
     if (!currentUser) {
