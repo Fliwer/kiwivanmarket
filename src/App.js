@@ -1053,15 +1053,11 @@ function MainApp() {
       <div className="min-h-screen bg-gray-50">
 
         {/* ========== ANNOUNCEMENT BANNER ========== */}
-        <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 px-4 text-center text-sm font-medium">
-          <span className="hidden sm:inline">List your campervan for FREE and reach thousands of backpackers! </span>
-          <span className="sm:hidden">Sell your van for FREE! </span>
-          <button
-            onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
-            className="underline font-bold hover:no-underline"
-          >
-            Post your ad now
-          </button>
+        <div
+          className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 px-4 text-center text-sm font-medium cursor-pointer hover:from-orange-600 hover:to-amber-600 transition-all"
+          onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
+        >
+          🚐 Sell your van FOR FREE → List now
         </div>
 
         {/* ========== HEADER ========== */}
