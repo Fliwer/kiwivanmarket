@@ -1,34 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  
+
   <sitemap>
     <loc>https://kiwivanmarket.com/sitemap-main.xml</loc>
-    <lastmod>2025-11-30</lastmod>
+    <lastmod>2026-01-26</lastmod>
   </sitemap>
-  
+
   <sitemap>
     <loc>https://kiwivanmarket.com/sitemap-vehicles.xml</loc>
-    <lastmod>2025-11-30</lastmod>
-  </sitemap>
-  
-  <sitemap>
-    <loc>https://kiwivanmarket.com/sitemap-brands.xml</loc>
-    <lastmod>2025-11-30</lastmod>
-  </sitemap>
-  
-  <sitemap>
-    <loc>https://kiwivanmarket.com/sitemap-locations.xml</loc>
-    <lastmod>2025-11-30</lastmod>
-  </sitemap>
-  
-  <sitemap>
-    <loc>https://kiwivanmarket.com/sitemap-guides.xml</loc>
-    <lastmod>2025-11-30</lastmod>
-  </sitemap>
-  
-  <sitemap>
-    <loc>https://kiwivanmarket.com/sitemap-images.xml</loc>
-    <lastmod>2025-11-30</lastmod>
+    <lastmod>2026-01-26</lastmod>
   </sitemap>
 
 </sitemapindex>

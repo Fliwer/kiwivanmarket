@@ -9,11 +9,9 @@ Allow: /*.webp$
 Disallow: /*?page=
 Disallow: /*?sort=
 Disallow: /*&page=
+Disallow: /*?search=
+Disallow: /*?filter=
 Disallow: /admin/
 
 Sitemap: https://kiwivanmarket.com/sitemap.xml
 Sitemap: https://kiwivanmarket.com/sitemap-vehicles.xml
-Sitemap: https://kiwivanmarket.com/sitemap-images.xml
-Sitemap: https://kiwivanmarket.com/sitemap-brands.xml
-Sitemap: https://kiwivanmarket.com/sitemap-locations.xml
-Sitemap: https://kiwivanmarket.com/sitemap-guides.xml
