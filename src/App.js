@@ -37,6 +37,9 @@ const VanPage = lazy(() => import('./components/VanPage'));
 const BrandPage = lazy(() => import('./components/BrandPage'));
 const LocationPage = lazy(() => import('./components/LocationPage'));
 const GuidePage = lazy(() => import('./components/GuidePage'));
+// ✅ User pages
+const ProfilePage = lazy(() => import('./components/ProfilePage'));
+const MyListingsPage = lazy(() => import('./components/MyListingsPage'));
 // MVP_DISABLED: Reservations
 // const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
 // const ReservationCancelled = lazy(() => import('./components/ReservationCancelled'));
@@ -1225,24 +1228,22 @@ function MainApp() {
                           <div className="text-xs text-gray-500">{currentUser.email}</div>
                         </div>
                         <div className="py-1">
-                          <a 
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); setShowUserProfile(true); setShowUserMenu(false); }}
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
+                          <button
+                            onClick={() => { navigate('/profile'); setShowUserMenu(false); }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition text-left">
                             <svg className="w-[18px] h-[18px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             <span>My Profile</span>
-                          </a>
-                          <a 
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); setShowMyVans(true); setShowUserMenu(false); }}
-                            className="flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition">
+                          </button>
+                          <button
+                            onClick={() => { navigate('/my-listings'); setShowUserMenu(false); }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition text-left">
                             <svg className="w-[18px] h-[18px] text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                               <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z"/>
                             </svg>
                             <span>My Listings</span>
-                          </a>
+                          </button>
                           {/* MVP_DISABLED: Reservations
                           <a 
                             href="#"
@@ -1372,15 +1373,15 @@ function MainApp() {
                   </button>
                 ) : (
                   <>
-                    <button 
-                      onClick={() => { setShowUserProfile(true); setShowMobileMenu(false); }}
+                    <button
+                      onClick={() => { navigate('/profile'); setShowMobileMenu(false); }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
                     >
                       <Users size={20} />
                       <span>My Profile</span>
                     </button>
-                    <button 
-                      onClick={() => { setShowMyVans(true); setShowMobileMenu(false); }}
+                    <button
+                      onClick={() => { navigate('/my-listings'); setShowMobileMenu(false); }}
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
                     >
                       <MapPin size={20} />
@@ -2168,6 +2169,16 @@ export default function KiwiVanMarket() {
           </Suspense>
         } />
         <Route path="/sell" element={<SellPage />} />
+        <Route path="/profile" element={
+          <Suspense fallback={<PageLoader />}>
+            <ProfilePage />
+          </Suspense>
+        } />
+        <Route path="/my-listings" element={
+          <Suspense fallback={<PageLoader />}>
+            <MyListingsPage />
+          </Suspense>
+        } />
 
         {/* MVP_DISABLED: Reservations
         <Route path="/reservation-success" element={
