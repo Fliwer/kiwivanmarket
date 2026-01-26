@@ -35,6 +35,7 @@ const QuickMessageBox = lazy(() => import('./components/QuickMessageBox'));
 const VanPage = lazy(() => import('./components/VanPage'));
 const BrandPage = lazy(() => import('./components/BrandPage'));
 const LocationPage = lazy(() => import('./components/LocationPage'));
+const GuidePage = lazy(() => import('./components/GuidePage'));
 // MVP_DISABLED: Reservations
 // const ReservationSuccess = lazy(() => import('./components/ReservationSuccess'));
 // const ReservationCancelled = lazy(() => import('./components/ReservationCancelled'));
@@ -1077,12 +1078,13 @@ function MainApp() {
                   <span className="hidden md:inline">Buyback Calculator</span>
                 </button>
 
-                <button 
+                <button
                   onClick={() => currentUser ? setShowAddVanForm(true) : setShowAuthModal(true)}
-                  className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
+                  className="relative bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 px-5 py-2.5 rounded-xl font-bold hover:from-yellow-300 hover:to-orange-400 transition flex items-center gap-2 text-sm shadow-lg animate-pulse hover:animate-none"
                 >
                   <Plus size={18} />
-                  <span className="hidden sm:inline">Sell your van</span>
+                  <span>Sell your van</span>
+                  <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">FREE</span>
                 </button>
               </div>
 
@@ -2079,6 +2081,11 @@ export default function KiwiVanMarket() {
         <Route path="/location/:location" element={
           <Suspense fallback={<PageLoader />}>
             <LocationPage />
+          </Suspense>
+        } />
+        <Route path="/guide/:slug" element={
+          <Suspense fallback={<PageLoader />}>
+            <GuidePage />
           </Suspense>
         } />
 

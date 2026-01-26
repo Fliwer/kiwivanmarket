@@ -210,30 +210,39 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
           {/* Quick Links */}
           <div>
             <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Quick Links</h3>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-2 text-sm">
               <li>
-                <button onClick={onOpenFAQ} className="text-gray-400 hover:text-white transition flex items-center gap-2 group">
-                  <span className="w-8 h-8 rounded-full bg-gray-800 group-hover:bg-emerald-600 flex items-center justify-center transition">
-                    <HelpCircle size={14} />
-                  </span>
+                <button onClick={onOpenFAQ} className="text-gray-400 hover:text-white transition">
                   FAQ & How It Works
                 </button>
               </li>
               <li>
-                <button onClick={onOpenTerms} className="text-gray-400 hover:text-white transition flex items-center gap-2 group">
-                  <span className="w-8 h-8 rounded-full bg-gray-800 group-hover:bg-emerald-600 flex items-center justify-center transition">
-                    <FileText size={14} />
-                  </span>
+                <button onClick={onOpenTerms} className="text-gray-400 hover:text-white transition">
                   Terms of Use
                 </button>
               </li>
               <li>
-                <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-gray-400 hover:text-white transition flex items-center gap-2 group">
-                  <span className="w-8 h-8 rounded-full bg-gray-800 group-hover:bg-emerald-600 flex items-center justify-center transition">
-                    <Mail size={14} />
-                  </span>
+                <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-gray-400 hover:text-white transition">
                   Contact Us
                 </a>
+              </li>
+            </ul>
+            <h3 className="font-bold mb-3 mt-6 text-emerald-400 text-sm uppercase tracking-wider">Guides</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/guide/buying-campervan-nz" className="text-gray-400 hover:text-white transition">
+                  Buying a Campervan
+                </Link>
+              </li>
+              <li>
+                <Link to="/guide/selling-campervan-nz" className="text-gray-400 hover:text-white transition">
+                  Selling Your Van
+                </Link>
+              </li>
+              <li>
+                <Link to="/guide/freedom-camping-nz" className="text-gray-400 hover:text-white transition">
+                  Freedom Camping
+                </Link>
               </li>
             </ul>
           </div>
