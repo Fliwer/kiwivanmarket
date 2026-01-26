@@ -139,18 +139,27 @@ export default function SellPage() {
       console.error('Error checking van count:', error);
     }
 
-    // Validation
+    // Validation - Must match Firestore security rules
     const errors = [];
     if (images.length === 0) errors.push('At least 1 photo is required');
+    if (images.length > 10) errors.push('Maximum 10 photos allowed');
     if (images.some(img => img.uploading)) errors.push('Please wait for all images to finish uploading');
-    if (!formData.title || formData.title.length < 3) errors.push('Title must be at least 3 characters');
+    // Ensure all images are uploaded to Cloudinary (not base64 data URLs)
+    if (images.some(img => !img.url || !img.url.includes('cloudinary.com'))) {
+      errors.push('Some images failed to upload. Please remove and re-upload them.');
+    }
+    if (!formData.title || formData.title.length < 5) errors.push('Title must be at least 5 characters');
+    if (formData.title && formData.title.length > 200) errors.push('Title must be less than 200 characters');
     if (!formData.price || parseInt(formData.price) < 1) errors.push('Price is required');
-    if (!formData.location) errors.push('City is required');
-    if (!formData.year) errors.push('Year is required');
+    if (parseInt(formData.price) > 500000) errors.push('Price must be less than $500,000');
+    if (!formData.location || formData.location.length < 2) errors.push('City is required');
+    if (!formData.year || parseInt(formData.year) < 1950 || parseInt(formData.year) > 2026) errors.push('Year must be between 1950 and 2026');
     if (!formData.mileage && formData.mileage !== 0) errors.push('Mileage is required');
+    if (parseInt(formData.mileage) > 1000000) errors.push('Mileage must be less than 1,000,000 km');
     if (!formData.wofExpiry) errors.push('WOF expiry date is required');
     if (!formData.regoExpiry) errors.push('REGO expiry date is required');
-    if (!formData.description || formData.description.length < 10) errors.push('Description must be at least 10 characters');
+    if (!formData.description || formData.description.length < 20) errors.push('Description must be at least 20 characters');
+    if (formData.description && formData.description.length > 5000) errors.push('Description must be less than 5000 characters');
     if (formData.buyBack && !formData.buyBackPrice) errors.push('Buy-back price is required');
 
     if (errors.length > 0) {
