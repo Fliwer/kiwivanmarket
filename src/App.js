@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
@@ -1036,6 +1037,14 @@ function MainApp() {
 
   return (
     <> {/* MVP_DISABLED: Notifications - was NotificationProvider */}
+      {/* SEO: Meta tags dynamiques pour la page d'accueil */}
+      <Helmet>
+        <title>Kiwi Van Market | Buy and Sell Campervans in New Zealand</title>
+        <meta name="description" content="Buy and sell campervans in New Zealand. Find self contained vans, WOF and rego valid vehicles, Toyota Hiace, Nissan Caravan, Mazda Bongo, and buy back options for backpackers." />
+        <link rel="canonical" href="https://kiwivanmarket.com/" />
+        <meta property="og:url" content="https://kiwivanmarket.com/" />
+      </Helmet>
+
       {/* WebViewWarning desactive - le site s'affiche directement */}
       <div className="min-h-screen bg-gray-50">
         
