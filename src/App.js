@@ -15,11 +15,11 @@ import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
 import AuthModal from './components/AuthModal';
 import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
-import SellPage from './components/SellPage'; // Non-lazy pour éviter le loading infini
 // MVP_DISABLED: Stripe/Payments
 // import { TrustBanner } from './components/SecurityBadge';
 
 // ✅ LAZY LOADING - Chargés uniquement quand nécessaires
+const SellPage = lazy(() => import('./components/SellPage'));
 const AddVanForm = lazy(() => import('./components/AddVanForm'));
 const MyVans = lazy(() => import('./components/MyVans'));
 // MVP_DISABLED: Reservations
@@ -117,10 +117,11 @@ function WebViewWarning() {
   );
 }
 
-// 🌐 Sélecteur de langue pour le header
+// 🌐 Sélecteur de langue pour le header - LAZY LOADED
 function LanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState('en');
+  const [translatorLoaded, setTranslatorLoaded] = useState(false);
 
   const languages = [
     { code: 'en', flag: 'https://flagcdn.com/24x18/gb.png', name: 'ENGLISH', short: 'EN' },
@@ -135,12 +136,43 @@ function LanguageSelector() {
     { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' }
   ];
 
+  // Load Google Translate script only when needed
+  const loadTranslator = useCallback(() => {
+    if (translatorLoaded || document.getElementById('google-translate-script')) {
+      return;
+    }
+
+    const translateDiv = document.createElement('div');
+    translateDiv.id = 'google_translate_element';
+    translateDiv.style.display = 'none';
+    document.body.appendChild(translateDiv);
+
+    window.googleTranslateElementInit = function () {
+      new window.google.translate.TranslateElement(
+        {
+          pageLanguage: 'en',
+          includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,th,vi',
+          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false
+        },
+        'google_translate_element'
+      );
+    };
+
+    const script = document.createElement('script');
+    script.id = 'google-translate-script';
+    script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    script.async = true;
+    document.body.appendChild(script);
+    setTranslatorLoaded(true);
+  }, [translatorLoaded]);
+
   const applyLanguage = useCallback((langCode) => {
     const domains = ['', '.' + window.location.hostname, '.kiwivanmarket.com'];
     domains.forEach(domain => {
       document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${domain ? ' domain=' + domain + ';' : ''}`;
     });
-    
+
     try {
       localStorage.removeItem('googtrans');
       sessionStorage.clear();
@@ -150,16 +182,16 @@ function LanguageSelector() {
     if (gtFrame) gtFrame.remove();
     const gtElement = document.getElementById('google_translate_element');
     if (gtElement) gtElement.innerHTML = '';
-    
+
     document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
     const html = document.documentElement;
     html.className = html.className.replace(/translated-[a-z]+/g, '');
-    
+
     const oldScript = document.getElementById('google-translate-script');
     if (oldScript) oldScript.remove();
-    
+
     document.querySelectorAll('iframe.goog-te-menu-frame, iframe.goog-te-banner-frame').forEach(el => el.remove());
-    
+
     if (langCode === 'en') {
       setTimeout(() => {
         window.location.replace(window.location.pathname + '?lang=en&t=' + Date.now());
@@ -167,14 +199,17 @@ function LanguageSelector() {
       return;
     }
 
+    // Load translator before applying non-English language
+    loadTranslator();
+
     const langCookie = `/en/${langCode}`;
     document.cookie = `googtrans=${langCookie}; path=/;`;
     document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
-    
+
     setTimeout(() => {
       window.location.replace(window.location.pathname + '?lang=' + langCode + '&t=' + Date.now());
     }, 100);
-  }, []);
+  }, [loadTranslator]);
 
   const changeLanguage = (langCode) => {
     setIsOpen(false);
@@ -183,34 +218,18 @@ function LanguageSelector() {
     applyLanguage(langCode);
   };
 
+  // Handle opening the selector - load translator on first click
+  const handleOpen = () => {
+    if (!isOpen) {
+      loadTranslator(); // Preload when opening menu
+    }
+    setIsOpen(!isOpen);
+  };
+
   useEffect(() => {
     const savedLang = localStorage.getItem('preferredLang') || 'en';
     setCurrentLang(savedLang);
-
-    if (!document.getElementById('google-translate-script')) {
-      const translateDiv = document.createElement('div');
-      translateDiv.id = 'google_translate_element';
-      translateDiv.style.display = 'none';
-      document.body.appendChild(translateDiv);
-
-      window.googleTranslateElementInit = function () {
-        new window.google.translate.TranslateElement(
-          {
-            pageLanguage: 'en',
-            includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,th,vi',
-            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false
-          },
-          'google_translate_element'
-        );
-      };
-
-      const script = document.createElement('script');
-      script.id = 'google-translate-script';
-      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-      script.async = true;
-      document.body.appendChild(script);
-    }
+    // Note: We no longer load Google Translate on mount - only on user interaction
   }, []);
 
   const currentLangData = languages.find((l) => l.code === currentLang) || languages[0];
@@ -218,8 +237,9 @@ function LanguageSelector() {
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleOpen}
         className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
+        aria-label="Select language"
         title="Change language"
       >
         <img
@@ -1052,6 +1072,13 @@ function MainApp() {
 
       {/* WebViewWarning desactive - le site s'affiche directement */}
       <div className="min-h-screen bg-gray-50">
+        {/* Skip to main content link for accessibility */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-emerald-600 focus:text-white focus:rounded-lg focus:outline-none"
+        >
+          Skip to main content
+        </a>
 
         {/* ========== ANNOUNCEMENT BANNER ========== */}
         <div
@@ -1107,14 +1134,15 @@ function MainApp() {
               {/* Barre de recherche - Desktop */}
               <div className="hidden lg:flex flex-1 max-w-md mx-6">
                 <div className="relative w-full">
-                  <input 
+                  <input
                     type="text"
                     placeholder="Search campervans..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-4 pr-12 py-2.5 bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-xl text-white placeholder-white/70 focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-white outline-none transition-all text-sm"
+                    aria-label="Search campervans"
                   />
-                  <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70" />
+                  <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70" aria-hidden="true" />
                 </div>
               </div>
 
@@ -1151,17 +1179,19 @@ function MainApp() {
                 )}
                 */}
                 
-                <button 
+                <button
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
                   className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                  aria-label={`Favorites${favoritesCount > 0 ? ` (${favoritesCount})` : ''}`}
                 >
                   <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
                   <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
                 </button>
 
-                <button 
+                <button
                   onClick={() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true)}
                   className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                  aria-label="Messages"
                 >
                   <MessageCircle size={22} className="text-white" />
                   <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
@@ -1276,22 +1306,26 @@ function MainApp() {
                   </button>
                 )}
                 */}
-                <button 
+                <button
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
                   className="p-2 hover:bg-white/10 rounded-xl"
+                  aria-label={`Favorites${favoritesCount > 0 ? ` (${favoritesCount})` : ''}`}
                 >
                   <Heart size={20} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
                 </button>
-                <button 
+                <button
                   onClick={() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true)}
                   className="relative p-2 hover:bg-white/10 rounded-xl"
+                  aria-label="Messages"
                 >
                   <MessageCircle size={20} className="text-white" />
                   <MessageBadge />
                 </button>
-                <button 
+                <button
                   onClick={() => setShowMobileMenu(!showMobileMenu)}
                   className="p-2 hover:bg-white/10 rounded-xl"
+                  aria-label={showMobileMenu ? "Close menu" : "Open menu"}
+                  aria-expanded={showMobileMenu}
                 >
                   {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
                 </button>
@@ -1388,6 +1422,9 @@ function MainApp() {
         <TrustBanner />
         */}
 
+        {/* ========== MAIN CONTENT ========== */}
+        <main id="main-content" role="main">
+
         {/* ========== SEARCH MOBILE + FILTRES ========== */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 py-4">
@@ -1395,13 +1432,14 @@ function MainApp() {
             {/* Search Mobile */}
             <div className="lg:hidden mb-4">
               <div className="relative">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input 
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
+                <input
                   type="text"
                   placeholder="Search campervans..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-11 pr-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:border-emerald-500 focus:bg-white outline-none transition-all"
+                  aria-label="Search campervans"
                 />
               </div>
             </div>
@@ -1704,36 +1742,38 @@ function MainApp() {
                   {/* Location & Type */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
-                      <select 
+                      <label htmlFor="filter-location" className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                      <select
+                        id="filter-location"
                         value={filters.location}
                         onChange={(e) => setFilters({...filters, location: e.target.value})}
                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
-                        <option value="all">🇳🇿 All New Zealand</option>
-                        <optgroup label="── North Island ──">
-                          <option value="Auckland">📍 Auckland</option>
-                          <option value="Wellington">📍 Wellington</option>
-                          <option value="Hamilton">📍 Hamilton</option>
-                          <option value="Tauranga">📍 Tauranga</option>
-                          <option value="Rotorua">📍 Rotorua</option>
+                        <option value="all">All New Zealand</option>
+                        <optgroup label="North Island">
+                          <option value="Auckland">Auckland</option>
+                          <option value="Wellington">Wellington</option>
+                          <option value="Hamilton">Hamilton</option>
+                          <option value="Tauranga">Tauranga</option>
+                          <option value="Rotorua">Rotorua</option>
                         </optgroup>
-                        <optgroup label="── South Island ──">
-                          <option value="Christchurch">📍 Christchurch</option>
-                          <option value="Queenstown">📍 Queenstown</option>
-                          <option value="Dunedin">📍 Dunedin</option>
+                        <optgroup label="South Island">
+                          <option value="Christchurch">Christchurch</option>
+                          <option value="Queenstown">Queenstown</option>
+                          <option value="Dunedin">Dunedin</option>
                         </optgroup>
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Type</label>
-                      <select 
+                      <label htmlFor="filter-type" className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Type</label>
+                      <select
+                        id="filter-type"
                         value={filters.type}
                         onChange={(e) => setFilters({...filters, type: e.target.value})}
                         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
-                        <option value="all">🚐 All Types</option>
-                        <option value="Car">🚗 Car</option>
-                        <option value="Van">🚐 Van</option>
-                        <option value="Motorhome">🚌 Motorhome</option>
+                        <option value="all">All Types</option>
+                        <option value="Car">Car</option>
+                        <option value="Van">Van</option>
+                        <option value="Motorhome">Motorhome</option>
                       </select>
                     </div>
                   </div>
@@ -1817,11 +1857,12 @@ function MainApp() {
                   </button>
                 )}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 hidden sm:inline">Sort by:</span>
-                  <select 
+                  <span className="text-sm text-gray-500 hidden sm:inline" id="sort-label">Sort by:</span>
+                  <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
                     className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
+                    aria-label="Sort listings by"
                   >
                     <option value="newest">🆕 Newest first</option>
                     <option value="price-asc">💰 Price: Low to High</option>
@@ -1885,10 +1926,13 @@ function MainApp() {
           </div>
         </div>
 
-        {/* Footer */}
+        {/* SEO Section */}
         <Suspense fallback={null}>
           <HomeSeoSection />
         </Suspense>
+
+        </main>
+        {/* ========== END MAIN CONTENT ========== */}
 
         <Footer 
           onOpenFAQ={() => setShowFAQ(true)} 
