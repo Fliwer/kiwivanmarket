@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { AlertTriangle, Globe, HelpCircle, FileText, Mail } from 'lucide-react';
 
 // Widget Google Translate
@@ -178,10 +179,10 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
 
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8">
+
           {/* Brand - Logo en ROND avec couleur #f7eedd */}
-          <div className="md:col-span-2">
+          <div className="sm:col-span-2">
             <div className="flex items-center gap-4 mb-4">
               {/* Logo en cercle parfait avec overflow-hidden */}
               <div 
@@ -260,6 +261,70 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
               <li className="flex items-start gap-2">
                 <span className="text-amber-500 mt-1">⚠</span>
                 Report suspicious listings
+              </li>
+            </ul>
+          </div>
+
+          {/* Popular Brands */}
+          <div>
+            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Popular Brands</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/brand/toyota-hiace" className="text-gray-400 hover:text-white transition">
+                  Toyota Hiace
+                </Link>
+              </li>
+              <li>
+                <Link to="/brand/nissan-caravan" className="text-gray-400 hover:text-white transition">
+                  Nissan Caravan
+                </Link>
+              </li>
+              <li>
+                <Link to="/brand/mitsubishi-delica" className="text-gray-400 hover:text-white transition">
+                  Mitsubishi Delica
+                </Link>
+              </li>
+              <li>
+                <Link to="/brand/mazda-bongo" className="text-gray-400 hover:text-white transition">
+                  Mazda Bongo
+                </Link>
+              </li>
+              <li>
+                <Link to="/brand/ford-transit" className="text-gray-400 hover:text-white transition">
+                  Ford Transit
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Popular Locations */}
+          <div>
+            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Popular Locations</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link to="/location/auckland" className="text-gray-400 hover:text-white transition">
+                  Auckland
+                </Link>
+              </li>
+              <li>
+                <Link to="/location/wellington" className="text-gray-400 hover:text-white transition">
+                  Wellington
+                </Link>
+              </li>
+              <li>
+                <Link to="/location/christchurch" className="text-gray-400 hover:text-white transition">
+                  Christchurch
+                </Link>
+              </li>
+              <li>
+                <Link to="/location/queenstown" className="text-gray-400 hover:text-white transition">
+                  Queenstown
+                </Link>
+              </li>
+              <li>
+                <Link to="/location/rotorua" className="text-gray-400 hover:text-white transition">
+                  Rotorua
+                </Link>
               </li>
             </ul>
           </div>
