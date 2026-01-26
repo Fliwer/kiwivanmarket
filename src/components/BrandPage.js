@@ -3,9 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
-import { MapPin, Calendar, Gauge, Users, Heart, Shield, Star, ArrowLeft } from 'lucide-react';
-import { useFavorites } from '../hooks/useFavorites';
-import { getThumbnail } from '../utils/imageOptimizer';
+import { ArrowLeft } from 'lucide-react';
+import VanCard from './VanCard';
 
 // Configuration des marques avec descriptions SEO
 const BRANDS_CONFIG = {
@@ -91,7 +90,6 @@ export default function BrandPage() {
   const navigate = useNavigate();
   const [vans, setVans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { toggleFavorite, isFavorite } = useFavorites();
 
   const brandConfig = BRANDS_CONFIG[brand];
   const url = `https://kiwivanmarket.com/brand/${brand}`;
@@ -223,59 +221,7 @@ export default function BrandPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {vans.map(van => (
-                <Link
-                  key={van.id}
-                  to={`/van/${van.id}`}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1"
-                >
-                  <div className="relative">
-                    <img
-                      src={getThumbnail(van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800')}
-                      alt={van.title}
-                      className="w-full h-56 object-cover"
-                      loading="lazy"
-                    />
-                    <button
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(van.id); }}
-                      className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition"
-                    >
-                      <Heart size={20} className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'} />
-                    </button>
-                    {van.buyBack && (
-                      <div className="absolute bottom-3 left-3 bg-green-400 text-green-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                        <Shield size={12} />
-                        Buy-Back
-                      </div>
-                    )}
-                    {van.selfContained && (
-                      <div className="absolute bottom-3 right-3 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-                        Self-Contained
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h2 className="font-bold text-lg text-gray-800 mb-1 truncate">{van.title}</h2>
-                    <div className="flex items-center gap-1 text-gray-500 text-sm mb-3">
-                      <MapPin size={14} />
-                      <span>{van.location}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-bold text-emerald-600">
-                        ${van.price?.toLocaleString()}
-                      </span>
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <Calendar size={12} />
-                          {van.year}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Gauge size={12} />
-                          {van.mileage?.toLocaleString()}km
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
+                <VanCard key={van.id} van={van} />
               ))}
             </div>
           )}

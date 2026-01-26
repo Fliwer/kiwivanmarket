@@ -14,6 +14,7 @@ import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
 import Footer, { FAQModal } from './components/Footer';
+import VanCard from './components/VanCard';
 // MVP_DISABLED: Stripe/Payments
 // import { TrustBanner } from './components/SecurityBadge';
 
@@ -1803,79 +1804,7 @@ function MainApp() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredVans.map(van => (
-                  <div key={van.id}
-                    onClick={() => navigate(`/van/${van.id}`)}
-                    className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:-translate-y-1">
-                    <div className="relative">
-                      <img 
-                        src={getThumbnail(van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800')} 
-                        alt={van.title} 
-                        className="w-full h-56 object-cover"
-                        loading="lazy"
-                      />
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
-                        className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition">
-                        <Heart size={20} className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'}/>
-                      </button>
-                      {van.buyBack && (
-                        <div className="absolute bottom-3 left-3 bg-green-400 text-green-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                          <Shield size={12} />
-                          Buy-Back
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="text-2xl font-bold text-gray-900">
-                          {formatPrice(van.price)}
-                        </div>
-                        {van.selfContained && (
-                          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-                            ✓ Self-Contained
-                          </span>
-                        )}
-                      </div>
-
-                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{van.title}</h3>
-                      
-                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                        <span>{van.year}</span>
-                        <span>•</span>
-                        <span>{(van.mileage || 0).toLocaleString()} km</span>
-                        <span>•</span>
-                        <span className="flex items-center gap-1">
-                          <MapPin size={12} />
-                          {van.location}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 mb-3">
-                        <div className={`rounded-lg px-3 py-2 ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
-                          <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'text-emerald-600' : 'text-gray-400'}`}>WOF until</div>
-                          <div className={`text-sm font-bold ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'text-emerald-700' : 'text-gray-400'}`}>
-                            {van.wofExpiry && new Date(van.wofExpiry).getTime() ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
-                          </div>
-                        </div>
-                        <div className={`rounded-lg px-3 py-2 ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
-                          <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'text-blue-600' : 'text-gray-400'}`}>REGO until</div>
-                          <div className={`text-sm font-bold ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'text-blue-700' : 'text-gray-400'}`}>
-                            {van.regoExpiry && new Date(van.regoExpiry).getTime() ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-end pt-2 border-t border-gray-100">
-                        {van.buyBack && (
-                          <span className="text-xs font-semibold text-green-600 flex items-center gap-1">
-                            <Shield size={12} />
-                            Buy-Back Guarantee
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <VanCard key={van.id} van={van} formatPrice={formatPrice} />
                 ))}
               </div>
 
