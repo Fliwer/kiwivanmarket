@@ -1,10 +1,10 @@
 // API Route Vercel - Génère le sitemap des vans dynamiquement depuis Firebase
 // URL: https://kiwivanmarket.com/api/sitemap-vehicles
 
-const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || process.env.REACT_APP_FIREBASE_PROJECT_ID;
+const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'kiwivanmarket';
 const BASE_URL = 'https://kiwivanmarket.com';
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     // Fetch tous les vans depuis Firestore REST API
     const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/vans?pageSize=1000`;
@@ -55,10 +55,10 @@ ${urls.join('\n')}
     // Retourner un sitemap vide en cas d'erreur
     const emptySitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Error generating sitemap: ${error.message} -->
+  <!-- Error generating sitemap -->
 </urlset>`;
 
     res.setHeader('Content-Type', 'application/xml');
     res.status(500).send(emptySitemap);
   }
-}
+};
