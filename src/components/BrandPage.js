@@ -155,8 +155,8 @@ export default function BrandPage() {
         <meta property="og:url" content={url} />
         <meta property="og:type" content="website" />
         <meta property="og:locale" content="en_NZ" />
-        <BrandSchema brand={brandConfig} vans={vans} url={url} />
       </Helmet>
+      <BrandSchema brand={brandConfig} vans={vans} url={url} />
 
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
