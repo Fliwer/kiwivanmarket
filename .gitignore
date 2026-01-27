@@ -24,6 +24,10 @@ yarn-error.log*
 .env
 functions/.env
 serviceAccountKey.json
+serviceAccountKey.json.json
+nul
 
 .vercel
 .env*.local
+.claude/settings.local.json
+.firebase/hosting.*.cache
