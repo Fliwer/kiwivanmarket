@@ -1027,12 +1027,13 @@ function MainApp() {
                     <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
                   </button>
 
-                  <button 
+                  <button
                     onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true), 100); }}
                     className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
                   >
                     <MessageCircle size={22} className="text-white" />
                     <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
+                    <MessageBadge />
                   </button>
 
                   {!currentUser ? (
