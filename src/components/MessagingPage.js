@@ -1081,7 +1081,7 @@ export default function MessagingPage({ onBack }) {
                   <div>
                     <p className="font-medium text-gray-900">{getOtherUserName(selectedConversation)}</p>
                     <p className="text-xs text-gray-500">
-                      {selectedConversation.participantEmails?.[selectedConversation.otherUserId] || 'No email'}
+                      Member
                     </p>
                   </div>
                 </div>
