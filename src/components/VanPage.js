@@ -240,9 +240,11 @@ export default function VanPage() {
           const vanData = { id: vanSnap.id, ...vanSnap.data() };
           setVan(vanData);
           
-          // Incrémenter le compteur de vues (une seule fois)
-          if (!viewIncremented.current) {
+          // Incrémenter le compteur de vues (une seule fois par session par van)
+          const viewedKey = `viewed_${vanSnap.id}`;
+          if (!viewIncremented.current && !sessionStorage.getItem(viewedKey)) {
             viewIncremented.current = true;
+            sessionStorage.setItem(viewedKey, '1');
             updateDoc(vanRef, { views: increment(1) }).catch(() => {});
           }
         } else {
