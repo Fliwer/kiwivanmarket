@@ -214,6 +214,11 @@ export default function VanPage() {
   // Ref pour éviter d'incrémenter les vues 2x (React StrictMode)
   const viewIncremented = useRef(false);
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
+
   // Fermer le loader initial
   useEffect(() => {
     const loader = document.getElementById('app-loader');
@@ -408,9 +413,9 @@ export default function VanPage() {
           <div className="grid lg:grid-cols-2 gap-8 items-start">
 
             {/* GALERIE PHOTOS - Design premium */}
-            <div className="lg:sticky lg:top-20 space-y-3">
+            <div className="lg:sticky lg:top-20 space-y-3 relative z-10">
               {/* Main Image */}
-              <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl overflow-hidden shadow-2xl group">
+              <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl overflow-hidden shadow-2xl group z-20">
                 <div className="aspect-[4/3] flex items-center justify-center p-2">
                   <img
                     src={images[currentImageIndex]}
@@ -470,15 +475,15 @@ export default function VanPage() {
 
               {/* Thumbnails - Outside main image */}
               {images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="relative z-0 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
                       className={`flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden transition-all duration-200 ${
                         idx === currentImageIndex
-                          ? 'ring-3 ring-emerald-500 ring-offset-2 scale-105'
-                          : 'opacity-60 hover:opacity-100 hover:scale-105'
+                          ? 'ring-3 ring-emerald-500 ring-offset-2'
+                          : 'opacity-60 hover:opacity-100'
                       }`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />

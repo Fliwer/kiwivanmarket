@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink, BookOpen } from 'lucide-react';
 import { db } from './firebase';
@@ -2151,11 +2151,23 @@ function MainApp() {
 }
 
 // ========================================
+// SCROLL TO TOP ON ROUTE CHANGE
+// ========================================
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
+// ========================================
 // EXPORT PAR DÉFAUT AVEC ROUTER
 // ========================================
 export default function KiwiVanMarket() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* ✅ SEO: Pages avec URLs propres pour le référencement */}
         <Route path="/van/:id" element={
