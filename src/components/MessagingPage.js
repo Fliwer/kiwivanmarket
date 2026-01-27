@@ -243,6 +243,10 @@ export default function MessagingPage({ onBack }) {
     };
   }, [currentUser]);
 
+  // State
+  const [conversations, setConversations] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+
   // Listen to other user's lastSeen
   useEffect(() => {
     if (!selectedConversation?.otherUserId) {
@@ -264,10 +268,6 @@ export default function MessagingPage({ onBack }) {
 
     return () => unsubscribe();
   }, [selectedConversation?.otherUserId]);
-
-  // State
-  const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
