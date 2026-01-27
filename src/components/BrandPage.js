@@ -109,8 +109,9 @@ export default function BrandPage() {
         const querySnapshot = await getDocs(collection(db, 'vans'));
         const allVans = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // Filtrer par marque
+        // Filtrer par marque (only active vans)
         const filtered = allVans.filter(van => {
+          if (van.status && van.status !== 'active') return false;
           const title = (van.title || '').toLowerCase();
           return brandConfig?.searchTerms.some(term => title.includes(term));
         });

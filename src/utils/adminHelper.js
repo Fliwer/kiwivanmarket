@@ -3,22 +3,13 @@
 // ============================================
 
 /**
- * Liste des emails admin
- * Ajoute ici tous les emails qui doivent avoir les droits admin
- */
-const ADMIN_EMAILS = [
-  'p.morthier@gmail.com',
-  // Ajoute d'autres emails admin ici si besoin
-];
-
-/**
- * Vérifie si un utilisateur est admin
- * @param {Object} user - L'objet utilisateur de Firebase Auth
+ * Vérifie si un utilisateur est admin (via custom claim)
+ * @param {Object} user - L'objet utilisateur (avec isAdmin du AuthContext)
  * @returns {boolean} - true si l'utilisateur est admin
  */
 export const isAdmin = (user) => {
-  if (!user || !user.email) return false;
-  return ADMIN_EMAILS.includes(user.email.toLowerCase());
+  if (!user) return false;
+  return user.isAdmin === true;
 };
 
 /**
@@ -27,7 +18,7 @@ export const isAdmin = (user) => {
  */
 export const AdminBadge = ({ user }) => {
   if (!isAdmin(user)) return null;
-  
+
   return (
     <span className="inline-flex items-center gap-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
       <span>👑</span>
@@ -44,10 +35,10 @@ export const AdminBadge = ({ user }) => {
  */
 export const canEditVan = (user, van) => {
   if (!user) return false;
-  
+
   // Les admins peuvent tout modifier
   if (isAdmin(user)) return true;
-  
+
   // Les utilisateurs normaux peuvent seulement modifier leurs propres vans
   return van.seller?.uid === user.uid;
 };

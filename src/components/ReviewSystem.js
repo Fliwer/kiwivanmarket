@@ -3,6 +3,7 @@ import { Star, X, User, Calendar, ThumbsUp, MessageCircle, AlertCircle } from 'l
 import { collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
+import { sanitizeText } from '../securityUtils';
 
 // ============================================
 // LEAVE REVIEW BUTTON
@@ -57,7 +58,7 @@ export function LeaveReviewButton({ sellerId, sellerName, vanId, vanTitle, onRev
         vanId: vanId || null,
         vanTitle: vanTitle || null,
         rating,
-        comment: comment.trim(),
+        comment: sanitizeText(comment),
         createdAt: serverTimestamp(),
         helpful: 0
       });

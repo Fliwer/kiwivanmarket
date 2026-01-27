@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
+import { sanitizeText } from '../securityUtils';
 
 // ============================================
 // MESSAGING PAGE - Full Page 3 Columns
@@ -137,7 +138,7 @@ export default function MessagingPage({ onBack }) {
     if (!text.trim() || !selectedConversation) return;
 
     setSendingMessage(true);
-    const messageText = text.trim();
+    const messageText = sanitizeText(text);
     setNewMessage('');
 
     try {

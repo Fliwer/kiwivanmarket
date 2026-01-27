@@ -13,6 +13,7 @@ import {
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useRateLimit } from '../hooks/useRateLimit';
+import { sanitizeText } from '../securityUtils';
 
 // ============================================
 // MESSAGING PAGE - Full Page 3 Columns
@@ -420,7 +421,7 @@ export default function MessagingPage({ onBack }) {
     }
 
     setSendingMessage(true);
-    const messageText = text.trim();
+    const messageText = sanitizeText(text);
     setNewMessage('');
 
     try {

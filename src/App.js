@@ -67,10 +67,6 @@ const PageLoader = () => (
   </div>
 );
 
-// 📍 Liste des emails admin autorisés
-const ADMIN_EMAILS = [
-  'p.morthier@gmail.com',
-];
 
 // ✅ Calcule le nombre de jours depuis la création
 const getDaysAgo = (createdAt) => {
@@ -404,7 +400,7 @@ function MainApp() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
+  const isAdmin = currentUser?.isAdmin === true;
   
   const [showFAQ, setShowFAQ] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -882,10 +878,22 @@ function MainApp() {
                       {van.regoExpiry && new Date(van.regoExpiry).getTime() ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
                     </div>
                   </div>
-                  <div className={`p-3 rounded-lg border text-center ${van.selfContained ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}>
+                  <div className={`p-3 rounded-lg border text-center ${
+                    van.selfContained
+                      ? van.selfContainedType === 'blue'
+                        ? 'bg-blue-50 border-blue-200'
+                        : 'bg-green-50 border-green-200'
+                      : 'bg-gray-50 border-gray-200'
+                  }`}>
                     <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">Self-Contained</div>
-                    <div className={`text-lg font-bold ${van.selfContained ? 'text-green-600' : 'text-gray-400'}`}>
-                      {van.selfContained ? '✓ Yes' : '✗ No'}
+                    <div className={`text-lg font-bold ${
+                      van.selfContained
+                        ? van.selfContainedType === 'blue' ? 'text-blue-600' : 'text-green-600'
+                        : 'text-gray-400'
+                    }`}>
+                      {van.selfContained
+                        ? van.selfContainedType === 'blue' ? '✓ Blue' : '✓ Green'
+                        : '✗ No'}
                     </div>
                   </div>
                 </div>

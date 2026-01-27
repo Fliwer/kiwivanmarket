@@ -30,13 +30,14 @@ import {
 import { collection, addDoc, query, where, getDocs, doc, updateDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { 
-  getPaymentSummary, 
-  PAYMENT_CONFIG, 
+import {
+  getPaymentSummary,
+  PAYMENT_CONFIG,
   RESERVATION_STATUS,
   RESERVATION_STATUS_LABELS,
-  API_ENDPOINTS 
+  API_ENDPOINTS
 } from '../stripeConfig';
+import { sanitizeString } from '../securityUtils';
 
 // ============================================
 // 🔘 RESERVE BUTTON - Bouton principal de réservation
@@ -385,17 +386,17 @@ function ReservationModal({ van, seller, existingReservation, onClose, onSuccess
           year: van.year,
         },
         // Données du van (à plat pour compatibilité)
-        vanTitle: van.title,
+        vanTitle: sanitizeString(van.title),
         vanPrice: van.price,
         vanImage: van.imageUrl || van.images?.[0],
         vanLocation: van.location,
         vanYear: van.year,
         // Données du vendeur
         sellerId: seller.uid,
-        sellerName: seller.name || 'Seller',
+        sellerName: sanitizeString(seller.name || 'Seller'),
         sellerEmail: seller.email || '',
         buyerId: currentUser.uid,
-        buyerName: currentUser.displayName || 'Buyer',
+        buyerName: sanitizeString(currentUser.displayName || 'Buyer'),
         buyerEmail: currentUser.email,
         depositAmount: summary.deposit,
         platformFee: summary.platformFee,

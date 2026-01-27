@@ -1,12 +1,30 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm start)",
-      "Bash(timeout /t 15 /nobreak)",
+      "*",
+      "Bash(npx firebase:*)",
+      "Bash(nslookup:*)",
+      "Bash(find:*)",
+      "Bash(ls -la \"C:\\\\Users\\\\fliwe\\\\Pictures\\\\KiwiVan\\\\kiwivanmarket\\\\src\\\\components\"\" | grep -i \"message|chat|notif \")",
+      "Bash(npm run build:*)",
+      "Bash(npx firebase-tools:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push)",
-      "Bash(npm run build:*)"
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd real online status and reactivate notification system\n\nReplace hardcoded \"Online\" in MessagingPage with lastSeen-based status\nusing Firestore heartbeat. Reactivate NotificationProvider, NotificationBell,\nand MessageBadge that were previously disabled \\(MVP_DISABLED\\).\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix mobile thumbnail overlap and scroll-to-bottom on van detail page\n\nAdd z-index stacking to VanPage gallery to prevent thumbnails from\noverlapping the main image on mobile. Remove scale-105 on thumbnails\nthat caused overflow. Add ScrollToTop component to router and explicit\nscrollTo\\(0,0\\) in VanPage to fix page opening at bottom.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(tree:*)",
+      "Bash(wc:*)",
+      "Bash(npm audit:*)",
+      "Bash(set:*)",
+      "Bash(node scripts/setAdminClaim.js:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(gcloud services enable:*)",
+      "Bash(npm install:*)",
+      "Bash(firebase functions:log:*)",
+      "Bash(where:*)",
+      "Bash(npx vercel --version)",
+      "Bash(npx vercel --prod)",
+      "Bash(npx vercel:*)",
+      "Bash(ping:*)"
     ]
   }
 }

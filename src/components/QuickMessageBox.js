@@ -4,6 +4,7 @@ import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimest
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useRateLimit } from '../hooks/useRateLimit';
+import { sanitizeText } from '../securityUtils';
 
 // ============================================
 // QUICK MESSAGE BOX
@@ -174,7 +175,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
             buyBackDuration: van.buyBackDuration
           },
           status: 'new',
-          lastMessage: text.trim(),
+          lastMessage: sanitizeText(text),
           lastMessageAt: serverTimestamp(),
           createdAt: serverTimestamp(),
           unreadCount: {
@@ -187,7 +188,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
 
       // Add message to conversation
       await addDoc(collection(db, 'conversations', conversationId, 'messages'), {
-        text: text.trim(),
+        text: sanitizeText(text),
         senderId: currentUser.uid,
         senderName: currentUser.displayName || 'Anonymous',
         createdAt: serverTimestamp(),
@@ -196,7 +197,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
 
       // Update conversation last message
       await updateDoc(doc(db, 'conversations', conversationId), {
-        lastMessage: text.trim(),
+        lastMessage: sanitizeText(text),
         lastMessageAt: serverTimestamp(),
         status: 'active',
         [`unreadCount.${sellerInfo.uid}`]: 1

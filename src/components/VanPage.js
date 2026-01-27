@@ -473,9 +473,9 @@ export default function VanPage() {
                 )}
               </div>
 
-              {/* Thumbnails - Outside main image */}
+              {/* Thumbnails - Hidden on mobile, visible on desktop */}
               {images.length > 1 && (
-                <div className="relative z-0 flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <div className="relative z-0 hidden lg:flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
                   {images.map((img, idx) => (
                     <button
                       key={idx}

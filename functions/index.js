@@ -24,6 +24,17 @@ const resendApiKey = defineSecret('RESEND_API_KEY');
 admin.initializeApp();
 const db = admin.firestore();
 
+// Escape HTML to prevent XSS in email templates
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ============================================
 // 📧 EMAIL NOTIFICATION - New Conversation
 // ============================================
@@ -104,11 +115,17 @@ exports.onNewConversation = onDocumentCreated(
       return null;
     }
 
+    // Escape user-provided values for safe HTML injection
+    const safeSellerName = escapeHtml(sellerName);
+    const safeBuyerName = escapeHtml(buyerName);
+    const safeVanTitle = escapeHtml(van.title);
+    const safeMessagePreview = escapeHtml(messagePreview);
+
     // Envoyer l'email
     const { data, error } = await resend.emails.send({
       from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
       to: sellerEmail,
-      subject: `💬 New inquiry about your ${van.title}`,
+      subject: `💬 New inquiry about your ${safeVanTitle}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
@@ -117,17 +134,17 @@ exports.onNewConversation = onDocumentCreated(
 
           <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 16px 16px;">
             <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
-              Hi ${sellerName},
+              Hi ${safeSellerName},
             </p>
 
             <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
-              Great news! <strong>${buyerName}</strong> is interested in your <strong>${van.title}</strong> (NZ$${van.price?.toLocaleString() || 'N/A'}).
+              Great news! <strong>${safeBuyerName}</strong> is interested in your <strong>${safeVanTitle}</strong> (NZ$${van.price?.toLocaleString() || 'N/A'}).
             </p>
 
-            ${messagePreview ? `
+            ${safeMessagePreview ? `
               <div style="background: white; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
                 <p style="color: #6b7280; font-size: 14px; margin: 0 0 5px 0;">They wrote:</p>
-                <p style="color: #374151; font-size: 15px; margin: 0; font-style: italic;">"${messagePreview}"</p>
+                <p style="color: #374151; font-size: 15px; margin: 0; font-style: italic;">"${safeMessagePreview}"</p>
               </div>
             ` : ''}
 
@@ -169,6 +186,203 @@ exports.onNewConversation = onDocumentCreated(
   }
 });
 
+
+// ============================================
+// 📧 EMAIL NOTIFICATION - New Message
+// ============================================
+// Sends an email when a new message is added to an existing conversation
+// Throttled: max 1 email per conversation per 10 minutes
+
+exports.onNewMessage = onDocumentCreated(
+  {
+    document: 'conversations/{conversationId}/messages/{messageId}',
+    secrets: [resendApiKey],
+  },
+  async (event) => {
+    const message = event.data.data();
+    const conversationId = event.params.conversationId;
+    const senderId = message.senderId;
+
+    console.log(`📧 New message in conversation: ${conversationId}`);
+
+    try {
+      // Get the conversation
+      const convDoc = await db.collection('conversations').doc(conversationId).get();
+      if (!convDoc.exists) {
+        console.log('❌ Conversation not found');
+        return null;
+      }
+      const conversation = convDoc.data();
+
+      // Don't send if the conversation was just created (onNewConversation handles that)
+      const createdAt = conversation.createdAt?._seconds || 0;
+      const now = Math.floor(Date.now() / 1000);
+      if (now - createdAt < 30) {
+        console.log('⏭️ Conversation just created, skipping (onNewConversation handles it)');
+        return null;
+      }
+
+      // Throttle: check last email sent time
+      const lastEmailAt = conversation.lastMessageEmailAt?._seconds || 0;
+      if (now - lastEmailAt < 600) { // 10 minutes
+        console.log('⏭️ Email sent recently, throttling');
+        return null;
+      }
+
+      // Find the recipient (the other participant)
+      const recipientId = conversation.participants?.find(p => p !== senderId);
+      if (!recipientId) {
+        console.log('❌ Recipient not found');
+        return null;
+      }
+
+      // Get recipient email
+      let recipientEmail = conversation.participantEmails?.[recipientId];
+      let recipientName = conversation.participantNames?.[recipientId] || 'there';
+
+      if (!recipientEmail) {
+        const recipientDoc = await db.collection('users').doc(recipientId).get();
+        if (!recipientDoc.exists) {
+          console.log('❌ Recipient not found in users collection');
+          return null;
+        }
+        const recipient = recipientDoc.data();
+        recipientEmail = recipient.email;
+        recipientName = recipient.displayName || recipient.name || 'there';
+      }
+
+      if (!recipientEmail) {
+        console.log('❌ Recipient has no email');
+        return null;
+      }
+
+      // Init Resend
+      const apiKey = resendApiKey.value();
+      if (!apiKey) {
+        console.error('❌ RESEND_API_KEY not configured');
+        return null;
+      }
+      const resend = new Resend(apiKey);
+
+      const senderName = message.senderName || conversation.participantNames?.[senderId] || 'Someone';
+      const vanTitle = conversation.van?.title || 'a listing';
+      const messagePreview = (message.text || '').length > 100
+        ? message.text.substring(0, 100) + '...'
+        : (message.text || '');
+
+      const safeRecipientName = escapeHtml(recipientName);
+      const safeSenderName = escapeHtml(senderName);
+      const safeVanTitle = escapeHtml(vanTitle);
+      const safeMessagePreview = escapeHtml(messagePreview);
+
+      const { data, error } = await resend.emails.send({
+        from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+        to: recipientEmail,
+        subject: `💬 New message from ${safeSenderName} about ${safeVanTitle}`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">💬 New Message!</h1>
+            </div>
+            <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 16px 16px;">
+              <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
+                Hi ${safeRecipientName},
+              </p>
+              <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
+                <strong>${safeSenderName}</strong> sent you a message about <strong>${safeVanTitle}</strong>.
+              </p>
+              ${safeMessagePreview ? `
+                <div style="background: white; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                  <p style="color: #6b7280; font-size: 14px; margin: 0 0 5px 0;">Message:</p>
+                  <p style="color: #374151; font-size: 15px; margin: 0; font-style: italic;">"${safeMessagePreview}"</p>
+                </div>
+              ` : ''}
+              <a href="https://kiwivanmarket.com" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
+                Reply now
+              </a>
+              <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
+                <strong>Kiwi Van Market</strong> 🥝
+              </p>
+            </div>
+            <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 20px;">
+              You received this email because someone messaged you on Kiwi Van Market.
+            </p>
+          </div>
+        `,
+      });
+
+      if (error) {
+        console.error('❌ Resend error:', error);
+        return null;
+      }
+
+      console.log(`✅ Message email sent to ${recipientEmail} - ID: ${data?.id}`);
+
+      // Update throttle timestamp
+      await convDoc.ref.update({
+        lastMessageEmailAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return { success: true, emailId: data?.id };
+    } catch (error) {
+      console.error('❌ Error sending message email:', error);
+      return null;
+    }
+  }
+);
+
+
+// ============================================
+// 🗑️ DELETE USER - Admin only
+// ============================================
+const { onCall, HttpsError } = require('firebase-functions/v2/https');
+
+exports.deleteUser = onCall(async (request) => {
+  // Verify caller is admin
+  if (!request.auth || request.auth.token.admin !== true) {
+    throw new HttpsError('permission-denied', 'Only admins can delete users.');
+  }
+
+  const userId = request.data.userId;
+  if (!userId || typeof userId !== 'string') {
+    throw new HttpsError('invalid-argument', 'A valid userId is required.');
+  }
+
+  // Prevent self-deletion
+  if (userId === request.auth.uid) {
+    throw new HttpsError('failed-precondition', 'You cannot delete your own account.');
+  }
+
+  try {
+    // 1. Delete all vans belonging to this user
+    const vansSnapshot = await db.collection('vans')
+      .where('seller.uid', '==', userId)
+      .get();
+
+    const batch = db.batch();
+    let vansDeleted = 0;
+
+    vansSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+      vansDeleted++;
+    });
+
+    // 2. Delete the user document from Firestore
+    batch.delete(db.collection('users').doc(userId));
+
+    await batch.commit();
+
+    // 3. Delete the Firebase Auth account
+    await admin.auth().deleteUser(userId);
+
+    console.log(`✅ User ${userId} deleted: ${vansDeleted} vans removed`);
+
+    return { success: true, vansDeleted };
+  } catch (error) {
+    console.error('❌ Error deleting user:', error);
+    throw new HttpsError('internal', 'Failed to delete user: ' + error.message);
+  }
+});
 
 /* ============================================
 // 🔒 STRIPE FUNCTIONS - COMMENTED OUT

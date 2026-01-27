@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, functions } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
 import { useAuth } from '../AuthContext';
 import { 
   X, Search, Filter, Trash2, Edit, Eye, EyeOff, Check, Ban, 
@@ -9,11 +10,6 @@ import {
   MapPin, Calendar, DollarSign, MessageCircle, Settings,
   ExternalLink, Mail, Phone, Clock, CheckCircle, XCircle
 } from 'lucide-react';
-
-// 🔐 Liste des emails admin autorisés
-const ADMIN_EMAILS = [
-  'p.morthier@gmail.com',
-];
 
 // 🔧 Helper pour normaliser les types de véhicules
 const normalizeVehicleType = (type) => {
@@ -40,9 +36,11 @@ export default function AdminDashboard({ onClose, onEditVan }) {
   const [stats, setStats] = useState({});
   const [refreshing, setRefreshing] = useState(false);
   const [showBanConfirm, setShowBanConfirm] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  // 🔐 Vérifier si l'utilisateur est admin
-  const isAdmin = currentUser && ADMIN_EMAILS.includes(currentUser.email);
+  // 🔐 Vérifier si l'utilisateur est admin (via custom claim Firebase)
+  const isAdmin = currentUser?.isAdmin === true;
 
   // 📊 Charger les données
   useEffect(() => {
@@ -206,6 +204,27 @@ export default function AdminDashboard({ onClose, onEditVan }) {
     } catch (error) {
       console.error('Error banning user:', error);
       alert('Error updating user');
+    }
+  };
+
+  // 🗑️ Delete user account
+  const handleDeleteUser = async (userId, userEmail) => {
+    setDeleting(true);
+    try {
+      const deleteUserFn = httpsCallable(functions, 'deleteUser');
+      const result = await deleteUserFn({ userId });
+
+      setUsers(users.filter(u => u.id !== userId));
+      setVans(vans.filter(v => v.seller?.uid !== userId));
+      setShowDeleteConfirm(null);
+      localStorage.removeItem('kiwiVanMarket_vans');
+
+      alert(`Account ${userEmail} deleted (${result.data.vansDeleted} listing(s) removed).`);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Error deleting user: ' + (error.message || 'Unknown error'));
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -809,16 +828,25 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                 )}
                               </td>
                               <td className="px-4 py-3 text-right">
-                                <button 
-                                  onClick={() => setShowBanConfirm(user)}
-                                  className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                                    user.banned 
-                                      ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                                      : 'bg-red-100 text-red-700 hover:bg-red-200'
-                                  }`}
-                                >
-                                  {user.banned ? 'Unban' : 'Ban'}
-                                </button>
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => setShowBanConfirm(user)}
+                                    className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
+                                      user.banned
+                                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                        : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                    }`}
+                                  >
+                                    {user.banned ? 'Unban' : 'Ban'}
+                                  </button>
+                                  <button
+                                    onClick={() => setShowDeleteConfirm(user)}
+                                    className="p-2 bg-gray-100 text-red-500 hover:bg-red-100 rounded-lg transition"
+                                    title="Delete account"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}
@@ -998,7 +1026,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                 {showBanConfirm.banned ? 'Unban User?' : 'Ban User?'}
               </h3>
               <p className="text-gray-600">
-                {showBanConfirm.banned 
+                {showBanConfirm.banned
                   ? `Allow ${showBanConfirm.email} to use the platform again?`
                   : `This will prevent ${showBanConfirm.email} from posting new listings.`
                 }
@@ -1020,6 +1048,43 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                 }`}
               >
                 {showBanConfirm.banned ? 'Unban' : 'Ban User'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 bg-red-100">
+                <Trash2 className="w-8 h-8 text-red-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Account?</h3>
+              <p className="text-gray-600 mb-3">
+                Delete <strong>{showDeleteConfirm.email}</strong> permanently?
+              </p>
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+                <AlertTriangle className="w-4 h-4 inline mr-1" />
+                This will permanently delete the account, all their listings, and cannot be undone.
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                disabled={deleting}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteUser(showDeleteConfirm.id, showDeleteConfirm.email)}
+                disabled={deleting}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete Account'}
               </button>
             </div>
           </div>

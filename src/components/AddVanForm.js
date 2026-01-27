@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
+import { sanitizeString, sanitizeText } from '../securityUtils';
 
 // Helper pour convertir les dates Firestore (Timestamp) en format input HTML
 const formatDateForInput = (date) => {
@@ -316,14 +317,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       if (editMode && vanData) {
         // MODE DITION - Update existing van
         const updateData = {
-          title: formData.title,
+          title: sanitizeString(formData.title),
           price: parseInt(formData.price),
-          location: formData.location,
+          location: sanitizeString(formData.location),
           region: formData.region,
           year: parseInt(formData.year),
           mileage: parseInt(formData.mileage),
           type: formData.type,
-          description: formData.description,
+          description: sanitizeText(formData.description),
           capacity: parseInt(formData.capacity),
           selfContained: formData.selfContained,
           selfContainedType: formData.selfContained ? formData.selfContainedType : null,
@@ -332,14 +333,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           buyBackPrice: formData.buyBack ? parseInt(formData.buyBackPrice) || 0 : null,
           buyBackDuration: formData.buyBack ? parseInt(formData.buyBackDuration) : null,
           buyBackMaxKm: formData.buyBack && formData.buyBackMaxKm ? parseInt(formData.buyBackMaxKm) : null,
-          buyBackConditions: formData.buyBack ? formData.buyBackConditions : '',
+          buyBackConditions: formData.buyBack ? sanitizeText(formData.buyBackConditions) : '',
           wofExpiry: formData.wofExpiry,
           regoExpiry: formData.regoExpiry,
-          customFeatures: formData.customFeatures || '',
+          customFeatures: sanitizeText(formData.customFeatures || ''),
           imageUrl: imageUrls[0],
           images: imageUrls,
-          'seller.phone': formData.sellerPhone || '',
-          'seller.facebook': formData.sellerFacebook || '',
+          'seller.phone': sanitizeString(formData.sellerPhone || ''),
+          'seller.facebook': sanitizeString(formData.sellerFacebook || ''),
           updatedAt: new Date()
         };
 
@@ -355,14 +356,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       } else {
         // MODE CRATION - Add new van
         const newVanData = {
-          title: formData.title,
+          title: sanitizeString(formData.title),
           price: parseInt(formData.price),
-          location: formData.location,
+          location: sanitizeString(formData.location),
           region: formData.region,
           year: parseInt(formData.year),
           mileage: parseInt(formData.mileage),
           type: formData.type,
-          description: formData.description,
+          description: sanitizeText(formData.description),
           capacity: parseInt(formData.capacity),
           selfContained: formData.selfContained,
           selfContainedType: formData.selfContained ? formData.selfContainedType : null,
@@ -371,18 +372,18 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           buyBackPrice: formData.buyBack ? parseInt(formData.buyBackPrice) || 0 : null,
           buyBackDuration: formData.buyBack ? parseInt(formData.buyBackDuration) : null,
           buyBackMaxKm: formData.buyBack && formData.buyBackMaxKm ? parseInt(formData.buyBackMaxKm) : null,
-          buyBackConditions: formData.buyBack ? formData.buyBackConditions : '',
+          buyBackConditions: formData.buyBack ? sanitizeText(formData.buyBackConditions) : '',
           wofExpiry: formData.wofExpiry,
           regoExpiry: formData.regoExpiry,
-          customFeatures: formData.customFeatures || '',
+          customFeatures: sanitizeText(formData.customFeatures || ''),
           imageUrl: imageUrls[0],
           images: imageUrls,
           seller: {
             uid: currentUser.uid,
-            name: currentUser.displayName || 'Anonymous',
+            name: sanitizeString(currentUser.displayName || 'Anonymous'),
             email: currentUser.email,
-            phone: formData.sellerPhone || '',
-            facebook: formData.sellerFacebook || ''
+            phone: sanitizeString(formData.sellerPhone || ''),
+            facebook: sanitizeString(formData.sellerFacebook || '')
           },
           views: 0,
           status: 'active',

@@ -26,9 +26,8 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return isAuthenticated() && 
-             (request.auth.token.email == 'p.morthier@gmail.com' ||
-              request.auth.token.admin == true);
+      return isAuthenticated() &&
+             request.auth.token.admin == true;
     }
     
     function hasVerifiedEmail() {
@@ -157,10 +156,10 @@ service cloud.firestore {
                       (fieldUnchanged('bio') || request.resource.data.bio == null || isValidString(request.resource.data.bio, 0, 500));
       
       allow update: if isAdmin();
-      allow delete: if false;
+      allow delete: if isAdmin();
     }
-    
-    
+
+
     // ═══════════════════════════════════════════════════════════════════
     // 🏦 STRIPE ACCOUNTS
     // ═══════════════════════════════════════════════════════════════════

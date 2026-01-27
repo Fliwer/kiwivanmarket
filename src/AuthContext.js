@@ -239,19 +239,29 @@ export const AuthProvider = ({ children }) => {
         // ✅ OPTIMISATION: Connecter l'utilisateur IMMEDIATEMENT avec les infos Firebase Auth
         setCurrentUser(user);
         setLoading(false);
-        
+
         // Puis enrichir les donnees en arriere-plan (non-bloquant)
         try {
+          // Lire le custom claim admin depuis le token
+          const tokenResult = await user.getIdTokenResult();
+          const isAdmin = tokenResult.claims.admin === true;
+
           const userRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userRef);
-          
+
           if (userSnap.exists()) {
             // Fusionner les donnees Firestore avec l'user Firebase Auth
-            setCurrentUser(prev => ({ 
-              ...prev, 
+            setCurrentUser(prev => ({
+              ...prev,
               ...userSnap.data(),
               // ✅ S'assurer que emailVerified vient de Firebase Auth (source de vérité)
-              emailVerified: user.emailVerified
+              emailVerified: user.emailVerified,
+              isAdmin
+            }));
+          } else {
+            setCurrentUser(prev => ({
+              ...prev,
+              isAdmin
             }));
           }
         } catch (error) {

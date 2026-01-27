@@ -11,9 +11,8 @@ service firebase.storage {
     }
     
     function isAdmin() {
-      return request.auth != null && 
-             (request.auth.token.email == 'p.morthier@gmail.com' ||
-              request.auth.token.admin == true);
+      return request.auth != null &&
+             request.auth.token.admin == true;
     }
     
     function isValidImage() {
