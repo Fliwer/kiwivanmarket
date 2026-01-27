@@ -7,9 +7,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
 import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
-// MVP_DISABLED: Notifications
-// import { NotificationProvider, useNotifications } from './components/NotificationSystem';
-// import NotificationBell from './components/NotificationBell';
+import { NotificationProvider, useNotifications } from './components/NotificationSystem';
+import NotificationBell from './components/NotificationBell';
 
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
@@ -362,20 +361,16 @@ function CurrencySelector() {
   );
 }
 
-// MVP_DISABLED: Notifications - MessageBadge uses useNotifications
-// function MessageBadge() {
-//   const { unreadCount } = useNotifications();
-//   
-//   if (unreadCount === 0) return null;
-//   
-//   return (
-//     <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold border-2 border-white animate-pulse">
-//       {unreadCount > 9 ? '9+' : unreadCount}
-//     </span>
-//   );
-// }
 function MessageBadge() {
-  return null; // MVP_DISABLED: Notifications
+  const { unreadCount } = useNotifications();
+
+  if (unreadCount === 0) return null;
+
+  return (
+    <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center font-bold border-2 border-white animate-pulse">
+      {unreadCount > 9 ? '9+' : unreadCount}
+    </span>
+  );
 }
 
 // ========================================
@@ -419,7 +414,7 @@ function MainApp() {
   
   const [filters, setFilters] = useState({
     priceMin: 0,
-    priceMax: 100000,
+    priceMax: 500000,
     yearMin: 1980,
     type: 'all',
     location: 'all',
@@ -478,26 +473,30 @@ function MainApp() {
         
         if (cachedData) {
           const cachedVans = JSON.parse(cachedData);
-          // Sort cache immediately (newest first)
-          const sortedCache = [...cachedVans].sort((a, b) => {
-            const getTs = (v) => {
-              if (!v.createdAt) return 0;
-              if (v.createdAt.seconds) return v.createdAt.seconds * 1000;
-              if (typeof v.createdAt === 'string') return new Date(v.createdAt).getTime();
-              return 0;
-            };
-            return getTs(b) - getTs(a);
-          });
-          setVans(sortedCache);
-          setFilteredVans(sortedCache);
-          setLoading(false);
+          // Only use cache if it has data
+          if (cachedVans.length > 0) {
+            // Sort cache immediately (newest first)
+            const sortedCache = [...cachedVans].sort((a, b) => {
+              const getTs = (v) => {
+                if (!v.createdAt) return 0;
+                if (v.createdAt.seconds) return v.createdAt.seconds * 1000;
+                if (typeof v.createdAt === 'string') return new Date(v.createdAt).getTime();
+                return 0;
+              };
+              return getTs(b) - getTs(a);
+            });
+            setVans(sortedCache);
+            setFilteredVans(sortedCache);
+            setLoading(false);
+          }
         }
-        
+
         const now = Date.now();
         const cacheAge = cacheTimestamp ? now - parseInt(cacheTimestamp) : Infinity;
         const CACHE_DURATION = 5 * 60 * 1000;
-        
-        if (cacheAge < CACHE_DURATION && cachedData) {
+
+        // Skip Firestore fetch only if cache is fresh AND has data
+        if (cacheAge < CACHE_DURATION && cachedData && JSON.parse(cachedData).length > 0) {
           return;
         }
         
@@ -565,18 +564,24 @@ function MainApp() {
 
   useEffect(() => {
     let filtered = vans.filter(van => {
-      const matchSearch = van.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // Only show active vans (hide sold, paused, deleted)
+      if (van.status && van.status !== 'active') return false;
+
+      const matchSearch = !searchTerm ||
+                          van.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           van.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           van.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchPrice = van.price >= filters.priceMin && van.price <= filters.priceMax;
-      const matchYear = van.year >= filters.yearMin;
+      const price = typeof van.price === 'number' ? van.price : 0;
+      const matchPrice = price >= filters.priceMin && price <= filters.priceMax;
+      const year = typeof van.year === 'number' ? van.year : 2000;
+      const matchYear = year >= filters.yearMin;
       const matchType = filters.type === 'all' || van.type === filters.type;
       const matchLocation = filters.location === 'all' || van.location === filters.location;
       const matchSelfContained = !filters.selfContained || van.selfContained;
       const matchBuyBack = !filters.buyBack || van.buyBack;
       const matchWofValid = !filters.wofValid || (van.wofExpiry && new Date(van.wofExpiry) > new Date());
       const matchRegoValid = !filters.regoValid || (van.regoExpiry && new Date(van.regoExpiry) > new Date());
-      
+
       const matchEquipment = Object.entries(filters.equipment).every(([key, required]) => {
         if (!required) return true;
         if (key === 'shower') {
@@ -590,7 +595,7 @@ function MainApp() {
         }
         return van.equipment?.[key] === true;
       });
-      
+
       return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid && matchEquipment;
     });
     
@@ -1060,15 +1065,16 @@ function MainApp() {
   // Si page messagerie ouverte
   if (showMessagingPage) {
     return (
-      <Suspense fallback={<PageLoader />}>
-        {/* MVP_DISABLED: Notifications - NotificationProvider removed */}
-        <MessagingPage onBack={() => setShowMessagingPage(false)} />
-      </Suspense>
+      <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
+        <Suspense fallback={<PageLoader />}>
+          <MessagingPage onBack={() => setShowMessagingPage(false)} />
+        </Suspense>
+      </NotificationProvider>
     );
   }
 
   return (
-    <> {/* MVP_DISABLED: Notifications - was NotificationProvider */}
+    <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
       {/* SEO: Meta tags dynamiques pour la page d'accueil */}
       <Helmet>
         <title>Kiwi Van Market | Buy and Sell Campervans in New Zealand</title>
@@ -1160,18 +1166,16 @@ function MainApp() {
                 */}
                 <LanguageSelector />
                 
-                {/* MVP_DISABLED: Notifications
                 {currentUser && (
-                  <NotificationBell 
-                    user={currentUser} 
+                  <NotificationBell
+                    user={currentUser}
                     onNotificationClick={(notif) => {
-                      if (notif.type === 'reservation_paid' || notif.type === 'payment_confirmed') {
-                        setShowMyReservations(true);
+                      if (notif.type === 'new_message') {
+                        setShowMessagingPage(true);
                       }
-                    }} 
+                    }}
                   />
                 )}
-                */}
 
                 {/* MVP_DISABLED: Reservations
                 {currentUser && (
@@ -1295,11 +1299,13 @@ function MainApp() {
                 <CurrencySelector />
                 */}
                 <LanguageSelector />
-                {/* MVP_DISABLED: Notifications
                 {currentUser && (
-                  <NotificationBell user={currentUser} />
+                  <NotificationBell user={currentUser} onNotificationClick={(notif) => {
+                    if (notif.type === 'new_message') {
+                      setShowMessagingPage(true);
+                    }
+                  }} />
                 )}
-                */}
                 {/* MVP_DISABLED: Reservations
                 {currentUser && (
                   <button 
@@ -1652,12 +1658,12 @@ function MainApp() {
                     <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
                       🔍 Find your perfect campervan
                     </h3>
-                    {(Object.values(filters.equipment).some(v => v) || filters.priceMin > 0 || filters.priceMax < 100000 || filters.yearMin > 1980 || filters.location !== 'all' || filters.type !== 'all') && (
+                    {(Object.values(filters.equipment).some(v => v) || filters.priceMin > 0 || filters.priceMax < 500000 || filters.yearMin > 1980 || filters.location !== 'all' || filters.type !== 'all') && (
                       <button
                         onClick={() => setFilters({
                           ...filters,
                           priceMin: 0,
-                          priceMax: 100000,
+                          priceMax: 500000,
                           yearMin: 1980,
                           location: 'all',
                           type: 'all',
@@ -1706,7 +1712,7 @@ function MainApp() {
                           <input 
                             type="number" 
                             min={filters.priceMin}
-                            max="100000"
+                            max="500000"
                             step="1000"
                             value={filters.priceMax}
                             onChange={(e) => {
@@ -2140,7 +2146,7 @@ function MainApp() {
           </Suspense>
         )}
       </div>
-    </> /* MVP_DISABLED: was </NotificationProvider> */
+    </NotificationProvider>
   );
 }
 

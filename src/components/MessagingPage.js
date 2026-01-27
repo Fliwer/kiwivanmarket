@@ -6,9 +6,9 @@ import {
   Circle, CheckCircle2, MessageSquare, Eye, Settings, Bell, BellOff, X,
   Heart, ChevronDown
 } from 'lucide-react';
-import { 
-  collection, query, where, orderBy, onSnapshot, addDoc, 
-  updateDoc, doc, serverTimestamp, getDocs
+import {
+  collection, query, where, orderBy, onSnapshot, addDoc,
+  updateDoc, doc, serverTimestamp, getDocs, setDoc
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -222,6 +222,48 @@ export default function MessagingPage({ onBack }) {
     }
   }, []);
   
+  // Write lastSeen heartbeat while on messaging page
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    const writeLastSeen = () => {
+      setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
+    };
+
+    // Write immediately, then every 60 seconds
+    writeLastSeen();
+    const interval = setInterval(writeLastSeen, 60000);
+
+    return () => {
+      clearInterval(interval);
+      // Mark as offline when leaving
+      setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
+    };
+  }, [currentUser]);
+
+  // Listen to other user's lastSeen
+  useEffect(() => {
+    if (!selectedConversation?.otherUserId) {
+      setOtherUserLastSeen(null);
+      return;
+    }
+
+    const otherUserRef = doc(db, 'users', selectedConversation.otherUserId);
+    const unsubscribe = onSnapshot(otherUserRef, (snap) => {
+      if (snap.exists()) {
+        const data = snap.data();
+        setOtherUserLastSeen(data.lastSeen || null);
+      } else {
+        setOtherUserLastSeen(null);
+      }
+    }, () => {
+      setOtherUserLastSeen(null);
+    });
+
+    return () => unsubscribe();
+  }, [selectedConversation?.otherUserId]);
+
   // State
   const [conversations, setConversations] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -237,6 +279,8 @@ export default function MessagingPage({ onBack }) {
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [customOffer, setCustomOffer] = useState('');
   
+  const [otherUserLastSeen, setOtherUserLastSeen] = useState(null);
+
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -488,6 +532,21 @@ export default function MessagingPage({ onBack }) {
   const getOtherUserName = (conv) => conv.participantNames?.[conv.otherUserId] || 'Unknown';
   const getInitials = (name) => name ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?';
 
+  // Online status helper
+  const getOnlineStatus = () => {
+    if (!otherUserLastSeen) return { online: false, text: 'Offline' };
+    const lastSeenDate = otherUserLastSeen.toDate ? otherUserLastSeen.toDate() : new Date(otherUserLastSeen);
+    const diffMs = Date.now() - lastSeenDate.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+
+    if (diffMin < 5) return { online: true, text: 'Online' };
+    if (diffMin < 60) return { online: false, text: `Last seen ${diffMin}m ago` };
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return { online: false, text: `Last seen ${diffH}h ago` };
+    const diffD = Math.floor(diffH / 24);
+    return { online: false, text: `Last seen ${diffD}d ago` };
+  };
+
   // Not logged in
   if (!currentUser) {
     return (
@@ -725,9 +784,15 @@ export default function MessagingPage({ onBack }) {
                           </span>
                           typing...
                         </span>
-                      ) : (
-                        <><span className="w-2 h-2 bg-emerald-500 rounded-full"></span> Online</>
-                      )}
+                      ) : (() => {
+                        const status = getOnlineStatus();
+                        return (
+                          <>
+                            <span className={`w-2 h-2 rounded-full ${status.online ? 'bg-emerald-500' : 'bg-gray-400'}`}></span>
+                            {status.text}
+                          </>
+                        );
+                      })()}
                     </p>
                   </div>
                 </div>
