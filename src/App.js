@@ -1003,8 +1003,9 @@ function MainApp() {
   // Si page Buyback Calculator ouverte
   if (showBuybackCalculator) {
     return (
-      <Suspense fallback={<PageLoader />}>
-        <div className="min-h-screen relative">
+      <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
+        <Suspense fallback={<PageLoader />}>
+          <div className="min-h-screen relative">
           <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
             <div className="max-w-7xl mx-auto px-4">
               <div className="flex items-center justify-between h-16">
@@ -1062,12 +1063,13 @@ function MainApp() {
           
           <BuybackCalculator />
           
-          <AuthModal 
-            isOpen={showAuthModal} 
-            onClose={() => setShowAuthModal(false)} 
+          <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
           />
         </div>
       </Suspense>
+    </NotificationProvider>
     );
   }
 
