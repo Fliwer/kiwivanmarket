@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { 
+import { useNavigate } from 'react-router-dom';
+import {
   ArrowLeft, Send, Search, MoreVertical, Phone, Mail, MapPin,
   MessageCircle, Check, CheckCheck, Clock, Star, Archive,
   ChevronLeft, ChevronRight, DollarSign, Calendar, Gauge, Users,
@@ -8,7 +9,7 @@ import {
 } from 'lucide-react';
 import {
   collection, query, where, orderBy, onSnapshot, addDoc,
-  updateDoc, doc, serverTimestamp, getDocs, setDoc
+  updateDoc, doc, serverTimestamp, getDocs, setDoc, limit, writeBatch
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -184,6 +185,7 @@ function LanguageSelector() {
 export default function MessagingPage({ onBack }) {
   const { currentUser } = useAuth();
   const { checkAndRecord } = useRateLimit(currentUser?.uid);
+  const navigate = useNavigate();
   
   // Handle browser back button
   useEffect(() => {
@@ -232,9 +234,9 @@ export default function MessagingPage({ onBack }) {
       setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
     };
 
-    // Write immediately, then every 60 seconds
+    // Write immediately, then every 5 minutes (300000ms) to reduce Firestore writes
     writeLastSeen();
-    const interval = setInterval(writeLastSeen, 60000);
+    const interval = setInterval(writeLastSeen, 300000);
 
     return () => {
       clearInterval(interval);
@@ -285,6 +287,7 @@ export default function MessagingPage({ onBack }) {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
+  const isTypingActiveRef = useRef(false); // Track if we already sent a typing=true
 
   // Quick replies
   const quickReplies = [
@@ -356,51 +359,49 @@ export default function MessagingPage({ onBack }) {
     return () => unsubscribe();
   }, [currentUser]);
 
-  // Load messages
+  // Load messages - with limit to reduce Firestore reads
   useEffect(() => {
     if (!selectedConversation) return;
 
     console.log('📨 Loading messages for conversation:', selectedConversation.id);
 
-    // Simple query without orderBy to avoid index issues
+    // Query with limit to reduce costs - load last 100 messages
     const messagesRef = collection(db, 'conversations', selectedConversation.id, 'messages');
+    const messagesQuery = query(messagesRef, limit(100));
 
-    const unsubscribe = onSnapshot(messagesRef, 
+    const unsubscribe = onSnapshot(messagesQuery,
       (snapshot) => {
         console.log('✅ Found messages:', snapshot.docs.length);
-        
+
         const msgs = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        
+
         // Sort client-side by createdAt (oldest first)
         msgs.sort((a, b) => {
           const timeA = a.createdAt?.toDate?.() || new Date(0);
           const timeB = b.createdAt?.toDate?.() || new Date(0);
           return timeA - timeB;
         });
-        
+
         setMessages(msgs);
-        markAsRead();
+        // NOTE: markAsRead is called once on conversation selection, not here
+        // to avoid a write->read feedback loop
       },
       (error) => {
         console.error('❌ Error loading messages:', error);
       }
     );
 
-    // Typing listener
-    const typingUnsubscribe = onSnapshot(
-      doc(db, 'conversations', selectedConversation.id),
-      (doc) => {
-        const data = doc.data();
-        setIsTyping(data?.typing?.[selectedConversation.otherUserId] || false);
-      }
-    );
+    // Mark as read once when conversation is selected
+    markAsRead();
+
+    // Get typing state from the conversation document (already loaded in conversations list)
+    // No need for a separate listener - we can derive it from selectedConversation updates
 
     return () => {
       unsubscribe();
-      typingUnsubscribe();
     };
   }, [selectedConversation]);
 
@@ -436,6 +437,7 @@ export default function MessagingPage({ onBack }) {
       await updateDoc(doc(db, 'conversations', selectedConversation.id), {
         lastMessage: messageText,
         lastMessageAt: serverTimestamp(),
+        lastMessageSenderId: currentUser.uid,
         status: 'active',
         [`unreadCount.${selectedConversation.otherUserId}`]: (selectedConversation.unreadCount || 0) + 1,
         [`typing.${currentUser.uid}`]: false
@@ -458,37 +460,54 @@ export default function MessagingPage({ onBack }) {
       await updateDoc(doc(db, 'conversations', selectedConversation.id), {
         [`unreadCount.${currentUser.uid}`]: 0
       });
-      
-      // Mark all unread messages as read
+
+      // Mark only unread messages from other user as read (optimized query)
       const messagesRef = collection(db, 'conversations', selectedConversation.id, 'messages');
-      const snapshot = await getDocs(messagesRef);
-      
-      snapshot.docs.forEach(async (docSnap) => {
+      const unreadQuery = query(
+        messagesRef,
+        where('read', '==', false),
+        limit(50) // Process max 50 at a time to avoid large batches
+      );
+      const snapshot = await getDocs(unreadQuery);
+
+      if (snapshot.empty) return;
+
+      // Use batch write for efficiency
+      const batch = writeBatch(db);
+      snapshot.docs.forEach((docSnap) => {
         const msgData = docSnap.data();
         // Only mark messages from other user as read
-        if (msgData.senderId !== currentUser.uid && !msgData.read) {
-          await updateDoc(doc(db, 'conversations', selectedConversation.id, 'messages', docSnap.id), {
+        if (msgData.senderId !== currentUser.uid) {
+          batch.update(docSnap.ref, {
             read: true,
             readAt: serverTimestamp()
           });
         }
       });
+      await batch.commit();
     } catch (error) {
       console.error('Error marking as read:', error);
     }
   };
 
-  // Handle typing
+  // Handle typing - debounced to avoid excessive writes
   const handleTyping = useCallback(() => {
     if (!selectedConversation) return;
 
-    updateDoc(doc(db, 'conversations', selectedConversation.id), {
-      [`typing.${currentUser.uid}`]: true
-    });
+    // Only write to Firestore once when user starts typing (not every keystroke)
+    if (!isTypingActiveRef.current) {
+      isTypingActiveRef.current = true;
+      updateDoc(doc(db, 'conversations', selectedConversation.id), {
+        [`typing.${currentUser.uid}`]: true
+      });
+    }
 
+    // Reset the timeout on each keystroke
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
 
+    // After 2 seconds of no typing, set typing to false
     typingTimeoutRef.current = setTimeout(() => {
+      isTypingActiveRef.current = false;
       updateDoc(doc(db, 'conversations', selectedConversation.id), {
         [`typing.${currentUser.uid}`]: false
       });
@@ -707,23 +726,25 @@ export default function MessagingPage({ onBack }) {
                     <div className="relative flex-shrink-0">
                       <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-200">
                         {conv.van?.imageUrl ? (
-                          <img src={conv.van.imageUrl} alt="" className="w-full h-full object-cover" />
+                          <img src={conv.van.imageUrl} alt="" className={`w-full h-full object-cover ${conv.van?.status === 'sold' ? 'opacity-50 grayscale' : ''}`} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-500">
                             <span className="text-white text-xl">🚐</span>
                           </div>
                         )}
                       </div>
-                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                        statusOptions.find(s => s.id === conv.status)?.color || 'bg-gray-400'
-                      }`}></div>
+                      {conv.van?.status === 'sold' && (
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                          SOLD
+                        </div>
+                      )}
                     </div>
-                    
+
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                          <h4 className="font-semibold text-gray-900 text-sm truncate">
+                          <h4 className={`font-semibold text-sm truncate ${conv.van?.status === 'sold' ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
                             {conv.van?.title || 'Unknown Van'}
                           </h4>
                           <p className="text-xs text-gray-500 truncate">
@@ -1035,12 +1056,25 @@ export default function MessagingPage({ onBack }) {
             <div className="flex-1 overflow-y-auto">
               {selectedConversation.van && (
                 <div className="p-4 border-b border-gray-100">
-                  <div className="aspect-video rounded-xl overflow-hidden mb-4 shadow-lg">
-                    <img src={selectedConversation.van.imageUrl} alt="" className="w-full h-full object-cover" />
+                  <div className="relative">
+                    <div
+                      className="aspect-video rounded-xl overflow-hidden mb-4 shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => navigate(`/van/${selectedConversation.van.id}`)}
+                    >
+                      <img src={selectedConversation.van.imageUrl} alt="" className={`w-full h-full object-cover ${selectedConversation.van.status === 'sold' ? 'opacity-50 grayscale' : ''}`} />
+                    </div>
+                    {selectedConversation.van.status === 'sold' && (
+                      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+                        SOLD
+                      </div>
+                    )}
                   </div>
-                  
-                  <h3 className="font-bold text-gray-900 text-lg mb-1">{selectedConversation.van.title}</h3>
-                  <p className="text-2xl font-black text-emerald-600 mb-4">
+
+                  <h3
+                    className={`font-bold text-lg mb-1 cursor-pointer hover:text-emerald-600 transition-colors ${selectedConversation.van.status === 'sold' ? 'text-gray-400 line-through' : 'text-gray-900'}`}
+                    onClick={() => navigate(`/van/${selectedConversation.van.id}`)}
+                  >{selectedConversation.van.title}</h3>
+                  <p className={`text-2xl font-black mb-4 ${selectedConversation.van.status === 'sold' ? 'text-gray-400' : 'text-emerald-600'}`}>
                     ${selectedConversation.van.price?.toLocaleString()}
                   </p>
                   

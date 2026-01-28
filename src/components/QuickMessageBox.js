@@ -177,6 +177,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
           status: 'new',
           lastMessage: sanitizeText(text),
           lastMessageAt: serverTimestamp(),
+          lastMessageSenderId: currentUser.uid,
           createdAt: serverTimestamp(),
           unreadCount: {
             [currentUser.uid]: 0,
@@ -199,6 +200,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       await updateDoc(doc(db, 'conversations', conversationId), {
         lastMessage: sanitizeText(text),
         lastMessageAt: serverTimestamp(),
+        lastMessageSenderId: currentUser.uid,
         status: 'active',
         [`unreadCount.${sellerInfo.uid}`]: 1
       });

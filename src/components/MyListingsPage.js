@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { isAdmin, AdminBadge } from '../utils/adminHelper';
 import AddVanForm from './AddVanForm';
 import {
   ArrowLeft, Edit2, Trash2, Eye, Plus, Calendar, MapPin,
-  DollarSign, Crown, Loader, Car, AlertTriangle
+  DollarSign, Crown, Loader, Car, AlertTriangle, CheckCircle, RotateCcw
 } from 'lucide-react';
 
 export default function MyListingsPage() {
@@ -114,6 +114,31 @@ export default function MyListingsPage() {
     } catch (error) {
       console.error('Error deleting:', error);
       alert('Error during deletion. Check your permissions.');
+    }
+  };
+
+  // Toggle sold status
+  const handleToggleSold = async (van) => {
+    const newStatus = van.status === 'sold' ? 'active' : 'sold';
+    try {
+      await updateDoc(doc(db, 'vans', van.id), { status: newStatus });
+      setMyVans(prev => prev.map(v => v.id === van.id ? { ...v, status: newStatus } : v));
+
+      // Update all conversations linked to this van
+      const convsSnapshot = await getDocs(
+        query(collection(db, 'conversations'), where('vanId', '==', van.id))
+      );
+      const updatePromises = convsSnapshot.docs.map(convDoc =>
+        updateDoc(convDoc.ref, { 'van.status': newStatus })
+      );
+      await Promise.all(updatePromises);
+
+      // Invalidate cache
+      localStorage.removeItem('kiwiVanMarket_vans');
+      localStorage.removeItem('kiwiVanMarket_timestamp');
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Error updating status.');
     }
   };
 
@@ -328,6 +353,23 @@ export default function MyListingsPage() {
                         <Edit2 size={16} />
                         Edit
                       </button>
+                      {van.status === 'sold' ? (
+                        <button
+                          onClick={() => handleToggleSold(van)}
+                          className="flex items-center gap-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
+                        >
+                          <RotateCcw size={16} />
+                          Reactivate
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleToggleSold(van)}
+                          className="flex items-center gap-1 px-3 py-2 text-sm bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition"
+                        >
+                          <CheckCircle size={16} />
+                          Mark as Sold
+                        </button>
+                      )}
                       <button
                         onClick={() => setShowDeleteConfirm(van)}
                         className="flex items-center gap-1 px-3 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"

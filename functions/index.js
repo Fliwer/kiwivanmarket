@@ -12,6 +12,7 @@ const admin = require('firebase-admin');
 
 // Firebase Functions v2 imports
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { defineSecret } = require('firebase-functions/params');
 
 // Resend for email notifications
@@ -185,6 +186,267 @@ exports.onNewConversation = onDocumentCreated(
     return null;
   }
 });
+
+
+// ============================================
+// 📧 EMAIL NOTIFICATION - New Message
+// ============================================
+// Sends email to recipient when a new message arrives
+// Only sends if recipient hasn't been notified in the last 30 minutes
+
+exports.onNewMessage = onDocumentCreated(
+  {
+    document: 'conversations/{conversationId}/messages/{messageId}',
+    secrets: [resendApiKey],
+  },
+  async (event) => {
+    const message = event.data.data();
+    const conversationId = event.params.conversationId;
+
+    // Don't send email for system messages
+    if (!message.senderId || message.type === 'system') return null;
+
+    try {
+      const convDoc = await db.collection('conversations').doc(conversationId).get();
+      if (!convDoc.exists) return null;
+      const conv = convDoc.data();
+
+      // Find recipient (the other participant)
+      const recipientId = conv.participants?.find(p => p !== message.senderId);
+      if (!recipientId) return null;
+
+      // Check if we already sent a notification recently (throttle: 30 min)
+      const lastNotif = conv.lastEmailNotification?.[recipientId];
+      if (lastNotif) {
+        const lastNotifTime = lastNotif.toDate ? lastNotif.toDate() : new Date(lastNotif);
+        const diffMin = (Date.now() - lastNotifTime.getTime()) / 60000;
+        if (diffMin < 30) {
+          console.log(`⏳ Notification throttled for ${recipientId} (${Math.round(diffMin)}min ago)`);
+          return null;
+        }
+      }
+
+      // Skip if this is the very first message (handled by onNewConversation)
+      if (conv.emailNotificationSent && !conv.lastEmailNotification) {
+        // First message already handled, but mark the tracking field
+        await convDoc.ref.update({
+          [`lastEmailNotification.${recipientId}`]: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return null;
+      }
+
+      // Get recipient email
+      let recipientEmail = conv.participantEmails?.[recipientId];
+      let recipientName = conv.participantNames?.[recipientId] || 'there';
+
+      if (!recipientEmail) {
+        const userDoc = await db.collection('users').doc(recipientId).get();
+        if (!userDoc.exists) return null;
+        const userData = userDoc.data();
+        recipientEmail = userData.email;
+        recipientName = userData.displayName || userData.name || 'there';
+      }
+
+      if (!recipientEmail) return null;
+
+      const senderName = conv.participantNames?.[message.senderId] || 'Someone';
+      const vanTitle = conv.van?.title || 'a van';
+      const messagePreview = (message.text || '').length > 100
+        ? message.text.substring(0, 100) + '...'
+        : (message.text || '');
+
+      const safeRecipientName = escapeHtml(recipientName);
+      const safeSenderName = escapeHtml(senderName);
+      const safeVanTitle = escapeHtml(vanTitle);
+      const safeMessagePreview = escapeHtml(messagePreview);
+
+      const apiKey = resendApiKey.value();
+      if (!apiKey) return null;
+      const resend = new Resend(apiKey);
+
+      const { data, error } = await resend.emails.send({
+        from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+        to: recipientEmail,
+        subject: `💬 New message from ${safeSenderName} about ${safeVanTitle}`,
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">New Message</h1>
+            </div>
+            <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 16px 16px;">
+              <p style="font-size: 16px; color: #374151;">Hi ${safeRecipientName},</p>
+              <p style="font-size: 16px; color: #374151;">
+                <strong>${safeSenderName}</strong> sent you a message about <strong>${safeVanTitle}</strong>.
+              </p>
+              ${safeMessagePreview ? `
+                <div style="background: white; border-left: 4px solid #10b981; padding: 15px; margin: 20px 0; border-radius: 0 8px 8px 0;">
+                  <p style="color: #6b7280; font-size: 14px; margin: 0 0 5px 0;">Message:</p>
+                  <p style="color: #374151; font-size: 15px; margin: 0; font-style: italic;">"${safeMessagePreview}"</p>
+                </div>
+              ` : ''}
+              <a href="https://kiwivanmarket.com" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
+                Reply now
+              </a>
+              <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
+                <strong>Kiwi Van Market</strong>
+              </p>
+            </div>
+            <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 20px;">
+              You received this email because someone messaged you on Kiwi Van Market.
+            </p>
+          </div>
+        `,
+      });
+
+      if (error) {
+        console.error('❌ Resend error:', error);
+        return null;
+      }
+
+      console.log(`✅ Message notification sent to ${recipientEmail} - ID: ${data?.id}`);
+
+      // Update throttle timestamp
+      await convDoc.ref.update({
+        [`lastEmailNotification.${recipientId}`]: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error('❌ Error sending message notification:', error);
+      return null;
+    }
+  }
+);
+
+
+// ============================================
+// ⏰ REMINDER EMAIL - Unanswered conversations
+// ============================================
+// Runs every 3 hours, checks for conversations where
+// the seller hasn't replied within 6 hours of receiving a message
+
+exports.sendReminderEmails = onSchedule(
+  {
+    schedule: 'every 3 hours',
+    secrets: [resendApiKey],
+  },
+  async () => {
+    console.log('⏰ Running reminder email check...');
+
+    try {
+      const apiKey = resendApiKey.value();
+      if (!apiKey) {
+        console.error('❌ RESEND_API_KEY not configured');
+        return;
+      }
+      const resend = new Resend(apiKey);
+
+      // Find conversations with recent messages (last 24h) that may need reminders
+      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const reminderThreshold = new Date(Date.now() - 6 * 60 * 60 * 1000); // 6 hours ago
+
+      const convsSnapshot = await db.collection('conversations')
+        .where('lastMessageAt', '>=', cutoff)
+        .get();
+
+      let remindersSent = 0;
+
+      for (const convDoc of convsSnapshot.docs) {
+        const conv = convDoc.data();
+
+        // Skip if reminder already sent for this round
+        if (conv.reminderSentAt) {
+          const reminderTime = conv.reminderSentAt.toDate ? conv.reminderSentAt.toDate() : new Date(conv.reminderSentAt);
+          if (Date.now() - reminderTime.getTime() < 12 * 60 * 60 * 1000) {
+            continue; // Already sent a reminder in the last 12h
+          }
+        }
+
+        // Check if last message is old enough (> 6h)
+        const lastMsgTime = conv.lastMessageAt?.toDate ? conv.lastMessageAt.toDate() : new Date(conv.lastMessageAt);
+        if (lastMsgTime > reminderThreshold) {
+          continue; // Too recent, don't remind yet
+        }
+
+        // Find who sent the last message and who needs reminding
+        const lastSenderId = conv.lastMessageSenderId;
+        if (!lastSenderId) continue;
+
+        const recipientId = conv.participants?.find(p => p !== lastSenderId);
+        if (!recipientId) continue;
+
+        // Get recipient email
+        let recipientEmail = conv.participantEmails?.[recipientId];
+        let recipientName = conv.participantNames?.[recipientId] || 'there';
+
+        if (!recipientEmail) {
+          const userDoc = await db.collection('users').doc(recipientId).get();
+          if (!userDoc.exists) continue;
+          const userData = userDoc.data();
+          recipientEmail = userData.email;
+          recipientName = userData.displayName || userData.name || 'there';
+        }
+
+        if (!recipientEmail) continue;
+
+        const senderName = conv.participantNames?.[lastSenderId] || 'Someone';
+        const vanTitle = conv.van?.title || 'a van';
+
+        const safeRecipientName = escapeHtml(recipientName);
+        const safeSenderName = escapeHtml(senderName);
+        const safeVanTitle = escapeHtml(vanTitle);
+
+        const { data, error } = await resend.emails.send({
+          from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+          to: recipientEmail,
+          subject: `Reminder: ${safeSenderName} is waiting for your reply about ${safeVanTitle}`,
+          html: `
+            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">Don't miss out!</h1>
+              </div>
+              <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 16px 16px;">
+                <p style="font-size: 16px; color: #374151;">Hi ${safeRecipientName},</p>
+                <p style="font-size: 16px; color: #374151;">
+                  <strong>${safeSenderName}</strong> messaged you about <strong>${safeVanTitle}</strong> and is still waiting for a reply.
+                </p>
+                <p style="font-size: 16px; color: #374151;">
+                  Responding quickly increases your chances of closing the deal!
+                </p>
+                <a href="https://kiwivanmarket.com" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
+                  Reply now
+                </a>
+                <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
+                  <strong>Kiwi Van Market</strong>
+                </p>
+              </div>
+              <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 20px;">
+                You received this email because you have an unanswered message on Kiwi Van Market.
+              </p>
+            </div>
+          `,
+        });
+
+        if (error) {
+          console.error(`❌ Reminder error for ${recipientEmail}:`, error);
+          continue;
+        }
+
+        console.log(`✅ Reminder sent to ${recipientEmail} - ID: ${data?.id}`);
+        remindersSent++;
+
+        // Mark reminder as sent
+        await convDoc.ref.update({
+          reminderSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+
+      console.log(`⏰ Reminder check complete: ${remindersSent} reminders sent`);
+    } catch (error) {
+      console.error('❌ Error in reminder emails:', error);
+    }
+  }
+);
 
 
 // ============================================
