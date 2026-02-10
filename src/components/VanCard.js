@@ -4,6 +4,7 @@ import { MapPin, Heart, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
 import { getThumbnail } from '../utils/imageOptimizer';
 import { safeDate } from '../utils/dateHelper';
+import { useTranslation } from 'react-i18next';
 
 // Carousel de photos pour la card
 const ImageCarousel = ({ images, title, onNavigate, priority = false }) => {
@@ -124,6 +125,7 @@ const ImageCarousel = ({ images, title, onNavigate, priority = false }) => {
 // Composant VanCard complet
 export default function VanCard({ van, formatPrice, priority = false }) {
   const { toggleFavorite, isFavorite } = useFavorites();
+  const { t } = useTranslation();
 
   const images = van.images?.length > 0
     ? van.images
@@ -149,7 +151,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
         {van.buyBack && (
           <div className="absolute bottom-12 left-3 bg-green-400 text-green-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 z-10">
             <Shield size={12} />
-            Buy-Back
+            {t('filters.buyback')}
           </div>
         )}
       </div>
@@ -161,7 +163,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
           </div>
           {van.selfContained && (
             <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-              Self-Contained
+              {t('filters.self_contained')}
             </span>
           )}
         </div>
@@ -181,13 +183,13 @@ export default function VanCard({ van, formatPrice, priority = false }) {
 
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className={`rounded-lg px-3 py-2 ${van.wofExpiry && safeDate(van.wofExpiry) ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry && safeDate(van.wofExpiry) ? 'text-emerald-600' : 'text-gray-400'}`}>WOF until</div>
+            <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry && safeDate(van.wofExpiry) ? 'text-emerald-600' : 'text-gray-400'}`}>{t('filters.wof')}</div>
             <div className={`text-sm font-bold ${van.wofExpiry && safeDate(van.wofExpiry) ? 'text-emerald-700' : 'text-gray-400'}`}>
               {van.wofExpiry && safeDate(van.wofExpiry) ? safeDate(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
             </div>
           </div>
           <div className={`rounded-lg px-3 py-2 ${van.regoExpiry && safeDate(van.regoExpiry) ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry && safeDate(van.regoExpiry) ? 'text-blue-600' : 'text-gray-400'}`}>REGO until</div>
+            <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry && safeDate(van.regoExpiry) ? 'text-blue-600' : 'text-gray-400'}`}>{t('filters.rego')}</div>
             <div className={`text-sm font-bold ${van.regoExpiry && safeDate(van.regoExpiry) ? 'text-blue-700' : 'text-gray-400'}`}>
               {van.regoExpiry && safeDate(van.regoExpiry) ? safeDate(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
             </div>
@@ -198,7 +200,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
           {van.buyBack && (
             <span className="text-xs font-semibold text-green-600 flex items-center gap-1">
               <Shield size={12} />
-              Buy-Back Guarantee
+              {t('filters.buyback')}
             </span>
           )}
         </div>

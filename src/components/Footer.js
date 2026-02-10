@@ -1,95 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Globe, HelpCircle, FileText, Mail } from 'lucide-react';
-
-// Widget Google Translate - LAZY LOADED on user interaction
-export function GoogleTranslate() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  const languages = [
-    { code: 'en', flag: '🇬🇧', name: 'English' },
-    { code: 'fr', flag: '🇫🇷', name: 'Français' },
-    { code: 'de', flag: '🇩🇪', name: 'Deutsch' },
-    { code: 'es', flag: '🇪🇸', name: 'Español' },
-    { code: 'zh-CN', flag: '🇨🇳', name: '中文' },
-    { code: 'ja', flag: '🇯🇵', name: '日本語' },
-    { code: 'ko', flag: '🇰🇷', name: '한국어' },
-    { code: 'pt', flag: '🇧🇷', name: 'Português' },
-  ];
-
-  // Load Google Translate only when user opens the menu
-  const loadGoogleTranslate = () => {
-    if (!isLoaded && !document.getElementById('google-translate-script')) {
-      const script = document.createElement('script');
-      script.id = 'google-translate-script';
-      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-      script.async = true;
-      document.body.appendChild(script);
-
-      window.googleTranslateElementInit = function() {
-        new window.google.translate.TranslateElement({
-          pageLanguage: 'en',
-          includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,it,nl',
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false
-        }, 'google_translate_element');
-      };
-      setIsLoaded(true);
-    }
-  };
-
-  const handleOpen = () => {
-    if (!isOpen) {
-      loadGoogleTranslate();
-    }
-    setIsOpen(!isOpen);
-  };
-
-  const changeLanguage = (langCode) => {
-    const select = document.querySelector('.goog-te-combo');
-    if (select) {
-      select.value = langCode;
-      select.dispatchEvent(new Event('change'));
-    }
-    setIsOpen(false);
-  };
-
-  return (
-    <div className="relative">
-      <button
-        onClick={handleOpen}
-        className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full transition text-sm font-medium"
-        aria-label="Change language"
-      >
-        <Globe size={16} aria-hidden="true" />
-        <span>Language</span>
-      </button>
-
-      {isOpen && (
-        <div className="absolute bottom-full mb-2 right-0 bg-white rounded-xl shadow-2xl border p-2 min-w-[150px] z-50">
-          {languages.map(lang => (
-            <button
-              key={lang.code}
-              onClick={() => changeLanguage(lang.code)}
-              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg text-left text-gray-700 text-sm"
-              aria-label={`Switch to ${lang.name}`}
-            >
-              <span className="text-lg" aria-hidden="true">{lang.flag}</span>
-              <span>{lang.name}</span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Hidden element for Google Translate */}
-      <div id="google_translate_element" className="hidden" aria-hidden="true"></div>
-    </div>
-  );
-}
+import { AlertTriangle, HelpCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Composant FAQ Modal
 export function FAQModal({ isOpen, onClose }) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   const faqs = [
@@ -175,6 +91,8 @@ export function FAQModal({ isOpen, onClose }) {
 
 // Footer principal avec disclaimer
 export default function Footer({ onOpenFAQ, onOpenTerms }) {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-gray-900 text-white mt-16">
       {/* Disclaimer Banner */}
@@ -182,7 +100,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
         <div className="max-w-7xl mx-auto flex items-start gap-3">
           <AlertTriangle size={20} className="flex-shrink-0 mt-0.5" />
           <p className="text-sm">
-            <strong>Disclaimer:</strong> Kiwi Van Market is a listing platform only. We do not verify listings, guarantee vehicle conditions, or handle transactions. 
+            <strong>Disclaimer:</strong> Kiwi Van Market is a listing platform only. We do not verify listings, guarantee vehicle conditions, or handle transactions.
             All sales are between buyers and sellers directly. Always inspect vehicles in person before purchasing.
           </p>
         </div>
@@ -196,7 +114,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
           <div className="sm:col-span-2">
             <div className="flex items-center gap-4 mb-4">
               {/* Logo en cercle parfait avec overflow-hidden */}
-              <div 
+              <div
                 className="w-14 h-14 rounded-full shadow-lg overflow-hidden flex items-center justify-center"
                 style={{ backgroundColor: '#f7eedd' }}
               >
@@ -212,15 +130,13 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
               </div>
             </div>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
-              The marketplace for buying and selling campervans in New Zealand. 
-              Find your perfect adventure vehicle or sell your van to fellow travelers.
+              {t('footer.about_desc')}
             </p>
-            <GoogleTranslate />
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Quick Links</h3>
+            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">{t('footer.quick_links')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <button onClick={onOpenFAQ} className="text-gray-400 hover:text-white transition">
@@ -234,11 +150,11 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
               </li>
               <li>
                 <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-gray-400 hover:text-white transition">
-                  Contact Us
+                  {t('footer.contact')}
                 </a>
               </li>
             </ul>
-            <h3 className="font-bold mb-3 mt-6 text-emerald-400 text-sm uppercase tracking-wider">Guides</h3>
+            <h3 className="font-bold mb-3 mt-6 text-emerald-400 text-sm uppercase tracking-wider">{t('header.guides')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link to="/guide/buying-campervan-nz" className="text-gray-400 hover:text-white transition">
@@ -354,7 +270,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
         <div className="border-t border-gray-800 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
             {/* Mini logo en rond avec couleur #f7eedd */}
-            <div 
+            <div
               className="w-8 h-8 rounded-full shadow overflow-hidden flex items-center justify-center"
               style={{ backgroundColor: '#f7eedd' }}
             >
@@ -365,7 +281,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
               />
             </div>
             <p className="text-gray-500 text-sm">
-              © {new Date().getFullYear()} Kiwi Van Market. All rights reserved.
+              {t('footer.copyright', { year: new Date().getFullYear() })}
             </p>
           </div>
           <p className="text-gray-600 text-sm flex items-center gap-2">

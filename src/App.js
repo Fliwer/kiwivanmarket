@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation, useNavigationType } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink, BookOpen } from 'lucide-react';
@@ -9,6 +10,7 @@ import { useFavorites } from './hooks/useFavorites';
 import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import NotificationBell from './components/NotificationBell';
+import SeoHead from './components/SeoHead';
 
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
@@ -118,127 +120,39 @@ function WebViewWarning() {
   );
 }
 
-// 🌐 Sélecteur de langue pour le header - LAZY LOADED
+// 🌐 Sélecteur de langue pour le header - Native i18n
 function LanguageSelector() {
+  const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState('en');
-  const [translatorLoaded, setTranslatorLoaded] = useState(false);
 
+  // Supported languages
   const languages = [
     { code: 'en', flag: 'https://flagcdn.com/24x18/gb.png', name: 'ENGLISH', short: 'EN' },
     { code: 'fr', flag: 'https://flagcdn.com/24x18/fr.png', name: 'FRANÇAIS', short: 'FR' },
-    { code: 'de', flag: 'https://flagcdn.com/24x18/de.png', name: 'DEUTSCH', short: 'DE' },
-    { code: 'es', flag: 'https://flagcdn.com/24x18/es.png', name: 'ESPAÑOL', short: 'ES' },
-    { code: 'zh-CN', flag: 'https://flagcdn.com/24x18/cn.png', name: '简体中文', short: '中文' },
-    { code: 'ja', flag: 'https://flagcdn.com/24x18/jp.png', name: '日本語', short: 'JA' },
-    { code: 'ko', flag: 'https://flagcdn.com/24x18/kr.png', name: '한국어', short: 'KO' },
-    { code: 'pt', flag: 'https://flagcdn.com/24x18/br.png', name: 'PORTUGUÊS', short: 'PT' },
-    { code: 'th', flag: 'https://flagcdn.com/24x18/th.png', name: 'ไทย', short: 'TH' },
-    { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' }
+    { code: 'es', flag: 'https://flagcdn.com/24x18/es.png', name: 'ESPAÑOL', short: 'ES' }
   ];
 
-  // Load Google Translate script only when needed
-  const loadTranslator = useCallback(() => {
-    if (translatorLoaded || document.getElementById('google-translate-script')) {
-      return;
-    }
-
-    const translateDiv = document.createElement('div');
-    translateDiv.id = 'google_translate_element';
-    translateDiv.style.display = 'none';
-    document.body.appendChild(translateDiv);
-
-    window.googleTranslateElementInit = function () {
-      new window.google.translate.TranslateElement(
-        {
-          pageLanguage: 'en',
-          includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,th,vi',
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false
-        },
-        'google_translate_element'
-      );
-    };
-
-    const script = document.createElement('script');
-    script.id = 'google-translate-script';
-    script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-    script.async = true;
-    document.body.appendChild(script);
-    setTranslatorLoaded(true);
-  }, [translatorLoaded]);
-
-  const applyLanguage = useCallback((langCode) => {
-    const domains = ['', '.' + window.location.hostname, '.kiwivanmarket.com'];
-    domains.forEach(domain => {
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${domain ? ' domain=' + domain + ';' : ''}`;
-    });
-
-    try {
-      safeStorage.removeItem('googtrans');
-      safeSessionStorage.clear();
-    } catch (e) { }
-
-    const gtFrame = document.querySelector('.goog-te-banner-frame');
-    if (gtFrame) gtFrame.remove();
-    const gtElement = document.getElementById('google_translate_element');
-    if (gtElement) gtElement.innerHTML = '';
-
-    document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
-    const html = document.documentElement;
-    html.className = html.className.replace(/translated-[a-z]+/g, '');
-
-    const oldScript = document.getElementById('google-translate-script');
-    if (oldScript) oldScript.remove();
-
-    document.querySelectorAll('iframe.goog-te-menu-frame, iframe.goog-te-banner-frame').forEach(el => el.remove());
-
-    if (langCode === 'en') {
-      setTimeout(() => {
-        window.location.replace(window.location.pathname + '?lang=en&t=' + Date.now());
-      }, 100);
-      return;
-    }
-
-    // Load translator before applying non-English language
-    loadTranslator();
-
-    const langCookie = `/en/${langCode}`;
-    document.cookie = `googtrans=${langCookie}; path=/;`;
-    document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
-
-    setTimeout(() => {
-      window.location.replace(window.location.pathname + '?lang=' + langCode + '&t=' + Date.now());
-    }, 100);
-  }, [loadTranslator]);
+  /* Google Translate loaded via script in index.html or not at all now */
 
   const changeLanguage = (langCode) => {
+    i18n.changeLanguage(langCode);
     setIsOpen(false);
-    setCurrentLang(langCode);
     safeStorage.setItem('preferredLang', langCode);
-    applyLanguage(langCode);
+
+    // Update URL param for SEO
+    const url = new URL(window.location);
+    url.searchParams.set('lang', langCode);
+    window.history.pushState({}, '', url);
   };
 
-  // Handle opening the selector - load translator on first click
-  const handleOpen = () => {
-    if (!isOpen) {
-      loadTranslator(); // Preload when opening menu
-    }
-    setIsOpen(!isOpen);
-  };
-
-  useEffect(() => {
-    const savedLang = safeStorage.getItem('preferredLang') || 'en';
-    setCurrentLang(savedLang);
-    // Note: We no longer load Google Translate on mount - only on user interaction
-  }, []);
-
-  const currentLangData = languages.find((l) => l.code === currentLang) || languages[0];
+  const currentLang = i18n.language || 'en';
+  const currentLangCode = currentLang.split('-')[0]; // Handle 'en-US' -> 'en'
+  const currentLangData = languages.find((l) => l.code === currentLangCode) || languages[0];
 
   return (
     <div className="relative">
       <button
-        onClick={handleOpen}
+        onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
         aria-label="Select language"
         title="Change language"
@@ -267,7 +181,7 @@ function LanguageSelector() {
               <button
                 key={lang.code}
                 onClick={() => changeLanguage(lang.code)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentLang === lang.code
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentLangCode === lang.code
                   ? 'bg-emerald-50 text-emerald-700 font-semibold'
                   : 'hover:bg-gray-50 text-gray-700'
                   }`}
@@ -400,6 +314,7 @@ function MainApp() {
   const { currentUser, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   const isAdmin = currentUser?.isAdmin === true;
 
@@ -993,6 +908,7 @@ function MainApp() {
   if (showBuybackCalculator) {
     return (
       <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
+        <SeoHead title={t('menu.calculator')} />
         <Suspense fallback={<PageLoader />}>
           <div className="min-h-screen relative">
             <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
@@ -1005,7 +921,7 @@ function MainApp() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
-                    <span className="hidden sm:inline">Back to listings</span>
+                    <span className="hidden sm:inline">{t('header.subtitle').replace('🇳🇿', '')}</span>
                   </button>
 
                   <div className="flex items-center gap-1">
@@ -1014,7 +930,7 @@ function MainApp() {
                       className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
                     >
                       <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
-                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
+                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.favorites')}</span>
                     </button>
 
                     <button
@@ -1022,7 +938,7 @@ function MainApp() {
                       className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
                     >
                       <MessageCircle size={22} className="text-white" />
-                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
+                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.messages')}</span>
                       <MessageBadge />
                     </button>
 
@@ -1032,7 +948,7 @@ function MainApp() {
                         className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
                       >
                         <Users size={22} className="text-white" />
-                        <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Sign in</span>
+                        <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.signin')}</span>
                       </button>
                     ) : (
                       <button
@@ -1042,7 +958,7 @@ function MainApp() {
                         <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
                           {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
                         </div>
-                        <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
+                        <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.profile')}</span>
                       </button>
                     )}
                   </div>
@@ -1066,6 +982,7 @@ function MainApp() {
   if (showMessagingPage) {
     return (
       <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
+        <SeoHead title={t('menu.messages')} />
         <Suspense fallback={<PageLoader />}>
           <MessagingPage onBack={() => setShowMessagingPage(false)} />
         </Suspense>
@@ -1075,14 +992,8 @@ function MainApp() {
 
   return (
     <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
-      {/* SEO: Meta tags dynamiques pour la page d'accueil */}
-      <Helmet>
-        <title>Kiwi Van Market | Buy and Sell Campervans in New Zealand</title>
-        <meta name="description" content="Buy and sell campervans in New Zealand. Find self contained vans, WOF and rego valid vehicles, Toyota Hiace, Nissan Caravan, Mazda Bongo, and buy back options for backpackers." />
-        <link rel="canonical" href="https://kiwivanmarket.com/" />
-        <meta property="og:url" content="https://kiwivanmarket.com/" />
-      </Helmet>
-
+      <SeoHead />
+      {/* WebViewWarning desactive - le site s'affiche directement */}
       {/* WebViewWarning desactive - le site s'affiche directement */}
       <div className="min-h-screen bg-gray-50">
         {/* Skip to main content link for accessibility */}
@@ -1242,7 +1153,7 @@ function MainApp() {
                             <svg className="w-[18px] h-[18px] text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
-                            <span>My Profile</span>
+                            <span>{t('menu.profile')}</span>
                           </button>
                           <button
                             onClick={() => { navigate('/my-listings'); setShowUserMenu(false); }}
@@ -1250,7 +1161,7 @@ function MainApp() {
                             <svg className="w-[18px] h-[18px] text-gray-400" fill="currentColor" viewBox="0 0 24 24">
                               <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z" />
                             </svg>
-                            <span>My Listings</span>
+                            <span>{t('menu.listings')}</span>
                           </button>
                           {/* MVP_DISABLED: Reservations
                           <a 
@@ -1267,7 +1178,7 @@ function MainApp() {
                               onClick={(e) => { e.preventDefault(); setShowAdminDashboard(true); setShowUserMenu(false); }}
                               className="flex items-center gap-3 px-4 py-2.5 hover:bg-purple-50 transition text-purple-700">
                               <Settings className="w-[18px] h-[18px]" />
-                              <span className="font-semibold">Admin Dashboard</span>
+                              <span className="font-semibold">{t('menu.admin')}</span>
                             </a>
                           )}
                         </div>
@@ -1278,7 +1189,7 @@ function MainApp() {
                             <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                             </svg>
-                            <span>Sign Out</span>
+                            <span>{t('menu.signout')}</span>
                           </button>
                         </div>
                       </div>
@@ -1362,7 +1273,7 @@ function MainApp() {
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
                 >
                   <BookOpen size={20} />
-                  <span>Guides</span>
+                  <span>{t('menu.guides')}</span>
                 </Link>
 
                 <button
@@ -1370,7 +1281,7 @@ function MainApp() {
                   className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
                 >
                   <Calculator size={20} />
-                  <span>Buyback Calculator</span>
+                  <span>{t('menu.calculator')}</span>
                 </button>
 
                 {!currentUser ? (
@@ -1473,7 +1384,7 @@ function MainApp() {
                         : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-400 hover:text-green-600'
                         }`}>
                       <Shield size={16} className={filters.buyBack ? 'text-white' : 'text-green-500'} />
-                      Buy-Back
+                      {t('filters.buyback')}
                       <span
                         onClick={(e) => { e.stopPropagation(); setShowBuyBackInfo(!showBuyBackInfo); }}
                         className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.buyBack ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-green-100 hover:text-green-600'
@@ -1486,10 +1397,10 @@ function MainApp() {
                           <button onClick={() => setShowBuyBackInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
                           <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
                             <Shield size={18} className="text-emerald-400" />
-                            <span className="font-bold text-emerald-400">Buy-Back Guarantee</span>
+                            <span className="font-bold text-emerald-400">{t('filters.buyback')}</span>
                           </div>
                           <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
-                            The seller guarantees to buy back the van at an agreed price if you return it within the specified period.
+                            {t('filters.buyback_desc')}
                             <span className="text-white font-semibold"> Perfect for backpackers!</span>
                           </p>
                           <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
@@ -1511,7 +1422,7 @@ function MainApp() {
                         : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-purple-400 hover:text-purple-600'
                         }`}>
                       <CheckCircle size={16} className={filters.regoValid ? 'text-white' : 'text-purple-500'} />
-                      REGO Valid
+                      {t('filters.rego')}
                       <span
                         onClick={(e) => { e.stopPropagation(); setShowRegoInfo(!showRegoInfo); }}
                         className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.regoValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-purple-100 hover:text-purple-600'
@@ -1526,8 +1437,7 @@ function MainApp() {
                             <span className="text-purple-400 font-bold">📋 Vehicle Registration (REGO)</span>
                           </div>
                           <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
-                            <span className="text-white font-semibold">Registration fee</span> that must be paid to legally drive on NZ roads.
-                            Can be bought in 3, 6 or 12 month periods at any PostShop or online.
+                            <span className="text-white font-semibold">{t('filters.rego_desc')}</span>
                             <span className="text-white font-semibold"> Check the sticker on the windscreen!</span>
                           </p>
                           <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
@@ -1550,7 +1460,7 @@ function MainApp() {
                         }`}>
                       <CheckCircle size={16} className={filters.selfContained ? 'text-white' : 'text-blue-500'} />
                       <span className="md:hidden">Self-Cont</span>
-                      <span className="hidden md:inline">Self-Contained</span>
+                      <span className="hidden md:inline">{t('filters.self_contained')}</span>
                       <span
                         onClick={(e) => { e.stopPropagation(); setShowSelfContainedInfo(!showSelfContainedInfo); }}
                         className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.selfContained ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-blue-100 hover:text-blue-600'
@@ -1593,7 +1503,7 @@ function MainApp() {
                         }`}>
                       <CheckCircle size={16} className={filters.wofValid ? 'text-white' : 'text-emerald-500'} />
                       <span className="md:hidden">WOF</span>
-                      <span className="hidden md:inline">WOF Valid</span>
+                      <span className="hidden md:inline">{t('filters.wof')}</span>
                       <span
                         onClick={(e) => { e.stopPropagation(); setShowWofInfo(!showWofInfo); }}
                         className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.wofValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600'
@@ -1623,7 +1533,7 @@ function MainApp() {
                       onClick={() => setFilters({ ...filters, selfContained: false, buyBack: false, wofValid: false, regoValid: false })}
                       className="px-3 py-2 rounded-full text-sm font-semibold text-red-500 hover:bg-red-50 transition flex items-center gap-1">
                       <X size={14} />
-                      Clear
+                      {t('filters.clear')}
                     </button>
                   )}
                 </div>
@@ -1635,7 +1545,7 @@ function MainApp() {
                     : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md'
                     }`}>
                   <Filter size={16} />
-                  {showFilters ? 'Hide Filters' : 'Filters'}
+                  {showFilters ? t('filters.hide_filters') : t('filters.show_filters')}
                   <ChevronDown size={16} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
                 </button>
               </div>
@@ -1667,7 +1577,7 @@ function MainApp() {
                           className="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1 px-3 py-1.5 hover:bg-red-50 rounded-lg transition"
                         >
                           <X size={14} />
-                          Reset
+                          {t('filters.reset')}
                         </button>
                       )}
                     </div>
@@ -1676,7 +1586,7 @@ function MainApp() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Price Range
+                          {t('filters.price_range')}
                         </label>
                         <div className="flex items-center gap-2">
                           <div className="relative flex-1">
@@ -1723,7 +1633,7 @@ function MainApp() {
                       </div>
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Min Year: <span className="text-emerald-600 font-bold">{filters.yearMin}</span>
+                          {t('filters.year')}: <span className="text-emerald-600 font-bold">{filters.yearMin}</span>
                         </label>
                         <input
                           type="range"
@@ -1744,7 +1654,7 @@ function MainApp() {
                     {/* Location & Type */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
                       <div>
-                        <label htmlFor="filter-location" className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                        <label htmlFor="filter-location" className="block text-sm font-semibold text-gray-700 mb-2">{t('filters.location')}</label>
                         <select
                           id="filter-location"
                           value={filters.location}
@@ -1766,7 +1676,7 @@ function MainApp() {
                         </select>
                       </div>
                       <div>
-                        <label htmlFor="filter-type" className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Type</label>
+                        <label htmlFor="filter-type" className="block text-sm font-semibold text-gray-700 mb-2">{t('filters.type')}</label>
                         <select
                           id="filter-type"
                           value={filters.type}
@@ -1785,7 +1695,7 @@ function MainApp() {
                       <summary className="cursor-pointer list-none">
                         <div className="flex items-center justify-between py-2 border-t border-gray-200">
                           <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            🔧 Equipment
+                            🔧 {t('filters.equipment')}
                             {Object.values(filters.equipment).some(v => v) && (
                               <span className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full">
                                 {Object.values(filters.equipment).filter(v => v).length} selected
@@ -1858,16 +1768,16 @@ function MainApp() {
                     </button>
                   )}
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-500 hidden sm:inline" id="sort-label">Sort by:</span>
+                    <span className="text-sm text-gray-500 hidden sm:inline" id="sort-label">{t('sort.label')}</span>
                     <select
                       value={sortBy}
                       onChange={(e) => setSortBy(e.target.value)}
                       className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
                       aria-label="Sort listings by"
                     >
-                      <option value="newest">🆕 Newest first</option>
-                      <option value="price-asc">💰 Price: Low to High</option>
-                      <option value="price-desc">💎 Price: High to Low</option>
+                      <option value="newest">{t('sort.newest')}</option>
+                      <option value="price-asc">{t('sort.price_asc')}</option>
+                      <option value="price-desc">{t('sort.price_desc')}</option>
                     </select>
                   </div>
                 </div>
@@ -1905,28 +1815,28 @@ function MainApp() {
           {/* How It Works */}
           <div className="bg-white py-16 mt-12">
             <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-4xl font-bold text-center mb-12">How It Works</h2>
+              <h2 className="text-4xl font-bold text-center mb-12">{t('how_it_works.title')}</h2>
               <div className="grid md:grid-cols-3 gap-8">
                 <div className="text-center">
                   <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Search size={32} className="text-emerald-600" />
                   </div>
-                  <h3 className="font-bold text-xl mb-2">1. Search & Filter</h3>
-                  <p className="text-gray-600">Browse our wide selection of campervans and use filters to find your perfect match</p>
+                  <h3 className="font-bold text-xl mb-2">1. {t('how_it_works.step1_title')}</h3>
+                  <p className="text-gray-600">{t('how_it_works.step1_desc')}</p>
                 </div>
                 <div className="text-center">
                   <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Phone size={32} className="text-emerald-600" />
                   </div>
-                  <h3 className="font-bold text-xl mb-2">2. Contact Seller</h3>
-                  <p className="text-gray-600">Connect directly with verified sellers and arrange a viewing</p>
+                  <h3 className="font-bold text-xl mb-2">2. {t('how_it_works.step2_title')}</h3>
+                  <p className="text-gray-600">{t('how_it_works.step2_desc')}</p>
                 </div>
                 <div className="text-center">
                   <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <CheckCircle size={32} className="text-emerald-600" />
                   </div>
-                  <h3 className="font-bold text-xl mb-2">3. Buy with Confidence</h3>
-                  <p className="text-gray-600">All vans are WOF verified with optional buy-back guarantee</p>
+                  <h3 className="font-bold text-xl mb-2">3. {t('how_it_works.step3_title')}</h3>
+                  <p className="text-gray-600">{t('how_it_works.step3_desc')}</p>
                 </div>
               </div>
             </div>
@@ -2032,15 +1942,15 @@ function MainApp() {
                 </button>
                 <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                   <HelpCircle size={28} />
-                  How it works
+                  {t('how_it_works_modal.title')}
                 </h2>
-                <p className="text-emerald-100 mt-1">Buy or sell your campervan in 3 simple steps</p>
+                <p className="text-emerald-100 mt-1">{t('how_it_works_modal.subtitle')}</p>
               </div>
 
               <div className="p-6 space-y-6">
                 <div>
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    🔍 For Buyers
+                    🔍 {t('how_it_works_modal.buyers_title')}
                   </h3>
                   <div className="space-y-4">
                     <div className="flex gap-4">
@@ -2048,8 +1958,8 @@ function MainApp() {
                         <span className="font-bold text-emerald-600">1</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-800">Browse & Filter</h4>
-                        <p className="text-gray-600 text-sm">Search campervans by location, price, features. Use filters like Self-Contained, Buy-Back guarantee, WOF/REGO validity.</p>
+                        <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step1_buyer_title')}</h4>
+                        <p className="text-gray-600 text-sm">{t('how_it_works_modal.step1_buyer_desc')}</p>
                       </div>
                     </div>
                     <div className="flex gap-4">
@@ -2057,8 +1967,8 @@ function MainApp() {
                         <span className="font-bold text-emerald-600">2</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-800">Contact the Seller</h4>
-                        <p className="text-gray-600 text-sm">Found the perfect van? Send a message directly to the seller to arrange a viewing or ask questions.</p>
+                        <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step2_buyer_title')}</h4>
+                        <p className="text-gray-600 text-sm">{t('how_it_works_modal.step2_buyer_desc')}</p>
                       </div>
                     </div>
                     <div className="flex gap-4">
@@ -2066,8 +1976,8 @@ function MainApp() {
                         <span className="font-bold text-emerald-600">3</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-800">Meet & Buy</h4>
-                        <p className="text-gray-600 text-sm">Meet the seller, inspect the van, check WOF/REGO papers, and complete the transaction safely.</p>
+                        <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step3_buyer_title')}</h4>
+                        <p className="text-gray-600 text-sm">{t('how_it_works_modal.step3_buyer_desc')}</p>
                       </div>
                     </div>
                   </div>
@@ -2077,7 +1987,7 @@ function MainApp() {
 
                 <div>
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    💰 For Sellers
+                    💰 {t('how_it_works_modal.sellers_title')}
                   </h3>
                   <div className="space-y-4">
                     <div className="flex gap-4">
@@ -2085,8 +1995,8 @@ function MainApp() {
                         <span className="font-bold text-teal-600">1</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-800">Create your listing</h4>
-                        <p className="text-gray-600 text-sm">Click "Sell your van", add photos, describe your campervan, set your price. It's 100% free!</p>
+                        <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step1_seller_title')}</h4>
+                        <p className="text-gray-600 text-sm">{t('how_it_works_modal.step1_seller_desc')}</p>
                       </div>
                     </div>
                     <div className="flex gap-4">
@@ -2094,8 +2004,8 @@ function MainApp() {
                         <span className="font-bold text-teal-600">2</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-800">Get contacted</h4>
-                        <p className="text-gray-600 text-sm">Interested buyers will message you directly. Respond quickly to increase your chances of selling!</p>
+                        <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step2_seller_title')}</h4>
+                        <p className="text-gray-600 text-sm">{t('how_it_works_modal.step2_seller_desc')}</p>
                       </div>
                     </div>
                     <div className="flex gap-4">
@@ -2103,8 +2013,8 @@ function MainApp() {
                         <span className="font-bold text-teal-600">3</span>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-800">Sell & Get Paid</h4>
-                        <p className="text-gray-600 text-sm">Meet the buyer, finalize the sale, and enjoy your payment. Don't forget to mark your listing as sold!</p>
+                        <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step3_seller_title')}</h4>
+                        <p className="text-gray-600 text-sm">{t('how_it_works_modal.step3_seller_desc')}</p>
                       </div>
                     </div>
                   </div>
@@ -2114,13 +2024,12 @@ function MainApp() {
 
                 <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
                   <h3 className="font-bold text-amber-800 mb-2 flex items-center gap-2">
-                    💡 Pro Tips for Backpackers
+                    💡 {t('how_it_works_modal.pro_tips_title')}
                   </h3>
                   <ul className="text-sm text-amber-700 space-y-1">
-                    <li>• Look for <strong>Self-Contained</strong> vans to freedom camp legally</li>
-                    <li>• Check <strong>WOF</strong> (safety) and <strong>REGO</strong> (registration) expiry dates</li>
-                    <li>• <strong>Buy-Back</strong> guarantee = seller buys it back when you leave NZ</li>
-                    <li>• Use our <strong>Buyback Calculator</strong> to estimate your costs</li>
+                    {t('how_it_works_modal.pro_tips_list', { returnObjects: true }).map((tip, i) => (
+                      <li key={i}>• {tip}</li>
+                    ))}
                   </ul>
                 </div>
 
@@ -2128,7 +2037,7 @@ function MainApp() {
                   onClick={() => setShowHowItWorks(false)}
                   className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition"
                 >
-                  Got it! Start browsing 🚐
+                  {t('how_it_works_modal.cta')}
                 </button>
               </div>
             </div>
