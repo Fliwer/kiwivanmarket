@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Heart, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
 import { getThumbnail } from '../utils/imageOptimizer';
+import { safeDate } from '../utils/dateHelper';
 
 // Carousel de photos pour la card
 const ImageCarousel = ({ images, title, onNavigate }) => {
@@ -102,11 +103,10 @@ const ImageCarousel = ({ images, title, onNavigate }) => {
               <button
                 key={idx}
                 onClick={(e) => goTo(idx, e)}
-                className={`h-2 rounded-full transition-all ${
-                  idx === currentIndex
-                    ? 'bg-white w-5'
-                    : 'bg-white/70 w-2 hover:bg-white/90'
-                }`}
+                className={`h-2 rounded-full transition-all ${idx === currentIndex
+                  ? 'bg-white w-5'
+                  : 'bg-white/70 w-2 hover:bg-white/90'
+                  }`}
                 aria-label={`Go to image ${idx + 1}`}
               />
             ))}
@@ -179,16 +179,16 @@ export default function VanCard({ van, formatPrice }) {
         </div>
 
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className={`rounded-lg px-3 py-2 ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'text-emerald-600' : 'text-gray-400'}`}>WOF until</div>
-            <div className={`text-sm font-bold ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'text-emerald-700' : 'text-gray-400'}`}>
-              {van.wofExpiry && new Date(van.wofExpiry).getTime() ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
+          <div className={`rounded-lg px-3 py-2 ${van.wofExpiry && safeDate(van.wofExpiry) ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
+            <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry && safeDate(van.wofExpiry) ? 'text-emerald-600' : 'text-gray-400'}`}>WOF until</div>
+            <div className={`text-sm font-bold ${van.wofExpiry && safeDate(van.wofExpiry) ? 'text-emerald-700' : 'text-gray-400'}`}>
+              {van.wofExpiry && safeDate(van.wofExpiry) ? safeDate(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
             </div>
           </div>
-          <div className={`rounded-lg px-3 py-2 ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'text-blue-600' : 'text-gray-400'}`}>REGO until</div>
-            <div className={`text-sm font-bold ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'text-blue-700' : 'text-gray-400'}`}>
-              {van.regoExpiry && new Date(van.regoExpiry).getTime() ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
+          <div className={`rounded-lg px-3 py-2 ${van.regoExpiry && safeDate(van.regoExpiry) ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
+            <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry && safeDate(van.regoExpiry) ? 'text-blue-600' : 'text-gray-400'}`}>REGO until</div>
+            <div className={`text-sm font-bold ${van.regoExpiry && safeDate(van.regoExpiry) ? 'text-blue-700' : 'text-gray-400'}`}>
+              {van.regoExpiry && safeDate(van.regoExpiry) ? safeDate(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
             </div>
           </div>
         </div>

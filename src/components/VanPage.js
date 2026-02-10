@@ -5,8 +5,9 @@ import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
-import { 
-  ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users, 
+import { safeDate } from '../utils/dateHelper';
+import {
+  ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
   Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
@@ -31,7 +32,7 @@ const VanSEO = ({ van }) => {
 
   const featuresText = features.length > 0 ? ` Features: ${features.join(', ')}.` : '';
   const description = `${van.year} ${van.title} for sale in ${van.location}, New Zealand. ${van.mileage?.toLocaleString()}km, ${van.capacity || 2} berth.${featuresText} Perfect campervan for backpackers and travellers.`.slice(0, 160);
-  
+
   // Schema.org JSON-LD pour Google Rich Snippets
   const schemaData = {
     "@context": "https://schema.org",
@@ -107,7 +108,7 @@ const VanSEO = ({ van }) => {
       "name": "What should I check before buying a campervan in New Zealand?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Always verify the WOF (Warrant of Fitness) and REGO (registration) expiry dates. This van's WOF is valid until " + (van.wofExpiry ? new Date(van.wofExpiry).toLocaleDateString('en-NZ') : 'not specified') + ". Meet the seller in person, inspect the vehicle thoroughly, and consider getting a mechanical inspection for peace of mind."
+        "text": "Always verify the WOF (Warrant of Fitness) and REGO (registration) expiry dates. This van's WOF is valid until " + (van.wofExpiry ? safeDate(van.wofExpiry).toLocaleDateString('en-NZ') : 'not specified') + ". Meet the seller in person, inspect the vehicle thoroughly, and consider getting a mechanical inspection for peace of mind."
       }
     }
   ];
@@ -204,7 +205,7 @@ export default function VanPage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { toggleFavorite, isFavorite } = useFavorites();
-  
+
   const [van, setVan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -235,17 +236,17 @@ export default function VanPage() {
         setLoading(true);
         const vanRef = doc(db, 'vans', id);
         const vanSnap = await getDoc(vanRef);
-        
+
         if (vanSnap.exists()) {
           const vanData = { id: vanSnap.id, ...vanSnap.data() };
           setVan(vanData);
-          
+
           // Incrémenter le compteur de vues (une seule fois par session par van)
           const viewedKey = `viewed_${vanSnap.id}`;
           if (!viewIncremented.current && !sessionStorage.getItem(viewedKey)) {
             viewIncremented.current = true;
             sessionStorage.setItem(viewedKey, '1');
-            updateDoc(vanRef, { views: increment(1) }).catch(() => {});
+            updateDoc(vanRef, { views: increment(1) }).catch(() => { });
           }
         } else {
           setError('Van not found');
@@ -262,17 +263,17 @@ export default function VanPage() {
   }, [id]);
 
   // Navigation images
-  const images = van?.images?.length > 0 
-    ? van.images 
+  const images = van?.images?.length > 0
+    ? van.images
     : (van?.imageUrl ? [van.imageUrl] : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800']);
-  
+
   const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
   const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
   // Partage
   const shareUrl = `https://kiwivanmarket.com/van/${id}`;
   const shareText = van ? `Check out this ${van.title} for $${van.price?.toLocaleString()} on Kiwi Van Market!` : '';
-  
+
   const handleShare = async (platform) => {
     const urls = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
@@ -280,7 +281,7 @@ export default function VanPage() {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`,
       copy: null
     };
-    
+
     if (platform === 'copy') {
       await navigator.clipboard.writeText(shareUrl);
       alert('Link copied to clipboard!');
@@ -292,22 +293,23 @@ export default function VanPage() {
 
   // Format prix
   const formatPrice = (price) => `NZ$${(price || 0).toLocaleString()}`;
-  
+
   // Format date
   const formatDate = (dateStr) => {
     if (!dateStr) return 'Not specified';
-    return new Date(dateStr).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' });
+    const d = safeDate(dateStr);
+    return d ? d.toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Invalid Date';
   };
 
   // Calcul jours depuis création
   const getDaysAgo = (createdAt) => {
-    if (!createdAt) return 0;
-    const created = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+    const created = safeDate(createdAt);
+    if (!created) return 0;
     return Math.floor((new Date() - created) / (1000 * 60 * 60 * 24));
   };
 
   if (loading) return <VanPageSkeleton />;
-  
+
   if (error || !van) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -315,7 +317,7 @@ export default function VanPage() {
           <div className="text-6xl mb-4">🚐</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Van Not Found</h1>
           <p className="text-gray-600 mb-6">This listing may have been removed or sold.</p>
-          <Link 
+          <Link
             to="/"
             className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition inline-flex items-center gap-2"
           >
@@ -334,14 +336,14 @@ export default function VanPage() {
     <>
       {/* SEO Meta Tags */}
       <VanSEO van={van} />
-      
+
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-16">
               {/* Bouton retour */}
-              <button 
+              <button
                 onClick={() => navigate('/')}
                 className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition text-white font-semibold"
               >
@@ -359,21 +361,21 @@ export default function VanPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-2">
-                <button 
+                <button
                   onClick={() => toggleFavorite(van.id)}
                   className="p-2.5 bg-white/20 hover:bg-white/30 rounded-xl transition"
                 >
                   <Heart size={22} className={isFavorite(van.id) ? 'text-red-400 fill-red-400' : 'text-white'} />
                 </button>
-                
+
                 <div className="relative">
-                  <button 
+                  <button
                     onClick={() => setShowShareMenu(!showShareMenu)}
                     className="p-2.5 bg-white/20 hover:bg-white/30 rounded-xl transition"
                   >
                     <Share2 size={22} />
                   </button>
-                  
+
                   {showShareMenu && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setShowShareMenu(false)} />
@@ -452,11 +454,10 @@ export default function VanPage() {
                     </span>
                   )}
                   {van.selfContained && (
-                    <span className={`text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur ${
-                      van.selfContainedType === 'blue'
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-400'
-                        : 'bg-gradient-to-r from-green-500 to-emerald-400'
-                    }`}>
+                    <span className={`text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur ${van.selfContainedType === 'blue'
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-400'
+                      : 'bg-gradient-to-r from-green-500 to-emerald-400'
+                      }`}>
                       ✓ Self-Contained {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
                     </span>
                   )}
@@ -482,11 +483,10 @@ export default function VanPage() {
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
-                      className={`flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden transition-all duration-200 ${
-                        idx === currentImageIndex
-                          ? 'ring-3 ring-emerald-500 ring-offset-2'
-                          : 'opacity-60 hover:opacity-100'
-                      }`}
+                      className={`flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden transition-all duration-200 ${idx === currentImageIndex
+                        ? 'ring-3 ring-emerald-500 ring-offset-2'
+                        : 'opacity-60 hover:opacity-100'
+                        }`}
                     >
                       <img src={img} alt="" className="w-full h-full object-cover" />
                     </button>
@@ -567,56 +567,49 @@ export default function VanPage() {
                 </div>
                 <div className="p-4">
                   <div className="grid grid-cols-3 gap-3">
-                    <div className={`p-4 rounded-xl text-center transition-all ${
-                      van.wofExpiry && new Date(van.wofExpiry) > new Date()
-                        ? 'bg-gradient-to-br from-emerald-50 to-green-100 border-2 border-emerald-300'
-                        : 'bg-gray-100 border-2 border-gray-200'
-                    }`}>
-                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${
-                        van.wofExpiry && new Date(van.wofExpiry) > new Date() ? 'bg-emerald-500' : 'bg-gray-400'
+                    <div className={`p-4 rounded-xl text-center transition-all ${van.wofExpiry && safeDate(van.wofExpiry) > new Date()
+                      ? 'bg-gradient-to-br from-emerald-50 to-green-100 border-2 border-emerald-300'
+                      : 'bg-gray-100 border-2 border-gray-200'
                       }`}>
+                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'bg-emerald-500' : 'bg-gray-400'
+                        }`}>
                         <CheckCircle size={20} className="text-white" />
                       </div>
                       <div className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">WOF Valid</div>
-                      <div className={`text-sm font-bold ${van.wofExpiry && new Date(van.wofExpiry) > new Date() ? 'text-emerald-700' : 'text-gray-500'}`}>
+                      <div className={`text-sm font-bold ${van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'text-emerald-700' : 'text-gray-500'}`}>
                         {formatDate(van.wofExpiry)}
                       </div>
                     </div>
-                    <div className={`p-4 rounded-xl text-center transition-all ${
-                      van.regoExpiry && new Date(van.regoExpiry) > new Date()
-                        ? 'bg-gradient-to-br from-blue-50 to-cyan-100 border-2 border-blue-300'
-                        : 'bg-gray-100 border-2 border-gray-200'
-                    }`}>
-                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${
-                        van.regoExpiry && new Date(van.regoExpiry) > new Date() ? 'bg-blue-500' : 'bg-gray-400'
+                    <div className={`p-4 rounded-xl text-center transition-all ${van.regoExpiry && safeDate(van.regoExpiry) > new Date()
+                      ? 'bg-gradient-to-br from-blue-50 to-cyan-100 border-2 border-blue-300'
+                      : 'bg-gray-100 border-2 border-gray-200'
                       }`}>
+                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'bg-blue-500' : 'bg-gray-400'
+                        }`}>
                         <CheckCircle size={20} className="text-white" />
                       </div>
                       <div className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">REGO Until</div>
-                      <div className={`text-sm font-bold ${van.regoExpiry && new Date(van.regoExpiry) > new Date() ? 'text-blue-700' : 'text-gray-500'}`}>
+                      <div className={`text-sm font-bold ${van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'text-blue-700' : 'text-gray-500'}`}>
                         {formatDate(van.regoExpiry)}
                       </div>
                     </div>
-                    <div className={`p-4 rounded-xl text-center transition-all ${
-                      van.selfContained
-                        ? van.selfContainedType === 'blue'
-                          ? 'bg-gradient-to-br from-blue-50 to-cyan-100 border-2 border-blue-300'
-                          : 'bg-gradient-to-br from-green-50 to-teal-100 border-2 border-green-300'
-                        : 'bg-gray-100 border-2 border-gray-200'
-                    }`}>
-                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${
-                        van.selfContained
-                          ? van.selfContainedType === 'blue' ? 'bg-blue-500' : 'bg-green-500'
-                          : 'bg-gray-400'
+                    <div className={`p-4 rounded-xl text-center transition-all ${van.selfContained
+                      ? van.selfContainedType === 'blue'
+                        ? 'bg-gradient-to-br from-blue-50 to-cyan-100 border-2 border-blue-300'
+                        : 'bg-gradient-to-br from-green-50 to-teal-100 border-2 border-green-300'
+                      : 'bg-gray-100 border-2 border-gray-200'
                       }`}>
+                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${van.selfContained
+                        ? van.selfContainedType === 'blue' ? 'bg-blue-500' : 'bg-green-500'
+                        : 'bg-gray-400'
+                        }`}>
                         {van.selfContained ? <CheckCircle size={20} className="text-white" /> : <X size={20} className="text-white" />}
                       </div>
                       <div className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">Self-Contained</div>
-                      <div className={`text-sm font-bold ${
-                        van.selfContained
-                          ? van.selfContainedType === 'blue' ? 'text-blue-700' : 'text-green-700'
-                          : 'text-gray-500'
-                      }`}>
+                      <div className={`text-sm font-bold ${van.selfContained
+                        ? van.selfContainedType === 'blue' ? 'text-blue-700' : 'text-green-700'
+                        : 'text-gray-500'
+                        }`}>
                         {van.selfContained ? (van.selfContainedType === 'blue' ? 'Blue Sticker' : 'Green Sticker') : 'No'}
                       </div>
                     </div>

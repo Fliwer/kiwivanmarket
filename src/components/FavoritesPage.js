@@ -3,6 +3,7 @@ import { X, Heart, MapPin, Calendar, Gauge, Star, TrendingUp, Clock, Trash2, Shi
 import { db } from '../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useFavorites } from '../hooks/useFavorites';
+import { safeDate } from '../utils/dateHelper';
 
 export default function FavoritesPage({ onClose, onVanClick }) {
   const { favorites, toggleFavorite, loading: favoritesLoading } = useFavorites();
@@ -23,12 +24,12 @@ export default function FavoritesPage({ onClose, onVanClick }) {
         const vansRef = collection(db, 'vans');
         const q = query(vansRef, where('__name__', 'in', favorites.slice(0, 10))); // Firebase limite Ã  10
         const snapshot = await getDocs(q);
-        
+
         const vans = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        
+
         setVansData(vans);
         console.log('âœ… Vans favoris chargÃ©s:', vans.length);
       } catch (error) {
@@ -62,11 +63,11 @@ export default function FavoritesPage({ onClose, onVanClick }) {
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
@@ -81,7 +82,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
               </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-all hover:scale-110">
             <X size={24} className="text-gray-600" />
@@ -104,7 +105,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
               <p className="text-gray-500 mb-6">
                 Start adding vans to your favorites by clicking the heart icon
               </p>
-              <button 
+              <button
                 onClick={onClose}
                 className="bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition">
                 Browse Vans
@@ -113,7 +114,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {vansData.map(van => (
-                <div 
+                <div
                   key={van.id}
                   onClick={() => {
                     onVanClick(van);
@@ -121,12 +122,12 @@ export default function FavoritesPage({ onClose, onVanClick }) {
                   }}
                   className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:-translate-y-1 border border-gray-100">
                   <div className="relative">
-                    <img 
-                      src={van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'} 
-                      alt={van.title} 
+                    <img
+                      src={van.imageUrl || van.images?.[0] || 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'}
+                      alt={van.title}
                       className="w-full h-48 object-cover"
                     />
-                    <button 
+                    <button
                       onClick={(e) => handleRemoveFavorite(e, van.id)}
                       className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:bg-red-50 transition group">
                       <Trash2 size={18} className="text-red-500 group-hover:scale-110 transition" />
@@ -160,7 +161,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
 
                     {/* Titre */}
                     <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{van.title}</h3>
-                    
+
                     {/* Location + Year + Km */}
                     <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
                       <span>{van.year}</span>
@@ -178,13 +179,13 @@ export default function FavoritesPage({ onClose, onVanClick }) {
                       <div className={`rounded-lg px-2 py-1.5 ${van.wofExpiry ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
                         <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry ? 'text-emerald-600' : 'text-gray-400'}`}>WOF</div>
                         <div className={`text-xs font-bold ${van.wofExpiry ? 'text-emerald-700' : 'text-gray-400'}`}>
-                          {van.wofExpiry ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'N/A'}
+                          {van.wofExpiry && safeDate(van.wofExpiry) ? safeDate(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'N/A'}
                         </div>
                       </div>
                       <div className={`rounded-lg px-2 py-1.5 ${van.regoExpiry ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
                         <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry ? 'text-blue-600' : 'text-gray-400'}`}>REGO</div>
                         <div className={`text-xs font-bold ${van.regoExpiry ? 'text-blue-700' : 'text-gray-400'}`}>
-                          {van.regoExpiry ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'N/A'}
+                          {van.regoExpiry && safeDate(van.regoExpiry) ? safeDate(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'N/A'}
                         </div>
                       </div>
                     </div>
@@ -192,7 +193,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
                     {/* Footer - Rating */}
                     {van.seller?.rating && (
                       <div className="flex items-center gap-1 text-sm pt-2 border-t border-gray-100">
-                        <Star size={14} fill="currentColor" className="text-yellow-500"/>
+                        <Star size={14} fill="currentColor" className="text-yellow-500" />
                         <span className="font-semibold">{van.seller.rating}</span>
                         <span className="text-gray-500">seller rating</span>
                       </div>
@@ -211,7 +212,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
               <p className="text-sm text-gray-600">
                 💡 Tip: Click on any van to view details
               </p>
-              <button 
+              <button
                 onClick={onClose}
                 className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition">
                 Continue Browsing

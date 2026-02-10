@@ -12,6 +12,8 @@ import NotificationBell from './components/NotificationBell';
 
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
+import safeStorage, { safeSessionStorage } from './utils/safeStorage';
+import { safeDate } from './utils/dateHelper';
 import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
 // MVP_DISABLED: Stripe/Payments
@@ -69,9 +71,10 @@ const PageLoader = () => (
 
 
 // ✅ Calcule le nombre de jours depuis la création
+// ✅ Calcule le nombre de jours depuis la création
 const getDaysAgo = (createdAt) => {
-  if (!createdAt) return 0;
-  const created = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+  const created = safeDate(createdAt);
+  if (!created) return 0;
   const now = new Date();
   const diffTime = Math.abs(now - created);
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -104,7 +107,7 @@ function WebViewWarning() {
           <p className="text-xs text-gray-500 mb-1">Tap the menu ••• then</p>
           <p className="font-semibold text-gray-800">"Open in Browser"</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsWebView(false)}
           className="text-sm text-gray-400 hover:text-gray-600"
         >
@@ -172,9 +175,9 @@ function LanguageSelector() {
     });
 
     try {
-      localStorage.removeItem('googtrans');
-      sessionStorage.clear();
-    } catch (e) {}
+      safeStorage.removeItem('googtrans');
+      safeSessionStorage.clear();
+    } catch (e) { }
 
     const gtFrame = document.querySelector('.goog-te-banner-frame');
     if (gtFrame) gtFrame.remove();
@@ -212,7 +215,7 @@ function LanguageSelector() {
   const changeLanguage = (langCode) => {
     setIsOpen(false);
     setCurrentLang(langCode);
-    localStorage.setItem('preferredLang', langCode);
+    safeStorage.setItem('preferredLang', langCode);
     applyLanguage(langCode);
   };
 
@@ -225,7 +228,7 @@ function LanguageSelector() {
   };
 
   useEffect(() => {
-    const savedLang = localStorage.getItem('preferredLang') || 'en';
+    const savedLang = safeStorage.getItem('preferredLang') || 'en';
     setCurrentLang(savedLang);
     // Note: We no longer load Google Translate on mount - only on user interaction
   }, []);
@@ -264,11 +267,10 @@ function LanguageSelector() {
               <button
                 key={lang.code}
                 onClick={() => changeLanguage(lang.code)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
-                  currentLang === lang.code
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentLang === lang.code
                     ? 'bg-emerald-50 text-emerald-700 font-semibold'
                     : 'hover:bg-gray-50 text-gray-700'
-                }`}
+                  }`}
               >
                 <img
                   src={lang.flag}
@@ -299,14 +301,14 @@ function CurrencySelector() {
   const [currentCurrency, setCurrentCurrency] = useState('NZD');
 
   useEffect(() => {
-    const savedCurrency = localStorage.getItem('kiwivanmarket_currency') || 'NZD';
+    const savedCurrency = safeStorage.getItem('kiwivanmarket_currency') || 'NZD';
     setCurrentCurrency(savedCurrency);
   }, []);
 
   const changeCurrency = (code) => {
     setIsOpen(false);
     setCurrentCurrency(code);
-    localStorage.setItem('kiwivanmarket_currency', code);
+    safeStorage.setItem('kiwivanmarket_currency', code);
     window.dispatchEvent(new CustomEvent('currencyChange', { detail: code }));
   };
 
@@ -339,11 +341,10 @@ function CurrencySelector() {
               <button
                 key={code}
                 onClick={() => changeCurrency(code)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
-                  currentCurrency === code
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentCurrency === code
                     ? 'bg-emerald-50 text-emerald-700 font-semibold'
                     : 'hover:bg-gray-50 text-gray-700'
-                }`}
+                  }`}
               >
                 <img src={curr.flag} alt={code} className="w-6 h-4 object-cover rounded-sm" />
                 <span className="font-medium">{code}</span>
@@ -399,15 +400,15 @@ function MainApp() {
   const { currentUser, logout } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   const isAdmin = currentUser?.isAdmin === true;
-  
+
   const [showFAQ, setShowFAQ] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
-  
+
   const [sortBy, setSortBy] = useState('newest');
-  
+
   const [filters, setFilters] = useState({
     priceMin: 0,
     priceMax: 500000,
@@ -437,7 +438,7 @@ function MainApp() {
   const [currency, setCurrency] = useState('NZD');
 
   useEffect(() => {
-    const savedCurrency = localStorage.getItem('kiwivanmarket_currency') || 'NZD';
+    const savedCurrency = safeStorage.getItem('kiwivanmarket_currency') || 'NZD';
     setCurrency(savedCurrency);
 
     const handleCurrencyChange = (e) => {
@@ -463,10 +464,10 @@ function MainApp() {
     const fetchVans = async () => {
       try {
         setLoading(true);
-        
-        const cachedData = localStorage.getItem('kiwiVanMarket_vans');
-        const cacheTimestamp = localStorage.getItem('kiwiVanMarket_timestamp');
-        
+
+        const cachedData = safeStorage.getItem('kiwiVanMarket_vans');
+        const cacheTimestamp = safeStorage.getItem('kiwiVanMarket_timestamp');
+
         if (cachedData) {
           const cachedVans = JSON.parse(cachedData);
           // Only use cache if it has data
@@ -474,10 +475,8 @@ function MainApp() {
             // Sort cache immediately (newest first)
             const sortedCache = [...cachedVans].sort((a, b) => {
               const getTs = (v) => {
-                if (!v.createdAt) return 0;
-                if (v.createdAt.seconds) return v.createdAt.seconds * 1000;
-                if (typeof v.createdAt === 'string') return new Date(v.createdAt).getTime();
-                return 0;
+                const d = safeDate(v.createdAt);
+                return d ? d.getTime() : 0;
               };
               return getTs(b) - getTs(a);
             });
@@ -495,30 +494,28 @@ function MainApp() {
         if (cacheAge < CACHE_DURATION && cachedData && JSON.parse(cachedData).length > 0) {
           return;
         }
-        
+
         const querySnapshot = await getDocs(collection(db, 'vans'));
         const vansData = querySnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        
+
         // Sort before saving to cache (newest first)
         const sortedVans = [...vansData].sort((a, b) => {
           const getTs = (v) => {
-            if (!v.createdAt) return 0;
-            if (v.createdAt.toDate) return v.createdAt.toDate().getTime();
-            if (v.createdAt.seconds) return v.createdAt.seconds * 1000;
-            return 0;
+            const d = safeDate(v.createdAt);
+            return d ? d.getTime() : 0;
           };
           return getTs(b) - getTs(a);
         });
-        
-        localStorage.setItem('kiwiVanMarket_vans', JSON.stringify(sortedVans));
-        localStorage.setItem('kiwiVanMarket_timestamp', now.toString());
-        
+
+        safeStorage.setItem('kiwiVanMarket_vans', JSON.stringify(sortedVans));
+        safeStorage.setItem('kiwiVanMarket_timestamp', now.toString());
+
         setVans(sortedVans);
         setFilteredVans(sortedVans);
-        
+
       } catch (error) {
         console.error('Error loading vans:', error);
       } finally {
@@ -536,21 +533,19 @@ function MainApp() {
         id: doc.id,
         ...doc.data()
       }));
-      
+
       // Sort before saving (newest first)
       const sortedVans = [...vansData].sort((a, b) => {
         const getTs = (v) => {
-          if (!v.createdAt) return 0;
-          if (v.createdAt.toDate) return v.createdAt.toDate().getTime();
-          if (v.createdAt.seconds) return v.createdAt.seconds * 1000;
-          return 0;
+          const d = safeDate(v.createdAt);
+          return d ? d.getTime() : 0;
         };
         return getTs(b) - getTs(a);
       });
-      
-      localStorage.setItem('kiwiVanMarket_vans', JSON.stringify(sortedVans));
-      localStorage.setItem('kiwiVanMarket_timestamp', Date.now().toString());
-      
+
+      safeStorage.setItem('kiwiVanMarket_vans', JSON.stringify(sortedVans));
+      safeStorage.setItem('kiwiVanMarket_timestamp', Date.now().toString());
+
       setVans(sortedVans);
       setFilteredVans(sortedVans);
     } catch (error) {
@@ -564,9 +559,9 @@ function MainApp() {
       if (van.status && van.status !== 'active') return false;
 
       const matchSearch = !searchTerm ||
-                          van.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          van.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          van.description?.toLowerCase().includes(searchTerm.toLowerCase());
+        van.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        van.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        van.description?.toLowerCase().includes(searchTerm.toLowerCase());
       const price = typeof van.price === 'number' ? van.price : 0;
       const matchPrice = price >= filters.priceMin && price <= filters.priceMax;
       const year = typeof van.year === 'number' ? van.year : 2000;
@@ -575,8 +570,8 @@ function MainApp() {
       const matchLocation = filters.location === 'all' || van.location === filters.location;
       const matchSelfContained = !filters.selfContained || van.selfContained;
       const matchBuyBack = !filters.buyBack || van.buyBack;
-      const matchWofValid = !filters.wofValid || (van.wofExpiry && new Date(van.wofExpiry) > new Date());
-      const matchRegoValid = !filters.regoValid || (van.regoExpiry && new Date(van.regoExpiry) > new Date());
+      const matchWofValid = !filters.wofValid || (van.wofExpiry && safeDate(van.wofExpiry) > new Date());
+      const matchRegoValid = !filters.regoValid || (van.regoExpiry && safeDate(van.regoExpiry) > new Date());
 
       const matchEquipment = Object.entries(filters.equipment).every(([key, required]) => {
         if (!required) return true;
@@ -594,16 +589,13 @@ function MainApp() {
 
       return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid && matchEquipment;
     });
-    
+
     // Helper to get timestamp from any date format
     const getTimestamp = (van) => {
-      if (!van.createdAt) return 0;
-      if (van.createdAt.toDate) return van.createdAt.toDate().getTime();
-      if (van.createdAt.seconds) return van.createdAt.seconds * 1000;
-      if (typeof van.createdAt === 'string') return new Date(van.createdAt).getTime();
-      return 0;
+      const d = safeDate(van.createdAt);
+      return d ? d.getTime() : 0;
     };
-    
+
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'price-asc':
@@ -615,7 +607,7 @@ function MainApp() {
           return getTimestamp(b) - getTimestamp(a);
       }
     });
-    
+
     setFilteredVans(filtered);
   }, [searchTerm, filters, vans, sortBy]);
 
@@ -629,24 +621,24 @@ function MainApp() {
 
   // ✅ VanDetailsModal
   const VanDetailsModal = ({ van }) => {
-    const images = van.images && van.images.length > 0 
-      ? van.images 
+    const images = van.images && van.images.length > 0
+      ? van.images
       : (van.imageUrl ? [van.imageUrl] : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800']);
-    
+
     const features = van.features || [];
     const seller = van.seller || { name: 'Unknown', email: '', phone: '' };
-    
+
     const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
     const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black md:bg-black/70 md:backdrop-blur-sm flex items-start md:items-center justify-center z-[60] overflow-y-auto"
         onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }}>
-        <div 
+        <div
           className="bg-white w-full md:rounded-3xl md:max-w-7xl md:my-8 relative shadow-2xl overflow-hidden min-h-screen md:min-h-0"
           onClick={(e) => e.stopPropagation()}>
-          
+
           {/* Header mobile */}
           <div className="sticky top-0 z-[80] bg-gradient-to-b from-black/70 to-transparent md:hidden">
             <div className="flex items-center justify-between p-4">
@@ -689,41 +681,41 @@ function MainApp() {
               <X size={24} className="text-gray-700" />
             </button>
           </div>
-          
+
           <div className="grid lg:grid-cols-2">
-            
+
             {/* GALERIE PHOTO - Optimise pour reduire le bandwidth */}
             <div className="relative bg-gray-900 h-[280px] md:h-[600px] lg:h-[800px] -mt-16 md:mt-0">
-              <img 
-                src={getLargeImage(images[currentImageIndex])} 
-                alt={van.title || 'Van'} 
+              <img
+                src={getLargeImage(images[currentImageIndex])}
+                alt={van.title || 'Van'}
                 className="w-full h-full object-contain"
                 loading="lazy"
               />
-              
+
               {images.length > 1 && (
                 <>
-                  <button 
+                  <button
                     onClick={(e) => { e.stopPropagation(); prevImage(); }}
                     className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2 md:p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
                     <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  <button 
+                  <button
                     onClick={(e) => { e.stopPropagation(); nextImage(); }}
                     className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2 md:p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
                     <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
-                  
+
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-semibold">
                     {currentImageIndex + 1} / {images.length}
                   </div>
                 </>
               )}
-              
+
               <div className="absolute top-20 md:top-6 left-4 md:left-6 flex flex-col gap-2 md:gap-3">
                 {van.featured && (
                   <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg flex items-center gap-1.5 md:gap-2">
@@ -732,11 +724,10 @@ function MainApp() {
                   </div>
                 )}
                 {van.selfContained && (
-                  <div className={`text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg ${
-                    van.selfContainedType === 'blue'
+                  <div className={`text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg ${van.selfContainedType === 'blue'
                       ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
                       : 'bg-gradient-to-r from-green-500 to-emerald-500'
-                  }`}>
+                    }`}>
                     ✓ Self-Contained {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
                   </div>
                 )}
@@ -748,19 +739,19 @@ function MainApp() {
                 )}
               </div>
 
-              <button 
+              <button
                 onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
                 className="hidden md:block absolute bottom-6 right-6 bg-white rounded-full p-3 shadow-xl hover:scale-110 transition-all">
-                <Heart 
-                  size={24} 
-                  className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-700'} 
+                <Heart
+                  size={24}
+                  className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-700'}
                 />
               </button>
             </div>
-            
+
             {/* INFORMATIONS */}
             <div className="p-5 md:p-8 lg:p-10 md:overflow-y-auto md:max-h-[600px] lg:max-h-[800px]">
-              
+
               <div className="mb-6 pb-6 border-b-2 border-gray-100">
                 <h1 className="text-3xl lg:text-4xl font-black text-gray-900 mb-3 leading-tight">
                   {van.title || 'Untitled Van'}
@@ -816,8 +807,8 @@ function MainApp() {
                   </h3>
                   <div className="grid grid-cols-1 gap-2">
                     {features.map((feature, idx) => (
-                      <div 
-                        key={idx} 
+                      <div
+                        key={idx}
                         className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg">
                         <CheckCircle size={16} className="text-emerald-600 flex-shrink-0" />
                         <span className="text-sm font-semibold text-gray-900">{feature}</span>
@@ -866,31 +857,29 @@ function MainApp() {
                   Vehicle Status
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className={`bg-white p-3 rounded-lg border text-center ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'border-emerald-200' : 'border-gray-200'}`}>
+                  <div className={`bg-white p-3 rounded-lg border text-center ${van.wofExpiry && safeDate(van.wofExpiry) ? 'border-emerald-200' : 'border-gray-200'}`}>
                     <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">WOF Valid</div>
-                    <div className={`text-lg font-bold ${van.wofExpiry && new Date(van.wofExpiry).getTime() ? 'text-emerald-600' : 'text-gray-400'}`}>
-                      {van.wofExpiry && new Date(van.wofExpiry).getTime() ? new Date(van.wofExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
+                    <div className={`text-lg font-bold ${van.wofExpiry && safeDate(van.wofExpiry) ? 'text-emerald-600' : 'text-gray-400'}`}>
+                      {van.wofExpiry && safeDate(van.wofExpiry) ? safeDate(van.wofExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
                     </div>
                   </div>
-                  <div className={`bg-white p-3 rounded-lg border text-center ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'border-blue-200' : 'border-gray-200'}`}>
+                  <div className={`bg-white p-3 rounded-lg border text-center ${van.regoExpiry && safeDate(van.regoExpiry) ? 'border-blue-200' : 'border-gray-200'}`}>
                     <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">REGO Until</div>
-                    <div className={`text-lg font-bold ${van.regoExpiry && new Date(van.regoExpiry).getTime() ? 'text-blue-600' : 'text-gray-400'}`}>
-                      {van.regoExpiry && new Date(van.regoExpiry).getTime() ? new Date(van.regoExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
+                    <div className={`text-lg font-bold ${van.regoExpiry && safeDate(van.regoExpiry) ? 'text-blue-600' : 'text-gray-400'}`}>
+                      {van.regoExpiry && safeDate(van.regoExpiry) ? safeDate(van.regoExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
                     </div>
                   </div>
-                  <div className={`p-3 rounded-lg border text-center ${
-                    van.selfContained
+                  <div className={`p-3 rounded-lg border text-center ${van.selfContained
                       ? van.selfContainedType === 'blue'
                         ? 'bg-blue-50 border-blue-200'
                         : 'bg-green-50 border-green-200'
                       : 'bg-gray-50 border-gray-200'
-                  }`}>
+                    }`}>
                     <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">Self-Contained</div>
-                    <div className={`text-lg font-bold ${
-                      van.selfContained
+                    <div className={`text-lg font-bold ${van.selfContained
                         ? van.selfContainedType === 'blue' ? 'text-blue-600' : 'text-green-600'
                         : 'text-gray-400'
-                    }`}>
+                      }`}>
                       {van.selfContained
                         ? van.selfContainedType === 'blue' ? '✓ Blue' : '✓ Green'
                         : '✗ No'}
@@ -949,8 +938,8 @@ function MainApp() {
 
               {/* Quick Message Box - Lazy */}
               <Suspense fallback={<LoadingSpinner text="Loading..." />}>
-                <QuickMessageBox 
-                  van={van} 
+                <QuickMessageBox
+                  van={van}
                   seller={seller}
                   onOpenFullChat={() => {
                     setSelectedVan(null);
@@ -959,7 +948,7 @@ function MainApp() {
                   }}
                 />
               </Suspense>
-              
+
               {/* MVP_DISABLED: Payments/Stripe
               <div className="mt-4">
                 <Suspense fallback={<LoadingSpinner />}>
@@ -967,7 +956,7 @@ function MainApp() {
                 </Suspense>
               </div>
               */}
-              
+
               {/* MVP_DISABLED: Reviews
               <div className="mt-4">
                 <Suspense fallback={null}>
@@ -1006,70 +995,70 @@ function MainApp() {
       <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
         <Suspense fallback={<PageLoader />}>
           <div className="min-h-screen relative">
-          <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
-            <div className="max-w-7xl mx-auto px-4">
-              <div className="flex items-center justify-between h-16">
-                <button 
-                  onClick={() => setShowBuybackCalculator(false)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition text-white font-semibold"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  <span className="hidden sm:inline">Back to listings</span>
-                </button>
-
-                <div className="flex items-center gap-1">
-                  <button 
-                    onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowFavorites(true) : setShowAuthModal(true), 100); }}
-                    className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                  >
-                    <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
-                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
-                  </button>
-
+            <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex items-center justify-between h-16">
                   <button
-                    onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true), 100); }}
-                    className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                    onClick={() => setShowBuybackCalculator(false)}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition text-white font-semibold"
                   >
-                    <MessageCircle size={22} className="text-white" />
-                    <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
-                    <MessageBadge />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span className="hidden sm:inline">Back to listings</span>
                   </button>
 
-                  {!currentUser ? (
-                    <button 
-                      onClick={() => setShowAuthModal(true)}
-                      className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowFavorites(true) : setShowAuthModal(true), 100); }}
+                      className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
                     >
-                      <Users size={22} className="text-white" />
-                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Sign in</span>
+                      <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
+                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
                     </button>
-                  ) : (
-                    <button 
-                      onClick={() => { setShowBuybackCalculator(false); setShowUserMenu(true); }}
-                      className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+
+                    <button
+                      onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true), 100); }}
+                      className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
                     >
-                      <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
-                        {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
-                      </div>
-                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
+                      <MessageCircle size={22} className="text-white" />
+                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
+                      <MessageBadge />
                     </button>
-                  )}
+
+                    {!currentUser ? (
+                      <button
+                        onClick={() => setShowAuthModal(true)}
+                        className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                      >
+                        <Users size={22} className="text-white" />
+                        <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Sign in</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => { setShowBuybackCalculator(false); setShowUserMenu(true); }}
+                        className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                      >
+                        <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
+                          {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                        <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          </header>
-          
-          <BuybackCalculator />
-          
-          <AuthModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-          />
-        </div>
-      </Suspense>
-    </NotificationProvider>
+            </header>
+
+            <BuybackCalculator />
+
+            <AuthModal
+              isOpen={showAuthModal}
+              onClose={() => setShowAuthModal(false)}
+            />
+          </div>
+        </Suspense>
+      </NotificationProvider>
     );
   }
 
@@ -1116,7 +1105,7 @@ function MainApp() {
         <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-16">
-              
+
               {/* Logo */}
               <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.href = '/'}>
                 <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
@@ -1176,7 +1165,7 @@ function MainApp() {
                 <CurrencySelector />
                 */}
                 <LanguageSelector />
-                
+
                 {currentUser && (
                   <NotificationBell
                     user={currentUser}
@@ -1200,7 +1189,7 @@ function MainApp() {
                   </button>
                 )}
                 */}
-                
+
                 <button
                   onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
                   className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
@@ -1221,7 +1210,7 @@ function MainApp() {
                 </button>
 
                 {!currentUser ? (
-                  <button 
+                  <button
                     onClick={() => setShowAuthModal(true)}
                     className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
                   >
@@ -1230,7 +1219,7 @@ function MainApp() {
                   </button>
                 ) : (
                   <div className="relative">
-                    <button 
+                    <button
                       onClick={() => setShowUserMenu(!showUserMenu)}
                       className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
                     >
@@ -1239,7 +1228,7 @@ function MainApp() {
                       </div>
                       <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
                     </button>
-                    
+
                     {showUserMenu && (
                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 text-gray-700 border border-gray-100 z-50">
                         <div className="px-4 py-3 border-b bg-gray-50 rounded-t-xl">
@@ -1259,7 +1248,7 @@ function MainApp() {
                             onClick={() => { navigate('/my-listings'); setShowUserMenu(false); }}
                             className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-emerald-50 transition text-left">
                             <svg className="w-[18px] h-[18px] text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                              <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z"/>
+                              <path d="M17 5H7c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h2c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2z" />
                             </svg>
                             <span>My Listings</span>
                           </button>
@@ -1273,7 +1262,7 @@ function MainApp() {
                           </a>
                           */}
                           {isAdmin && (
-                            <a 
+                            <a
                               href="#"
                               onClick={(e) => { e.preventDefault(); setShowAdminDashboard(true); setShowUserMenu(false); }}
                               className="flex items-center gap-3 px-4 py-2.5 hover:bg-purple-50 transition text-purple-700">
@@ -1283,7 +1272,7 @@ function MainApp() {
                           )}
                         </div>
                         <div className="border-t">
-                          <button 
+                          <button
                             onClick={() => { logout(); setShowUserMenu(false); }}
                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 transition w-full text-red-600">
                             <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1383,9 +1372,9 @@ function MainApp() {
                   <Calculator size={20} />
                   <span>Buyback Calculator</span>
                 </button>
-                
+
                 {!currentUser ? (
-                  <button 
+                  <button
                     onClick={() => { setShowAuthModal(true); setShowMobileMenu(false); }}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
                   >
@@ -1418,7 +1407,7 @@ function MainApp() {
                     </button>
                     */}
                     {isAdmin && (
-                      <button 
+                      <button
                         onClick={() => { setShowAdminDashboard(true); setShowMobileMenu(false); }}
                         className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition text-yellow-300"
                       >
@@ -1426,7 +1415,7 @@ function MainApp() {
                         <span>Admin Dashboard</span>
                       </button>
                     )}
-                    <button 
+                    <button
                       onClick={() => { logout(); setShowMobileMenu(false); }}
                       className="w-full flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-white/10 rounded-xl transition"
                     >
@@ -1447,532 +1436,522 @@ function MainApp() {
         {/* ========== MAIN CONTENT ========== */}
         <main id="main-content" role="main">
 
-        {/* ========== SEARCH MOBILE + FILTRES ========== */}
-        <div className="bg-white border-b border-gray-200 shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            
-            {/* Search Mobile */}
-            <div className="lg:hidden mb-4">
-              <div className="relative">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
-                <input
-                  type="text"
-                  placeholder="Search campervans..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:border-emerald-500 focus:bg-white outline-none transition-all"
-                  aria-label="Search campervans"
-                />
-              </div>
-            </div>
+          {/* ========== SEARCH MOBILE + FILTRES ========== */}
+          <div className="bg-white border-b border-gray-200 shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 py-4">
 
-            {/* Quick Filters */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              
-              <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:gap-3 md:overflow-visible md:pb-0 md:flex-wrap">
-                
-                {/* Buy-Back */}
-                <div 
-                  className="relative w-full md:w-auto"
-                  onMouseEnter={() => setShowBuyBackInfo(true)}
-                  onMouseLeave={() => setShowBuyBackInfo(false)}
-                >
-                  <button 
-                    onClick={() => setFilters({...filters, buyBack: !filters.buyBack})}
-                    className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${
-                      filters.buyBack 
-                        ? 'bg-green-500 text-white shadow-md' 
-                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-400 hover:text-green-600'
-                    }`}>
-                    <Shield size={16} className={filters.buyBack ? 'text-white' : 'text-green-500'} />
-                    Buy-Back
-                    <span 
-                      onClick={(e) => { e.stopPropagation(); setShowBuyBackInfo(!showBuyBackInfo); }}
-                      className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${
-                        filters.buyBack ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-green-100 hover:text-green-600'
-                      }`}>?</span>
-                  </button>
-                  {showBuyBackInfo && (
-                    <>
-                      <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowBuyBackInfo(false)} />
-                      <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
-                        <button onClick={() => setShowBuyBackInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
-                        <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
-                          <Shield size={18} className="text-emerald-400" />
-                          <span className="font-bold text-emerald-400">Buy-Back Guarantee</span>
-                        </div>
-                        <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
-                          The seller guarantees to buy back the van at an agreed price if you return it within the specified period. 
-                          <span className="text-white font-semibold"> Perfect for backpackers!</span>
-                        </p>
-                        <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
-                      </div>
-                    </>
-                  )}
+              {/* Search Mobile */}
+              <div className="lg:hidden mb-4">
+                <div className="relative">
+                  <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
+                  <input
+                    type="text"
+                    placeholder="Search campervans..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:border-emerald-500 focus:bg-white outline-none transition-all"
+                    aria-label="Search campervans"
+                  />
                 </div>
-
-                {/* REGO Valid */}
-                <div 
-                  className="relative w-full md:w-auto"
-                  onMouseEnter={() => window.innerWidth >= 768 && setShowRegoInfo(true)}
-                  onMouseLeave={() => setShowRegoInfo(false)}
-                >
-                  <button 
-                    onClick={() => setFilters({...filters, regoValid: !filters.regoValid})}
-                    className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${
-                      filters.regoValid 
-                        ? 'bg-purple-500 text-white shadow-md' 
-                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-purple-400 hover:text-purple-600'
-                    }`}>
-                    <CheckCircle size={16} className={filters.regoValid ? 'text-white' : 'text-purple-500'} />
-                    REGO Valid
-                    <span 
-                      onClick={(e) => { e.stopPropagation(); setShowRegoInfo(!showRegoInfo); }}
-                      className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${
-                        filters.regoValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-purple-100 hover:text-purple-600'
-                      }`}>?</span>
-                  </button>
-                  {showRegoInfo && (
-                    <>
-                      <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowRegoInfo(false)} />
-                      <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
-                        <button onClick={() => setShowRegoInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
-                        <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
-                          <span className="text-purple-400 font-bold">📋 Vehicle Registration (REGO)</span>
-                        </div>
-                        <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
-                          <span className="text-white font-semibold">Registration fee</span> that must be paid to legally drive on NZ roads. 
-                          Can be bought in 3, 6 or 12 month periods at any PostShop or online.
-                          <span className="text-white font-semibold"> Check the sticker on the windscreen!</span>
-                        </p>
-                        <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Self-Contained */}
-                <div 
-                  className="relative w-full md:w-auto"
-                  onMouseEnter={() => window.innerWidth >= 768 && setShowSelfContainedInfo(true)}
-                  onMouseLeave={() => setShowSelfContainedInfo(false)}
-                >
-                  <button 
-                    onClick={() => setFilters({...filters, selfContained: !filters.selfContained})}
-                    className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${
-                      filters.selfContained 
-                        ? 'bg-blue-500 text-white shadow-md' 
-                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:text-blue-600'
-                    }`}>
-                    <CheckCircle size={16} className={filters.selfContained ? 'text-white' : 'text-blue-500'} />
-                    <span className="md:hidden">Self-Cont</span>
-                    <span className="hidden md:inline">Self-Contained</span>
-                    <span 
-                      onClick={(e) => { e.stopPropagation(); setShowSelfContainedInfo(!showSelfContainedInfo); }}
-                      className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${
-                        filters.selfContained ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-blue-100 hover:text-blue-600'
-                      }`}>?</span>
-                  </button>
-                  {showSelfContainedInfo && (
-                    <>
-                      <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowSelfContainedInfo(false)} />
-                      <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
-                        <button onClick={() => setShowSelfContainedInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
-                        <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
-                          <span className="text-blue-400 font-bold">🏕️ Self-Contained Certification</span>
-                        </div>
-                        <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
-                          A certified van with <span className="text-white font-semibold">toilet, fresh water & grey water tanks</span>. 
-                          Required for freedom camping in most areas of NZ.
-                        </p>
-                        <div className="flex gap-3 mt-2 text-xs">
-                          <span><span className="text-green-400 font-bold">🟢 Green</span> = fixed toilet</span>
-                          <span><span className="text-blue-400 font-bold">🔵 Blue</span> = porta-potty</span>
-                        </div>
-                        <p className="text-white font-semibold text-sm md:text-xs mt-2">Essential for free camping!</p>
-                        <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* WOF Valid */}
-                <div 
-                  className="relative w-full md:w-auto"
-                  onMouseEnter={() => window.innerWidth >= 768 && setShowWofInfo(true)}
-                  onMouseLeave={() => setShowWofInfo(false)}
-                >
-                  <button 
-                    onClick={() => setFilters({...filters, wofValid: !filters.wofValid})}
-                    className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${
-                      filters.wofValid 
-                        ? 'bg-emerald-500 text-white shadow-md' 
-                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-emerald-400 hover:text-emerald-600'
-                    }`}>
-                    <CheckCircle size={16} className={filters.wofValid ? 'text-white' : 'text-emerald-500'} />
-                    <span className="md:hidden">WOF</span>
-                    <span className="hidden md:inline">WOF Valid</span>
-                    <span 
-                      onClick={(e) => { e.stopPropagation(); setShowWofInfo(!showWofInfo); }}
-                      className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${
-                        filters.wofValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600'
-                      }`}>?</span>
-                  </button>
-                  {showWofInfo && (
-                    <>
-                      <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowWofInfo(false)} />
-                      <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
-                        <button onClick={() => setShowWofInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
-                        <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
-                          <span className="text-emerald-400 font-bold">🔧 Warrant of Fitness (WOF)</span>
-                        </div>
-                        <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
-                          A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months for all vehicles in NZ. 
-                          It checks brakes, lights, tyres, steering and other safety features.
-                          <span className="text-white font-semibold"> You can't legally drive without a valid WOF!</span>
-                        </p>
-                        <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {(filters.selfContained || filters.buyBack || filters.wofValid || filters.regoValid) && (
-                  <button 
-                    onClick={() => setFilters({...filters, selfContained: false, buyBack: false, wofValid: false, regoValid: false})}
-                    className="px-3 py-2 rounded-full text-sm font-semibold text-red-500 hover:bg-red-50 transition flex items-center gap-1">
-                    <X size={14} />
-                    Clear
-                  </button>
-                )}
               </div>
 
-              <button 
-                onClick={() => setShowFilters(!showFilters)}
-                className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${
-                  showFilters 
-                    ? 'bg-gray-200 text-gray-600 hover:bg-gray-300' 
-                    : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md'
-                }`}>
-                <Filter size={16} />
-                {showFilters ? 'Hide Filters' : 'Filters'}
-                <ChevronDown size={16} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-              </button>
-            </div>
+              {/* Quick Filters */}
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 
-            {/* Panel Filtres Expandable */}
-            {showFilters && (
-              <div className="mt-3 pt-3 border-t border-gray-200">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5">
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
-                      🔍 Find your perfect campervan
-                    </h3>
-                    {(Object.values(filters.equipment).some(v => v) || filters.priceMin > 0 || filters.priceMax < 500000 || filters.yearMin > 1980 || filters.location !== 'all' || filters.type !== 'all') && (
-                      <button
-                        onClick={() => setFilters({
-                          ...filters,
-                          priceMin: 0,
-                          priceMax: 500000,
-                          yearMin: 1980,
-                          location: 'all',
-                          type: 'all',
-                          equipment: {
-                            doubleBed: false, fridge: false, gasStove: false, sink: false, toilet: false,
-                            solarPanel: false, leisureBattery: false, heater: false, dieselHeater: false, 
-                            shower: false, insulation: false, surfRack: false
-                          }
-                        })}
-                        className="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1 px-3 py-1.5 hover:bg-red-50 rounded-lg transition"
-                      >
-                        <X size={14} />
-                        Reset
-                      </button>
+                <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:gap-3 md:overflow-visible md:pb-0 md:flex-wrap">
+
+                  {/* Buy-Back */}
+                  <div
+                    className="relative w-full md:w-auto"
+                    onMouseEnter={() => setShowBuyBackInfo(true)}
+                    onMouseLeave={() => setShowBuyBackInfo(false)}
+                  >
+                    <button
+                      onClick={() => setFilters({ ...filters, buyBack: !filters.buyBack })}
+                      className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${filters.buyBack
+                          ? 'bg-green-500 text-white shadow-md'
+                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-400 hover:text-green-600'
+                        }`}>
+                      <Shield size={16} className={filters.buyBack ? 'text-white' : 'text-green-500'} />
+                      Buy-Back
+                      <span
+                        onClick={(e) => { e.stopPropagation(); setShowBuyBackInfo(!showBuyBackInfo); }}
+                        className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.buyBack ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-green-100 hover:text-green-600'
+                          }`}>?</span>
+                    </button>
+                    {showBuyBackInfo && (
+                      <>
+                        <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowBuyBackInfo(false)} />
+                        <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
+                          <button onClick={() => setShowBuyBackInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
+                          <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
+                            <Shield size={18} className="text-emerald-400" />
+                            <span className="font-bold text-emerald-400">Buy-Back Guarantee</span>
+                          </div>
+                          <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
+                            The seller guarantees to buy back the van at an agreed price if you return it within the specified period.
+                            <span className="text-white font-semibold"> Perfect for backpackers!</span>
+                          </p>
+                          <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
+                        </div>
+                      </>
                     )}
                   </div>
 
-                  {/* Price Range & Year */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Price Range
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                          <input 
-                            type="number" 
-                            min="0" 
-                            max={filters.priceMax}
-                            step="1000"
-                            value={filters.priceMin}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value) || 0;
-                              if (val <= filters.priceMax) {
-                                setFilters({...filters, priceMin: val});
-                              }
-                            }}
-                            placeholder="Min"
-                            className="w-full pl-7 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium"
-                          />
+                  {/* REGO Valid */}
+                  <div
+                    className="relative w-full md:w-auto"
+                    onMouseEnter={() => window.innerWidth >= 768 && setShowRegoInfo(true)}
+                    onMouseLeave={() => setShowRegoInfo(false)}
+                  >
+                    <button
+                      onClick={() => setFilters({ ...filters, regoValid: !filters.regoValid })}
+                      className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${filters.regoValid
+                          ? 'bg-purple-500 text-white shadow-md'
+                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-purple-400 hover:text-purple-600'
+                        }`}>
+                      <CheckCircle size={16} className={filters.regoValid ? 'text-white' : 'text-purple-500'} />
+                      REGO Valid
+                      <span
+                        onClick={(e) => { e.stopPropagation(); setShowRegoInfo(!showRegoInfo); }}
+                        className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.regoValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-purple-100 hover:text-purple-600'
+                          }`}>?</span>
+                    </button>
+                    {showRegoInfo && (
+                      <>
+                        <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowRegoInfo(false)} />
+                        <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
+                          <button onClick={() => setShowRegoInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
+                          <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
+                            <span className="text-purple-400 font-bold">📋 Vehicle Registration (REGO)</span>
+                          </div>
+                          <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
+                            <span className="text-white font-semibold">Registration fee</span> that must be paid to legally drive on NZ roads.
+                            Can be bought in 3, 6 or 12 month periods at any PostShop or online.
+                            <span className="text-white font-semibold"> Check the sticker on the windscreen!</span>
+                          </p>
+                          <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
                         </div>
-                        <span className="text-gray-400 font-medium">to</span>
-                        <div className="relative flex-1">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                          <input 
-                            type="number" 
-                            min={filters.priceMin}
-                            max="500000"
-                            step="1000"
-                            value={filters.priceMax}
-                            onChange={(e) => {
-                              const val = parseInt(e.target.value) || 50000;
-                              if (val >= filters.priceMin) {
-                                setFilters({...filters, priceMax: val});
-                              }
-                            }}
-                            placeholder="Max"
-                            className="w-full pl-7 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex justify-between text-xs text-gray-500 mt-1.5">
-                        <span>NZ${filters.priceMin.toLocaleString()} - ${filters.priceMax.toLocaleString()}</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Min Year: <span className="text-emerald-600 font-bold">{filters.yearMin}</span>
-                      </label>
-                      <input 
-                        type="range" 
-                        min="1990" 
-                        max="2024" 
-                        step="1"
-                        value={filters.yearMin}
-                        onChange={(e) => setFilters({...filters, yearMin: parseInt(e.target.value)})}
-                        className="w-full accent-emerald-500 h-2 rounded-lg"
-                      />
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>1990</span>
-                        <span>2024</span>
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </div>
 
-                  {/* Location & Type */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
-                    <div>
-                      <label htmlFor="filter-location" className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
-                      <select
-                        id="filter-location"
-                        value={filters.location}
-                        onChange={(e) => setFilters({...filters, location: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
-                        <option value="all">All New Zealand</option>
-                        <optgroup label="North Island">
-                          <option value="Auckland">Auckland</option>
-                          <option value="Wellington">Wellington</option>
-                          <option value="Hamilton">Hamilton</option>
-                          <option value="Tauranga">Tauranga</option>
-                          <option value="Rotorua">Rotorua</option>
-                        </optgroup>
-                        <optgroup label="South Island">
-                          <option value="Christchurch">Christchurch</option>
-                          <option value="Queenstown">Queenstown</option>
-                          <option value="Dunedin">Dunedin</option>
-                        </optgroup>
-                      </select>
-                    </div>
-                    <div>
-                      <label htmlFor="filter-type" className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Type</label>
-                      <select
-                        id="filter-type"
-                        value={filters.type}
-                        onChange={(e) => setFilters({...filters, type: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
-                        <option value="all">All Types</option>
-                        <option value="Car">Car</option>
-                        <option value="Van">Van</option>
-                        <option value="Motorhome">Motorhome</option>
-                      </select>
-                    </div>
+                  {/* Self-Contained */}
+                  <div
+                    className="relative w-full md:w-auto"
+                    onMouseEnter={() => window.innerWidth >= 768 && setShowSelfContainedInfo(true)}
+                    onMouseLeave={() => setShowSelfContainedInfo(false)}
+                  >
+                    <button
+                      onClick={() => setFilters({ ...filters, selfContained: !filters.selfContained })}
+                      className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${filters.selfContained
+                          ? 'bg-blue-500 text-white shadow-md'
+                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:text-blue-600'
+                        }`}>
+                      <CheckCircle size={16} className={filters.selfContained ? 'text-white' : 'text-blue-500'} />
+                      <span className="md:hidden">Self-Cont</span>
+                      <span className="hidden md:inline">Self-Contained</span>
+                      <span
+                        onClick={(e) => { e.stopPropagation(); setShowSelfContainedInfo(!showSelfContainedInfo); }}
+                        className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.selfContained ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-blue-100 hover:text-blue-600'
+                          }`}>?</span>
+                    </button>
+                    {showSelfContainedInfo && (
+                      <>
+                        <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowSelfContainedInfo(false)} />
+                        <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
+                          <button onClick={() => setShowSelfContainedInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
+                          <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
+                            <span className="text-blue-400 font-bold">🏕️ Self-Contained Certification</span>
+                          </div>
+                          <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
+                            A certified van with <span className="text-white font-semibold">toilet, fresh water & grey water tanks</span>.
+                            Required for freedom camping in most areas of NZ.
+                          </p>
+                          <div className="flex gap-3 mt-2 text-xs">
+                            <span><span className="text-green-400 font-bold">🟢 Green</span> = fixed toilet</span>
+                            <span><span className="text-blue-400 font-bold">🔵 Blue</span> = porta-potty</span>
+                          </div>
+                          <p className="text-white font-semibold text-sm md:text-xs mt-2">Essential for free camping!</p>
+                          <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
+                        </div>
+                      </>
+                    )}
                   </div>
 
-                  {/* Equipment filters */}
-                  <details className="group">
-                    <summary className="cursor-pointer list-none">
-                      <div className="flex items-center justify-between py-2 border-t border-gray-200">
-                        <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                          🔧 Equipment
-                          {Object.values(filters.equipment).some(v => v) && (
-                            <span className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full">
-                              {Object.values(filters.equipment).filter(v => v).length} selected
-                            </span>
-                          )}
-                        </span>
-                        <ChevronDown size={18} className="text-gray-500 transition-transform group-open:rotate-180" />
+                  {/* WOF Valid */}
+                  <div
+                    className="relative w-full md:w-auto"
+                    onMouseEnter={() => window.innerWidth >= 768 && setShowWofInfo(true)}
+                    onMouseLeave={() => setShowWofInfo(false)}
+                  >
+                    <button
+                      onClick={() => setFilters({ ...filters, wofValid: !filters.wofValid })}
+                      className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${filters.wofValid
+                          ? 'bg-emerald-500 text-white shadow-md'
+                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-emerald-400 hover:text-emerald-600'
+                        }`}>
+                      <CheckCircle size={16} className={filters.wofValid ? 'text-white' : 'text-emerald-500'} />
+                      <span className="md:hidden">WOF</span>
+                      <span className="hidden md:inline">WOF Valid</span>
+                      <span
+                        onClick={(e) => { e.stopPropagation(); setShowWofInfo(!showWofInfo); }}
+                        className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.wofValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600'
+                          }`}>?</span>
+                    </button>
+                    {showWofInfo && (
+                      <>
+                        <div className="fixed inset-0 z-[99] md:hidden" onClick={() => setShowWofInfo(false)} />
+                        <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
+                          <button onClick={() => setShowWofInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
+                          <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
+                            <span className="text-emerald-400 font-bold">🔧 Warrant of Fitness (WOF)</span>
+                          </div>
+                          <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
+                            A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months for all vehicles in NZ.
+                            It checks brakes, lights, tyres, steering and other safety features.
+                            <span className="text-white font-semibold"> You can't legally drive without a valid WOF!</span>
+                          </p>
+                          <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {(filters.selfContained || filters.buyBack || filters.wofValid || filters.regoValid) && (
+                    <button
+                      onClick={() => setFilters({ ...filters, selfContained: false, buyBack: false, wofValid: false, regoValid: false })}
+                      className="px-3 py-2 rounded-full text-sm font-semibold text-red-500 hover:bg-red-50 transition flex items-center gap-1">
+                      <X size={14} />
+                      Clear
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${showFilters
+                      ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                      : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md'
+                    }`}>
+                  <Filter size={16} />
+                  {showFilters ? 'Hide Filters' : 'Filters'}
+                  <ChevronDown size={16} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+
+              {/* Panel Filtres Expandable */}
+              {showFilters && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5">
+
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                        🔍 Find your perfect campervan
+                      </h3>
+                      {(Object.values(filters.equipment).some(v => v) || filters.priceMin > 0 || filters.priceMax < 500000 || filters.yearMin > 1980 || filters.location !== 'all' || filters.type !== 'all') && (
+                        <button
+                          onClick={() => setFilters({
+                            ...filters,
+                            priceMin: 0,
+                            priceMax: 500000,
+                            yearMin: 1980,
+                            location: 'all',
+                            type: 'all',
+                            equipment: {
+                              doubleBed: false, fridge: false, gasStove: false, sink: false, toilet: false,
+                              solarPanel: false, leisureBattery: false, heater: false, dieselHeater: false,
+                              shower: false, insulation: false, surfRack: false
+                            }
+                          })}
+                          className="text-xs text-red-500 hover:text-red-700 font-semibold flex items-center gap-1 px-3 py-1.5 hover:bg-red-50 rounded-lg transition"
+                        >
+                          <X size={14} />
+                          Reset
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Price Range & Year */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Price Range
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                            <input
+                              type="number"
+                              min="0"
+                              max={filters.priceMax}
+                              step="1000"
+                              value={filters.priceMin}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 0;
+                                if (val <= filters.priceMax) {
+                                  setFilters({ ...filters, priceMin: val });
+                                }
+                              }}
+                              placeholder="Min"
+                              className="w-full pl-7 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium"
+                            />
+                          </div>
+                          <span className="text-gray-400 font-medium">to</span>
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                            <input
+                              type="number"
+                              min={filters.priceMin}
+                              max="500000"
+                              step="1000"
+                              value={filters.priceMax}
+                              onChange={(e) => {
+                                const val = parseInt(e.target.value) || 50000;
+                                if (val >= filters.priceMin) {
+                                  setFilters({ ...filters, priceMax: val });
+                                }
+                              }}
+                              placeholder="Max"
+                              className="w-full pl-7 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-500 mt-1.5">
+                          <span>NZ${filters.priceMin.toLocaleString()} - ${filters.priceMax.toLocaleString()}</span>
+                        </div>
                       </div>
-                    </summary>
-                    <div className="pt-3 pb-1">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-                        {[
-                          { key: 'doubleBed', emoji: '🛏️', label: 'Double Bed' },
-                          { key: 'fridge', emoji: '🧊', label: 'Fridge' },
-                          { key: 'gasStove', emoji: '🔥', label: 'Gas Stove' },
-                          { key: 'sink', emoji: '🚰', label: 'Sink' },
-                          { key: 'toilet', emoji: '🚽', label: 'Toilet' },
-                          { key: 'shower', emoji: '🚿', label: 'Shower' },
-                          { key: 'solarPanel', emoji: '☀️', label: 'Solar Panel' },
-                          { key: 'leisureBattery', emoji: '🔋', label: 'Battery' },
-                          { key: 'heater', emoji: '🌡️', label: 'Heater' },
-                          { key: 'dieselHeater', emoji: '🔥', label: 'Diesel Heater' },
-                          { key: 'insulation', emoji: '🧥', label: 'Insulated' },
-                          { key: 'surfRack', emoji: '🏄', label: 'Surf/Bike Rack' },
-                        ].map(item => (
-                          <button
-                            key={item.key}
-                            type="button"
-                            onClick={() => setFilters({
-                              ...filters, 
-                              equipment: {
-                                ...filters.equipment, 
-                                [item.key]: !filters.equipment[item.key]
-                              }
-                            })}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
-                              filters.equipment[item.key]
-                                ? 'bg-emerald-500 text-white shadow-md'
-                                : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
-                            }`}
-                          >
-                            <span>{item.emoji}</span>
-                            <span className="text-xs">{item.label}</span>
-                          </button>
-                        ))}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Min Year: <span className="text-emerald-600 font-bold">{filters.yearMin}</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="1990"
+                          max="2024"
+                          step="1"
+                          value={filters.yearMin}
+                          onChange={(e) => setFilters({ ...filters, yearMin: parseInt(e.target.value) })}
+                          className="w-full accent-emerald-500 h-2 rounded-lg"
+                        />
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>1990</span>
+                          <span>2024</span>
+                        </div>
                       </div>
                     </div>
-                  </details>
 
+                    {/* Location & Type */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-4">
+                      <div>
+                        <label htmlFor="filter-location" className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                        <select
+                          id="filter-location"
+                          value={filters.location}
+                          onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
+                          <option value="all">All New Zealand</option>
+                          <optgroup label="North Island">
+                            <option value="Auckland">Auckland</option>
+                            <option value="Wellington">Wellington</option>
+                            <option value="Hamilton">Hamilton</option>
+                            <option value="Tauranga">Tauranga</option>
+                            <option value="Rotorua">Rotorua</option>
+                          </optgroup>
+                          <optgroup label="South Island">
+                            <option value="Christchurch">Christchurch</option>
+                            <option value="Queenstown">Queenstown</option>
+                            <option value="Dunedin">Dunedin</option>
+                          </optgroup>
+                        </select>
+                      </div>
+                      <div>
+                        <label htmlFor="filter-type" className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Type</label>
+                        <select
+                          id="filter-type"
+                          value={filters.type}
+                          onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-sm font-medium">
+                          <option value="all">All Types</option>
+                          <option value="Car">Car</option>
+                          <option value="Van">Van</option>
+                          <option value="Motorhome">Motorhome</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Equipment filters */}
+                    <details className="group">
+                      <summary className="cursor-pointer list-none">
+                        <div className="flex items-center justify-between py-2 border-t border-gray-200">
+                          <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            🔧 Equipment
+                            {Object.values(filters.equipment).some(v => v) && (
+                              <span className="text-xs bg-emerald-500 text-white px-2 py-0.5 rounded-full">
+                                {Object.values(filters.equipment).filter(v => v).length} selected
+                              </span>
+                            )}
+                          </span>
+                          <ChevronDown size={18} className="text-gray-500 transition-transform group-open:rotate-180" />
+                        </div>
+                      </summary>
+                      <div className="pt-3 pb-1">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                          {[
+                            { key: 'doubleBed', emoji: '🛏️', label: 'Double Bed' },
+                            { key: 'fridge', emoji: '🧊', label: 'Fridge' },
+                            { key: 'gasStove', emoji: '🔥', label: 'Gas Stove' },
+                            { key: 'sink', emoji: '🚰', label: 'Sink' },
+                            { key: 'toilet', emoji: '🚽', label: 'Toilet' },
+                            { key: 'shower', emoji: '🚿', label: 'Shower' },
+                            { key: 'solarPanel', emoji: '☀️', label: 'Solar Panel' },
+                            { key: 'leisureBattery', emoji: '🔋', label: 'Battery' },
+                            { key: 'heater', emoji: '🌡️', label: 'Heater' },
+                            { key: 'dieselHeater', emoji: '🔥', label: 'Diesel Heater' },
+                            { key: 'insulation', emoji: '🧥', label: 'Insulated' },
+                            { key: 'surfRack', emoji: '🏄', label: 'Surf/Bike Rack' },
+                          ].map(item => (
+                            <button
+                              key={item.key}
+                              type="button"
+                              onClick={() => setFilters({
+                                ...filters,
+                                equipment: {
+                                  ...filters.equipment,
+                                  [item.key]: !filters.equipment[item.key]
+                                }
+                              })}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${filters.equipment[item.key]
+                                  ? 'bg-emerald-500 text-white shadow-md'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+                                }`}
+                            >
+                              <span>{item.emoji}</span>
+                              <span className="text-xs">{item.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </details>
+
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ========== RÉSULTATS ========== */}
+          <div className="max-w-7xl mx-auto px-4 py-6">
+
+            {!loading && (
+              <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <p className="text-xl font-bold text-gray-800">
+                  {filteredVans.length} {filteredVans.length === 1 ? 'van' : 'vans'} available
+                </p>
+                <div className="flex items-center gap-3">
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                    >
+                      ✕ Clear search
+                    </button>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500 hidden sm:inline" id="sort-label">Sort by:</span>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
+                      aria-label="Sort listings by"
+                    >
+                      <option value="newest">🆕 Newest first</option>
+                      <option value="price-asc">💰 Price: Low to High</option>
+                      <option value="price-desc">💎 Price: High to Low</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             )}
-          </div>
-        </div>
 
-        {/* ========== RÉSULTATS ========== */}
-        <div className="max-w-7xl mx-auto px-4 py-6">
+            {loading ? (
+              <div className="text-center py-20">
+                <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4"></div>
+                <p className="text-xl text-gray-600 font-semibold">Loading vans...</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredVans.map(van => (
+                    <VanCard key={van.id} van={van} formatPrice={formatPrice} />
+                  ))}
+                </div>
 
-          {!loading && (
-            <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <p className="text-xl font-bold text-gray-800">
-                {filteredVans.length} {filteredVans.length === 1 ? 'van' : 'vans'} available
-              </p>
-              <div className="flex items-center gap-3">
-                {searchTerm && (
-                  <button 
-                    onClick={() => setSearchTerm('')}
-                    className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                  >
-                    ✕ Clear search
-                  </button>
+                {filteredVans.length === 0 && (
+                  <div className="text-center py-20">
+                    <p className="text-2xl font-bold text-gray-400 mb-2">No vans found</p>
+                    <p className="text-gray-500">Try adjusting your filters or search term</p>
+                  </div>
                 )}
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 hidden sm:inline" id="sort-label">Sort by:</span>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 cursor-pointer"
-                    aria-label="Sort listings by"
-                  >
-                    <option value="newest">🆕 Newest first</option>
-                    <option value="price-asc">💰 Price: Low to High</option>
-                    <option value="price-desc">💎 Price: High to Low</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
 
-          {loading ? (
-            <div className="text-center py-20">
-              <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4"></div>
-              <p className="text-xl text-gray-600 font-semibold">Loading vans...</p>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredVans.map(van => (
-                  <VanCard key={van.id} van={van} formatPrice={formatPrice} />
-                ))}
-              </div>
-
-              {filteredVans.length === 0 && (
-                <div className="text-center py-20">
-                  <p className="text-2xl font-bold text-gray-400 mb-2">No vans found</p>
-                  <p className="text-gray-500">Try adjusting your filters or search term</p>
+          {/* How It Works */}
+          <div className="bg-white py-16 mt-12">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-4xl font-bold text-center mb-12">How It Works</h2>
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Search size={32} className="text-emerald-600" />
+                  </div>
+                  <h3 className="font-bold text-xl mb-2">1. Search & Filter</h3>
+                  <p className="text-gray-600">Browse our wide selection of campervans and use filters to find your perfect match</p>
                 </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* How It Works */}
-        <div className="bg-white py-16 mt-12">
-          <div className="max-w-7xl mx-auto px-4">
-            <h2 className="text-4xl font-bold text-center mb-12">How It Works</h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search size={32} className="text-emerald-600" />
+                <div className="text-center">
+                  <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Phone size={32} className="text-emerald-600" />
+                  </div>
+                  <h3 className="font-bold text-xl mb-2">2. Contact Seller</h3>
+                  <p className="text-gray-600">Connect directly with verified sellers and arrange a viewing</p>
                 </div>
-                <h3 className="font-bold text-xl mb-2">1. Search & Filter</h3>
-                <p className="text-gray-600">Browse our wide selection of campervans and use filters to find your perfect match</p>
-              </div>
-              <div className="text-center">
-                <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Phone size={32} className="text-emerald-600" />
+                <div className="text-center">
+                  <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle size={32} className="text-emerald-600" />
+                  </div>
+                  <h3 className="font-bold text-xl mb-2">3. Buy with Confidence</h3>
+                  <p className="text-gray-600">All vans are WOF verified with optional buy-back guarantee</p>
                 </div>
-                <h3 className="font-bold text-xl mb-2">2. Contact Seller</h3>
-                <p className="text-gray-600">Connect directly with verified sellers and arrange a viewing</p>
-              </div>
-              <div className="text-center">
-                <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle size={32} className="text-emerald-600" />
-                </div>
-                <h3 className="font-bold text-xl mb-2">3. Buy with Confidence</h3>
-                <p className="text-gray-600">All vans are WOF verified with optional buy-back guarantee</p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* SEO Section */}
-        <Suspense fallback={null}>
-          <HomeSeoSection />
-        </Suspense>
+          {/* SEO Section */}
+          <Suspense fallback={null}>
+            <HomeSeoSection />
+          </Suspense>
 
         </main>
         {/* ========== END MAIN CONTENT ========== */}
 
-        <Footer 
-          onOpenFAQ={() => setShowFAQ(true)} 
-          onOpenTerms={() => setShowTerms(true)} 
+        <Footer
+          onOpenFAQ={() => setShowFAQ(true)}
+          onOpenTerms={() => setShowTerms(true)}
         />
 
         {/* Modals */}
         {selectedVan && <VanDetailsModal van={selectedVan} />}
-        
+
         {showAddVanForm && (
           <Suspense fallback={<PageLoader />}>
-            <AddVanForm 
-              onClose={() => setShowAddVanForm(false)} 
+            <AddVanForm
+              onClose={() => setShowAddVanForm(false)}
               onVanAdded={refreshVans}
             />
           </Suspense>
         )}
-        
+
         {showMyVans && (
           <Suspense fallback={<PageLoader />}>
             <MyVans onClose={() => setShowMyVans(false)} />
@@ -1995,52 +1974,52 @@ function MainApp() {
           </Suspense>
         )}
         */}
-        
+
         {showFavorites && (
           <Suspense fallback={<PageLoader />}>
-            <FavoritesPage 
+            <FavoritesPage
               onClose={() => setShowFavorites(false)}
               onVanClick={(van) => setSelectedVan(van)}
             />
           </Suspense>
         )}
-        
+
         {showUserProfile && (
           <Suspense fallback={<PageLoader />}>
             <UserProfile onClose={() => setShowUserProfile(false)} />
           </Suspense>
         )}
-        
-        <AuthModal 
-          isOpen={showAuthModal} 
-          onClose={() => setShowAuthModal(false)} 
+
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
         />
-        
-        <FAQModal 
-          isOpen={showFAQ} 
-          onClose={() => setShowFAQ(false)} 
+
+        <FAQModal
+          isOpen={showFAQ}
+          onClose={() => setShowFAQ(false)}
         />
-        
+
         {showTerms && (
           <Suspense fallback={<PageLoader />}>
-            <TermsOfServiceModal 
-              isOpen={showTerms} 
-              onClose={() => setShowTerms(false)} 
+            <TermsOfServiceModal
+              isOpen={showTerms}
+              onClose={() => setShowTerms(false)}
             />
           </Suspense>
         )}
 
         {showHowItWorks && (
-          <div 
+          <div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
             onClick={() => setShowHowItWorks(false)}
           >
-            <div 
+            <div
               className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-teal-600 p-6 rounded-t-3xl">
-                <button 
+                <button
                   onClick={() => setShowHowItWorks(false)}
                   className="absolute top-4 right-4 text-white/80 hover:text-white"
                 >
@@ -2052,7 +2031,7 @@ function MainApp() {
                 </h2>
                 <p className="text-emerald-100 mt-1">Buy or sell your campervan in 3 simple steps</p>
               </div>
-              
+
               <div className="p-6 space-y-6">
                 <div>
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -2140,7 +2119,7 @@ function MainApp() {
                   </ul>
                 </div>
 
-                <button 
+                <button
                   onClick={() => setShowHowItWorks(false)}
                   className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition"
                 >
