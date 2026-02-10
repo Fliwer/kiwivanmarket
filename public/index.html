@@ -51,8 +51,9 @@
   <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
   <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
 
-  <!-- Preload LCP image -->
-  <link rel="preload" href="%PUBLIC_URL%/nz-background.webp" as="image" type="image/webp" fetchpriority="high" />
+  <!-- Preload LCP image - Mobile & Desktop optimized -->
+  <link rel="preload" href="%PUBLIC_URL%/nz-background-mobile.webp" as="image" type="image/webp" fetchpriority="high" media="(max-width: 768px)" />
+  <link rel="preload" href="%PUBLIC_URL%/nz-background.webp" as="image" type="image/webp" fetchpriority="high" media="(min-width: 769px)" />
 
   <script type="application/ld+json">
   {

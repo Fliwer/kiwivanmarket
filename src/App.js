@@ -268,8 +268,8 @@ function LanguageSelector() {
                 key={lang.code}
                 onClick={() => changeLanguage(lang.code)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentLang === lang.code
-                    ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                    : 'hover:bg-gray-50 text-gray-700'
+                  ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                  : 'hover:bg-gray-50 text-gray-700'
                   }`}
               >
                 <img
@@ -342,8 +342,8 @@ function CurrencySelector() {
                 key={code}
                 onClick={() => changeCurrency(code)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentCurrency === code
-                    ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                    : 'hover:bg-gray-50 text-gray-700'
+                  ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                  : 'hover:bg-gray-50 text-gray-700'
                   }`}
               >
                 <img src={curr.flag} alt={code} className="w-6 h-4 object-cover rounded-sm" />
@@ -725,8 +725,8 @@ function MainApp() {
                 )}
                 {van.selfContained && (
                   <div className={`text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg ${van.selfContainedType === 'blue'
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
-                      : 'bg-gradient-to-r from-green-500 to-emerald-500'
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
+                    : 'bg-gradient-to-r from-green-500 to-emerald-500'
                     }`}>
                     ✓ Self-Contained {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
                   </div>
@@ -870,15 +870,15 @@ function MainApp() {
                     </div>
                   </div>
                   <div className={`p-3 rounded-lg border text-center ${van.selfContained
-                      ? van.selfContainedType === 'blue'
-                        ? 'bg-blue-50 border-blue-200'
-                        : 'bg-green-50 border-green-200'
-                      : 'bg-gray-50 border-gray-200'
+                    ? van.selfContainedType === 'blue'
+                      ? 'bg-blue-50 border-blue-200'
+                      : 'bg-green-50 border-green-200'
+                    : 'bg-gray-50 border-gray-200'
                     }`}>
                     <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">Self-Contained</div>
                     <div className={`text-lg font-bold ${van.selfContained
-                        ? van.selfContainedType === 'blue' ? 'text-blue-600' : 'text-green-600'
-                        : 'text-gray-400'
+                      ? van.selfContainedType === 'blue' ? 'text-blue-600' : 'text-green-600'
+                      : 'text-gray-400'
                       }`}>
                       {van.selfContained
                         ? van.selfContainedType === 'blue' ? '✓ Blue' : '✓ Green'
@@ -1469,8 +1469,8 @@ function MainApp() {
                     <button
                       onClick={() => setFilters({ ...filters, buyBack: !filters.buyBack })}
                       className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${filters.buyBack
-                          ? 'bg-green-500 text-white shadow-md'
-                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-400 hover:text-green-600'
+                        ? 'bg-green-500 text-white shadow-md'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-green-400 hover:text-green-600'
                         }`}>
                       <Shield size={16} className={filters.buyBack ? 'text-white' : 'text-green-500'} />
                       Buy-Back
@@ -1507,8 +1507,8 @@ function MainApp() {
                     <button
                       onClick={() => setFilters({ ...filters, regoValid: !filters.regoValid })}
                       className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${filters.regoValid
-                          ? 'bg-purple-500 text-white shadow-md'
-                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-purple-400 hover:text-purple-600'
+                        ? 'bg-purple-500 text-white shadow-md'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-purple-400 hover:text-purple-600'
                         }`}>
                       <CheckCircle size={16} className={filters.regoValid ? 'text-white' : 'text-purple-500'} />
                       REGO Valid
@@ -1545,8 +1545,8 @@ function MainApp() {
                     <button
                       onClick={() => setFilters({ ...filters, selfContained: !filters.selfContained })}
                       className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${filters.selfContained
-                          ? 'bg-blue-500 text-white shadow-md'
-                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:text-blue-600'
+                        ? 'bg-blue-500 text-white shadow-md'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:text-blue-600'
                         }`}>
                       <CheckCircle size={16} className={filters.selfContained ? 'text-white' : 'text-blue-500'} />
                       <span className="md:hidden">Self-Cont</span>
@@ -1588,8 +1588,8 @@ function MainApp() {
                     <button
                       onClick={() => setFilters({ ...filters, wofValid: !filters.wofValid })}
                       className={`w-full px-4 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 md:hover:scale-105 shadow-sm ${filters.wofValid
-                          ? 'bg-emerald-500 text-white shadow-md'
-                          : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-emerald-400 hover:text-emerald-600'
+                        ? 'bg-emerald-500 text-white shadow-md'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-emerald-400 hover:text-emerald-600'
                         }`}>
                       <CheckCircle size={16} className={filters.wofValid ? 'text-white' : 'text-emerald-500'} />
                       <span className="md:hidden">WOF</span>
@@ -1631,8 +1631,8 @@ function MainApp() {
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className={`px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition flex items-center gap-2 ${showFilters
-                      ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                      : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md'
+                    ? 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                    : 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-md'
                     }`}>
                   <Filter size={16} />
                   {showFilters ? 'Hide Filters' : 'Filters'}
@@ -1822,8 +1822,8 @@ function MainApp() {
                                 }
                               })}
                               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition ${filters.equipment[item.key]
-                                  ? 'bg-emerald-500 text-white shadow-md'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
+                                ? 'bg-emerald-500 text-white shadow-md'
+                                : 'bg-gray-100 text-gray-700 hover:bg-emerald-50 hover:text-emerald-700'
                                 }`}
                             >
                               <span>{item.emoji}</span>
@@ -1882,8 +1882,13 @@ function MainApp() {
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredVans.map(van => (
-                    <VanCard key={van.id} van={van} formatPrice={formatPrice} />
+                  {filteredVans.map((van, index) => (
+                    <VanCard
+                      key={van.id}
+                      van={van}
+                      formatPrice={formatPrice}
+                      priority={index < 3}
+                    />
                   ))}
                 </div>
 

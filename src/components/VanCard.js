@@ -6,7 +6,7 @@ import { getThumbnail } from '../utils/imageOptimizer';
 import { safeDate } from '../utils/dateHelper';
 
 // Carousel de photos pour la card
-const ImageCarousel = ({ images, title, onNavigate }) => {
+const ImageCarousel = ({ images, title, onNavigate, priority = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef(null);
   const touchEndX = useRef(null);
@@ -75,7 +75,8 @@ const ImageCarousel = ({ images, title, onNavigate }) => {
         src={getThumbnail(allImages[currentIndex])}
         alt={`${title} - ${currentIndex + 1}`}
         className="w-full h-56 object-cover transition-opacity duration-300"
-        loading="lazy"
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
         draggable={false}
       />
 
@@ -121,7 +122,7 @@ const ImageCarousel = ({ images, title, onNavigate }) => {
 };
 
 // Composant VanCard complet
-export default function VanCard({ van, formatPrice }) {
+export default function VanCard({ van, formatPrice, priority = false }) {
   const { toggleFavorite, isFavorite } = useFavorites();
 
   const images = van.images?.length > 0
@@ -134,7 +135,7 @@ export default function VanCard({ van, formatPrice }) {
       className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1 block"
     >
       <div className="relative">
-        <ImageCarousel images={images} title={van.title} />
+        <ImageCarousel images={images} title={van.title} priority={priority} />
 
         {/* Favorite button */}
         <button
