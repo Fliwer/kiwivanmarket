@@ -6,6 +6,7 @@ import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
 import { safeDate } from '../utils/dateHelper';
+import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
   Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight
@@ -19,7 +20,7 @@ const VanSEO = ({ van }) => {
   if (!van) return null;
 
   const url = `https://kiwivanmarket.com/van/${van.id}`;
-  const image = van.images?.[0] || van.imageUrl || 'https://kiwivanmarket.com/default-van.jpg';
+  const image = van.images?.[0] || van.imageUrl || 'https://kiwivanmarket.com/og-image.jpg';
   const title = `${van.title} - NZ$${van.price?.toLocaleString()} | Kiwi Van Market`;
 
   // Description SEO enrichie avec équipements
@@ -422,7 +423,7 @@ export default function VanPage() {
               <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl overflow-hidden shadow-2xl group z-20">
                 <div className="aspect-[4/3] flex items-center justify-center p-2">
                   <img
-                    src={images[currentImageIndex]}
+                    src={getLargeImage(images[currentImageIndex])}
                     alt={`${van.title} - ${currentImageIndex + 1}`}
                     className="max-w-full max-h-full object-contain rounded-2xl"
                   />
@@ -488,7 +489,7 @@ export default function VanPage() {
                         : 'opacity-60 hover:opacity-100'
                         }`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      <img src={getThumbnail(img)} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
