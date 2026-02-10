@@ -32,22 +32,22 @@ export function NotificationProvider({ children, onOpenMessaging }) {
   // Son de notification (base64 d'un son court)
   const playNotificationSound = useCallback(() => {
     if (!soundEnabled) return;
-    
+
     try {
       // Créer un son avec Web Audio API
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
-      
+
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // Note A5
       oscillator.frequency.setValueAtTime(1108.73, audioContext.currentTime + 0.1); // Note C#6
-      
+
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-      
+
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + 0.3);
     } catch (e) {
@@ -57,28 +57,33 @@ export function NotificationProvider({ children, onOpenMessaging }) {
 
   // Demander permission pour les notifications browser
   const requestBrowserNotifications = useCallback(async () => {
-    if (!('Notification' in window)) return false;
-    
+    // Safety check for SSR or environments without Notification API
+    if (typeof Notification === 'undefined' || !('Notification' in window)) return false;
+
     if (Notification.permission === 'granted') {
       setBrowserNotifEnabled(true);
       return true;
     }
-    
+
     if (Notification.permission !== 'denied') {
-      const permission = await Notification.requestPermission();
-      if (permission === 'granted') {
-        setBrowserNotifEnabled(true);
-        return true;
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          setBrowserNotifEnabled(true);
+          return true;
+        }
+      } catch (e) {
+        console.warn('Error requesting notification permission:', e);
       }
     }
-    
+
     return false;
   }, []);
 
   // Envoyer une notification browser
   const sendBrowserNotification = useCallback((title, body, icon) => {
-    if (!browserNotifEnabled || Notification.permission !== 'granted') return;
-    
+    if (typeof Notification === 'undefined' || !browserNotifEnabled || Notification.permission !== 'granted') return;
+
     try {
       const notification = new Notification(title, {
         body,
@@ -89,13 +94,13 @@ export function NotificationProvider({ children, onOpenMessaging }) {
         requireInteraction: false,
         silent: true // On gère le son nous-même
       });
-      
+
       notification.onclick = () => {
         window.focus();
         onOpenMessaging?.();
         notification.close();
       };
-      
+
       setTimeout(() => notification.close(), 5000);
     } catch (e) {
       console.log('Browser notification failed:', e);
@@ -106,12 +111,12 @@ export function NotificationProvider({ children, onOpenMessaging }) {
   const addNotification = useCallback((notification) => {
     const id = Date.now() + Math.random();
     const newNotif = { ...notification, id, createdAt: Date.now() };
-    
+
     setNotifications(prev => [newNotif, ...prev].slice(0, 5)); // Max 5 notifications
-    
+
     // Jouer le son
     playNotificationSound();
-    
+
     // Envoyer notification browser si activé
     if (browserNotifEnabled) {
       sendBrowserNotification(
@@ -120,12 +125,12 @@ export function NotificationProvider({ children, onOpenMessaging }) {
         notification.vanImage
       );
     }
-    
+
     // Auto-dismiss après 6 secondes
     setTimeout(() => {
       removeNotification(id);
     }, 6000);
-    
+
     return id;
   }, [playNotificationSound, browserNotifEnabled, sendBrowserNotification]);
 
@@ -138,7 +143,7 @@ export function NotificationProvider({ children, onOpenMessaging }) {
   useEffect(() => {
     // Attendre que l'auth soit terminée
     if (authLoading) return;
-    
+
     if (!currentUser) {
       setUnreadCount(0);
       return;
@@ -150,7 +155,7 @@ export function NotificationProvider({ children, onOpenMessaging }) {
       where('participants', 'array-contains', currentUser.uid)
     );
 
-    const unsubConv = onSnapshot(convQuery, 
+    const unsubConv = onSnapshot(convQuery,
       (snapshot) => {
         let total = 0;
         snapshot.docs.forEach(doc => {
@@ -172,7 +177,7 @@ export function NotificationProvider({ children, onOpenMessaging }) {
 
   // Vérifier permission au démarrage
   useEffect(() => {
-    if (Notification.permission === 'granted') {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       setBrowserNotifEnabled(true);
     }
   }, []);
@@ -191,8 +196,8 @@ export function NotificationProvider({ children, onOpenMessaging }) {
   return (
     <NotificationContext.Provider value={value}>
       {children}
-      <NotificationToasts 
-        notifications={notifications} 
+      <NotificationToasts
+        notifications={notifications}
         onDismiss={removeNotification}
         onOpenMessaging={onOpenMessaging}
       />
@@ -207,9 +212,9 @@ function NotificationToasts({ notifications, onDismiss, onOpenMessaging }) {
   return (
     <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-3 pointer-events-none">
       {notifications.map((notif, index) => (
-        <Toast 
-          key={notif.id} 
-          notification={notif} 
+        <Toast
+          key={notif.id}
+          notification={notif}
           onDismiss={() => onDismiss(notif.id)}
           onClick={() => {
             onOpenMessaging?.();
@@ -232,12 +237,12 @@ function Toast({ notification, onDismiss, onClick, index }) {
   useEffect(() => {
     // Animation d'entrée
     setTimeout(() => setIsVisible(true), 50);
-    
+
     // Progress bar
     const interval = setInterval(() => {
       setProgress(prev => Math.max(0, prev - 1.67)); // 6 secondes
     }, 100);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -254,7 +259,7 @@ function Toast({ notification, onDismiss, onClick, index }) {
         transform transition-all duration-300 ease-out
         ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'}
       `}
-      style={{ 
+      style={{
         transitionDelay: `${index * 50}ms`,
         animation: isVisible ? 'slideInRight 0.3s ease-out' : 'none'
       }}
@@ -277,7 +282,7 @@ function Toast({ notification, onDismiss, onClick, index }) {
                 <MessageCircle size={10} className="text-white" />
               </div>
             </div>
-            
+
             {/* Texte */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-1">
@@ -290,7 +295,7 @@ function Toast({ notification, onDismiss, onClick, index }) {
                 {notification.text || 'Sent you a message'}
               </p>
             </div>
-            
+
             {/* Close */}
             <button
               onClick={(e) => {
@@ -302,7 +307,7 @@ function Toast({ notification, onDismiss, onClick, index }) {
               <X size={16} className="text-gray-400" />
             </button>
           </div>
-          
+
           {/* CTA */}
           <div className="mt-3 flex items-center justify-between">
             <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
@@ -315,16 +320,16 @@ function Toast({ notification, onDismiss, onClick, index }) {
             </div>
           </div>
         </div>
-        
+
         {/* Progress bar */}
         <div className="h-1 bg-gray-100">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-100 ease-linear"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
-      
+
       {/* Styles */}
       <style>{`
         @keyframes slideInRight {
@@ -365,7 +370,7 @@ export function MessagesBadge({ onClick }) {
         className="relative p-2 hover:bg-white/20 rounded-lg transition-colors group"
       >
         <MessageCircle size={24} className="text-white" />
-        
+
         {/* Badge animé */}
         {unreadCount > 0 && (
           <div className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 rounded-full flex items-center justify-center px-1.5 animate-bounce-subtle">
@@ -374,20 +379,20 @@ export function MessagesBadge({ onClick }) {
             </span>
           </div>
         )}
-        
+
         {/* Pulse effect quand nouveaux messages */}
         {unreadCount > 0 && (
           <div className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 rounded-full animate-ping opacity-75" />
         )}
       </button>
-      
+
       {/* Settings dropdown (optionnel) */}
       {showSettings && (
         <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl py-2 z-50 border border-gray-100">
           <div className="px-4 py-2 border-b border-gray-100">
             <p className="font-semibold text-gray-900">Notification Settings</p>
           </div>
-          
+
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
             className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
@@ -400,7 +405,7 @@ export function MessagesBadge({ onClick }) {
               <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform mt-0.5 ${soundEnabled ? 'translate-x-4.5 ml-4' : 'translate-x-0.5 ml-0.5'}`} />
             </div>
           </button>
-          
+
           <button
             onClick={async () => {
               if (!browserNotifEnabled) {
@@ -419,7 +424,7 @@ export function MessagesBadge({ onClick }) {
           </button>
         </div>
       )}
-      
+
       <style>{`
         @keyframes bounce-subtle {
           0%, 100% { transform: translateY(0); }
@@ -448,7 +453,7 @@ export function FloatingMessageButton({ onClick, className = '' }) {
       className={`fixed bottom-6 right-6 z-40 bg-gradient-to-br from-emerald-500 to-teal-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 group ${className}`}
     >
       <MessageCircle size={28} className={`transition-transform duration-300 ${isHovered ? 'scale-110' : ''}`} />
-      
+
       {/* Badge */}
       {unreadCount > 0 && (
         <>
@@ -460,18 +465,18 @@ export function FloatingMessageButton({ onClick, className = '' }) {
           <div className="absolute -top-2 -right-2 min-w-[24px] h-6 bg-red-500 rounded-full animate-ping opacity-50" />
         </>
       )}
-      
+
       {/* Tooltip */}
       <div className={`absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-sm px-3 py-2 rounded-lg whitespace-nowrap transition-all duration-200 ${isHovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2 pointer-events-none'}`}>
         {unreadCount > 0 ? `${unreadCount} new message${unreadCount > 1 ? 's' : ''}` : 'Messages'}
         <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 border-8 border-transparent border-l-gray-900" />
       </div>
-      
+
       {/* Ripple effect */}
       {unreadCount > 0 && (
         <div className="absolute inset-0 rounded-full bg-white animate-ripple" />
       )}
-      
+
       <style>{`
         .shadow-3xl {
           box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.4);
