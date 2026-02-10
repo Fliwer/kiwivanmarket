@@ -32,10 +32,12 @@ export const safeDate = (value) => {
             if (safeString.includes(' ') && !safeString.includes('T')) {
                 safeString = safeString.replace(' ', 'T');
             }
-            return new Date(safeString);
+            const d = new Date(safeString);
+            return isNaN(d.getTime()) ? null : d;
         }
 
-        return new Date(value);
+        const d = new Date(value);
+        return isNaN(d.getTime()) ? null : d;
     } catch (e) {
         console.warn('Error parsing date:', value, e);
         return null;
