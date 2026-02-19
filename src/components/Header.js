@@ -70,7 +70,7 @@ export default function Header({
                     {/* Boutons d'action - Desktop */}
                     <div className="hidden md:flex items-center gap-3 ml-10">
                         <Link
-                            to="/guide/buying-campervan-nz"
+                            to="/guides"
                             className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
                         >
                             <BookOpen size={18} />

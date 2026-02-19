@@ -1237,6 +1237,8 @@ function MainApp() {
 // ========================================
 // SCROLL TO TOP ON ROUTE CHANGE
 // ========================================
+const GuidesHubPage = React.lazy(() => import('./components/GuidesHubPage'));
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   const navType = useNavigationType();
@@ -1272,6 +1274,11 @@ export default function KiwiVanMarket() {
         <Route path="/location/:location" element={
           <Suspense fallback={<PageLoader />}>
             <LocationPage />
+          </Suspense>
+        } />
+        <Route path="/guides" element={
+          <Suspense fallback={<PageLoader />}>
+            <GuidesHubPage />
           </Suspense>
         } />
         <Route path="/guide/:slug" element={

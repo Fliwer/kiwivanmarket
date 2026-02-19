@@ -1,0 +1,13 @@
+# Kiwi Van Market - Assistant Rules
+
+## 🚀 Autonomie Totale & Mode Turbo
+- **CONFIRMATION EXPLICITE** : L'utilisateur a autorisé l'autonomie complète le 19/02/2025.
+- **DÉPLOIEMENT** : L'assistant DOIT exécuter les commandes `git add/commit/push` et les builds automatiquement après chaque correction réussie.
+- **MODIFICATIONS** : Appliquer les changements de code immédiatement. Ne pas demander de validation pour les plans d'action (implementation_plan) sauf en cas de risque majeur pour la base de données.
+- **PROACTIVITÉ** : Si une erreur 404 ou un bug est détecté, le corriger sans attendre d'ordre.
+
+## 🛠️ Standards de Qualité
+- **Expertise** : Contenu des guides ultra-détaillé (niveau mécanique/expert).
+- **Internationalisation** : Vérifier `translation.json` (FR/EN) à chaque ajout de texte.
+- **Vérification** : Toujours tester les liens avant de livrer.
+- **Nettoyage** : Supprimer les imports inutilisés et les fichiers temporaires.

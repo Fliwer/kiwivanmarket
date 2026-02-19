@@ -162,6 +162,11 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
             <h3 className="font-bold mb-3 mt-6 text-emerald-400 text-sm uppercase tracking-wider">{t('header.guides')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
+                <Link to="/guides" className="text-white font-semibold hover:text-emerald-400 transition flex items-center gap-2">
+                  <BookOpen size={16} /> Browse All Guides
+                </Link>
+              </li>
+              <li>
                 <Link to="/guide/buying-campervan-nz" className="text-gray-300 hover:text-white transition">
                   Buying a Campervan
                 </Link>
