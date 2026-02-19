@@ -77,13 +77,13 @@ export default function Header({
                             <span className="hidden lg:inline">Guides</span>
                         </Link>
 
-                        <button
-                            onClick={() => setShowBuybackCalculator(true)}
+                        <Link
+                            to="/buyback-calculator"
                             className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
                         >
                             <Calculator size={18} />
                             <span className="hidden lg:inline">Calculator</span>
-                        </button>
+                        </Link>
 
                         <button
                             onClick={() => navigate('/sell')}

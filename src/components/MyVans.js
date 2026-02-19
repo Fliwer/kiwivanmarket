@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { X, Edit2, Trash2, Eye, Plus, Calendar, MapPin, DollarSign, Crown } from 'lucide-react';
+import { X, Edit2, Trash2, Eye, Plus, Calendar, MapPin, DollarSign, Crown, CheckCircle, RotateCcw } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import AddVanForm from './AddVanForm';
 import { isAdmin, AdminBadge } from '../utils/adminHelper';
 import safeStorage from '../utils/safeStorage';
+import { useTranslation } from 'react-i18next';
 
 export default function MyVans({ onClose }) {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const [myVans, setMyVans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,7 +141,7 @@ export default function MyVans({ onClose }) {
         {/* ✅ HEADER STICKY - Toujours visible */}
         <div className="sticky top-0 z-20 bg-white rounded-t-2xl border-b border-gray-100 px-8 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-bold">My Vans 🚐</h2>
+            <h2 className="text-3xl font-bold">{t('my_listings.title')} 🚐</h2>
             {userIsAdmin && <AdminBadge user={currentUser} />}
           </div>
 
@@ -153,7 +155,7 @@ export default function MyVans({ onClose }) {
                     ? 'bg-white text-emerald-600 shadow'
                     : 'text-gray-600 hover:text-gray-900'
                     }`}>
-                  My Vans
+                  {t('my_listings.title')}
                 </button>
                 <button
                   onClick={() => setViewMode('all')}
@@ -183,7 +185,7 @@ export default function MyVans({ onClose }) {
             <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 rounded-xl">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-emerald-600 font-semibold">
-                  {viewMode === 'all' ? 'Total Vans (Platform)' : 'My Vans'}
+                  {viewMode === 'all' ? 'Total Vans (Platform)' : t('my_listings.stats_listings')}
                 </span>
                 <Plus size={24} className="text-emerald-600" />
               </div>
@@ -192,7 +194,7 @@ export default function MyVans({ onClose }) {
 
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-blue-600 font-semibold">Total Views</span>
+                <span className="text-blue-600 font-semibold">{t('my_listings.stats_views')}</span>
                 <Eye size={24} className="text-blue-600" />
               </div>
               <p className="text-3xl font-bold text-blue-700">{stats.totalViews}</p>
@@ -200,7 +202,7 @@ export default function MyVans({ onClose }) {
 
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-purple-600 font-semibold">Average Price</span>
+                <span className="text-purple-600 font-semibold">{t('my_listings.stats_price')}</span>
                 <DollarSign size={24} className="text-purple-600" />
               </div>
               <p className="text-3xl font-bold text-purple-700">{formatPrice(stats.avgPrice)}</p>
@@ -225,13 +227,13 @@ export default function MyVans({ onClose }) {
               </div>
               <p className="text-xl font-bold text-gray-400 mb-2">No vans</p>
               <p className="text-gray-500 mb-4">
-                {viewMode === 'all' ? 'No vans on the platform' : 'Start by adding your first van!'}
+                {viewMode === 'all' ? 'No vans on the platform' : t('my_listings.no_listings')}
               </p>
               {viewMode === 'my' && (
                 <button
                   onClick={onClose}
                   className="bg-emerald-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition">
-                  Add a Van
+                  {t('my_listings.add_new')}
                 </button>
               )}
             </div>
@@ -262,10 +264,15 @@ export default function MyVans({ onClose }) {
                           👤 {van.seller?.name || 'Other seller'}
                         </div>
                       )}
-                      <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                      <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-1 shadow-sm">
                         <Eye size={14} />
                         {van.views || 0}
                       </div>
+                      {van.status === 'sold' && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <span className="text-white font-bold text-2xl tracking-widest">{t('my_listings.status_sold')}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="p-5">
@@ -299,18 +306,34 @@ export default function MyVans({ onClose }) {
 
                       <div className="flex gap-2">
                         {(isOwner || userIsAdmin) && (
-                          <button
-                            onClick={() => setEditingVan(van)}
-                            className="flex-1 bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2">
-                            <Edit2 size={16} />
-                            {userIsAdmin && !isOwner ? 'Edit (Admin)' : 'Edit'}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => setEditingVan(van)}
+                              className="flex-1 bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2">
+                              <Edit2 size={16} />
+                              {t('my_listings.edit')}
+                            </button>
+                            {van.status === 'sold' ? (
+                              <button
+                                onClick={() => handleToggleSold(van)}
+                                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                                <RotateCcw size={16} />
+                                {t('my_listings.reactivate')}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleToggleSold(van)}
+                                className="flex-1 bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center justify-center gap-2">
+                                <CheckCircle size={16} />
+                                {t('my_listings.mark_as_sold')}
+                              </button>
+                            )}
+                          </>
                         )}
                         <button
                           onClick={() => setShowDeleteConfirm(van)}
-                          className={`${(isOwner || userIsAdmin) ? 'flex-1' : 'w-full'} bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2`}>
-                          <Trash2 size={16} />
-                          {userIsAdmin && !isOwner ? 'Delete (Admin)' : 'Delete'}
+                          className={`${(isOwner || userIsAdmin) ? 'w-12 h-10' : 'w-full'} bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center`}>
+                          <Trash2 size={18} />
                         </button>
                       </div>
                     </div>
@@ -348,12 +371,12 @@ export default function MyVans({ onClose }) {
                 <button
                   onClick={() => setShowDeleteConfirm(null)}
                   className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
-                  Cancel
+                  {t('filters.clear')}
                 </button>
                 <button
                   onClick={() => handleDelete(showDeleteConfirm)}
                   className="flex-1 bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition">
-                  Delete
+                  {t('my_listings.delete')}
                 </button>
               </div>
             </div>

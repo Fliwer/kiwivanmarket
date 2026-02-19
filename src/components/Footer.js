@@ -149,6 +149,11 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
                 </button>
               </li>
               <li>
+                <Link to="/buyback-calculator" className="text-gray-300 hover:text-white transition">
+                  Buy-back Calculator
+                </Link>
+              </li>
+              <li>
                 <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-gray-300 hover:text-white transition">
                   {t('footer.contact')}
                 </a>

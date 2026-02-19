@@ -9,7 +9,7 @@ import { safeDate } from '../utils/dateHelper';
 import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
-  Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle
+  Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SeoHead from './SeoHead';
@@ -278,6 +278,39 @@ export default function VanPage() {
       window.open(urls[platform], '_blank', 'width=600,height=400');
     }
     setShowShareMenu(false);
+  };
+
+  // Générateur de texte pour Facebook
+  const generateFbAdText = () => {
+    const features = [];
+    if (van.selfContained) features.push(`✅ Self-Contained (${van.selfContainedType === 'blue' ? 'Blue' : 'Green'})`);
+    if (van.buyBack) features.push(`🛡️ Buy-Back Guarantee available`);
+    if (van.equipment?.doubleBed) features.push('🛏️ Double Bed');
+    if (van.equipment?.solarPanel) features.push('☀️ Solar Panel');
+    if (van.equipment?.fridge) features.push('🧊 Fridge');
+    if (van.equipment?.heater || van.equipment?.dieselHeater) features.push('🌡️ Heater');
+
+    const text = `🚐 FOR SALE: ${van.title}
+💰 Price: ${formatPrice(van.price)}
+📍 Location: ${van.location}
+
+✨ Key Details:
+• Year: ${van.year}
+• Mileage: ${(van.mileage || 0).toLocaleString()} km
+• WOF: ${formatDate(van.wofExpiry)}
+• REGO: ${formatDate(van.regoExpiry)}
+${features.length > 0 ? '\n🌟 Features:\n' + features.map(f => `• ${f}`).join('\n') : ''}
+
+📝 Description:
+${van.description?.slice(0, 200)}...
+
+🔗 View more photos and contact me here:
+${shareUrl}
+
+#nzcampervan #vanlifeNZ #backpackernz #campervanforsale`;
+
+    navigator.clipboard.writeText(text);
+    alert(i18n.language.startsWith('fr') ? 'Texte copié ! Vous pouvez maintenant le coller sur Facebook.' : 'Text copied! You can now paste it on Facebook.');
   };
 
   // Format prix
@@ -798,6 +831,54 @@ export default function VanPage() {
                       seller={seller}
                     />
                   </Suspense>
+
+                  {/* Facebook Ad Generator - GROWTH TOOL */}
+                  <div className="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-sm">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="bg-blue-600 p-2 rounded-lg text-white">
+                        <Facebook size={20} />
+                      </div>
+                      <h4 className="font-bold text-gray-900">{i18n.language.startsWith('fr') ? 'Vendre plus vite' : 'Sell Faster'}</h4>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      {i18n.language.startsWith('fr')
+                        ? 'Générez un texte optimisé pour vos groupes Facebook.'
+                        : 'Generate a perfectly formatted text for your Facebook groups.'}
+                    </p>
+                    <button
+                      onClick={generateFbAdText}
+                      className="w-full bg-white border-2 border-blue-600 text-blue-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-600 hover:text-white transition-all group"
+                    >
+                      <Copy size={18} className="group-hover:scale-110 transition-transform" />
+                      {i18n.language.startsWith('fr') ? 'Copier le texte FB' : 'Copy Facebook Ad Text'}
+                    </button>
+                  </div>
+
+                  {/* Helpful Resources for Buyers - RETENTION TOOL */}
+                  <div className="mt-6 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="bg-gray-50 px-5 py-4 border-b border-gray-100">
+                      <h4 className="font-bold text-gray-800 flex items-center gap-2">
+                        <HelpCircle size={18} className="text-emerald-600" />
+                        {i18n.language.startsWith('fr') ? 'Ressources utiles' : 'Helpful Resources'}
+                      </h4>
+                    </div>
+                    <div className="p-4 space-y-2">
+                      <Link to="/guide/how-to-buy-campervan-nz" className="flex items-center justify-between p-3 hover:bg-emerald-50 rounded-xl transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">🛠️</span>
+                          <span className="text-sm font-medium text-gray-700">{i18n.language.startsWith('fr') ? 'Comment inspecter un van' : 'How to inspect a van'}</span>
+                        </div>
+                        <ExternalLink size={14} className="text-gray-400 group-hover:text-emerald-600" />
+                      </Link>
+                      <Link to="/buyback-calculator" className="flex items-center justify-between p-3 hover:bg-emerald-50 rounded-xl transition-colors group">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">🧮</span>
+                          <span className="text-sm font-medium text-gray-700">{i18n.language.startsWith('fr') ? 'Calculer son prix de rachat' : 'Estimate your buy-back price'}</span>
+                        </div>
+                        <ExternalLink size={14} className="text-gray-400 group-hover:text-emerald-600" />
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
 

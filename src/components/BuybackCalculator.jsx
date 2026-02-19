@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import SeoHead from './SeoHead';
 
 // Depreciation parameters configuration
 const CONFIG = {
@@ -113,7 +114,7 @@ export default function BuybackCalculator() {
         setLang('en');
       }
     };
-    
+
     detectLanguage();
     const interval = setInterval(detectLanguage, 1000);
     return () => clearInterval(interval);
@@ -129,7 +130,7 @@ export default function BuybackCalculator() {
 
   const t = translations[lang];
   const currentCurrency = CURRENCIES[currency];
-  
+
   const conditionLabels = {
     excellent: { ...t.conditions.excellent, emoji: '✨' },
     good: { ...t.conditions.good, emoji: '👍' },
@@ -216,6 +217,12 @@ export default function BuybackCalculator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-100 via-emerald-50 to-stone-100 py-12 px-4">
+      <SeoHead
+        title={lang === 'fr' ? 'Calculateur Buy-back Campervan NZ' : 'NZ Campervan Buy-back Calculator'}
+        description={lang === 'fr'
+          ? 'Estimez le prix de rachat de votre van en fin de voyage en Nouvelle-Zélande avec notre outil gratuit.'
+          : 'Estimate your campervan buy-back price at the end of your NZ trip with our free calculator tool.'}
+      />
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-200/30 rounded-full blur-3xl" />
@@ -243,7 +250,7 @@ export default function BuybackCalculator() {
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-stone-200/50 border border-stone-200/50 overflow-hidden">
           {/* Form Section */}
           <div className="p-6 md:p-8 space-y-6">
-            
+
             {/* 💱 Currency Selector - More prominent */}
             <div className="flex justify-center mb-2">
               <div className="relative">
@@ -258,7 +265,7 @@ export default function BuybackCalculator() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                
+
                 {showCurrencyDropdown && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowCurrencyDropdown(false)} />
@@ -270,11 +277,10 @@ export default function BuybackCalculator() {
                         <button
                           key={code}
                           onClick={() => handleCurrencyChange(code)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition ${
-                            currency === code
+                          className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition ${currency === code
                               ? 'bg-emerald-50 text-emerald-700 font-semibold'
                               : 'hover:bg-stone-50 text-stone-700'
-                          }`}
+                            }`}
                         >
                           <img src={curr.flag} alt={code} className="w-6 h-4 object-cover rounded-sm shadow-sm" />
                           <span className="font-medium">{code}</span>
@@ -373,11 +379,10 @@ export default function BuybackCalculator() {
                       setCondition(key);
                       if (showResult) setShowResult(false);
                     }}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${
-                      condition === key
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${condition === key
                         ? 'border-emerald-500 bg-emerald-50 shadow-md'
                         : 'border-stone-200 bg-stone-50 hover:border-stone-300 hover:bg-stone-100'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span>{emoji}</span>

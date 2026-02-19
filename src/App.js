@@ -1291,6 +1291,11 @@ export default function KiwiVanMarket() {
             <MyListingsPage />
           </Suspense>
         } />
+        <Route path="/buyback-calculator" element={
+          <Suspense fallback={<PageLoader />}>
+            <BuybackCalculator />
+          </Suspense>
+        } />
 
         {/* MVP_DISABLED: Reservations
         <Route path="/reservation-success" element={

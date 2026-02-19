@@ -137,5 +137,26 @@
         "sticker_blue": "Blue Sticker",
         "sticker_green": "Green Sticker",
         "not_specified": "Not specified"
+    },
+    "my_listings": {
+        "title": "My Listings",
+        "manage": "Manage your van listings",
+        "add_new": "Add New Van",
+        "stats_listings": "Listings",
+        "stats_views": "Total Views",
+        "stats_price": "Avg Price",
+        "no_listings": "No listings yet",
+        "list_first": "List Your First Van",
+        "status_sold": "SOLD",
+        "status_paused": "PAUSED",
+        "view": "View",
+        "edit": "Edit",
+        "delete": "Delete",
+        "mark_as_sold": "Mark as Sold",
+        "reactivate": "Reactivate",
+        "delete_confirm_title": "Delete Listing?",
+        "delete_confirm_desc": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
+        "delete_success": "Van deleted successfully!",
+        "status_updated": "Status updated."
     }
 }
