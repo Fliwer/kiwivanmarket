@@ -195,49 +195,55 @@ const GUIDES = {
     }
   },
   'how-to-inspect-campervan-nz': {
-    title: 'How to Inspect a Campervan in NZ - Professional Checklist',
-    description: 'Expert advice on inspecting a used campervan in New Zealand. Detailed mechanical, body, and interior checklist to ensure you buy a reliable vehicle.',
-    heroImage: 'https://images.unsplash.com/photo-1517055729445-fa7d27394b48?w=1200',
+    title: 'Expert Campervan Inspection - The Ultimate NZ Checklist',
+    description: 'Don\'t buy a lemon! Our expert guide covers everything from engine health and structural rust to living system checks. Inspect like a pro before you buy.',
+    heroImage: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200',
     content: {
-      intro: `Inspecting a campervan thoroughly is the single most important step in your New Zealand journey. Don't be dazzled by nice decorations - you need to ensure the vehicle is safe and mechanically sound. Use this professional checklist to inspect like an expert.`,
+      intro: `Buying a campervan is your biggest investment in NZ. A "pretty" interior often hides mechanical nightmares. This guide gives you the technical tools to look past the fairy lights and inspect the heart of the vehicle. If a seller rushes you or refuses these checks, walk away immediately.`,
       sections: [
         {
-          title: 'Mechanical Inspection',
+          title: '1. The Mechanical Heart (Under the Hood)',
           icon: 'CheckCircle',
           items: [
-            { title: 'Cold Start', text: 'Ask the seller to keep the engine cold. A warm engine can hide starting problems or smoke issues.' },
-            { title: 'Fluid Check', text: 'Check oil (no milky residue), coolant (bright color, no oil), and brake fluid levels. Look for leaks under the engine.' },
-            { title: 'Service History', text: 'Detailed records prove the van has been cared for. Look for regular oil changes every 10,000km.' },
+            { title: 'The Cold Start Test', text: 'Touch the engine block before starting. If it\'s warm, the seller might be hiding a difficult start or smoke issues. Start it yourself and watch the exhaust for blue (oil) or white (coolant) smoke.' },
+            { title: 'The "Mayonnaise" Check', text: 'Open the oil filler cap. A milky, white/beige sludge ("mayo") indicates a blown head gasket - a catastrophic and expensive failure. Avoid at all costs.' },
+            { title: 'Belts & Cam-belt', text: 'Ask when the cam-belt (timing belt) was last changed. If it snaps, the engine is destroyed. It usually needs changing every 100,000km.' },
           ]
         },
         {
-          title: 'Body & Safety',
+          title: '2. Structural Integrity (The Rust Hunt)',
           icon: 'Shield',
           items: [
-            { title: 'Rust Check', text: 'Inspect wheel arches, door sills, and the chassis. Structural rust is a major WOF failure.' },
-            { title: 'Tyres', text: 'Ensure tread is at least 1.5mm deep. Uneven wear suggests suspension or alignment problems.' },
-            { title: 'Lights & Electrics', text: 'Test all indicators, headlights, and interior dashboard lights.' },
+            { title: 'Chassis & Sills', text: 'Get on the ground with a torch. Look for flaky, bubbling metal on the underside. Surface rust is okay; structural rust (holes or deep flakes) will fail the WOF and ruin the van\'s value.' },
+            { title: 'Tyre Wear Patterns', text: 'If tyres are worn more on one side, the wheel alignment is off or suspension components are bent. Budget $500+ for suspension repairs.' },
           ]
         },
         {
-          title: 'Living Area Check',
+          title: '3. The Test Drive (Performance)',
           icon: 'Car',
           items: [
-            { title: 'Damp & Mould', text: 'Check corners, cupboards, and under the mattress for any signs of leaks or moisture.' },
-            { title: 'Appliances', text: 'Test the fridge, gas stove, water pump, and leisure battery charging systems.' },
-            { title: 'Self-Containment', text: 'Verify the toilets, tanks, and blue sticker are legitimate and meet current standards.' },
+            { title: 'Gearbox & Clutch', text: 'Shift through all gears. If it\'s a manual, check for a "slipping clutch" by putting it in 4th gear at low speed and flooring the gas - the RPM shouldn\'t jump without speed.' },
+            { title: 'Braking & Steering', text: 'Let go of the wheel briefly on a flat road - the van should go straight. Brake hard once (safely) to check for shuddering (warped discs) or pulling to one side.' },
+          ]
+        },
+        {
+          title: '4. Living Systems & Electrical',
+          icon: 'MapPin',
+          items: [
+            { title: 'The Leak Test', text: 'Look for dark stains around windows and skylights. Press your thumb into the walls - if they feel soft/spongy, there is wood rot from water ingress.' },
+            { title: 'Deep Cycle Battery', text: 'Test the voltage of the leisure battery with a multimeter if possible. Turn on all lights and the fridge to see if the voltage drops instantly.' },
           ]
         },
       ],
       warnings: [
-        'If the seller refuses a professional pre-purchase inspection (PPI), walk away',
-        'Check the VIN and plate number on the CarJam website',
-        'Insist on a test drive on open roads, not just a car park',
+        'NEVER buy a van without a pre-purchase inspection from an independent mechanic ($140-180)',
+        'Check the VIN on CarJam.co.nz to ensure there is no money owing (debt) on the vehicle',
+        'Verify the Self-Containment blue card matches the van\'s plate and is current',
       ],
       cta: {
-        title: 'Find Your Next Adventure',
-        text: 'Ready to put your inspection skills to the test? Browse our verified listings.',
-        buttonText: 'Browse Vans',
+        title: 'Found a Good One?',
+        text: 'Compare it with other listings to ensure you\'re getting a fair price for the condition.',
+        buttonText: 'Compare Listings',
         buttonLink: '/',
       }
     }
