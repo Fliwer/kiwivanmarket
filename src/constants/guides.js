@@ -246,6 +246,139 @@ export const GUIDES = {
     },
 };
 
+'winter-camping-nz': {
+    title: 'Survival Guide: Winter Camping in New Zealand 2025',
+        description: 'Can you camp in NZ during winter? Yes! Discover the best heated vans, snow-safe roads, and essential gear to stay warm while exploring the Southern Alps.',
+            heroImage: 'https://images.unsplash.com/photo-1418985991508-e47386d96a71?w=1200',
+                content: {
+        intro: `Winter in New Zealand (June to August) transforms the landscape into a snowy wonderland. While many backpackers leave, the smart ones stay for cheaper van prices and empty campsites. But winter camping requires serious preparation. Here is how to survive and thrive in a van when the mercury drops below zero.`,
+            sections: [
+                {
+                    title: 'Choosing a Winter-Ready Van',
+                    icon: 'Shield',
+                    items: [
+                        { title: 'Insulation is Key', text: 'Look for vans with sheep wool or foam insulation. Avoid "bare metal" vans which act like refrigerators at night.' },
+                        { title: 'Diesel Heaters', text: 'The gold standard for winter vanlife. A 2KW diesel heater uses very little fuel and keeps the interior at a cozy 20°C even in a blizzard.' },
+                        { title: 'Certified Self-Contained', text: 'In winter, you\'ll want to use your own indoor facilities rather than trekking through snow to a campsite toilet.' },
+                    ]
+                },
+                {
+                    title: 'Gear You Can\'t Ignore',
+                    icon: 'CheckCircle',
+                    items: [
+                        { title: '-5°C Sleeping Bags', text: 'A standard summer bag won\'t cut it. Invest in a down sleeping bag or high-tog duvet.' },
+                        { title: 'Snow Chains', text: 'Mandatory on many South Island passes (Crown Range, Milford Road). Practice putting them on before you actually need them!' },
+                        { title: 'Dehumidifiers', text: 'Condensation is your enemy. Use passive moisture absorbers to prevent mould from growing on your mattress.' },
+                    ]
+                },
+                {
+                    title: 'Best Winter Spots',
+                    icon: 'MapPin',
+                    items: [
+                        { title: 'Ohakune (North Island)', text: 'The gateway to Mt Ruapehu. Great vibes and many vans with heaters for sale here.' },
+                        { title: 'Wanaka & Queenstown', text: 'The heart of NZ winter. Expect professional ski setups and plenty of long-term van parking.' },
+                        { title: 'Tekapo', text: 'Coldest place in NZ but the best stargazing. Make sure your batteries are fully charged!' },
+                    ]
+                },
+            ],
+                warnings: [
+                    'Black ice is a major hazard - drive late in the morning when the sun has melted it',
+                    'Avoid high alpine passes during heavy snow warnings unless you are an experienced driver',
+                    'Always check the MetService app for weather alerts before moving locations',
+                ],
+                    cta: {
+            title: 'Need a Van with a Heater?',
+                text: 'Filter our listings to find fully insulated vans with diesel heaters.',
+                    buttonText: 'Find Winter Vans',
+                        buttonLink: '/',
+      }
+    }
+},
+'south-island-road-trip': {
+    title: 'The Ultimate 14-Day South Island Road Trip Itinerary',
+        description: 'The most iconic road trip in the world. From Christchurch to Milford Sound, discover the best hidden campsites and photo spots for your van adventure.',
+            heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200',
+                content: {
+        intro: `The South Island of New Zealand is the ultimate playground for campervans. This 14-day loop takes you through turquoise lakes, ancient glaciers, and dramatic fiords. Pack your camera and get ready for the trip of a lifetime.`,
+            sections: [
+                {
+                    title: 'Week 1: Lakes & Glaciers',
+                    icon: 'MapPin',
+                    items: [
+                        { title: 'Day 1-3: Lake Tekapo & Pukaki', text: 'Star gazing and hiking at Mt Cook. Camp at Lake Pukaki (freedom camping available for SC vans).' },
+                        { title: 'Day 4-5: Wanaka', text: 'The famous "That Wanaka Tree" and Roy\'s Peak hike for the best views in the country.' },
+                        { title: 'Day 6-7: Queenstown', text: 'Adventure capital. Great for a luxury campsite night with a hot shower and laundry.' },
+                    ]
+                },
+                {
+                    title: 'Week 2: Fiords & Coastlines',
+                    icon: 'Car',
+                    items: [
+                        { title: 'Day 8-9: Milford Sound', text: 'Cruising the fiords. Note: There is no phone signal here, so download your maps offline.' },
+                        { title: 'Day 10-12: West Coast', text: 'Fox Glacier, Franz Josef, and the Pancake Rocks. Stunning coastal driving.' },
+                        { title: 'Day 13-14: Arthur\'s Pass', text: 'Drive back to Christchurch through the heart of the Southern Alps.' },
+                    ]
+                },
+            ],
+                warnings: [
+                    'Sandflies on the West Coast are brutal - buy "Goodbye Sandfly" repellent locally',
+                    'Always book Milford Sound cruises in advance as they sell out daily',
+                    'Fuel is expensive in small towns - fill up in main cities like Christchurch or Queenstown',
+                ],
+                    cta: {
+            title: 'Start Your Journey',
+                text: 'Pick up your campervan in Christchurch and hit the road today.',
+                    buttonText: 'Vans in Christchurch',
+                        buttonLink: '/',
+      }
+    }
+},
+'best-vanlife-apps-nz': {
+    title: '6 Essential Apps for Every NZ Vanlife Traveller (2025)',
+        description: 'Don\'t leave without these! From finding secret campsites to saving money on fuel, these apps will save you time and hundreds of dollars.',
+            heroImage: 'https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=1200',
+                content: {
+        intro: `In 2025, your phone is just as important as your van's spare tyre. These 6 apps are the difference between an average trip and an epic adventure in New Zealand.`,
+            sections: [
+                {
+                    title: 'Campsites & Facilities',
+                    icon: 'MapPin',
+                    items: [
+                        { title: 'CamperMate (Free)', text: 'The #1 app. Shows freedom camping spots, paid parks, public toilets, and petrol stations.' },
+                        { title: 'WikiCamps NZ', text: 'Great for finding hidden gems that CamperMate might miss. One-time small fee but worth it.' },
+                    ]
+                },
+                {
+                    title: 'Budgeting & Fuel',
+                    icon: 'DollarSign',
+                    items: [
+                        { title: 'Gaspy', text: 'The community-driven fuel price app. Save 10-20 cents per litre by driving 2 mins further.' },
+                        { title: 'Kiwi Van Market', text: 'Bookmark our site for current resale values and to find parts/repairs across the country.' },
+                    ]
+                },
+                {
+                    title: 'Safety & Navigation',
+                    icon: 'Shield',
+                    items: [
+                        { title: 'MetService', text: 'Essential for mountain weather and road closures.' },
+                        { title: 'NZTA Waka Kotahi', text: 'Real-time road hazard alerts. Critical for South Island travel.' },
+                    ]
+                },
+            ],
+                warnings: [
+                    'Always download the "South Island" and "North Island" offline maps in Google Maps',
+                    'Don\'t trust GPS times - NZ roads are windy and often take 30% longer than expected',
+                ],
+                    cta: {
+            title: 'Ready for the Tech?',
+                text: 'Set up your van with a 12V charger to keep your phone alive throughout the journey.',
+                    buttonText: 'See Van Specs',
+                        buttonLink: '/',
+      }
+    }
+},
+};
+
 // Aliases for retro-compatibility
 GUIDES['how-to-buy-campervan-nz'] = GUIDES['buying-campervan-nz'];
 GUIDES['how-to-inspect-a-van'] = GUIDES['how-to-inspect-campervan-nz'];
