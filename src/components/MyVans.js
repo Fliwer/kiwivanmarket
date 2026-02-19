@@ -89,11 +89,36 @@ export default function MyVans({ onClose }) {
       safeStorage.removeItem('kiwiVanMarket_timestamp');
       console.log('🧹 Cache invalidated automatically');
 
-      alert('✅ Van deleted successfully!');
-
+      alert(t('my_listings.delete_success'));
     } catch (error) {
       console.error('❌ Error deleting:', error);
-      alert('❌ Error during deletion. Check your permissions.');
+      alert('❌ Error during deletion.');
+    }
+  };
+
+  // Toggle sold status
+  const handleToggleSold = async (van) => {
+    const newStatus = van.status === 'sold' ? 'active' : 'sold';
+    try {
+      await updateDoc(doc(db, 'vans', van.id), { status: newStatus });
+      setMyVans(prev => prev.map(v => v.id === van.id ? { ...v, status: newStatus } : v));
+
+      // Update all conversations linked to this van
+      const convsSnapshot = await getDocs(
+        query(collection(db, 'conversations'), where('vanId', '==', van.id))
+      );
+      const updatePromises = convsSnapshot.docs.map(convDoc =>
+        updateDoc(convDoc.ref, { 'van.status': newStatus })
+      );
+      await Promise.all(updatePromises);
+
+      // Invalider le cache
+      safeStorage.removeItem('kiwiVanMarket_vans');
+      safeStorage.removeItem('kiwiVanMarket_timestamp');
+      alert(t('my_listings.status_updated'));
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Error updating status.');
     }
   };
 

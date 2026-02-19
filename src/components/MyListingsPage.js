@@ -10,8 +10,10 @@ import {
   ArrowLeft, Edit2, Trash2, Eye, Plus, Calendar, MapPin,
   DollarSign, Crown, Loader, Car, AlertTriangle, CheckCircle, RotateCcw
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function MyListingsPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [myVans, setMyVans] = useState([]);
