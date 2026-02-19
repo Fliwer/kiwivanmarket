@@ -863,7 +863,7 @@ ${shareUrl}
                       </h4>
                     </div>
                     <div className="p-4 space-y-2">
-                      <Link to="/guide/buying-campervan-nz" className="flex items-center justify-between p-3 hover:bg-emerald-50 rounded-xl transition-colors group">
+                      <Link to="/guide/how-to-inspect-campervan-nz" className="flex items-center justify-between p-3 hover:bg-emerald-50 rounded-xl transition-colors group">
                         <div className="flex items-center gap-3">
                           <span className="text-xl">🛠️</span>
                           <span className="text-sm font-medium text-gray-700">{i18n.language.startsWith('fr') ? 'Comment inspecter un van' : 'How to inspect a van'}</span>

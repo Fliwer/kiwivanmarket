@@ -194,7 +194,59 @@ const GUIDES = {
       }
     }
   },
+  'how-to-inspect-campervan-nz': {
+    title: 'How to Inspect a Campervan in NZ - Professional Checklist',
+    description: 'Expert advice on inspecting a used campervan in New Zealand. Detailed mechanical, body, and interior checklist to ensure you buy a reliable vehicle.',
+    heroImage: 'https://images.unsplash.com/photo-1517055729445-fa7d27394b48?w=1200',
+    content: {
+      intro: `Inspecting a campervan thoroughly is the single most important step in your New Zealand journey. Don't be dazzled by nice decorations - you need to ensure the vehicle is safe and mechanically sound. Use this professional checklist to inspect like an expert.`,
+      sections: [
+        {
+          title: 'Mechanical Inspection',
+          icon: 'CheckCircle',
+          items: [
+            { title: 'Cold Start', text: 'Ask the seller to keep the engine cold. A warm engine can hide starting problems or smoke issues.' },
+            { title: 'Fluid Check', text: 'Check oil (no milky residue), coolant (bright color, no oil), and brake fluid levels. Look for leaks under the engine.' },
+            { title: 'Service History', text: 'Detailed records prove the van has been cared for. Look for regular oil changes every 10,000km.' },
+          ]
+        },
+        {
+          title: 'Body & Safety',
+          icon: 'Shield',
+          items: [
+            { title: 'Rust Check', text: 'Inspect wheel arches, door sills, and the chassis. Structural rust is a major WOF failure.' },
+            { title: 'Tyres', text: 'Ensure tread is at least 1.5mm deep. Uneven wear suggests suspension or alignment problems.' },
+            { title: 'Lights & Electrics', text: 'Test all indicators, headlights, and interior dashboard lights.' },
+          ]
+        },
+        {
+          title: 'Living Area Check',
+          icon: 'Car',
+          items: [
+            { title: 'Damp & Mould', text: 'Check corners, cupboards, and under the mattress for any signs of leaks or moisture.' },
+            { title: 'Appliances', text: 'Test the fridge, gas stove, water pump, and leisure battery charging systems.' },
+            { title: 'Self-Containment', text: 'Verify the toilets, tanks, and blue sticker are legitimate and meet current standards.' },
+          ]
+        },
+      ],
+      warnings: [
+        'If the seller refuses a professional pre-purchase inspection (PPI), walk away',
+        'Check the VIN and plate number on the CarJam website',
+        'Insist on a test drive on open roads, not just a car park',
+      ],
+      cta: {
+        title: 'Find Your Next Adventure',
+        text: 'Ready to put your inspection skills to the test? Browse our verified listings.',
+        buttonText: 'Browse Vans',
+        buttonLink: '/',
+      }
+    }
+  },
 };
+
+// Aliases for retro-compatibility
+GUIDES['how-to-buy-campervan-nz'] = GUIDES['buying-campervan-nz'];
+GUIDES['how-to-inspect-a-van'] = GUIDES['how-to-inspect-campervan-nz'];
 
 // Icon mapping
 const IconMap = {
