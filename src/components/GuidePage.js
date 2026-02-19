@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, CheckCircle, AlertTriangle, MapPin, Shield, Car, DollarSign } from 'lucide-react';
+import SeoHead from './SeoHead';
 
 // Configuration des guides
 const GUIDES = {
@@ -276,18 +276,12 @@ export default function GuidePage() {
 
   return (
     <>
-      <Helmet>
-        <title>{guide.title}</title>
-        <meta name="description" content={guide.description} />
-        <link rel="canonical" href={url} />
-        <meta name="robots" content="index, follow" />
-        <meta property="og:title" content={guide.title} />
-        <meta property="og:description" content={guide.description} />
-        <meta property="og:image" content={guide.heroImage} />
-        <meta property="og:url" content={url} />
-        <meta property="og:type" content="article" />
-        <meta property="og:locale" content="en_NZ" />
-      </Helmet>
+      <SeoHead
+        title={guide.title}
+        description={guide.description}
+        image={guide.heroImage}
+        type="article"
+      />
       <GuideSchema guide={guide} url={url} />
 
       <div className="min-h-screen bg-gray-50">

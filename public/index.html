@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en-NZ">
-    <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-T8G60HSRS0"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-T8G60HSRS0');
-</script>
+
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-T8G60HSRS0"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-T8G60HSRS0');
+  </script>
 
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,29 +20,18 @@
   <meta name="language" content="en-NZ" />
 
 
-  <title>Kiwi Van Market | Buy and Sell Campervans in New Zealand</title>
-  <meta name="description" content="Buy and sell campervans in New Zealand. Find self contained vans, WOF and rego valid vehicles, Toyota Hiace, Nissan Caravan, Mazda Bongo, Mitsubishi Delica, and buy back options for backpackers and travellers." />
+  <title>Buy and Sell Campervans in New Zealand | Kiwi Van Market</title>
+  <meta name="description"
+    content="The easiest way to buy and sell campervans for backpackers and locals in New Zealand. Find self-contained vans, WOF and rego valid vehicles." />
   <!-- Canonical géré dynamiquement par react-helmet-async pour chaque page -->
 
-<link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png?v=2" />  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon.png?v=2" />
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
   <meta name="robots" content="index, follow, max-image-preview:large" />
   <meta name="googlebot" content="index, follow" />
 
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://kiwivanmarket.com/" />
-  <meta property="og:title" content="Kiwi Van Market | Campervans for Sale in New Zealand" />
-  <meta property="og:description" content="New Zealand campervan marketplace for backpackers and travellers. Buy and sell self contained vans with valid WOF and rego." />
-  <meta property="og:image" content="https://kiwivanmarket.com/og-image.jpg" />
-  <meta property="og:image:alt" content="New Zealand campervan marketplace Kiwi Van Market" />
-  <meta property="og:site_name" content="Kiwi Van Market" />
-  <meta property="og:locale" content="en_NZ" />
-
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Kiwi Van Market | Buy and Sell Campervans in New Zealand" />
-  <meta name="twitter:description" content="Buy and sell campervans in New Zealand. Self contained vans plus valid WOF and rego." />
-  <meta name="twitter:image" content="https://kiwivanmarket.com/og-image.jpg" />
 
   <meta name="theme-color" content="#10b981" />
 
@@ -52,8 +42,10 @@
   <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
 
   <!-- Preload LCP image - Mobile & Desktop optimized -->
-  <link rel="preload" href="%PUBLIC_URL%/nz-background-mobile.webp" as="image" type="image/webp" fetchpriority="high" media="(max-width: 768px)" />
-  <link rel="preload" href="%PUBLIC_URL%/nz-background.webp" as="image" type="image/webp" fetchpriority="high" media="(min-width: 769px)" />
+  <link rel="preload" href="%PUBLIC_URL%/nz-background-mobile.webp" as="image" type="image/webp" fetchpriority="high"
+    media="(max-width: 768px)" />
+  <link rel="preload" href="%PUBLIC_URL%/nz-background.webp" as="image" type="image/webp" fetchpriority="high"
+    media="(min-width: 769px)" />
 
   <script type="application/ld+json">
   {
@@ -98,7 +90,7 @@
   }
   </script>
 
-    <script type="application/ld+json">
+  <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -147,133 +139,149 @@
   }
   </script>
 
-<style>
+  <style>
+    #app-loader {
+      position: fixed;
+      inset: 0;
+      background-image: url('%PUBLIC_URL%/nz-background.webp');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    }
+
+    /* Fallback for browsers without WebP support */
+    .no-webp #app-loader {
+      background-image: url('%PUBLIC_URL%/nz-background.jpg');
+    }
+
+    /* Mobile optimization - smaller image */
+    @media (max-width: 768px) {
       #app-loader {
-        position: fixed;
-        inset: 0;
-        background-image: url('%PUBLIC_URL%/nz-background.webp');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 99999;
+        background-image: url('%PUBLIC_URL%/nz-background-mobile.webp');
       }
-      /* Fallback for browsers without WebP support */
+
       .no-webp #app-loader {
         background-image: url('%PUBLIC_URL%/nz-background.jpg');
       }
-      /* Mobile optimization - smaller image */
-      @media (max-width: 768px) {
-        #app-loader {
-          background-image: url('%PUBLIC_URL%/nz-background-mobile.webp');
-        }
-        .no-webp #app-loader {
-          background-image: url('%PUBLIC_URL%/nz-background.jpg');
-        }
+    }
+
+    /* Overlay sombre pour rendre le texte plus lisible */
+    #app-loader::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 1;
+    }
+
+    .loader-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .loader-van {
+      width: 200px;
+      height: 200px;
+      background: #f7eedd;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      animation: bounce 1s ease-in-out infinite;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+      padding: 15px;
+      overflow: hidden;
+    }
+
+    .loader-van img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .loader-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .loader-text {
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
       }
-      
-      /* Overlay sombre pour rendre le texte plus lisible */
-      #app-loader::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.3);
-        z-index: 1;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
       }
-      
-      .loader-content {
-        position: relative;
-        z-index: 2;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+
+      50% {
+        transform: translateY(-15px);
       }
-      
-      .loader-van {
-        width: 200px;
-        height: 200px;
-        background: #f7eedd;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 24px;
-        animation: bounce 1s ease-in-out infinite;
-        box-shadow: 0 15px 50px rgba(0,0,0,0.4);
-        padding: 15px;
-        overflow: hidden;
+    }
+
+    .fade-out {
+      animation: fadeOut 0.5s forwards;
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
       }
-      
-      .loader-van img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
-      
-      .loader-spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(255,255,255,0.3);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-      }
-      
-      .loader-text {
-        color: white;
-        font-size: 28px;
-        font-weight: 700;
-        margin-top: 16px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        text-shadow: 0 4px 12px rgba(0,0,0,0.6);
-      }
-      
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-      
-      @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-15px); }
-      }
-      
-      .fade-out {
-        animation: fadeOut 0.5s forwards;
-      }
-      
-      @keyframes fadeOut {
-        to { opacity: 0; }
-      }
-    </style>
+    }
+  </style>
 </head>
 
-  <body>
-    <script>
-      // WebP detection - add fallback class if not supported
-      (function(){var i=new Image();i.onload=i.onerror=function(){if(i.height!==1)document.documentElement.classList.add('no-webp')};i.src='data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA='})();
-    </script>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+<body>
+  <script>
+    // WebP detection - add fallback class if not supported
+    (function () { var i = new Image(); i.onload = i.onerror = function () { if (i.height !== 1) document.documentElement.classList.add('no-webp') }; i.src = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=' })();
+  </script>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
 
-    <!-- Loading Screen -->
-    <div id="app-loader">
-      <div class="loader-content">
-        <div class="loader-van">
-          <img src="%PUBLIC_URL%/kiwi-van-logo-128.webp" alt="Kiwi Van Market" width="88" height="88" />
-        </div>
-        <div class="loader-spinner"></div>
-        <p class="loader-text">Kiwi Van Market</p>
+  <!-- Loading Screen -->
+  <div id="app-loader">
+    <div class="loader-content">
+      <div class="loader-van">
+        <img src="%PUBLIC_URL%/kiwi-van-logo-128.webp" alt="Kiwi Van Market" width="88" height="88" />
       </div>
+      <div class="loader-spinner"></div>
+      <p class="loader-text">Kiwi Van Market</p>
     </div>
-    
-    <div id="root"></div>
-  
-<noscript>
-  <h1>Buy Campervans in New Zealand</h1>
-  <p>Find Toyota Hiace, Nissan Caravan, Mazda Bongo, Mitsubishi Delica and other self contained vans with valid WOF and rego in Auckland Wellington Christchurch and Queenstown.</p>
-</noscript>
+  </div>
+
+  <div id="root"></div>
+
+  <noscript>
+    <h1>Buy Campervans in New Zealand</h1>
+    <p>Find Toyota Hiace, Nissan Caravan, Mazda Bongo, Mitsubishi Delica and other self contained vans with valid WOF
+      and rego in Auckland Wellington Christchurch and Queenstown.</p>
+  </noscript>
 
 </body>
+
 </html>

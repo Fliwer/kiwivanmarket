@@ -14,15 +14,17 @@ export default function SeoHead({ title, description, image, type = 'website' })
     const { i18n, t } = useTranslation();
     const location = useLocation();
 
-    // Base URL (utilise window.location.origin pour l'instant)
-    const origin = window.location.origin;
+    // Base URL
+    const origin = 'https://kiwivanmarket.com';
     const currentPath = location.pathname;
     const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
 
-    // Canonical URL (self-referencing with current lang param)
-    const canonicalUrl = `${origin}${currentPath}?lang=${currentLang}`;
+    // Canonical URL logic: No ?lang=en for the default language
+    const canonicalUrl = currentLang === 'en'
+        ? `${origin}${currentPath}`
+        : `${origin}${currentPath}?lang=${currentLang}`;
 
-    // Langues supportées
+    // Supported languages
     const languages = ['en', 'fr', 'es'];
 
     return (
@@ -39,11 +41,11 @@ export default function SeoHead({ title, description, image, type = 'website' })
                     key={lang}
                     rel="alternate"
                     hreflang={lang}
-                    href={`${origin}${currentPath}?lang=${lang}`}
+                    href={lang === 'en' ? `${origin}${currentPath}` : `${origin}${currentPath}?lang=${lang}`}
                 />
             ))}
             {/* x-default pour la version par défaut (Anglais) */}
-            <link rel="alternate" hreflang="x-default" href={`${origin}${currentPath}?lang=en`} />
+            <link rel="alternate" hreflang="x-default" href={`${origin}${currentPath}`} />
 
             {/* Open Graph / Facebook */}
             <meta property="og:type" content={type} />

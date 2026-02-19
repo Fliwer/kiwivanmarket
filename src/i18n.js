@@ -41,7 +41,7 @@ i18n
         },
 
         react: {
-            useSuspense: true, // Use suspense for loading translations if we switch to backend loading later
+            useSuspense: false, // Don't block initial render for translations
         }
     });
 

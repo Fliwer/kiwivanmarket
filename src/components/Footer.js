@@ -96,7 +96,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
   return (
     <footer className="bg-gray-900 text-white mt-16">
       {/* Disclaimer Banner */}
-      <div className="bg-amber-500 text-amber-900 px-4 py-3">
+      <div className="bg-amber-500 text-amber-950 px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-start gap-3">
           <AlertTriangle size={20} className="flex-shrink-0 mt-0.5" />
           <p className="text-sm">
@@ -129,7 +129,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
                 <span className="text-emerald-400 text-sm">NZ's #1 Campervan Marketplace</span>
               </div>
             </div>
-            <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+            <p className="text-gray-300 text-sm mb-6 leading-relaxed">
               {t('footer.about_desc')}
             </p>
           </div>
@@ -139,17 +139,17 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
             <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">{t('footer.quick_links')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <button onClick={onOpenFAQ} className="text-gray-400 hover:text-white transition">
+                <button onClick={onOpenFAQ} className="text-gray-300 hover:text-white transition">
                   FAQ & How It Works
                 </button>
               </li>
               <li>
-                <button onClick={onOpenTerms} className="text-gray-400 hover:text-white transition">
+                <button onClick={onOpenTerms} className="text-gray-300 hover:text-white transition">
                   Terms of Use
                 </button>
               </li>
               <li>
-                <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-gray-400 hover:text-white transition">
+                <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-gray-300 hover:text-white transition">
                   {t('footer.contact')}
                 </a>
               </li>
@@ -157,7 +157,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
             <h3 className="font-bold mb-3 mt-6 text-emerald-400 text-sm uppercase tracking-wider">{t('header.guides')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/guide/buying-campervan-nz" className="text-gray-400 hover:text-white transition">
+                <Link to="/guide/buying-campervan-nz" className="text-gray-300 hover:text-white transition">
                   Buying a Campervan
                 </Link>
               </li>
@@ -177,7 +177,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
           {/* Safety Tips */}
           <div>
             <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Safety Tips</h3>
-            <ul className="space-y-2 text-sm text-gray-400">
+            <ul className="space-y-2 text-sm text-gray-300">
               <li className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-1">✓</span>
                 Always meet sellers in person
@@ -206,7 +206,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
             <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Popular Brands</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/brand/toyota-hiace" className="text-gray-400 hover:text-white transition">
+                <Link to="/brand/toyota-hiace" className="text-gray-300 hover:text-white transition">
                   Toyota Hiace
                 </Link>
               </li>
@@ -238,7 +238,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
             <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Popular Locations</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/location/auckland" className="text-gray-400 hover:text-white transition">
+                <Link to="/location/auckland" className="text-gray-300 hover:text-white transition">
                   Auckland
                 </Link>
               </li>

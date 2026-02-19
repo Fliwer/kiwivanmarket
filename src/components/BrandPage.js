@@ -5,8 +5,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ArrowLeft } from 'lucide-react';
 import VanCard from './VanCard';
-
-// Configuration des marques avec descriptions SEO
+import SeoHead from './SeoHead';
 const BRANDS_CONFIG = {
   'toyota-hiace': {
     name: 'Toyota Hiace',
@@ -153,17 +152,11 @@ export default function BrandPage() {
 
   return (
     <>
-      <Helmet>
-        <title>{brandConfig.title}</title>
-        <meta name="description" content={brandConfig.description} />
-        <link rel="canonical" href={url} />
-        <meta name="robots" content="index, follow" />
-        <meta property="og:title" content={brandConfig.title} />
-        <meta property="og:description" content={brandConfig.description} />
-        <meta property="og:url" content={url} />
-        <meta property="og:type" content="website" />
-        <meta property="og:locale" content="en_NZ" />
-      </Helmet>
+      <SeoHead
+        title={brandConfig.title}
+        description={brandConfig.description}
+        type="website"
+      />
       <BrandSchema brand={brandConfig} vans={vans} url={url} />
 
       <div className="min-h-screen bg-gray-50">

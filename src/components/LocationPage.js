@@ -5,6 +5,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { MapPin, ArrowLeft } from 'lucide-react';
 import VanCard from './VanCard';
+import SeoHead from './SeoHead';
 
 // Configuration des locations avec descriptions SEO
 const LOCATIONS_CONFIG = {
@@ -170,19 +171,11 @@ export default function LocationPage() {
 
   return (
     <>
-      <Helmet>
-        <title>{locationConfig.title}</title>
-        <meta name="description" content={locationConfig.description} />
-        <link rel="canonical" href={url} />
-        <meta name="robots" content="index, follow" />
-        <meta name="geo.placename" content={`${locationConfig.name}, New Zealand`} />
-        <meta name="geo.region" content="NZ" />
-        <meta property="og:title" content={locationConfig.title} />
-        <meta property="og:description" content={locationConfig.description} />
-        <meta property="og:url" content={url} />
-        <meta property="og:type" content="website" />
-        <meta property="og:locale" content="en_NZ" />
-      </Helmet>
+      <SeoHead
+        title={locationConfig.title}
+        description={locationConfig.description}
+        type="website"
+      />
       <LocationSchema location={locationConfig} vans={vans} url={url} />
 
       <div className="min-h-screen bg-gray-50">
