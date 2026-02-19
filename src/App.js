@@ -853,7 +853,6 @@ function MainApp() {
                     >
                       <MessageCircle size={22} className="text-white" />
                       <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.messages')}</span>
-                      <MessageBadge />
                     </button>
 
                     {!currentUser ? (
