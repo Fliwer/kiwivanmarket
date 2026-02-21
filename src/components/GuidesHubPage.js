@@ -3,11 +3,12 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, ArrowRight, CheckCircle, Search, Rocket, MapPin } from 'lucide-react';
 import SeoHead from './SeoHead';
+import LanguageSelector from './LanguageSelector';
 import { GUIDES } from '../constants/guides';
 
 export default function GuidesHubPage() {
     const { t, i18n } = useTranslation();
-    const currentLang = i18n.language || 'en';
+    const currentLang = (i18n.language || 'en').split('-')[0];
 
     // Fermer le loader initial
     useEffect(() => {
@@ -51,6 +52,7 @@ export default function GuidesHubPage() {
                     </p>
 
                     <div className="flex flex-wrap justify-center gap-4">
+                        <LanguageSelector />
                         <div className="flex items-center gap-2 text-emerald-50 text-sm bg-black/10 px-4 py-2 rounded-lg">
                             <CheckCircle size={16} /> {t('guides.hub.tag_updated')}
                         </div>

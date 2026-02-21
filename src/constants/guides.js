@@ -13,7 +13,7 @@ export const GUIDES = {
                         title: 'What to Check Before Buying',
                         icon: 'CheckCircle',
                         items: [
-                            { title: 'WOF (Warrant of Fitness)', text: 'This is the NZ vehicle safety inspection. Check the expiry date - you need a valid WOF to drive legally. Vans over 12 years old need a WOF every 6 months.' },
+                            { title: 'WOF (Warrant of Fitness)', text: 'This is the NZ vehicle safety inspection. Check the expiry date - you need a valid WOF to drive legally. Vans over 12 years old need a WOF every 6 months.', expertTip: true },
                             { title: 'REGO (Registration)', text: 'Vehicle registration must be current. You can check any vehicle\'s status for free on the NZTA website using the plate number.' },
                             { title: 'Ownership Papers', text: 'Make sure the seller has the original ownership papers and their ID matches. Never buy a van without seeing these documents.' },
                             { title: 'Mechanical Condition', text: 'Check oil levels, listen for engine noises, test all gears, check for rust underneath. Consider paying for a professional inspection ($100-200).' },
@@ -25,14 +25,14 @@ export const GUIDES = {
                         items: [
                             { title: 'What is Self-Contained?', text: 'A self-contained vehicle has a toilet, fresh water tank (min 4L per person), and grey water tank that meets NZS 5465 standard.' },
                             { title: 'Why You Need It', text: 'Self-contained vans can legally freedom camp in many beautiful spots across NZ. Without it, you\'re limited to paid campsites.' },
-                            { title: 'The Blue Card', text: 'Look for the official blue self-contained sticker. It\'s valid for 4 years. Fake stickers can result in $200+ fines.' },
+                            { title: 'The Blue Card', text: 'Look for the official blue self-contained sticker. It\'s valid for 4 years. Fake stickers can result in $200+ fines.', expertTip: true },
                         ]
                     },
                     {
                         title: 'Best Campervan Brands in NZ',
                         icon: 'Car',
                         items: [
-                            { title: 'Toyota Hiace', text: 'The most popular choice. Reliable, parts are cheap and easy to find, good fuel economy. Prices: $8,000-$20,000.' },
+                            { title: 'Toyota Hiace', text: 'The most popular choice. Reliable, parts are cheap and easy to find, good fuel economy. Prices: $8,000-$20,000.', expertTip: true },
                             { title: 'Nissan Caravan', text: 'Spacious and affordable. Similar reliability to Hiace. Prices: $6,000-$15,000.' },
                             { title: 'Mitsubishi Delica', text: '4WD option for adventurous travellers. Great for gravel roads. Prices: $8,000-$18,000.' },
                             { title: 'Mazda Bongo', text: 'Compact and fuel-efficient. Many have pop-top roofs. Prices: $7,000-$15,000.' },
@@ -134,7 +134,7 @@ export const GUIDES = {
         'selling-campervan-nz': {
             title: 'How to Sell Your Campervan in New Zealand - Quick Sale Guide',
             description: 'Sell your campervan fast in New Zealand. Tips for pricing, photos, descriptions, and reaching backpacker buyers. Free listings on Kiwi Van Market.',
-            heroImage: 'https://images.unsplash.com/photo-1533591917513-091dc1b8d9cd?w=1200',
+            heroImage: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200',
             content: {
                 intro: `Selling your campervan at the end of your New Zealand adventure doesn't have to be stressful. With the right approach, you can sell quickly and get a fair price.`,
                 sections: [
@@ -389,7 +389,7 @@ export const GUIDES = {
                         title: 'Points à Vérifier Avant l\'Achat',
                         icon: 'CheckCircle',
                         items: [
-                            { title: 'WOF (Warrant of Fitness)', text: 'C\'est l\'inspection technique de sécurité. Vérifiez la date d\'expiration - vous avez besoin d\'un WOF valide pour conduire. Pour les vans de plus de 12 ans, le WOF doit être fait tous les 6 mois.' },
+                            { title: 'WOF (Warrant of Fitness)', text: 'Il s\'agit du contrôle technique néo-zélandais. Vérifiez bien la date d\'expiration : vous avez besoin d\'un WOF valide pour rouler. Les vans de plus de 12 ans doivent passer le WOF tous les 6 mois.', expertTip: true },
                             { title: 'REGO (Registration)', text: 'L\'immatriculation doit être à jour. Vous pouvez vérifier le statut de n\'importe quel véhicule gratuitement sur le site de la NZTA avec le numéro de plaque.' },
                             { title: 'Papiers de Propriété', text: 'Assurez-vous que le vendeur possède les documents originaux et que son identité correspond. N\'achetez jamais sans voir ces documents.' },
                             { title: 'État Mécanique', text: 'Vérifiez les niveaux d\'huile, écoutez les bruits du moteur, testez les vitesses et cherchez de la rouille. Une inspection pro ($100-200) est fortement recommandée.' },
@@ -401,14 +401,14 @@ export const GUIDES = {
                         items: [
                             { title: 'C\'est quoi le Self-Contained ?', text: 'Un véhicule autonome a des toilettes, un réservoir d\'eau propre (min 4L/pers) et un réservoir d\'eaux usées aux normes NZS 5465.' },
                             { title: 'Pourquoi c\'est Vital', text: 'Les vans certifiés peuvent dormir gratuitement dans de nombreux endroits magnifiques ("Freedom Camping"). Sans cela, vous devrez payer vos campings.' },
-                            { title: 'La Blue Card', text: 'Cherchez le macaron bleu officiel. Il est valable 4 ans. Les faux macarons risquent des amendes de plus de 200$.' },
+                            { title: 'La Blue Card', text: 'Recherchez l\'autocollant bleu officiel "Self-Contained". Il est valide 4 ans. Les faux autocollants peuvent entraîner des amendes de plus de 200 $.', expertTip: true },
                         ]
                     },
                     {
                         title: 'Meilleures Marques en NZ',
                         icon: 'Car',
                         items: [
-                            { title: 'Toyota Hiace', text: 'Le choix n°1. Fiable, pièces faciles à trouver, bonne consommation. Prix : 8 000$ - 20 000$.' },
+                            { title: 'Toyota Hiace', text: 'Le choix le plus populaire. Increvable, pièces pas chères et faciles à trouver, bonne consommation. Prix : 8 000 $ - 20 000 $.', expertTip: true },
                             { title: 'Nissan Caravan', text: 'Spacieux et abordable, très similaire au Hiace. Prix : 6 000$ - 15 000$.' },
                             { title: 'Mitsubishi Delica', text: 'Option 4x4 pour les plus aventureux. Idéal pour les routes de gravier. Prix : 8 000$ - 18 000$.' },
                             { title: 'Mazda Bongo', text: 'Compact et économe. Beaucoup ont des toits relevables (pop-top). Prix : 7 000$ - 15 000$.' },
@@ -510,7 +510,7 @@ export const GUIDES = {
         'selling-campervan-nz': {
             title: 'Comment Vendre Votre Campervan en Nouvelle-Zélande - Guide Rapide',
             description: 'Vendez votre van rapidement. Astuces pour le prix, les photos et comment atteindre les backpackers.',
-            heroImage: 'https://images.unsplash.com/photo-1533591917513-091dc1b8d9cd?w=1200',
+            heroImage: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200',
             content: {
                 intro: `Vendre votre van à la fin de votre aventure ne doit pas être stressant. Avec la bonne méthode, vous vendrez vite et au bon prix avant de reprendre votre avion.`,
                 sections: [
@@ -765,7 +765,7 @@ export const GUIDES = {
                         title: 'Qué revisar antes de comprar',
                         icon: 'CheckCircle',
                         items: [
-                            { title: 'WOF (Warrant of Fitness)', text: 'Es la inspección de seguridad vehicular de NZ. Revisa la fecha de vencimiento; necesitas un WOF válido para conducir legalmente. Las vans de más de 12 años necesitan un WOF cada 6 meses.' },
+                            { title: 'WOF (Warrant of Fitness)', text: 'Esta es la inspección técnica de vehículos de Nueva Zelanda. Comprueba la fecha de caducidad: necesitas un WOF válido para conducir legalmente. Las furgonetas de más de 12 años necesitan un WOF cada 6 meses.', expertTip: true },
                             { title: 'REGO (Registration)', text: 'El registro del vehículo debe estar al día. Puedes verificar el estado de cualquier vehículo gratis en el sitio web de NZTA usando el número de matrícula.' },
                             { title: 'Papeles de Propiedad', text: 'Asegúrate de que el vendedor tenga los papeles de propiedad originales y que su identificación coincida. Nunca compres una van sin ver estos documentos.' },
                             { title: 'Estado Mecánico', text: 'Revisa los niveles de aceite, escucha ruidos del motor, prueba todas las marchas y busca óxido debajo. Considera pagar por una inspección profesional ($100-200).' },
@@ -777,14 +777,14 @@ export const GUIDES = {
                         items: [
                             { title: '¿Qué es Self-Contained?', text: 'Un vehículo autónomo tiene baño, tanque de agua limpia (mín. 4L por persona) y tanque de aguas grises que cumple con la norma NZS 5465.' },
                             { title: 'Por qué lo necesitas', text: 'Las vans self-contained pueden acampar legalmente (freedom camp) en muchos lugares hermosos de NZ. Sin esto, estarás limitado a campings de pago.' },
-                            { title: 'La Tarjeta Azul', text: 'Busca el adhesivo azul oficial de self-contained. Es válido por 4 años. Los adhesivos falsos pueden resultar en multas de más de $200.' },
+                            { title: 'La Tarjeta Azul', text: 'Busca la pegatina oficial de color azul de vehículo autónomo. Tiene una validez de 4 años. Las pegatinas falsas pueden acarrear multas de más de 200 $.', expertTip: true },
                         ]
                     },
                     {
                         title: 'Mejores marcas de campervans en NZ',
                         icon: 'Car',
                         items: [
-                            { title: 'Toyota Hiace', text: 'La opción más popular. Confiables, repuestos baratos y fáciles de encontrar, buen consumo de combustible. Precios: $8,000-$20,000.' },
+                            { title: 'Toyota Hiace', text: 'La opción más popular. Fiable, las piezas son baratas y fáciles de encontrar, buen consumo de combustible. Precios: 8.000 $ - 20.000 $.', expertTip: true },
                             { title: 'Nissan Caravan', text: 'Espaciosa y asequible. Fiabilidad similar a la Hiace. Precios: $6,000-$15,000.' },
                             { title: 'Mitsubishi Delica', text: 'Opción 4WD para viajeros aventureros. Ideal para caminos de grava. Precios: $8,000-$18,000.' },
                             { title: 'Mazda Bongo', text: 'Compacta y eficiente. Muchas tienen techos elevables. Precios: $7,000-$15,000.' },
@@ -886,7 +886,7 @@ export const GUIDES = {
         'selling-campervan-nz': {
             title: 'Cómo vender tu campervan en Nueva Zelanda - Guía Rápida',
             description: 'Vende tu campervan rápido en Nueva Zelanda. Consejos para precios, fotos y cómo llegar a compradores mochileros.',
-            heroImage: 'https://images.unsplash.com/photo-1533591917513-091dc1b8d9cd?w=1200',
+            heroImage: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200',
             content: {
                 intro: `Vender tu campervan al final de tu aventura en Nueva Zelanda no tiene por qué ser estresante. Con el enfoque correcto, puedes venderla rápido y a un precio justo antes de volar a casa.`,
                 sections: [

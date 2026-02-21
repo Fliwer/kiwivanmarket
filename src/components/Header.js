@@ -166,19 +166,19 @@ export default function Header({
                         )}
                     </div>
 
-                    {/* Mobile Menu Button */}
                     <div className="md:hidden flex items-center gap-2">
+                        <LanguageSelector />
                         <button
                             onClick={() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true)}
-                            className="w-12 h-12 flex items-center justify-center relative shrink-0"
+                            className="w-10 h-10 flex items-center justify-center relative shrink-0"
                             aria-label={t('header.messages')}
                         >
-                            <MessageCircle size={24} />
+                            <MessageCircle size={22} />
                             <MessageBadge />
                         </button>
                         <button
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
-                            className="w-12 h-12 flex items-center justify-center bg-white/20 rounded-xl shrink-0"
+                            className="w-10 h-10 flex items-center justify-center bg-white/20 rounded-xl shrink-0"
                             aria-label="Toggle menu"
                             aria-expanded={showMobileMenu}
                         >

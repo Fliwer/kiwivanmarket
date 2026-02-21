@@ -292,35 +292,34 @@ function MainApp() {
   useEffect(() => {
     const fetchVans = async () => {
       try {
-        setLoading(true);
-
         const cachedData = safeStorage.getItem('kiwiVanMarket_vans');
         const cacheTimestamp = safeStorage.getItem('kiwiVanMarket_timestamp');
+        let initialVans = [];
 
         if (cachedData) {
-          const cachedVans = JSON.parse(cachedData);
-          // Only use cache if it has data
-          if (cachedVans.length > 0) {
-            // Sort cache immediately (newest first)
-            const sortedCache = [...cachedVans].sort((a, b) => {
-              const getTs = (v) => {
-                const d = safeDate(v.createdAt);
-                return d ? d.getTime() : 0;
-              };
-              return getTs(b) - getTs(a);
-            });
-            setVans(sortedCache);
-            setFilteredVans(sortedCache);
-            setLoading(false);
+          try {
+            initialVans = JSON.parse(cachedData);
+            if (initialVans.length > 0) {
+              setVans(initialVans);
+              setFilteredVans(initialVans);
+              setLoading(false); // On a des données, on peut masquer le loader
+            }
+          } catch (e) {
+            console.error('Error parsing cache:', e);
           }
+        }
+
+        // Si on n'a absolument rien en cache, on affiche le loader
+        if (initialVans.length === 0) {
+          setLoading(true);
         }
 
         const now = Date.now();
         const cacheAge = cacheTimestamp ? now - parseInt(cacheTimestamp) : Infinity;
-        const CACHE_DURATION = 5 * 60 * 1000;
+        const CACHE_FRESH_THRESHOLD = 2 * 60 * 1000; // 2 minutes
 
-        // Skip Firestore fetch only if cache is fresh AND has data
-        if (cacheAge < CACHE_DURATION && cachedData && JSON.parse(cachedData).length > 0) {
+        // On ne fetch Firestore que si le cache est vieux ou inexistant
+        if (initialVans.length > 0 && cacheAge < CACHE_FRESH_THRESHOLD) {
           return;
         }
 
@@ -330,7 +329,6 @@ function MainApp() {
           ...doc.data()
         }));
 
-        // Sort before saving to cache (newest first)
         const sortedVans = [...vansData].sort((a, b) => {
           const getTs = (v) => {
             const d = safeDate(v.createdAt);
@@ -339,11 +337,13 @@ function MainApp() {
           return getTs(b) - getTs(a);
         });
 
-        safeStorage.setItem('kiwiVanMarket_vans', JSON.stringify(sortedVans));
-        safeStorage.setItem('kiwiVanMarket_timestamp', now.toString());
-
-        setVans(sortedVans);
-        setFilteredVans(sortedVans);
+        // Mise à jour uniquement si nécessaire (données différentes du cache)
+        if (initialVans.length === 0 || JSON.stringify(sortedVans) !== cachedData) {
+          safeStorage.setItem('kiwiVanMarket_vans', JSON.stringify(sortedVans));
+          safeStorage.setItem('kiwiVanMarket_timestamp', now.toString());
+          setVans(sortedVans);
+          setFilteredVans(sortedVans);
+        }
 
       } catch (error) {
         console.error('Error loading vans:', error);
