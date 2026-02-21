@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, AlertTriangle, MapPin, Shield, Car, DollarSign } from 'lucide-react';
+import { ArrowLeft, CheckCircle, AlertTriangle, MapPin, Shield, Car, DollarSign, Share2, Copy, Check } from 'lucide-react';
 import SeoHead from './SeoHead';
 
 import { GUIDES, IconMap } from '../constants/guides';
@@ -41,6 +41,29 @@ export default function GuidePage() {
   const { slug } = useParams();
   const guide = GUIDES[slug];
   const url = `https://kiwivanmarket.com/guide/${slug}`;
+  const [copied, setCopied] = React.useState(false);
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: guide.title,
+          text: guide.description,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      handleCopy();
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Fermer le loader initial
   useEffect(() => {
@@ -176,6 +199,35 @@ export default function GuidePage() {
               </Link>
             </section>
           )}
+
+          {/* Social Share */}
+          <section className="mt-16 pb-8 border-b border-gray-100">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">Enjoyed this guide?</h3>
+                <p className="text-gray-500">Share it with fellow travellers planning their NZ road trip.</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleShare}
+                  className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition shadow-md"
+                >
+                  <Share2 size={18} />
+                  Share Guide
+                </button>
+                <button
+                  onClick={handleCopy}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition border ${copied
+                      ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                    }`}
+                >
+                  {copied ? <Check size={18} /> : <Copy size={18} />}
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </button>
+              </div>
+            </div>
+          </section>
 
           {/* Other Guides */}
           <section className="mt-12">
