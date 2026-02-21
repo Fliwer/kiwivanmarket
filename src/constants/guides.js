@@ -244,14 +244,12 @@ export const GUIDES = {
             }
         }
     },
-};
-
-'winter-camping-nz': {
-    title: 'Survival Guide: Winter Camping in New Zealand 2025',
+    'winter-camping-nz': {
+        title: 'Survival Guide: Winter Camping in New Zealand 2025',
         description: 'Can you camp in NZ during winter? Yes! Discover the best heated vans, snow-safe roads, and essential gear to stay warm while exploring the Southern Alps.',
-            heroImage: 'https://images.unsplash.com/photo-1418985991508-e47386d96a71?w=1200',
-                content: {
-        intro: `Winter in New Zealand (June to August) transforms the landscape into a snowy wonderland. While many backpackers leave, the smart ones stay for cheaper van prices and empty campsites. But winter camping requires serious preparation. Here is how to survive and thrive in a van when the mercury drops below zero.`,
+        heroImage: 'https://images.unsplash.com/photo-1418985991508-e47386d96a71?w=1200',
+        content: {
+            intro: `Winter in New Zealand (June to August) transforms the landscape into a snowy wonderland. While many backpackers leave, the smart ones stay for cheaper van prices and empty campsites. But winter camping requires serious preparation. Here is how to survive and thrive in a van when the mercury drops below zero.`,
             sections: [
                 {
                     title: 'Choosing a Winter-Ready Van',
@@ -281,25 +279,25 @@ export const GUIDES = {
                     ]
                 },
             ],
-                warnings: [
-                    'Black ice is a major hazard - drive late in the morning when the sun has melted it',
-                    'Avoid high alpine passes during heavy snow warnings unless you are an experienced driver',
-                    'Always check the MetService app for weather alerts before moving locations',
-                ],
-                    cta: {
-            title: 'Need a Van with a Heater?',
+            warnings: [
+                'Black ice is a major hazard - drive late in the morning when the sun has melted it',
+                'Avoid high alpine passes during heavy snow warnings unless you are an experienced driver',
+                'Always check the MetService app for weather alerts before moving locations',
+            ],
+            cta: {
+                title: 'Need a Van with a Heater?',
                 text: 'Filter our listings to find fully insulated vans with diesel heaters.',
-                    buttonText: 'Find Winter Vans',
-                        buttonLink: '/',
-      }
-    }
-},
-'south-island-road-trip': {
-    title: 'The Ultimate 14-Day South Island Road Trip Itinerary',
+                buttonText: 'Find Winter Vans',
+                buttonLink: '/',
+            }
+        }
+    },
+    'south-island-road-trip': {
+        title: 'The Ultimate 14-Day South Island Road Trip Itinerary',
         description: 'The most iconic road trip in the world. From Christchurch to Milford Sound, discover the best hidden campsites and photo spots for your van adventure.',
-            heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200',
-                content: {
-        intro: `The South Island of New Zealand is the ultimate playground for campervans. This 14-day loop takes you through turquoise lakes, ancient glaciers, and dramatic fiords. Pack your camera and get ready for the trip of a lifetime.`,
+        heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200',
+        content: {
+            intro: `The South Island of New Zealand is the ultimate playground for campervans. This 14-day loop takes you through turquoise lakes, ancient glaciers, and dramatic fiords. Pack your camera and get ready for the trip of a lifetime.`,
             sections: [
                 {
                     title: 'Week 1: Lakes & Glaciers',
@@ -320,25 +318,25 @@ export const GUIDES = {
                     ]
                 },
             ],
-                warnings: [
-                    'Sandflies on the West Coast are brutal - buy "Goodbye Sandfly" repellent locally',
-                    'Always book Milford Sound cruises in advance as they sell out daily',
-                    'Fuel is expensive in small towns - fill up in main cities like Christchurch or Queenstown',
-                ],
-                    cta: {
-            title: 'Start Your Journey',
+            warnings: [
+                'Sandflies on the West Coast are brutal - buy "Goodbye Sandfly" repellent locally',
+                'Always book Milford Sound cruises in advance as they sell out daily',
+                'Fuel is expensive in small towns - fill up in main cities like Christchurch or Queenstown',
+            ],
+            cta: {
+                title: 'Start Your Journey',
                 text: 'Pick up your campervan in Christchurch and hit the road today.',
-                    buttonText: 'Vans in Christchurch',
-                        buttonLink: '/',
-      }
-    }
-},
-'best-vanlife-apps-nz': {
-    title: '6 Essential Apps for Every NZ Vanlife Traveller (2025)',
+                buttonText: 'Vans in Christchurch',
+                buttonLink: '/',
+            }
+        }
+    },
+    'best-vanlife-apps-nz': {
+        title: '6 Essential Apps for Every NZ Vanlife Traveller (2025)',
         description: 'Don\'t leave without these! From finding secret campsites to saving money on fuel, these apps will save you time and hundreds of dollars.',
-            heroImage: 'https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=1200',
-                content: {
-        intro: `In 2025, your phone is just as important as your van's spare tyre. These 6 apps are the difference between an average trip and an epic adventure in New Zealand.`,
+        heroImage: 'https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=1200',
+        content: {
+            intro: `In 2025, your phone is just as important as your van's spare tyre. These 6 apps are the difference between an average trip and an epic adventure in New Zealand.`,
             sections: [
                 {
                     title: 'Campsites & Facilities',
@@ -365,18 +363,18 @@ export const GUIDES = {
                     ]
                 },
             ],
-                warnings: [
-                    'Always download the "South Island" and "North Island" offline maps in Google Maps',
-                    'Don\'t trust GPS times - NZ roads are windy and often take 30% longer than expected',
-                ],
-                    cta: {
-            title: 'Ready for the Tech?',
+            warnings: [
+                'Always download the "South Island" and "North Island" offline maps in Google Maps',
+                'Don\'t trust GPS times - NZ roads are windy and often take 30% longer than expected',
+            ],
+            cta: {
+                title: 'Ready for the Tech?',
                 text: 'Set up your van with a 12V charger to keep your phone alive throughout the journey.',
-                    buttonText: 'See Van Specs',
-                        buttonLink: '/',
-      }
-    }
-},
+                buttonText: 'See Van Specs',
+                buttonLink: '/',
+            }
+        }
+    },
 };
 
 // Aliases for retro-compatibility
