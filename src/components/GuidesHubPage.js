@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ArrowRight, CheckCircle, Search, Rocket } from 'lucide-react';
+import { BookOpen, ArrowRight, CheckCircle, Search, Rocket, MapPin } from 'lucide-react';
 import SeoHead from './SeoHead';
 import { GUIDES } from '../constants/guides';
 
