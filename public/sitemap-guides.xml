@@ -1,20 +1,121 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+  <!-- Buying Guide -->
   <url>
     <loc>https://kiwivanmarket.com/guide/buying-campervan-nz</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/buying-campervan-nz?lang=fr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/buying-campervan-nz?lang=es</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
+  <!-- Selling Guide -->
   <url>
     <loc>https://kiwivanmarket.com/guide/selling-campervan-nz</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/selling-campervan-nz?lang=fr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/selling-campervan-nz?lang=es</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 
+  <!-- Freedom Camping Guide -->
   <url>
     <loc>https://kiwivanmarket.com/guide/freedom-camping-nz</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/freedom-camping-nz?lang=fr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/freedom-camping-nz?lang=es</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Inspection Guide -->
+  <url>
+    <loc>https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=fr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=es</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Winter Camping Guide -->
+  <url>
+    <loc>https://kiwivanmarket.com/guide/winter-camping-nz</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/winter-camping-nz?lang=fr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/winter-camping-nz?lang=es</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- South Island Road Trip -->
+  <url>
+    <loc>https://kiwivanmarket.com/guide/south-island-road-trip</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/south-island-road-trip?lang=fr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/south-island-road-trip?lang=es</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Best Apps Guide -->
+  <url>
+    <loc>https://kiwivanmarket.com/guide/best-vanlife-apps-nz</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=fr</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=es</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

@@ -1,38 +1,104 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+  <!-- Toyota Hiace -->
   <url>
     <loc>https://kiwivanmarket.com/brand/toyota-hiace</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/toyota-hiace?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/toyota-hiace?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 
+  <!-- Nissan Caravan -->
   <url>
     <loc>https://kiwivanmarket.com/brand/nissan-caravan</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/nissan-caravan?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/nissan-caravan?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 
+  <!-- Mazda Bongo -->
   <url>
     <loc>https://kiwivanmarket.com/brand/mazda-bongo</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/mazda-bongo?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/mazda-bongo?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 
+  <!-- Mitsubishi Delica -->
   <url>
     <loc>https://kiwivanmarket.com/brand/mitsubishi-delica</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/mitsubishi-delica?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/mitsubishi-delica?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 
+  <!-- Ford Transit -->
   <url>
     <loc>https://kiwivanmarket.com/brand/ford-transit</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/ford-transit?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/ford-transit?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 
+  <!-- Mercedes Sprinter -->
   <url>
     <loc>https://kiwivanmarket.com/brand/mercedes-sprinter</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/mercedes-sprinter?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/brand/mercedes-sprinter?lang=es</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

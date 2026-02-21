@@ -1,50 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
+  <!-- Auckland -->
   <url>
     <loc>https://kiwivanmarket.com/location/auckland</loc>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/auckland?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/auckland?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
 
+  <!-- Wellington -->
   <url>
     <loc>https://kiwivanmarket.com/location/wellington</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/wellington?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/wellington?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 
+  <!-- Christchurch -->
   <url>
     <loc>https://kiwivanmarket.com/location/christchurch</loc>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/christchurch?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/christchurch?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
 
+  <!-- Queenstown -->
   <url>
     <loc>https://kiwivanmarket.com/location/queenstown</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/queenstown?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/queenstown?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 
+  <!-- Hamilton -->
   <url>
     <loc>https://kiwivanmarket.com/location/hamilton</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/hamilton?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/hamilton?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
 
+  <!-- Tauranga -->
   <url>
     <loc>https://kiwivanmarket.com/location/tauranga</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/tauranga?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/tauranga?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
 
+  <!-- Dunedin -->
   <url>
     <loc>https://kiwivanmarket.com/location/dunedin</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/dunedin?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/dunedin?lang=es</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
 
+  <!-- Rotorua -->
   <url>
     <loc>https://kiwivanmarket.com/location/rotorua</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/rotorua?lang=fr</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/rotorua?lang=es</loc>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
