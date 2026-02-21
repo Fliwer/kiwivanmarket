@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, HelpCircle } from 'lucide-react';
+import { BookOpen, ArrowRight, CheckCircle, Search, Rocket, MapPin } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 // Composant FAQ Modal
