@@ -158,5 +158,43 @@
         "delete_confirm_desc": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone.",
         "delete_success": "Van deleted successfully!",
         "status_updated": "Status updated."
+    },
+    "guides": {
+        "hub": {
+            "seo_title": "Travel & Campervan Guides New Zealand | Kiwi Van Market",
+            "seo_description": "Everything you need to know about buying, selling, and living in a campervan in New Zealand. Expert tips for backpackers.",
+            "badge": "Knowledge Base",
+            "title_1": "The Ultimate New Zealand",
+            "title_2": "Campervan Guides",
+            "subtitle": "From mechanical inspections to freedom camping rules, we've got you covered for your NZ road trip adventure.",
+            "tag_updated": "2025 Updated",
+            "tag_verified": "Expert Verified",
+            "card_1_title": "Expert Tips",
+            "card_1_desc": "Mechanical & Legal advice",
+            "card_2_title": "Growth Hacks",
+            "card_2_desc": "Resale value & viral ads",
+            "card_3_title": "Travel Guide",
+            "card_3_desc": "Freedom camping & Spots",
+            "grid_title": "Featured Guides",
+            "read_btn": "Read Guide",
+            "cta_title": "Can't find what you're looking for?",
+            "cta_subtitle": "We're constantly adding new content to help you on your road trip. Suggest a topic and we'll write an expert guide for you.",
+            "cta_btn": "Contact Team"
+        },
+        "page": {
+            "back": "Back to campervans",
+            "breadcrumb_home": "Home",
+            "breadcrumb_hub": "Guides",
+            "breadcrumb_guide": "Guide",
+            "not_found_title": "Guide Not Found",
+            "not_found_desc": "This guide doesn't exist yet.",
+            "warnings_title": "Important Warnings",
+            "share_title": "Enjoyed this guide?",
+            "share_desc": "Share it with fellow travellers planning their NZ road trip.",
+            "share_btn": "Share Guide",
+            "copy_link": "Copy Link",
+            "copied": "Copied!",
+            "more_guides": "More Guides"
+        }
     }
 }

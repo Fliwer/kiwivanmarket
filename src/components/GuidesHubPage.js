@@ -1,10 +1,14 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { BookOpen, ArrowRight, CheckCircle, Search, Rocket, MapPin } from 'lucide-react';
 import SeoHead from './SeoHead';
 import { GUIDES } from '../constants/guides';
 
 export default function GuidesHubPage() {
+    const { t, i18n } = useTranslation();
+    const currentLang = i18n.language || 'en';
+
     // Fermer le loader initial
     useEffect(() => {
         const loader = document.getElementById('app-loader');
@@ -15,19 +19,19 @@ export default function GuidesHubPage() {
         window.scrollTo(0, 0);
     }, []);
 
+    // Récupérer les guides pour la langue actuelle
+    const localizedGuides = GUIDES[currentLang] || GUIDES.en || {};
+
     // Filtrer les doublons (aliases) pour ne garder que les guides uniques
-    const uniqueGuides = Object.entries(GUIDES).filter(([key, guide]) => {
-        // On ne garde que les clés qui correspondent au slug principal définit dans l'objet ou par convention
-        if (key === 'how-to-buy-campervan-nz') return false;
-        if (key === 'how-to-inspect-a-van') return false;
-        return true;
+    const uniqueGuides = Object.entries(localizedGuides).filter(([key, guide]) => {
+        return !['how-to-buy-campervan-nz', 'how-to-inspect-a-van'].includes(key);
     });
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <SeoHead
-                title="Travel & Campervan Guides New Zealand | Kiwi Van Market"
-                description="Everything you need to know about buying, selling, and living in a campervan in New Zealand. Expert tips for backpackers and travellers."
+                title={t('guides.hub.seo_title')}
+                description={t('guides.hub.seo_description')}
                 type="website"
             />
 
@@ -36,28 +40,28 @@ export default function GuidesHubPage() {
                 <div className="max-w-6xl mx-auto text-center">
                     <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full mb-6 border border-white/30">
                         <BookOpen size={18} />
-                        <span className="text-sm font-semibold uppercase tracking-wider">Knowledge Base</span>
+                        <span className="text-sm font-semibold uppercase tracking-wider">{t('guides.hub.badge')}</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight">
-                        The Ultimate New Zealand <br />
-                        <span className="text-emerald-100">Campervan Guides</span>
+                        {t('guides.hub.title_1')} <br />
+                        <span className="text-emerald-100">{t('guides.hub.title_2')}</span>
                     </h1>
                     <p className="text-xl text-white/90 max-w-2xl mx-auto mb-10 leading-relaxed">
-                        From mechanical inspections to freedom camping rules, we've got you covered for your NZ road trip adventure.
+                        {t('guides.hub.subtitle')}
                     </p>
 
                     <div className="flex flex-wrap justify-center gap-4">
                         <div className="flex items-center gap-2 text-emerald-50 text-sm bg-black/10 px-4 py-2 rounded-lg">
-                            <CheckCircle size={16} /> 2025 Updated
+                            <CheckCircle size={16} /> {t('guides.hub.tag_updated')}
                         </div>
                         <div className="flex items-center gap-2 text-emerald-50 text-sm bg-black/10 px-4 py-2 rounded-lg">
-                            <CheckCircle size={16} /> Expert Verified
+                            <CheckCircle size={16} /> {t('guides.hub.tag_verified')}
                         </div>
                     </div>
                 </div>
             </header>
 
-            {/* Internal Navigation / Filters (Optional placeholder for future) */}
+            {/* Internal Navigation / Filters */}
             <div className="max-w-7xl mx-auto px-4 -mt-10">
                 <div className="bg-white rounded-3xl shadow-xl p-8 grid md:grid-cols-3 gap-8 border border-emerald-100">
                     <div className="flex items-center gap-4">
@@ -65,8 +69,8 @@ export default function GuidesHubPage() {
                             <Search size={24} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900">Expert Tips</h3>
-                            <p className="text-xs text-gray-500">Mechanical & Legal advice</p>
+                            <h3 className="font-bold text-gray-900">{t('guides.hub.card_1_title')}</h3>
+                            <p className="text-xs text-gray-500">{t('guides.hub.card_1_desc')}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4 border-l border-r border-gray-100 px-4">
@@ -74,8 +78,8 @@ export default function GuidesHubPage() {
                             <Rocket size={24} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900">Growth Hacks</h3>
-                            <p className="text-xs text-gray-500">Resale value & viral ads</p>
+                            <h3 className="font-bold text-gray-900">{t('guides.hub.card_2_title')}</h3>
+                            <p className="text-xs text-gray-500">{t('guides.hub.card_2_desc')}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -83,8 +87,8 @@ export default function GuidesHubPage() {
                             <MapPin size={24} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900">Travel Guide</h3>
-                            <p className="text-xs text-gray-500">Freedom camping & Spots</p>
+                            <h3 className="font-bold text-gray-900">{t('guides.hub.card_3_title')}</h3>
+                            <p className="text-xs text-gray-500">{t('guides.hub.card_3_desc')}</p>
                         </div>
                     </div>
                 </div>
@@ -93,7 +97,7 @@ export default function GuidesHubPage() {
             {/* Guides Grid */}
             <main className="max-w-7xl mx-auto px-4 mt-16">
                 <div className="mb-10 flex items-center justify-between">
-                    <h2 className="text-3xl font-bold text-gray-900">Featured Guides</h2>
+                    <h2 className="text-3xl font-bold text-gray-900">{t('guides.hub.grid_title')}</h2>
                     <div className="h-1 bg-emerald-500 w-24 rounded-full mt-2 lg:hidden" />
                 </div>
 
@@ -126,7 +130,7 @@ export default function GuidesHubPage() {
                                 </div>
 
                                 <div className="flex items-center gap-2 text-emerald-600 font-bold group-hover:gap-4 transition-all uppercase text-sm tracking-widest">
-                                    Read Guide <ArrowRight size={18} />
+                                    {t('guides.hub.read_btn')} <ArrowRight size={18} />
                                 </div>
                             </div>
                         </Link>
@@ -137,16 +141,15 @@ export default function GuidesHubPage() {
                 <section className="mt-20 bg-gray-900 rounded-3xl p-10 text-center relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
                     <div className="relative z-10">
-                        <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Can't find what you're looking for?</h2>
+                        <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">{t('guides.hub.cta_title')}</h2>
                         <p className="text-gray-400 mb-8 max-w-xl mx-auto">
-                            We're constantly adding new content to help you on your road trip.
-                            Suggest a topic and we'll write an expert guide for you.
+                            {t('guides.hub.cta_subtitle')}
                         </p>
                         <a
                             href="mailto:kiwivanmarket.contact@gmail.com"
                             className="inline-block bg-white text-gray-900 px-8 py-3 rounded-xl font-bold hover:bg-emerald-50 transition shadow-lg"
                         >
-                            Contact Team
+                            {t('guides.hub.cta_btn')}
                         </a>
                     </div>
                 </section>

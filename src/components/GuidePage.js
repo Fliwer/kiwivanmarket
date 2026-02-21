@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, CheckCircle, AlertTriangle, MapPin, Shield, Car, DollarSign, Share2, Copy, Check } from 'lucide-react';
 import SeoHead from './SeoHead';
 
@@ -38,8 +39,14 @@ const GuideSchema = ({ guide, url }) => {
 };
 
 export default function GuidePage() {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
   const { slug } = useParams();
-  const guide = GUIDES[slug];
+
+  // Récupérer le guide dans la langue actuelle, ou fallback en EN
+  const langGuides = GUIDES[currentLang] || GUIDES.en;
+  const guide = langGuides[slug] || GUIDES.en[slug];
+
   const url = `https://kiwivanmarket.com/guide/${slug}`;
   const [copied, setCopied] = React.useState(false);
 
@@ -72,6 +79,7 @@ export default function GuidePage() {
       loader.classList.add('fade-out');
       setTimeout(() => loader.remove(), 500);
     }
+    window.scrollTo(0, 0);
   }, []);
 
   // 404 si guide non trouvé
@@ -80,14 +88,14 @@ export default function GuidePage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center p-8">
           <div className="text-6xl mb-4">📖</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Guide Not Found</h1>
-          <p className="text-gray-600 mb-6">This guide doesn't exist yet.</p>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('guides.page.not_found_title')}</h1>
+          <p className="text-gray-600 mb-6">{t('guides.page.not_found_desc')}</p>
           <Link
             to="/"
             className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition inline-flex items-center gap-2"
           >
             <ArrowLeft size={20} />
-            Browse Campervans
+            {t('guides.page.back')}
           </Link>
         </div>
       </div>
@@ -121,7 +129,7 @@ export default function GuidePage() {
               className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4 transition"
             >
               <ArrowLeft size={20} />
-              Back to campervans
+              {t('guides.page.back')}
             </Link>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
               {guide.title}
@@ -132,9 +140,11 @@ export default function GuidePage() {
         {/* Breadcrumb */}
         <nav className="max-w-4xl mx-auto px-4 py-4" aria-label="Breadcrumb">
           <ol className="flex items-center gap-2 text-sm text-gray-500">
-            <li><Link to="/" className="hover:text-emerald-600">Home</Link></li>
+            <li><Link to="/" className="hover:text-emerald-600">{t('guides.page.breadcrumb_home')}</Link></li>
             <li>/</li>
-            <li><span className="text-gray-800 font-medium">Guide</span></li>
+            <li><Link to="/guides" className="hover:text-emerald-600">{t('guides.page.breadcrumb_hub')}</Link></li>
+            <li>/</li>
+            <li><span className="text-gray-800 font-medium">{t('guides.page.breadcrumb_guide')}</span></li>
           </ol>
         </nav>
 
@@ -146,7 +156,7 @@ export default function GuidePage() {
           </p>
 
           {/* Sections */}
-          {content.sections.map((section, idx) => {
+          {content.sections && content.sections.map((section, idx) => {
             const Icon = IconMap[section.icon] || CheckCircle;
             return (
               <section key={idx} className="mb-12">
@@ -173,7 +183,7 @@ export default function GuidePage() {
             <section className="mb-12 bg-amber-50 border border-amber-200 rounded-2xl p-6">
               <h2 className="text-xl font-bold text-amber-800 mb-4 flex items-center gap-2">
                 <AlertTriangle size={24} />
-                Important Warnings
+                {t('guides.page.warnings_title')}
               </h2>
               <ul className="space-y-2">
                 {content.warnings.map((warning, idx) => (
@@ -204,8 +214,8 @@ export default function GuidePage() {
           <section className="mt-16 pb-8 border-b border-gray-100">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-1">Enjoyed this guide?</h3>
-                <p className="text-gray-500">Share it with fellow travellers planning their NZ road trip.</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{t('guides.page.share_title')}</h3>
+                <p className="text-gray-500">{t('guides.page.share_desc')}</p>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -213,17 +223,17 @@ export default function GuidePage() {
                   className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition shadow-md"
                 >
                   <Share2 size={18} />
-                  Share Guide
+                  {t('guides.page.share_btn')}
                 </button>
                 <button
                   onClick={handleCopy}
                   className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition border ${copied
-                      ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
-                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                    : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
                     }`}
                 >
                   {copied ? <Check size={18} /> : <Copy size={18} />}
-                  {copied ? 'Copied!' : 'Copy Link'}
+                  {copied ? t('guides.page.copied') : t('guides.page.copy_link')}
                 </button>
               </div>
             </div>
@@ -231,10 +241,10 @@ export default function GuidePage() {
 
           {/* Other Guides */}
           <section className="mt-12">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">More Guides</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">{t('guides.page.more_guides')}</h3>
             <div className="grid md:grid-cols-2 gap-4">
-              {Object.entries(GUIDES)
-                .filter(([key]) => key !== slug)
+              {Object.entries(langGuides)
+                .filter(([key]) => key !== slug && !['how-to-buy-campervan-nz', 'how-to-inspect-a-van'].includes(key))
                 .slice(0, 2)
                 .map(([key, g]) => (
                   <Link
@@ -260,7 +270,7 @@ export default function GuidePage() {
               <span className="font-bold text-xl">Kiwi Van Market</span>
             </Link>
             <p className="text-gray-400 text-sm">
-              The #1 marketplace for campervans in New Zealand
+              {t('footer.subtitle')}
             </p>
           </div>
         </footer>
