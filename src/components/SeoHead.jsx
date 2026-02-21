@@ -17,12 +17,16 @@ export default function SeoHead({ title, description, image, type = 'website' })
     // Base URL
     const origin = 'https://kiwivanmarket.com';
     const currentPath = location.pathname;
+
+    // Get language from URL parameters to ensure stable canonicals for SEO
+    const searchParams = new URLSearchParams(location.search);
+    const urlLang = searchParams.get('lang');
     const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
 
-    // Canonical URL logic: No ?lang=en for the default language
-    const canonicalUrl = currentLang === 'en'
+    // Canonical URL logic: Stable URL based on the presence of ?lang parameter
+    const canonicalUrl = (!urlLang || urlLang === 'en')
         ? `${origin}${currentPath}`
-        : `${origin}${currentPath}?lang=${currentLang}`;
+        : `${origin}${currentPath}?lang=${urlLang}`;
 
     // Supported languages
     const languages = ['en', 'fr', 'es'];
