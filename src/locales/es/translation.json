@@ -137,5 +137,43 @@
         "sticker_blue": "Etiqueta Azul",
         "sticker_green": "Etiqueta Verde",
         "not_specified": "No especificado"
+    },
+    "guides": {
+        "hub": {
+            "seo_title": "Guías de Viaje y Campervan Nueva Zelanda | Kiwi Van Market",
+            "seo_description": "Todo lo que necesitas saber sobre comprar, vender y vivir en una campervan en Nueva Zelanda. Consejos de expertos para mochileros.",
+            "badge": "Base de Conocimientos",
+            "title_1": "Las Guías Definitivas de",
+            "title_2": "Campervans en NZ",
+            "subtitle": "Desde inspecciones mecánicas hasta reglas de freedom camping, te acompañamos en tu aventura en van por Nueva Zelanda.",
+            "tag_updated": "Actualizado 2025",
+            "tag_verified": "Verificado por Expertos",
+            "card_1_title": "Consejos de Expertos",
+            "card_1_desc": "Consejos Mecánicos y Legales",
+            "card_2_title": "Trucos de Reventa",
+            "card_2_desc": "Valor de reventa y Anuncios virales",
+            "card_3_title": "Guía de Viaje",
+            "card_3_desc": "Freedom camping y Spots secretos",
+            "grid_title": "Guías Destacadas",
+            "read_btn": "Leer Guía",
+            "cta_title": "¿No encuentras lo que buscas?",
+            "cta_subtitle": "Añadimos contenido constantemente. Sugiere un tema y redactaremos una guía experta para ti.",
+            "cta_btn": "Contactar al Equipo"
+        },
+        "page": {
+            "back": "Volver a las vans",
+            "breadcrumb_home": "Inicio",
+            "breadcrumb_hub": "Guías",
+            "breadcrumb_guide": "Guía",
+            "not_found_title": "Guía no encontrada",
+            "not_found_desc": "Esta guía aún no existe.",
+            "warnings_title": "Advertencias Importantes",
+            "share_title": "¿Te gustó esta guía?",
+            "share_desc": "Compártela con otros viajeros que estén planeando su road trip.",
+            "share_btn": "Compartir",
+            "copy_link": "Copiar enlace",
+            "copied": "¡Copiado!",
+            "more_guides": "Otras Guías"
+        }
     }
 }

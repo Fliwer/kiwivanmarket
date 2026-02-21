@@ -615,6 +615,260 @@ export const GUIDES = {
                 }
             }
         }
+    },
+    es: {
+        'buying-campervan-nz': {
+            title: 'Cómo comprar una campervan en Nueva Zelanda - Guía Completa 2025',
+            description: 'Todo lo que necesitas saber sobre comprar una campervan en Nueva Zelanda. WOF, REGO, certificación self-contained, mejores marcas, precios y consejos para mochileros.',
+            heroImage: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=1200',
+            content: {
+                intro: `Comprar una campervan en Nueva Zelanda es una de las mejores decisiones que puedes tomar como mochilero o viajero. Te da la libertad de explorar este hermoso país a tu propio ritmo, dormir donde quieras (¡legalmente!) y ahorrar dinero en alojamiento.`,
+                sections: [
+                    {
+                        title: 'Qué revisar antes de comprar',
+                        icon: 'CheckCircle',
+                        items: [
+                            { title: 'WOF (Warrant of Fitness)', text: 'Es la inspección de seguridad vehicular de NZ. Revisa la fecha de vencimiento; necesitas un WOF válido para conducir legalmente. Las vans de más de 12 años necesitan un WOF cada 6 meses.' },
+                            { title: 'REGO (Registration)', text: 'El registro del vehículo debe estar al día. Puedes verificar el estado de cualquier vehículo gratis en el sitio web de NZTA usando el número de matrícula.' },
+                            { title: 'Papeles de Propiedad', text: 'Asegúrate de que el vendedor tenga los papeles de propiedad originales y que su identificación coincida. Nunca compres una van sin ver estos documentos.' },
+                            { title: 'Estado Mecánico', text: 'Revisa los niveles de aceite, escucha ruidos del motor, prueba todas las marchas y busca óxido debajo. Considera pagar por una inspección profesional ($100-200).' },
+                        ]
+                    },
+                    {
+                        title: 'Certificación Self-Contained',
+                        icon: 'Shield',
+                        items: [
+                            { title: '¿Qué es Self-Contained?', text: 'Un vehículo autónomo tiene baño, tanque de agua limpia (mín. 4L por persona) y tanque de aguas grises que cumple con la norma NZS 5465.' },
+                            { title: 'Por qué lo necesitas', text: 'Las vans self-contained pueden acampar legalmente (freedom camp) en muchos lugares hermosos de NZ. Sin esto, estarás limitado a campings de pago.' },
+                            { title: 'La Tarjeta Azul', text: 'Busca el adhesivo azul oficial de self-contained. Es válido por 4 años. Los adhesivos falsos pueden resultar en multas de más de $200.' },
+                        ]
+                    },
+                    {
+                        title: 'Mejores marcas de campervans en NZ',
+                        icon: 'Car',
+                        items: [
+                            { title: 'Toyota Hiace', text: 'La opción más popular. Confiables, repuestos baratos y fáciles de encontrar, buen consumo de combustible. Precios: $8,000-$20,000.' },
+                            { title: 'Nissan Caravan', text: 'Espaciosa y asequible. Fiabilidad similar a la Hiace. Precios: $6,000-$15,000.' },
+                            { title: 'Mitsubishi Delica', text: 'Opción 4WD para viajeros aventureros. Ideal para caminos de grava. Precios: $8,000-$18,000.' },
+                        ]
+                    },
+                    {
+                        title: 'Guía de Precios',
+                        icon: 'DollarSign',
+                        items: [
+                            { title: 'Económico ($5,000-$10,000)', text: 'Vans antiguas (2000-2005), equipamiento básico, pueden necesitar arreglos. Buenas para viajes cortos (1-3 meses).' },
+                            { title: 'Gama Media ($10,000-$18,000)', text: 'Vans bien mantenidas (2005-2012), buen equipamiento, fiables. Ideales para viajes de 3-6 meses.' },
+                            { title: 'Premium ($18,000+)', text: 'Vans más nuevas, conversiones profesionales, paneles solares, todas las comodidades. Lo mejor para viajes de largo plazo.' },
+                        ]
+                    },
+                ],
+                warnings: [
+                    'Nunca pagues un depósito sin ver la van en persona',
+                    'Desconfía de precios que parezcan demasiado buenos para ser verdad',
+                    'Revisa la van durante el día',
+                    'Haz una prueba de manejo en diferentes tipos de camino (autopista, colinas)',
+                ],
+                cta: {
+                    title: '¿Listo para encontrar tu van ideal?',
+                    text: 'Explora campervans self-contained con WOF válido y opciones de recompra en Kiwi Van Market.',
+                    buttonText: 'Ver Campervans',
+                    buttonLink: '/',
+                }
+            }
+        },
+        'freedom-camping-nz': {
+            title: 'Freedom Camping en Nueva Zelanda - Reglas y Mejores Spots 2025',
+            description: 'Guía completa de freedom camping en Nueva Zelanda. Dónde acampar gratis, requisitos de self-contained y multas a evitar.',
+            heroImage: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200',
+            content: {
+                intro: `El freedom camping es una de las mejores formas de experimentar la impresionante naturaleza de Nueva Zelanda sin gastar mucho dinero. Pero hay reglas que debes seguir para acampar legalmente y proteger el medio ambiente.`,
+                sections: [
+                    {
+                        title: 'Reglas de Freedom Camping',
+                        icon: 'CheckCircle',
+                        items: [
+                            { title: 'Self-Contained Obligatorio', text: 'La mayoría de los lugares de freedom camping requieren un vehículo certificado como autónomo (self-contained).' },
+                            { title: 'Revisa las reglas locales', text: 'Cada región tiene reglas diferentes. Usa las apps CamperMate o WikiCamps para encontrar lugares legales y restricciones actuales.' },
+                            { title: 'Estancia Máxima', text: 'La mayoría de los lugares permiten un máximo de 1-2 noches. Respeta siempre los límites.' },
+                            { title: 'No dejes rastro', text: 'Lleva toda tu basura contigo y usa las estaciones de descarga (dump stations) adecuadas.' },
+                        ]
+                    },
+                    {
+                        title: 'Multas a evitar',
+                        icon: 'AlertTriangle',
+                        items: [
+                            { title: 'Acampar en zonas prohibidas', text: 'Multa instantánea de $200. Puede llegar a $10,000 para infractores reincidentes.' },
+                            { title: 'Adhesivo falso de Self-Contained', text: 'Multa de $200+. Los oficiales revisan que tu van realmente tenga las instalaciones requeridas.' },
+                        ]
+                    },
+                ],
+                warnings: [
+                    'Queenstown y áreas turísticas populares tienen reglas muy estrictas de prohibición',
+                    'El verano (Dic-Feb) es la época más concurrida; los lugares se llenan temprano',
+                ],
+                cta: {
+                    title: 'Consigue una van Self-Contained',
+                    text: 'El freedom camping solo es posible con un vehículo certificado. Encuentra uno en Kiwi Van Market.',
+                    buttonText: 'Ver Vans Self-Contained',
+                    buttonLink: '/?selfContained=true',
+                }
+            }
+        },
+        'selling-campervan-nz': {
+            title: 'Cómo vender tu campervan en Nueva Zelanda - Guía Rápida',
+            description: 'Vende tu campervan rápido en Nueva Zelanda. Consejos para precios, fotos y descripción.',
+            heroImage: 'https://images.unsplash.com/photo-1533591917513-091dc1b8d9cd?w=1200',
+            content: {
+                intro: `Vender tu campervan al final de tu aventura en Nueva Zelanda no tiene por qué ser estresante. Con el enfoque correcto, puedes venderla rápido y a un precio justo.`,
+                sections: [
+                    {
+                        title: 'Preparando tu van para la venta',
+                        icon: 'CheckCircle',
+                        items: [
+                            { title: 'Limpieza profunda', text: 'La primera impresión importa. Limpia por dentro y por fuera, elimina objetos personales.' },
+                            { title: 'Pequeñas reparaciones', text: 'Arregla problemas menores para dar confianza al comprador.' },
+                            { title: 'Consigue un WOF nuevo', text: 'Una van con más de 6 meses de WOF se vende más rápido y por más dinero.' },
+                        ]
+                    },
+                ],
+                warnings: [
+                    'Cuidado con estafadores que piden pagar por métodos inusuales',
+                    'Nunca entregues las llaves antes de que el pago se haya acreditado',
+                ],
+                cta: {
+                    title: 'Publica tu van gratis',
+                    text: 'Llega a miles de mochileros que buscan campervans hoy mismo.',
+                    buttonText: 'Vender mi Van',
+                    buttonLink: '/',
+                }
+            }
+        },
+        'how-to-inspect-campervan-nz': {
+            title: 'Inspección de Campervan Experta - La Checklist Definitiva en NZ',
+            description: '¡No compres un desastre! Nuestra guía experta cubre todo: salud del motor, óxido estructural y sistemas de vivienda.',
+            heroImage: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200',
+            content: {
+                intro: `Comprar una campervan es tu mayor inversión en NZ. Un interior "bonito" a menudo esconde pesadillas mecánicas. Esta guía te da las herramientas técnicas para inspeccionar el corazón del vehículo.`,
+                sections: [
+                    {
+                        title: '1. El motor (bajo el capó)',
+                        icon: 'CheckCircle',
+                        items: [
+                            { title: 'Prueba de arranque en frío', text: 'Toca el motor antes de arrancar. Si está caliente, el vendedor podría estar ocultando problemas de arranque o humo.' },
+                            { title: 'Prueba de la "Mayonesa"', text: 'Abre el tapón del aceite. Un residuo blanco/beige indica una junta de culata quemada, un fallo catastrófico y costoso.' },
+                        ]
+                    },
+                    {
+                        title: '2. Integridad estructural',
+                        icon: 'Shield',
+                        items: [
+                            { title: 'Chasis y óxido', text: 'Revisa debajo con una linterna. El óxido superficial está bien; el óxido estructural (agujeros) hará que no pases el WOF.' },
+                        ]
+                    },
+                ],
+                warnings: [
+                    'NUNCA compres sin una inspección previa de un mecánico independiente ($140-180)',
+                    'Revisa el VIN en CarJam.co.nz para asegurar que no hay deudas pendientes',
+                ],
+                cta: {
+                    title: '¿Encontraste una buena?',
+                    text: 'Compara con otros anuncios para asegurar que pagas un precio justo.',
+                    buttonText: 'Comparar Anuncios',
+                    buttonLink: '/',
+                }
+            }
+        },
+        'winter-camping-nz': {
+            title: 'Guía de Supervivencia: Camping en Invierno en Nueva Zelanda 2025',
+            description: '¿Se puede acampar en NZ en invierno? ¡Sí! Descubre las mejores vans calefaccionadas y equipo esencial.',
+            heroImage: 'https://images.unsplash.com/photo-1418985991508-e47386d96a71?w=1200',
+            content: {
+                intro: `El invierno en Nueva Zelanda (junio a agosto) transforma el paisaje en un paraíso nevado. Si vas bien preparado, disfrutarás de precios más bajos y campings vacíos.`,
+                sections: [
+                    {
+                        title: 'Eligiendo una van para el invierno',
+                        icon: 'Shield',
+                        items: [
+                            { title: 'Calefacción Diesel', text: 'El estándar de oro para la vida en van en invierno. Mantiene el interior a 20°C incluso en ventiscas.' },
+                            { title: 'El aislamiento es clave', text: 'Busca vans aisladas con lana de oveja o espuma profesional.' },
+                        ]
+                    },
+                ],
+                warnings: [
+                    'El hielo negro (Black ice) es un peligro mayor; conduce más tarde por la mañana',
+                    'Revisa siempre la app de MetService para alertas climáticas',
+                ],
+                cta: {
+                    title: '¿Necesitas una van con calefacción?',
+                    text: 'Filtra nuestros anuncios para encontrar vans aisladas con calefacción diesel.',
+                    buttonText: 'Ver Vans de Invierno',
+                    buttonLink: '/',
+                }
+            }
+        },
+        'south-island-road-trip': {
+            title: 'El Itinerario Definitivo: Road Trip de 14 días por la Isla Sur',
+            description: 'El viaje por carretera más icónico del mundo. De Christchurch a Milford Sound en 2 semanas.',
+            heroImage: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200',
+            content: {
+                intro: `La Isla Sur de Nueva Zelanda es el paraíso definitivo para las campervans. Este itinerario te llevará por lagos turquesa y fiordos dramáticos.`,
+                sections: [
+                    {
+                        title: 'Semana 1: Lagos y Glaciares',
+                        icon: 'MapPin',
+                        items: [
+                            { title: 'Días 1-3: Lagos Tekapo y Pukaki', text: 'Observación de estrellas y caminatas en Mt Cook. Las aguas más azules del país.' },
+                            { title: 'Días 4-5: Wanaka', text: 'El famoso árbol de Wanaka y la caminata a Roy\'s Peak.' },
+                        ]
+                    },
+                ],
+                warnings: [
+                    'Las moscas de arena (sandflies) en la costa oeste son brutales; compra repelente local',
+                    'La gasolina es cara en pueblos pequeños; reposta en ciudades principales',
+                ],
+                cta: {
+                    title: 'Comienza tu viaje',
+                    text: 'Recoge tu campervan en Christchurch y empieza la aventura hoy mismo.',
+                    buttonText: 'Vans en Christchurch',
+                    buttonLink: '/',
+                }
+            }
+        },
+        'best-vanlife-apps-nz': {
+            title: '6 Apps Esenciales para todo Viajero en Van en NZ (2025)',
+            description: '¡No te vayas sin estas! De encontrar campings secretos a ahorrar en gasolina.',
+            heroImage: 'https://images.unsplash.com/photo-1512428559087-560fa5ceab42?w=1200',
+            content: {
+                intro: `En 2025, tu teléfono es tan importante como el repuesto de tu van. Estas 6 apps marcan la diferencia en tu aventura.`,
+                sections: [
+                    {
+                        title: 'Campings e Instalaciones',
+                        icon: 'MapPin',
+                        items: [
+                            { title: 'CamperMate (Gratis)', text: 'La app n.º 1. Muestra spots de freedom camping, baños y gasolineras.' },
+                            { title: 'WikiCamps NZ', text: 'Ideal para encontrar joyas ocultas que CamperMate podría omitir.' },
+                        ]
+                    },
+                    {
+                        title: 'Presupuesto y Combustible',
+                        icon: 'DollarSign',
+                        items: [
+                            { title: 'Gaspy', text: 'App de precios de combustible impulsada por la comunidad. Ahorra 10-20 centavos por litro.' },
+                        ]
+                    },
+                ],
+                warnings: [
+                    'Descarga siempre mapas sin conexión en Google Maps',
+                    'No confíes en los tiempos del GPS; las rutas en NZ son sinuosas',
+                ],
+                cta: {
+                    title: '¿Listo para la tecnología?',
+                    text: 'Equipa tu van con un cargador de 12V para mantener tu móvil con batería.',
+                    buttonText: 'Ver Especificaciones',
+                    buttonLink: '/',
+                }
+            }
+        }
     }
 };
 
