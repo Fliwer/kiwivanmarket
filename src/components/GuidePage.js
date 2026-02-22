@@ -4,10 +4,11 @@ import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft, CheckCircle, AlertTriangle, MapPin, Shield,
   Car, DollarSign, Share2, Copy, Check, Clock, BookOpen,
-  ChevronRight, Globe
+  ChevronRight, Globe, Calculator
 } from 'lucide-react';
 import SeoHead from './SeoHead';
 import LanguageSelector from './LanguageSelector';
+import BuybackCalculator from './BuybackCalculator';
 import { GUIDES, IconMap } from '../constants/guides';
 
 // Schema.org pour les guides
@@ -52,6 +53,7 @@ export default function GuidePage() {
 
   const [activeSection, setActiveSection] = useState(0);
   const sectionRefs = useRef([]);
+  const calculatorRef = useRef(null);
 
   // Récupérer le guide dans la langue actuelle, ou fallback en EN
   const langGuides = GUIDES[currentLang] || GUIDES.en;
@@ -119,14 +121,14 @@ export default function GuidePage() {
 
   if (!guide) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center p-8">
-          <div className="text-6xl mb-4">📖</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('guides.page.not_found_title')}</h1>
-          <p className="text-gray-600 mb-6">{t('guides.page.not_found_desc')}</p>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans">
+        <div className="text-center p-12 bg-white rounded-[2rem] shadow-xl border border-slate-100 max-w-md">
+          <div className="text-7xl mb-6">📖</div>
+          <h1 className="text-3xl font-black text-slate-900 mb-3">{t('guides.page.not_found_title')}</h1>
+          <p className="text-slate-500 mb-8 font-medium">{t('guides.page.not_found_desc')}</p>
           <Link
             to="/"
-            className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition inline-flex items-center gap-2"
+            className="bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20 inline-flex items-center gap-2"
           >
             <ArrowLeft size={20} />
             {t('guides.page.back')}
@@ -161,40 +163,40 @@ export default function GuidePage() {
         </div>
 
         {/* Hero Section */}
-        <div className="relative h-[60vh] min-h-[500px] w-full overflow-hidden">
+        <div className="relative h-[65vh] min-h-[550px] w-full overflow-hidden bg-slate-900">
           <img
             src={guide.heroImage}
             alt={guide.title}
-            className="absolute inset-0 w-full h-full object-cover scale-105"
+            className="absolute inset-0 w-full h-full object-cover opacity-60 scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-black/20" />
 
-          <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-end pb-12">
-            <div className="flex flex-wrap items-center gap-4 mb-6">
+          <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-end pb-16">
+            <div className="flex flex-wrap items-center gap-4 mb-8">
               <div className="hidden lg:block">
                 <LanguageSelector />
               </div>
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-gray-900 leading-tight mb-6 max-w-4xl drop-shadow-sm">
+            <h1 className="text-5xl md:text-6xl lg:text-8xl font-black text-slate-900 leading-[0.9] mb-8 max-w-4xl tracking-tighter">
               {guide.title}
             </h1>
 
-            <div className="flex flex-wrap items-center gap-4 mb-8">
+            <div className="flex flex-wrap items-center gap-4">
               <Link
                 to="/guides"
-                className="flex items-center gap-2 text-emerald-600 font-bold hover:text-emerald-700 transition"
+                className="flex items-center gap-2 text-emerald-600 font-black uppercase text-xs tracking-widest hover:text-emerald-500 transition"
               >
-                <ArrowLeft size={20} />
+                <ArrowLeft size={18} />
                 {t('guides.backToList')}
               </Link>
-              <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full">
-                <Clock size={18} />
-                <span>{readingTime} min de lecture</span>
+              <div className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl shadow-emerald-900/20">
+                <Clock size={16} />
+                <span>{readingTime} min read</span>
               </div>
-              <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full">
-                <BookOpen size={18} />
-                <span>Guide Expert 2025</span>
+              <div className="flex items-center gap-2 bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest shadow-xl">
+                <BookOpen size={16} />
+                <span>Expert Guide 2025</span>
               </div>
             </div>
           </div>
@@ -208,30 +210,45 @@ export default function GuidePage() {
             <aside className="hidden lg:block w-72 shrink-0">
               <div className="sticky top-24 space-y-8">
                 <div>
-                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Sommaire</h3>
-                  <nav className="space-y-1">
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Table of Contents</h3>
+                  <nav className="space-y-1.5">
                     {content.sections.map((section, idx) => (
                       <button
                         key={idx}
                         onClick={() => sectionRefs.current[idx]?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
-                        className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-between group ${activeSection === idx
-                          ? 'bg-emerald-50 text-emerald-700 translate-x-1'
-                          : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                        className={`w-full text-left px-4 py-3 rounded-2xl text-sm font-bold transition-all flex items-center justify-between group ${activeSection === idx
+                          ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/10'
+                          : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
                           }`}
                       >
                         {section.title}
                         <ChevronRight size={14} className={`transition-transform ${activeSection === idx ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-hover:translate-x-1'}`} />
                       </button>
                     ))}
+                    {/* Lien vers le calculateur dans le sommaire */}
+                    {((slug === 'buying-campervan-nz') || (slug === 'selling-campervan-nz')) && (
+                      <button
+                        onClick={() => calculatorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                        className="w-full text-left px-4 py-3 rounded-2xl text-sm font-black text-emerald-600 hover:bg-emerald-50 transition-all flex items-center justify-between group border-2 border-emerald-100 mt-4"
+                      >
+                        {currentLang === 'fr' ? 'Estimer mon Buyback' : currentLang === 'es' ? 'Estimar mi Buyback' : 'Estimate Buyback'}
+                        <Calculator size={14} />
+                      </button>
+                    )}
                   </nav>
                 </div>
 
-                <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100">
-                  <h4 className="font-bold text-gray-900 mb-2">Besoin d'aide ?</h4>
-                  <p className="text-sm text-gray-500 mb-4">Nos experts Kiwi Van Market sont là pour vous accompagner dans votre achat.</p>
-                  <button className="w-full bg-white text-gray-900 border border-gray-200 py-2.5 rounded-xl text-sm font-bold hover:shadow-md transition">
-                    Contactez-nous
-                  </button>
+                <div className="p-8 bg-slate-900 rounded-[2rem] text-white shadow-2xl relative overflow-hidden">
+                  <div className="relative z-10">
+                    <h4 className="font-black text-xl mb-3 tracking-tight">Need expert advice?</h4>
+                    <p className="text-sm text-slate-400 mb-6 font-medium leading-relaxed">Our KiwiVan specialists are here to help you secure the best deal.</p>
+                    <button className="w-full bg-emerald-600 text-white py-3 rounded-2xl text-sm font-black hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20">
+                      Contact Us
+                    </button>
+                  </div>
+                  <div className="absolute -bottom-4 -right-4 text-white/5 transform rotate-12">
+                    <Shield size={120} />
+                  </div>
                 </div>
               </div>
             </aside>
@@ -250,44 +267,56 @@ export default function GuidePage() {
                 {content.sections && content.sections.map((section, idx) => {
                   const Icon = IconMap[section.icon] || CheckCircle;
                   return (
-                    <section
-                      key={idx}
-                      ref={el => sectionRefs.current[idx] = el}
-                      className="scroll-mt-32 group"
-                    >
-                      <div className="flex items-center gap-4 mb-8">
-                        <div className="w-16 h-16 bg-white shadow-xl shadow-emerald-100 border border-emerald-50 rounded-2xl flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-                          <Icon size={28} className="text-emerald-500" />
-                        </div>
-                        <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-                          {section.title}
-                        </h2>
-                      </div>
-
-                      <div className="grid gap-6">
-                        {section.items.map((item, itemIdx) => (
-                          <div
-                            key={itemIdx}
-                            className="relative bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group/item"
-                          >
-                            <div className="absolute top-0 left-0 w-2 h-0 bg-emerald-500 group-hover/item:h-full transition-all duration-300" />
-                            <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-3">
-                              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                              {item.title}
-                            </h3>
-                            <p className="text-gray-600 leading-relaxed text-lg">{item.text}</p>
-
-                            {/* Expert Badge on items */}
-                            {item.expertTip && (
-                              <div className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">
-                                <Shield size={12} />
-                                {currentLang === 'fr' ? "Conseil d'expert" : currentLang === 'es' ? "Consejo de experto" : "Expert Tip"}
-                              </div>
-                            )}
+                    <React.Fragment key={idx}>
+                      <section
+                        ref={el => sectionRefs.current[idx] = el}
+                        className="scroll-mt-32 group"
+                      >
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="w-16 h-16 bg-white shadow-xl shadow-emerald-100 border border-emerald-50 rounded-2xl flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                            <Icon size={28} className="text-emerald-500" />
                           </div>
-                        ))}
-                      </div>
-                    </section>
+                          <h2 className="text-3xl font-black text-gray-900 tracking-tight">
+                            {section.title}
+                          </h2>
+                        </div>
+
+                        <div className="grid gap-6">
+                          {section.items.map((item, itemIdx) => (
+                            <div
+                              key={itemIdx}
+                              className="relative bg-white rounded-3xl p-8 border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group/item"
+                            >
+                              <div className="absolute top-0 left-0 w-2 h-0 bg-emerald-500 group-hover/item:h-full transition-all duration-300" />
+                              <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-3">
+                                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                                {item.title}
+                              </h3>
+                              <p className="text-gray-600 leading-relaxed text-lg">{item.text}</p>
+
+                              {/* Expert Badge on items */}
+                              {item.expertTip && (
+                                <div className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-wider">
+                                  <Shield size={12} />
+                                  {currentLang === 'fr' ? "Conseil d'expert" : currentLang === 'es' ? "Consejo de experto" : "Expert Tip"}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+
+                      {/* Injection du calculateur après la section de prix */}
+                      {((slug === 'buying-campervan-nz' && idx === 3) ||
+                        (slug === 'selling-campervan-nz' && idx === 2)) && (
+                          <div
+                            ref={calculatorRef}
+                            className="my-16 animate-in fade-in slide-in-from-bottom-8 duration-700 scroll-mt-32"
+                          >
+                            <BuybackCalculator isEmbedded={true} />
+                          </div>
+                        )}
+                    </React.Fragment>
                   );
                 })}
 
@@ -381,46 +410,44 @@ export default function GuidePage() {
         </div>
 
         {/* Global Footer */}
-        <footer className="bg-gray-50 pt-20 pb-12 border-t border-gray-100">
+        <footer className="bg-slate-900 text-white py-20 mt-24">
           <div className="max-w-7xl mx-auto px-6">
-            <div className="grid md:grid-cols-3 gap-12 mb-16">
-              <div className="space-y-6">
-                <Link to="/" className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white shadow-lg flex items-center justify-center border border-gray-50 overflow-hidden">
-                    <img src="/kiwi-van-logo-48.webp" className="w-8 h-8 object-contain" alt="Logo" />
+            <div className="flex flex-col items-center">
+              <Link to="/" className="flex items-center gap-3 mb-10 group">
+                <div className="w-16 h-16 rounded-2xl bg-[#f7eedd] flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
+                  <img src="/kiwi-van-logo-48.webp" className="w-12 h-12 object-contain" alt="Logo" />
+                </div>
+                <div className="text-left">
+                  <span className="block font-black text-2xl tracking-tighter text-white">KiwiVan Market</span>
+                  <span className="block text-slate-400 text-xs font-black uppercase tracking-[0.2em]">{t('van_page.footer_slogan')}</span>
+                </div>
+              </Link>
+
+              <div className="grid md:grid-cols-2 gap-16 w-full max-w-4xl mb-20 border-y border-white/5 py-12">
+                <div>
+                  <h4 className="font-black text-white mb-6 uppercase tracking-[0.2em] text-[10px]">{currentLang === 'fr' ? 'Navigation' : 'Explore'}</h4>
+                  <div className="flex flex-wrap gap-4">
+                    <Link to="/" className="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-bold transition-all">{t('hero.cta_browse')}</Link>
+                    <Link to="/sell" className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold transition-all">{t('hero.cta_sell')}</Link>
+                    <Link to="/guides" className="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-bold transition-all">{currentLang === 'fr' ? 'Guides' : 'Expert Guides'}</Link>
                   </div>
-                  <span className="font-black text-2xl tracking-tighter text-gray-900">Kiwi Van Market</span>
-                </Link>
-                <p className="text-gray-500 leading-relaxed">
-                  La marketplace n°1 pour acheter et vendre votre van en Nouvelle-Zélande. Expertise, sécurité et passion vanlife.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-8 col-span-2">
-                <div>
-                  <h4 className="font-black text-gray-900 mb-6 uppercase tracking-widest text-xs">Langues</h4>
-                  <ul className="space-y-4 text-gray-500 font-medium">
-                    <li><button onClick={() => i18n.changeLanguage('fr')} className="hover:text-emerald-600">Français</button></li>
-                    <li><button onClick={() => i18n.changeLanguage('en')} className="hover:text-emerald-600">English</button></li>
-                    <li><button onClick={() => i18n.changeLanguage('es')} className="hover:text-emerald-600">Español</button></li>
-                  </ul>
                 </div>
                 <div>
-                  <h4 className="font-black text-gray-900 mb-6 uppercase tracking-widest text-xs">Navigation</h4>
-                  <ul className="space-y-4 text-gray-500 font-medium">
-                    <li><Link to="/guides" className="hover:text-emerald-600">Tous les guides</Link></li>
-                    <li><Link to="/" className="hover:text-emerald-600">Acheter</Link></li>
-                    <li><Link to="/sell" className="hover:text-emerald-600">Vendre</Link></li>
-                  </ul>
+                  <h4 className="font-black text-white mb-6 uppercase tracking-[0.2em] text-[10px]">{currentLang === 'fr' ? 'Langues' : 'Language'}</h4>
+                  <div className="flex gap-4">
+                    <button onClick={() => i18n.changeLanguage('fr')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'fr' ? 'bg-white text-slate-900' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>FR</button>
+                    <button onClick={() => i18n.changeLanguage('en')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'en' ? 'bg-white text-slate-900' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>EN</button>
+                    <button onClick={() => i18n.changeLanguage('es')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'es' ? 'bg-white text-slate-900' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>ES</button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-gray-400 text-sm font-medium">© 2025 Kiwi Van Market. Fait avec ❤️ pour les voyageurs.</p>
-              <div className="flex gap-6 text-sm text-gray-400 font-bold">
-                <Link to="/terms" className="hover:text-gray-900 transition">Conditions</Link>
-                <Link to="/privacy" className="hover:text-gray-900 transition">Confidentialité</Link>
+              <div className="text-center">
+                <p className="text-slate-500 text-xs font-black uppercase tracking-[0.3em] mb-4">© 2025 KiwiVan Market • New Zealand</p>
+                <div className="flex justify-center gap-8 text-[10px] font-black uppercase tracking-widest text-slate-600">
+                  <Link to="/terms" className="hover:text-emerald-500 transition-colors">Terms</Link>
+                  <Link to="/privacy" className="hover:text-emerald-500 transition-colors">Privacy</Link>
+                </div>
               </div>
             </div>
           </div>

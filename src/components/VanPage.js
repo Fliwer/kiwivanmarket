@@ -190,15 +190,17 @@ const VanPageSkeleton = () => (
 export default function VanPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
-  const { toggleFavorite, isFavorite } = useFavorites();
+  const { currentUser, logout } = useAuth();
+  const { toggleFavorite, isFavorite, count: favoritesCount } = useFavorites();
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const { t, i18n } = useTranslation();
 
   const [van, setVan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showShareMenu, setShowShareMenu] = useState(false);
 
   // Ref pour éviter d'incrémenter les vues 2x (React StrictMode)
   const viewIncremented = useRef(false);
@@ -360,78 +362,126 @@ ${shareUrl}
       {/* SEO Meta Tags */}
       <VanSEO van={van} />
 
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between h-16">
-              {/* Bouton retour */}
+      <div className="min-h-screen bg-slate-50">
+        {/* Header - Floating Glass Design */}
+        <header className="fixed top-0 left-0 right-0 z-50 p-4 transition-all duration-300">
+          <div className="max-w-7xl mx-auto glass-effect rounded-3xl p-3 flex items-center justify-between shadow-2xl border border-white/40">
+            <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/')}
-                className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition text-white font-semibold"
+                className="p-2.5 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 rounded-2xl transition-all"
+                title={t('van_page.back')}
               >
                 <ArrowLeft size={20} />
-                <span className="hidden sm:inline">{t('van_page.back')}</span>
               </button>
-
-              {/* Logo centré */}
-              <Link to="/" className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center shadow-lg overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
-                  <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-8 h-8 object-contain" />
+              <Link to="/" className="flex items-center gap-2 group">
+                <div className="w-10 h-10 rounded-xl bg-[#f7eedd] flex items-center justify-center shadow-lg transition-transform group-hover:scale-105">
+                  <img src="/kiwi-van-logo-48.webp" alt="KiwiVan" className="w-8 h-8 object-contain" />
                 </div>
-                <span className="hidden md:block font-bold">Kiwi Van Market</span>
+                <div className="hidden sm:block">
+                  <span className="font-black text-slate-800 tracking-tight">KiwiVan</span>
+                </div>
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                to="/guides"
+                className="hidden md:flex items-center gap-2 px-4 py-2 text-slate-600 font-bold hover:text-emerald-600 transition-all text-xs uppercase tracking-widest"
+              >
+                <BookOpen size={16} />
+                Guides
               </Link>
 
-              {/* Actions */}
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => toggleFavorite(van.id)}
-                  className="p-2.5 bg-white/20 hover:bg-white/30 rounded-xl transition"
-                >
-                  <Heart size={22} className={isFavorite(van.id) ? 'text-red-400 fill-red-400' : 'text-white'} />
-                </button>
+              <button
+                onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
+                className="p-2.5 bg-slate-100 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 rounded-2xl transition-all relative"
+                title="Messages"
+              >
+                <MessageCircle size={20} />
+              </button>
 
+              <button
+                onClick={() => toggleFavorite(van.id)}
+                className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-500 rounded-2xl transition-all relative"
+                title="Favorites"
+              >
+                <Heart size={20} className={isFavorite(van.id) ? 'fill-red-500 text-red-500' : ''} />
+                {favoritesCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
+                    {favoritesCount}
+                  </span>
+                )}
+              </button>
+
+              <div className="h-8 w-[1px] bg-slate-200 mx-1 hidden sm:block" />
+
+              {!currentUser ? (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="px-5 py-2.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
+                >
+                  {t('header.signin')}
+                </button>
+              ) : (
                 <div className="relative">
                   <button
-                    onClick={() => setShowShareMenu(!showShareMenu)}
-                    className="p-2.5 bg-white/20 hover:bg-white/30 rounded-xl transition"
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-white shadow-xl flex items-center justify-center text-white font-black text-sm hover:scale-105 transition-transform"
                   >
-                    <Share2 size={22} />
+                    {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
                   </button>
-
-                  {showShareMenu && (
+                  {showUserMenu && (
                     <>
-                      <div className="fixed inset-0 z-40" onClick={() => setShowShareMenu(false)} />
-                      <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl p-2 min-w-[180px] z-50">
-                        <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded-lg text-gray-700">
-                          📘 Facebook
-                        </button>
-                        <button onClick={() => handleShare('twitter')} className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded-lg text-gray-700">
-                          🐦 Twitter
-                        </button>
-                        <button onClick={() => handleShare('whatsapp')} className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded-lg text-gray-700">
-                          💬 WhatsApp
-                        </button>
-                        <button onClick={() => handleShare('copy')} className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 rounded-lg text-gray-700">
-                          📋 Copy Link
+                      <div className="fixed inset-0 z-[100]" onClick={() => setShowUserMenu(false)} />
+                      <div className="absolute right-0 top-full mt-3 w-48 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
+                        <Link to="/profile" className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
+                          <User size={18} className="text-slate-400" /> {t('header.profile')}
+                        </Link>
+                        <button onClick={logout} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-red-50 text-slate-700 hover:text-red-700 font-bold transition-all">
+                          <LogOut size={18} className="text-slate-400" /> {t('header.logout')}
                         </button>
                       </div>
                     </>
                   )}
                 </div>
+              )}
+
+              <div className="relative">
+                <button
+                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  className="p-2.5 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-500 rounded-2xl transition-all"
+                >
+                  <Share2 size={20} />
+                </button>
+
+                {showShareMenu && (
+                  <>
+                    <div className="fixed inset-0 z-[100]" onClick={() => setShowShareMenu(false)} />
+                    <div className="absolute right-0 top-full mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
+                      <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
+                        <Facebook size={18} className="text-blue-600" /> Share on Facebook
+                      </button>
+                      <button onClick={() => handleShare('copy')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all">
+                        <Copy size={18} className="text-slate-400" /> Copy Link
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
         </header>
 
-        {/* Breadcrumb SEO */}
-        <nav className="max-w-7xl mx-auto px-4 py-3" aria-label="Breadcrumb">
-          <ol className="flex items-center gap-2 text-sm text-gray-500">
-            <li><Link to="/" className="hover:text-emerald-600">{i18n.language.startsWith('fr') ? 'Accueil' : (i18n.language.startsWith('es') ? 'Inicio' : 'Home')}</Link></li>
-            <li>/</li>
-            <li><Link to="/" className="hover:text-emerald-600">Campervans</Link></li>
-            <li>/</li>
-            <li className="text-gray-800 font-medium truncate max-w-[200px]">{van.title}</li>
+        {/* Spacer for fixed header */}
+        <div className="h-24 md:h-28" />
+
+        {/* Breadcrumb SEO - Aéré */}
+        <nav className="max-w-7xl mx-auto px-6 py-4" aria-label="Breadcrumb">
+          <ol className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+            <li><Link to="/" className="hover:text-emerald-600 transition-colors uppercase">Marketplace</Link></li>
+            <li><ChevronRight size={12} className="text-slate-300" /></li>
+            <li className="text-slate-900 truncate max-w-[200px]">{van.title}</li>
           </ol>
         </nav>
 
@@ -517,137 +567,134 @@ ${shareUrl}
             </div>
 
             {/* INFORMATIONS */}
-            <div className="space-y-6">
+            <div className="space-y-8">
 
               {/* Titre & Prix - Premium Design */}
-              <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
-                <div className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 p-6 text-white">
-                  <h1 className="text-2xl lg:text-3xl font-black mb-2 leading-tight">
-                    {van.title}
-                  </h1>
-                  <div className="flex items-center gap-2 text-white/90">
-                    <MapPin size={18} />
-                    <span className="font-medium">{van.location}, {van.region || 'New Zealand'}</span>
+              <div className="premium-card p-8 bg-white">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                  <div>
+                    <h1 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-4 tracking-tight">
+                      {van.title}
+                    </h1>
+                    <div className="flex items-center gap-2 text-slate-500 font-bold bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100 w-fit">
+                      <MapPin size={18} className="text-emerald-500" />
+                      <span className="text-sm">{van.location}, {van.region || 'New Zealand'}</span>
+                    </div>
+                  </div>
+                  <div className="text-left md:text-right pt-6 md:pt-0 border-t md:border-t-0 border-slate-100">
+                    <p className="text-xs text-slate-400 uppercase tracking-[0.2em] font-black mb-1">{t('van_page.asking_price')}</p>
+                    <p className="text-5xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent leading-none">
+                      {formatPrice(van.price)}
+                    </p>
+                    <div className="flex items-center gap-1.5 justify-end mt-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
+                      <Clock size={14} />
+                      {t('van_page.days_ago', { count: getDaysAgo(van.createdAt) })}
+                    </div>
                   </div>
                 </div>
-                <div className="p-6 bg-gradient-to-br from-gray-50 to-white">
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">{t('van_page.asking_price')}</p>
-                      <p className="text-4xl lg:text-5xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                        {formatPrice(van.price)}
+              </div>
+
+              {/* Stats rapides - Premium Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
+                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                    <Calendar size={24} />
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{t('van_page.year')}</p>
+                  <p className="text-2xl font-black text-slate-900 leading-tight">{van.year || 'N/A'}</p>
+                </div>
+                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
+                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                    <Gauge size={24} />
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{t('van_page.mileage')}</p>
+                  <p className="text-2xl font-black text-slate-900 leading-tight">{(van.mileage || 0).toLocaleString()}<span className="text-sm font-bold ml-1 text-slate-400 uppercase tracking-tighter">km</span></p>
+                </div>
+                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
+                  <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                    <Users size={24} />
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{t('van_page.sleeps')}</p>
+                  <p className="text-2xl font-black text-slate-900 leading-tight">{van.capacity || 2}<span className="text-sm font-bold ml-1 text-slate-400 uppercase tracking-tighter">pax</span></p>
+                </div>
+                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
+                  <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+                    <Clock size={24} />
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Views</p>
+                  <p className="text-2xl font-black text-slate-900 leading-tight">{van.views || 0}</p>
+                </div>
+              </div>
+
+              {/* Vehicle Compliance - Premium Layout */}
+              <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
+                <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
+                  <h3 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                    <Shield size={16} className="text-emerald-500" />
+                    Technical Compliance
+                  </h3>
+                  <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-black tracking-widest uppercase">Verified</div>
+                </div>
+                <div className="p-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className={`p-5 rounded-2xl border-2 transition-all ${van.wofExpiry && safeDate(van.wofExpiry) > new Date()
+                      ? 'bg-emerald-50/30 border-emerald-100'
+                      : 'bg-slate-50 border-slate-100 opacity-60'
+                      }`}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'bg-emerald-500 text-white' : 'bg-slate-400 text-white'}`}>
+                          <CheckCircle size={18} />
+                        </div>
+                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">WOF</span>
+                      </div>
+                      <p className={`text-lg font-black ${van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'text-slate-900' : 'text-slate-400'}`}>
+                        {formatDate(van.wofExpiry)}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs text-gray-400 uppercase tracking-wide">{t('van_page.views')}</p>
-                      <p className="text-2xl font-bold text-gray-600">{van.views || 0}</p>
+
+                    <div className={`p-5 rounded-2xl border-2 transition-all ${van.regoExpiry && safeDate(van.regoExpiry) > new Date()
+                      ? 'bg-blue-50/30 border-blue-100'
+                      : 'bg-slate-50 border-slate-100 opacity-60'
+                      }`}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'bg-blue-500 text-white' : 'bg-slate-400 text-white'}`}>
+                          <CheckCircle size={18} />
+                        </div>
+                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">REGO</span>
+                      </div>
+                      <p className={`text-lg font-black ${van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'text-slate-900' : 'text-slate-400'}`}>
+                        {formatDate(van.regoExpiry)}
+                      </p>
+                    </div>
+
+                    <div className={`p-5 rounded-2xl border-2 transition-all ${van.selfContained
+                      ? 'bg-teal-50/30 border-teal-100'
+                      : 'bg-slate-50 border-slate-100 opacity-60'
+                      }`}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${van.selfContained ? 'bg-teal-500 text-white' : 'bg-slate-400 text-white'}`}>
+                          {van.selfContained ? <CheckCircle size={18} /> : <X size={18} />}
+                        </div>
+                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Self-Contained</span>
+                      </div>
+                      <p className={`text-lg font-black ${van.selfContained ? 'text-slate-900' : 'text-slate-400'}`}>
+                        {van.selfContained ? (van.selfContainedType === 'blue' ? '🔵 Blue Sticker' : '🟢 Green Sticker') : 'No'}
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Stats rapides - Premium Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-2xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                    <Calendar className="text-white" size={20} />
-                  </div>
-                  <p className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider">{t('van_page.year')}</p>
-                  <p className="text-2xl font-black text-gray-900">{van.year || 'N/A'}</p>
-                </div>
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-2xl border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                    <Gauge className="text-white" size={20} />
-                  </div>
-                  <p className="text-[10px] text-blue-700 font-bold uppercase tracking-wider">{t('van_page.mileage')}</p>
-                  <p className="text-2xl font-black text-gray-900">{(van.mileage || 0).toLocaleString()}<span className="text-sm font-medium text-gray-500"> {t('van_page.unit_km')}</span></p>
-                </div>
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-2xl border border-purple-200 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                    <Users className="text-white" size={20} />
-                  </div>
-                  <p className="text-[10px] text-purple-700 font-bold uppercase tracking-wider">{t('van_page.sleeps')}</p>
-                  <p className="text-2xl font-black text-gray-900">{van.capacity || 2}<span className="text-sm font-medium text-gray-500"> {t('van_page.unit_people')}</span></p>
-                </div>
-                <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-4 rounded-2xl border border-amber-200 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center mb-3 shadow-lg">
-                    <Clock className="text-white" size={20} />
-                  </div>
-                  <p className="text-[10px] text-amber-700 font-bold uppercase tracking-wider">{t('van_page.posted')}</p>
-                  <p className="text-2xl font-black text-gray-900">{t('van_page.days_ago', { count: getDaysAgo(van.createdAt) })}</p>
-                </div>
-              </div>
-
-              {/* WOF & REGO - Premium Status Cards */}
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-slate-800 to-slate-700 px-5 py-3">
-                  <h3 className="text-white font-bold flex items-center gap-2">
-                    <Shield size={18} />
-                    Vehicle Compliance
+              {/* Description - Premium Design */}
+              <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
+                <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
+                  <h3 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                    <MessageCircle size={16} className="text-emerald-500" />
+                    {t('van_page.about')}
                   </h3>
                 </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className={`p-4 rounded-xl text-center transition-all ${van.wofExpiry && safeDate(van.wofExpiry) > new Date()
-                      ? 'bg-gradient-to-br from-emerald-50 to-green-100 border-2 border-emerald-300'
-                      : 'bg-gray-100 border-2 border-gray-200'
-                      }`}>
-                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'bg-emerald-500' : 'bg-gray-400'
-                        }`}>
-                        <CheckCircle size={20} className="text-white" />
-                      </div>
-                      <div className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">{t('van_page.wof_valid')}</div>
-                      <div className={`text-sm font-bold ${van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'text-emerald-700' : 'text-gray-500'}`}>
-                        {formatDate(van.wofExpiry)}
-                      </div>
-                    </div>
-                    <div className={`p-4 rounded-xl text-center transition-all ${van.regoExpiry && safeDate(van.regoExpiry) > new Date()
-                      ? 'bg-gradient-to-br from-blue-50 to-cyan-100 border-2 border-blue-300'
-                      : 'bg-gray-100 border-2 border-gray-200'
-                      }`}>
-                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'bg-blue-500' : 'bg-gray-400'
-                        }`}>
-                        <CheckCircle size={20} className="text-white" />
-                      </div>
-                      <div className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">{t('van_page.rego_valid')}</div>
-                      <div className={`text-sm font-bold ${van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'text-blue-700' : 'text-gray-500'}`}>
-                        {formatDate(van.regoExpiry)}
-                      </div>
-                    </div>
-                    <div className={`p-4 rounded-xl text-center transition-all ${van.selfContained
-                      ? van.selfContainedType === 'blue'
-                        ? 'bg-gradient-to-br from-blue-50 to-cyan-100 border-2 border-blue-300'
-                        : 'bg-gradient-to-br from-green-50 to-teal-100 border-2 border-green-300'
-                      : 'bg-gray-100 border-2 border-gray-200'
-                      }`}>
-                      <div className={`w-10 h-10 mx-auto mb-2 rounded-full flex items-center justify-center ${van.selfContained
-                        ? van.selfContainedType === 'blue' ? 'bg-blue-500' : 'bg-green-500'
-                        : 'bg-gray-400'
-                        }`}>
-                        {van.selfContained ? <CheckCircle size={20} className="text-white" /> : <X size={20} className="text-white" />}
-                      </div>
-                      <div className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mb-1">{t('filters.self_contained')}</div>
-                      <div className={`text-sm font-bold ${van.selfContained
-                        ? van.selfContainedType === 'blue' ? 'text-blue-700' : 'text-green-700'
-                        : 'text-gray-500'
-                        }`}>
-                        {van.selfContained ? (van.selfContainedType === 'blue' ? t('van_page.sticker_blue') : t('van_page.sticker_green')) : i18n.language.startsWith('fr') ? 'Non' : (i18n.language.startsWith('es') ? 'No' : 'No')}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description - Premium Card */}
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-5 py-3">
-                  <h2 className="text-white font-bold flex items-center gap-2">
-                    <MessageCircle size={18} />
-                    {t('van_page.about')}
-                  </h2>
-                </div>
-                <div className="p-5">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
+                <div className="p-8">
+                  <p className="text-slate-700 leading-relaxed whitespace-pre-line text-base font-medium">
                     {van.description || t('van_page.no_description')}
                   </p>
                 </div>
@@ -655,97 +702,67 @@ ${shareUrl}
 
               {/* Equipment - Premium Grid */}
               {van.equipment && Object.values(van.equipment).some(v => v === true) && (
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                  <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3">
-                    <h2 className="text-white font-bold flex items-center gap-2">
-                      <CheckCircle size={18} />
+                <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
+                  <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
+                    <h3 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
+                      <CheckCircle size={16} className="text-amber-500" />
                       Features & Equipment
-                    </h2>
+                    </h3>
                   </div>
-                  <div className="p-5">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="p-8">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                       {van.equipment.doubleBed && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🛏️</span>
-                          <span className="font-semibold text-gray-800 text-sm">Double Bed</span>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                          <span className="text-xl group-hover:scale-110 transition-transform">🛏️</span>
+                          <span className="font-bold text-slate-700 text-sm">Double Bed</span>
                         </div>
                       )}
                       {van.equipment.fridge && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🧊</span>
-                          <span className="font-semibold text-gray-800 text-sm">Fridge</span>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                          <span className="text-xl group-hover:scale-110 transition-transform">🧊</span>
+                          <span className="font-bold text-slate-700 text-sm">Fridge</span>
                         </div>
                       )}
                       {van.equipment.gasStove && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🔥</span>
-                          <span className="font-semibold text-gray-800 text-sm">Gas Stove</span>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                          <span className="text-xl group-hover:scale-110 transition-transform">🔥</span>
+                          <span className="font-bold text-slate-700 text-sm">Gas Stove</span>
                         </div>
                       )}
                       {van.equipment.sink && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🚰</span>
-                          <span className="font-semibold text-gray-800 text-sm">Sink</span>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                          <span className="text-xl group-hover:scale-110 transition-transform">🚰</span>
+                          <span className="font-bold text-slate-700 text-sm">Sink</span>
                         </div>
                       )}
                       {van.equipment.toilet && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-slate-50 to-gray-100 border border-slate-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🚽</span>
-                          <span className="font-semibold text-gray-800 text-sm">Toilet</span>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                          <span className="text-xl group-hover:scale-110 transition-transform">🚽</span>
+                          <span className="font-bold text-slate-700 text-sm">Toilet</span>
                         </div>
                       )}
                       {van.equipment.solarPanel && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">☀️</span>
-                          <span className="font-semibold text-gray-800 text-sm">Solar Panel</span>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                          <span className="text-xl group-hover:scale-110 transition-transform">☀️</span>
+                          <span className="font-bold text-slate-700 text-sm">Solar Panel</span>
                         </div>
                       )}
                       {van.equipment.leisureBattery && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🔋</span>
-                          <span className="font-semibold text-gray-800 text-sm">Leisure Battery</span>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                          <span className="text-xl group-hover:scale-110 transition-transform">🔋</span>
+                          <span className="font-bold text-slate-700 text-sm">Leisure Battery</span>
                         </div>
                       )}
                       {van.equipment.heater && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🌡️</span>
-                          <span className="font-semibold text-gray-800 text-sm">Heater</span>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                          <span className="text-xl group-hover:scale-110 transition-transform">🌡️</span>
+                          <span className="font-bold text-slate-700 text-sm">Heater</span>
                         </div>
                       )}
                       {van.equipment.dieselHeater && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🔥</span>
-                          <span className="font-semibold text-gray-800 text-sm">Diesel Heater</span>
-                        </div>
-                      )}
-                      {van.equipment.outdoorShower && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🚿</span>
-                          <span className="font-semibold text-gray-800 text-sm">Outdoor Shower</span>
-                        </div>
-                      )}
-                      {van.equipment.indoorShower && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">🛁</span>
-                          <span className="font-semibold text-gray-800 text-sm">Indoor Shower</span>
-                        </div>
-                      )}
-                      {van.equipment.awning && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">⛺</span>
-                          <span className="font-semibold text-gray-800 text-sm">Awning</span>
-                        </div>
-                      )}
-                      {van.equipment.reverseCamera && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">📷</span>
-                          <span className="font-semibold text-gray-800 text-sm">Reverse Camera</span>
-                        </div>
-                      )}
-                      {van.equipment.bluetooth && (
-                        <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 px-4 py-3 rounded-xl hover:shadow-md transition-shadow">
-                          <span className="text-2xl">📻</span>
-                          <span className="font-semibold text-gray-800 text-sm">Bluetooth</span>
+                        <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
+                          <span className="text-xl group-hover:scale-110 transition-transform">🔥</span>
+                          <span className="font-bold text-slate-700 text-sm">Diesel Heater</span>
                         </div>
                       )}
                     </div>
@@ -753,35 +770,31 @@ ${shareUrl}
                 </div>
               )}
 
-              {/* Buy-Back Details - Premium Card */}
+              {/* Buy-Back Details - Premium Design */}
               {van.buyBack && (
-                <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-green-300">
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-5 py-4">
-                    <h3 className="text-white font-bold flex items-center gap-2 text-lg">
-                      <Shield size={22} />
+                <div className="bg-emerald-600 rounded-[2rem] shadow-2xl overflow-hidden border-4 border-emerald-500/30">
+                  <div className="px-8 py-6 text-white">
+                    <h3 className="font-black text-xl uppercase tracking-widest flex items-center gap-3">
+                      <Shield size={24} fill="currentColor" className="text-emerald-300" />
                       {t('van_page.buyback_title')}
                     </h3>
-                    <p className="text-green-100 text-sm mt-1">{t('van_page.buyback_subtitle')}</p>
-                  </div>
-                  <div className="p-5">
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-4 rounded-xl border border-green-200">
-                        <div className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">{t('van_page.buyback_price')}</div>
-                        <div className="text-2xl font-black text-green-600">
-                          {van.buyBackPrice ? formatPrice(van.buyBackPrice) : t('van_page.contact_seller')}
-                        </div>
+                    <p className="text-emerald-100 font-medium mt-1">{t('van_page.buyback_subtitle')}</p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+                      <div className="bg-emerald-700/50 backdrop-blur-md rounded-2xl p-6 border border-emerald-400/20">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300 mb-1">{t('van_page.buyback_price')}</p>
+                        <p className="text-3xl font-black">{van.buyBackPrice ? formatPrice(van.buyBackPrice) : t('van_page.contact_seller')}</p>
                       </div>
-                      <div className="bg-gradient-to-br from-green-50 to-emerald-100 p-4 rounded-xl border border-green-200">
-                        <div className="text-xs text-green-700 font-bold uppercase tracking-wider mb-1">{t('van_page.valid_for')}</div>
-                        <div className="text-2xl font-black text-green-600">
-                          {van.buyBackDuration ? `${van.buyBackDuration} ${t('van_page.months')}` : t('van_page.contact_seller')}
-                        </div>
+                      <div className="bg-emerald-700/50 backdrop-blur-md rounded-2xl p-6 border border-emerald-400/20">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300 mb-1">{t('van_page.valid_for')}</p>
+                        <p className="text-3xl font-black">{van.buyBackDuration ? `${van.buyBackDuration} ${t('van_page.months')}` : t('van_page.contact_seller')}</p>
                       </div>
                     </div>
+
                     {van.buyBackConditions && (
-                      <div className="bg-gray-50 p-3 rounded-lg">
-                        <p className="text-sm text-gray-600">
-                          <span className="font-bold text-gray-800">{t('van_page.conditions')}</span> {van.buyBackConditions}
+                      <div className="mt-6 bg-white/10 rounded-2xl p-4 border border-white/10">
+                        <p className="text-sm font-medium leading-relaxed italic opacity-90">
+                          "{van.buyBackConditions}"
                         </p>
                       </div>
                     )}
@@ -789,153 +802,151 @@ ${shareUrl}
                 </div>
               )}
 
-              {/* Seller Info - Premium Card */}
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-slate-700 to-slate-600 px-5 py-3">
-                  <h3 className="text-white font-bold">{t('van_page.contact_seller')}</h3>
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-4 mb-5 pb-5 border-b border-gray-100">
-                    <div className="relative">
-                      <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl w-16 h-16 flex items-center justify-center text-white text-2xl font-black shadow-xl">
-                        {seller.name?.[0] || 'U'}
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white"></div>
+              {/* Seller Info - Premium Section */}
+              <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100 p-8">
+                <h3 className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-6">Verified Seller</h3>
+
+                <div className="flex items-center gap-6 mb-8">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-3xl font-black shadow-2xl transform rotate-3 hover:rotate-0 transition-transform">
+                      {seller.name?.[0]?.toUpperCase() || 'U'}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-lg text-gray-900">{seller.name || 'Unknown Seller'}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        {hasRating ? (
-                          <>
+                    <div className="absolute -bottom-2 -right-2 bg-white p-1.5 rounded-xl shadow-lg">
+                      <CheckCircle size={20} className="text-emerald-500 fill-emerald-50" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-2xl font-black text-slate-900 leading-tight mb-1">{seller.name || 'Unknown Seller'}</h4>
+                    <div className="flex items-center gap-2">
+                      {hasRating ? (
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-0.5">
                             {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                size={16}
-                                className={i < seller.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
-                              />
+                              <Star key={i} size={14} className={i < seller.rating ? "fill-amber-400 text-amber-400" : "text-slate-200"} />
                             ))}
-                            <span className="text-sm text-gray-600 ml-2 font-semibold">({seller.rating.toFixed(1)})</span>
-                          </>
-                        ) : (
-                          <span className="text-sm text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">{t('van_page.new_seller')}</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">{t('van_page.responds_quickly')}</p>
-                    </div>
-                  </div>
-
-                  {/* Quick Message Box */}
-                  <Suspense fallback={<div className="animate-pulse bg-gray-200 h-32 rounded-xl"></div>}>
-                    <QuickMessageBox
-                      van={van}
-                      seller={seller}
-                    />
-                  </Suspense>
-
-                  {/* Facebook Ad Generator - GROWTH TOOL */}
-                  <div className="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-sm">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="bg-blue-600 p-2 rounded-lg text-white">
-                        <Facebook size={20} />
-                      </div>
-                      <h4 className="font-bold text-gray-900">{i18n.language.startsWith('fr') ? 'Vendre plus vite' : 'Sell Faster'}</h4>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-4">
-                      {i18n.language.startsWith('fr')
-                        ? 'Générez un texte optimisé pour vos groupes Facebook.'
-                        : 'Generate a perfectly formatted text for your Facebook groups.'}
-                    </p>
-                    <button
-                      onClick={generateFbAdText}
-                      className="w-full bg-white border-2 border-blue-600 text-blue-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-600 hover:text-white transition-all group"
-                    >
-                      <Copy size={18} className="group-hover:scale-110 transition-transform" />
-                      {i18n.language.startsWith('fr') ? 'Copier le texte FB' : 'Copy Facebook Ad Text'}
-                    </button>
-                  </div>
-
-                  {/* Helpful Resources for Buyers - RETENTION TOOL */}
-                  <div className="mt-6 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                    <div className="bg-gray-50 px-5 py-4 border-b border-gray-100">
-                      <h4 className="font-bold text-gray-800 flex items-center gap-2">
-                        <HelpCircle size={18} className="text-emerald-600" />
-                        {i18n.language.startsWith('fr') ? 'Ressources utiles' : 'Helpful Resources'}
-                      </h4>
-                    </div>
-                    <div className="p-4 space-y-2">
-                      <Link to="/guide/how-to-inspect-campervan-nz" className="flex items-center justify-between p-3 hover:bg-emerald-50 rounded-xl transition-colors group">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">🛠️</span>
-                          <span className="text-sm font-medium text-gray-700">{i18n.language.startsWith('fr') ? 'Comment inspecter un van' : 'How to inspect a van'}</span>
+                          </div>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">({seller.rating.toFixed(1)}) Trust Index</span>
                         </div>
-                        <ExternalLink size={14} className="text-gray-400 group-hover:text-emerald-600" />
-                      </Link>
-                      <Link to="/buyback-calculator" className="flex items-center justify-between p-3 hover:bg-emerald-50 rounded-xl transition-colors group">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">🧮</span>
-                          <span className="text-sm font-medium text-gray-700">{i18n.language.startsWith('fr') ? 'Calculer son prix de rachat' : 'Estimate your buy-back price'}</span>
-                        </div>
-                        <ExternalLink size={14} className="text-gray-400 group-hover:text-emerald-600" />
-                      </Link>
+                      ) : (
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('van_page.new_seller')}</span>
+                      )}
                     </div>
                   </div>
                 </div>
+
+                {/* Quick Message Box */}
+                <Suspense fallback={<div className="h-40 animate-pulse bg-slate-50 rounded-3xl" />}>
+                  <QuickMessageBox
+                    van={van}
+                    seller={seller}
+                    onOpenFullChat={() => navigate('/messages')}
+                  />
+                </Suspense>
               </div>
 
+              {/* Facebook Ad Generator - GROWTH TOOL */}
+              <div className="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-blue-600 p-2 rounded-lg text-white">
+                    <Facebook size={20} />
+                  </div>
+                  <h4 className="font-bold text-gray-900">{i18n.language.startsWith('fr') ? 'Vendre plus vite' : 'Sell Faster'}</h4>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  {i18n.language.startsWith('fr')
+                    ? 'Générez un texte optimisé pour vos groupes Facebook.'
+                    : 'Generate a perfectly formatted text for your Facebook groups.'}
+                </p>
+                <button
+                  onClick={generateFbAdText}
+                  className="w-full bg-white border-2 border-blue-600 text-blue-600 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-600 hover:text-white transition-all group"
+                >
+                  <Copy size={18} className="group-hover:scale-110 transition-transform" />
+                  {i18n.language.startsWith('fr') ? 'Copier le texte FB' : 'Copy Facebook Ad Text'}
+                </button>
+              </div>
+
+              {/* Helpful Resources for Buyers - RETENTION TOOL */}
+              <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden">
+                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
+                  <h4 className="font-black text-slate-800 text-xs uppercase tracking-widest flex items-center gap-2">
+                    <HelpCircle size={16} className="text-emerald-600" />
+                    Helpful Resources
+                  </h4>
+                </div>
+                <div className="p-4 space-y-2">
+                  <Link to="/guide/how-to-inspect-campervan-nz" className="flex items-center justify-between p-4 hover:bg-emerald-50 rounded-2xl transition-all group border border-transparent hover:border-emerald-100">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">🛠️</span>
+                      <span className="text-sm font-bold text-slate-700">How to inspect a van</span>
+                    </div>
+                    <ExternalLink size={14} className="text-slate-300 group-hover:text-emerald-600" />
+                  </Link>
+                  <Link to="/buyback-calculator" className="flex items-center justify-between p-4 hover:bg-emerald-50 rounded-2xl transition-all group border border-transparent hover:border-emerald-100">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">🧮</span>
+                      <span className="text-sm font-bold text-slate-700">Estimate your buy-back price</span>
+                    </div>
+                    <ExternalLink size={14} className="text-slate-300 group-hover:text-emerald-600" />
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
+
           {/* Browse More - Internal Links for SEO */}
-          <section className="mt-12 bg-white rounded-3xl shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 px-6 py-4">
-              <h2 className="text-xl font-bold text-white">{t('van_page.browse_more')}</h2>
-              <p className="text-white/80 text-sm">{t('van_page.discover')}</p>
+          <section className="mt-16 bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
+            <div className="bg-slate-900 px-8 py-6">
+              <h2 className="text-xl font-black text-white tracking-tight">{t('van_page.browse_more')}</h2>
+              <p className="text-slate-400 text-sm font-medium mt-1">{t('van_page.discover')}</p>
             </div>
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 {/* By Brand */}
                 <div>
-                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                     {t('van_page.popular_brands')}
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    <Link to="/brand/toyota-hiace" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/brand/toyota-hiace" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all">
                       Toyota Hiace
                     </Link>
-                    <Link to="/brand/nissan-caravan" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/brand/nissan-caravan" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all">
                       Nissan Caravan
                     </Link>
-                    <Link to="/brand/mitsubishi-delica" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/brand/mitsubishi-delica" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all">
                       Mitsubishi Delica
                     </Link>
-                    <Link to="/brand/mazda-bongo" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/brand/mazda-bongo" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all">
                       Mazda Bongo
                     </Link>
-                    <Link to="/brand/ford-transit" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-emerald-50 hover:to-teal-50 hover:border-emerald-300 hover:text-emerald-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/brand/ford-transit" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-all">
                       Ford Transit
                     </Link>
                   </div>
                 </div>
                 {/* By Location */}
                 <div>
-                  <h3 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
                     {t('van_page.popular_locations')}
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    <Link to="/location/auckland" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/location/auckland" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all">
                       Auckland
                     </Link>
-                    <Link to="/location/wellington" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/location/wellington" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all">
                       Wellington
                     </Link>
-                    <Link to="/location/christchurch" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/location/christchurch" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all">
                       Christchurch
                     </Link>
-                    <Link to="/location/queenstown" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/location/queenstown" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all">
                       Queenstown
                     </Link>
-                    <Link to="/location/rotorua" className="px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium hover:from-blue-50 hover:to-cyan-50 hover:border-blue-300 hover:text-blue-700 transition-all shadow-sm hover:shadow">
+                    <Link to="/location/rotorua" className="px-5 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-sm text-slate-700 font-bold hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-all">
                       Rotorua
                     </Link>
                   </div>
@@ -946,37 +957,47 @@ ${shareUrl}
         </main>
 
         {/* Footer - Premium */}
-        <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-white py-12 mt-12">
-          <div className="max-w-7xl mx-auto px-4">
+        <footer className="bg-slate-900 text-white py-16 mt-24">
+          <div className="max-w-7xl mx-auto px-6">
             <div className="flex flex-col items-center">
-              <Link to="/" className="inline-flex items-center gap-3 mb-4 group">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-xl group-hover:scale-105 transition-transform" style={{ backgroundColor: '#f7eedd' }}>
-                  <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-full h-full object-contain" />
+              <Link to="/" className="flex items-center gap-3 mb-8 group">
+                <div className="w-16 h-16 rounded-2xl bg-[#f7eedd] flex items-center justify-center shadow-xl transition-transform group-hover:scale-105">
+                  <img src="/kiwi-van-logo-48.webp" alt="KiwiVan" className="w-12 h-12 object-contain" />
                 </div>
-                <div>
-                  <span className="font-black text-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Kiwi Van Market</span>
-                  <p className="text-gray-400 text-xs font-medium">{t('van_page.footer_slogan')}</p>
+                <div className="text-left">
+                  <span className="block font-black text-2xl tracking-tight text-white">KiwiVan Market</span>
+                  <span className="block text-slate-400 text-xs font-bold uppercase tracking-widest">{t('van_page.footer_slogan')}</span>
                 </div>
               </Link>
-              <p className="text-gray-400 text-sm text-center max-w-md mb-6">
+
+              <p className="text-slate-400 text-center max-w-xl mb-10 leading-relaxed font-medium">
                 {t('footer.about_desc')}
               </p>
-              <div className="flex items-center gap-4 mb-6">
-                <Link to="/" className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-medium transition">
+
+              <div className="flex items-center gap-4 mb-12">
+                <Link to="/" className="px-8 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-sm font-bold transition-all border border-white/10">
                   {t('hero.cta_browse')}
                 </Link>
-                <Link to="/sell" className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-medium transition">
+                <Link to="/sell" className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20">
                   {t('hero.cta_sell')}
                 </Link>
               </div>
-              <div className="border-t border-gray-800 pt-6 w-full text-center">
-                <p className="text-gray-500 text-xs">
-                  {t('footer.copyright', { year: new Date().getFullYear() })} Made with love in New Zealand
+
+              <div className="w-full pt-10 border-t border-white/5 text-center">
+                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
+                  {t('footer.copyright', { year: new Date().getFullYear() })} • Built with passion in NZ 🇳🇿
                 </p>
               </div>
             </div>
           </div>
         </footer>
+        {/* Modals & Overlays */}
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+        />
+
+        <Footer />
       </div>
     </>
   );

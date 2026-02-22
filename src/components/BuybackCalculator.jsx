@@ -93,7 +93,7 @@ const translations = {
   }
 };
 
-export default function BuybackCalculator() {
+export default function BuybackCalculator({ isEmbedded = false }) {
   const [purchasePrice, setPurchasePrice] = useState('');
   const [duration, setDuration] = useState('');
   const [durationUnit, setDurationUnit] = useState('weeks');
@@ -216,38 +216,42 @@ export default function BuybackCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-100 via-emerald-50 to-stone-100 py-12 px-4">
-      <SeoHead
-        title={lang === 'fr' ? 'Calculateur Buy-back Campervan NZ' : 'NZ Campervan Buy-back Calculator'}
-        description={lang === 'fr'
-          ? 'Estimez le prix de rachat de votre van en fin de voyage en Nouvelle-Zélande avec notre outil gratuit.'
-          : 'Estimate your campervan buy-back price at the end of your NZ trip with our free calculator tool.'}
-      />
+    <div className={isEmbedded ? "py-4 px-0" : "min-h-screen bg-gradient-to-br from-stone-100 via-emerald-50 to-stone-100 py-12 px-4"}>
+      {!isEmbedded && (
+        <SeoHead
+          title={lang === 'fr' ? 'Calculateur Buy-back Campervan NZ' : 'NZ Campervan Buy-back Calculator'}
+          description={lang === 'fr'
+            ? 'Estimez le prix de rachat de votre van en fin de voyage en Nouvelle-Zélande avec notre outil gratuit.'
+            : 'Estimate your campervan buy-back price at the end of your NZ trip with our free calculator tool.'}
+        />
+      )}
       {/* Background decoration */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-200/30 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl" />
-      </div>
+      {!isEmbedded && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-200/30 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl" />
+        </div>
+      )}
 
-      <div className="max-w-2xl mx-auto relative">
+      <div className={isEmbedded ? "max-w-full relative" : "max-w-2xl mx-auto relative"}>
         {/* Header */}
-        <div className="text-center mb-10">
+        <div className={`text-center ${isEmbedded ? 'mb-6' : 'mb-10'}`}>
           <div className="inline-flex items-center gap-2 bg-emerald-700 text-white px-4 py-1.5 rounded-full text-sm font-medium mb-4">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
             {t.badge}
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-stone-800 mb-3" style={{ fontFamily: 'system-ui' }}>
+          <h2 className={`${isEmbedded ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-bold text-stone-800 mb-3`} style={{ fontFamily: 'system-ui' }}>
             {t.title} <span className="text-emerald-700">{t.titleHighlight}</span>
-          </h1>
+          </h2>
           <p className="text-stone-600 max-w-md mx-auto">
             {t.subtitle}
           </p>
         </div>
 
         {/* Calculator Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl shadow-stone-200/50 border border-stone-200/50 overflow-hidden">
+        <div className={`bg-white rounded-3xl ${isEmbedded ? 'border-2 border-emerald-100 shadow-xl' : 'bg-white/80 backdrop-blur-sm shadow-xl shadow-stone-200/50 border border-stone-200/50'} overflow-hidden`}>
           {/* Form Section */}
           <div className="p-6 md:p-8 space-y-6">
 
@@ -278,8 +282,8 @@ export default function BuybackCalculator() {
                           key={code}
                           onClick={() => handleCurrencyChange(code)}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition ${currency === code
-                              ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                              : 'hover:bg-stone-50 text-stone-700'
+                            ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                            : 'hover:bg-stone-50 text-stone-700'
                             }`}
                         >
                           <img src={curr.flag} alt={code} className="w-6 h-4 object-cover rounded-sm shadow-sm" />
@@ -380,8 +384,8 @@ export default function BuybackCalculator() {
                       if (showResult) setShowResult(false);
                     }}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${condition === key
-                        ? 'border-emerald-500 bg-emerald-50 shadow-md'
-                        : 'border-stone-200 bg-stone-50 hover:border-stone-300 hover:bg-stone-100'
+                      ? 'border-emerald-500 bg-emerald-50 shadow-md'
+                      : 'border-stone-200 bg-stone-50 hover:border-stone-300 hover:bg-stone-100'
                       }`}
                   >
                     <div className="flex items-center gap-2 mb-1">

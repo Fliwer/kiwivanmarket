@@ -7,20 +7,12 @@ import { safeDate } from '../utils/dateHelper';
 import { useTranslation } from 'react-i18next';
 
 // Carousel de photos pour la card
-const ImageCarousel = ({ images, title, onNavigate, priority = false }) => {
+const ImageCarousel = ({ images, title, priority = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const touchStartX = useRef(null);
-  const touchEndX = useRef(null);
 
   const allImages = images?.length > 0
     ? images
     : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'];
-
-  const goTo = (index, e) => {
-    e?.stopPropagation();
-    e?.preventDefault();
-    setCurrentIndex(index);
-  };
 
   const goNext = (e) => {
     e?.stopPropagation();
@@ -34,87 +26,47 @@ const ImageCarousel = ({ images, title, onNavigate, priority = false }) => {
     setCurrentIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
-  // Touch handlers for swipe
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e) => {
-    if (!touchStartX.current || !touchEndX.current) return;
-
-    const diff = touchStartX.current - touchEndX.current;
-    const minSwipeDistance = 50;
-
-    if (Math.abs(diff) > minSwipeDistance) {
-      e.stopPropagation();
-      e.preventDefault();
-      if (diff > 0) {
-        // Swipe left -> next
-        setCurrentIndex((prev) => (prev + 1) % allImages.length);
-      } else {
-        // Swipe right -> prev
-        setCurrentIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-      }
-    }
-
-    touchStartX.current = null;
-    touchEndX.current = null;
-  };
-
   return (
-    <div
-      className="relative group"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="relative group overflow-hidden h-64">
+      {/* Background for images while loading */}
+      <div className="absolute inset-0 bg-slate-100 z-0" />
+
       <img
         src={getThumbnail(allImages[currentIndex])}
         alt={`${title} - ${currentIndex + 1}`}
-        className="w-full h-56 object-cover transition-opacity duration-300"
+        className="relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-100"
         loading={priority ? "eager" : "lazy"}
-        fetchPriority={priority ? "high" : "auto"}
-        draggable={false}
       />
 
-      {/* Navigation arrows - always visible on mobile, hover on desktop */}
+      {/* Navigation arrows */}
       {allImages.length > 1 && (
         <>
           <button
             onClick={goPrev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10"
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 rounded-2xl p-2 shadow-xl opacity-0 group-hover:opacity-100 transition-all z-10 border border-white/30"
             aria-label="Previous image"
           >
-            <ChevronLeft size={20} className="text-gray-700" />
+            <ChevronLeft size={20} />
           </button>
           <button
             onClick={goNext}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10"
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 rounded-2xl p-2 shadow-xl opacity-0 group-hover:opacity-100 transition-all z-10 border border-white/30"
             aria-label="Next image"
           >
-            <ChevronRight size={20} className="text-gray-700" />
+            <ChevronRight size={20} />
           </button>
 
-          {/* Dots indicator */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-            {allImages.slice(0, 5).map((_, idx) => (
-              <button
+          {/* Indicators */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 px-3 py-1.5 bg-black/20 backdrop-blur-md rounded-full border border-white/10">
+            {allImages.slice(0, 8).map((_, idx) => (
+              <div
                 key={idx}
-                onClick={(e) => goTo(idx, e)}
-                className={`h-2 rounded-full transition-all ${idx === currentIndex
-                  ? 'bg-white w-5'
-                  : 'bg-white/70 w-2 hover:bg-white/90'
+                className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentIndex
+                  ? 'bg-white w-4'
+                  : 'bg-white/40 w-1.5'
                   }`}
-                aria-label={`Go to image ${idx + 1}`}
               />
             ))}
-            {allImages.length > 5 && (
-              <span className="text-white text-xs font-semibold ml-1 drop-shadow">+{allImages.length - 5}</span>
-            )}
           </div>
         </>
       )}
@@ -134,7 +86,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
   return (
     <Link
       to={`/van/${van.id}`}
-      className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-1 block"
+      className="premium-card group block overflow-hidden"
     >
       <div className="relative">
         <ImageCarousel images={images} title={van.title} priority={priority} />
@@ -142,67 +94,75 @@ export default function VanCard({ van, formatPrice, priority = false }) {
         {/* Favorite button */}
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(van.id); }}
-          className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:scale-110 transition z-20"
+          className="absolute top-4 right-4 bg-white/90 backdrop-blur-md p-2.5 rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all z-20 group/fav"
         >
-          <Heart size={20} className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-400'} />
+          <Heart
+            size={20}
+            className={`transition-colors ${isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-slate-400 group-hover/fav:text-red-400'}`}
+          />
         </button>
 
-        {/* Buy-Back badge */}
-        {van.buyBack && (
-          <div className="absolute bottom-12 left-3 bg-green-400 text-green-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 z-10">
-            <Shield size={12} />
-            {t('filters.buyback')}
+        {/* Status Badges Overlay */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+          {van.featured && (
+            <div className="bg-amber-400 text-amber-950 px-3 py-1 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-amber-300 flex items-center gap-1.5">
+              <Shield size={12} fill="currentColor" />
+              Featured
+            </div>
+          )}
+          {van.buyBack && (
+            <div className="bg-emerald-500 text-white px-3 py-1 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-emerald-400 flex items-center gap-1.5">
+              <Shield size={12} fill="currentColor" />
+              Buyback
+            </div>
+          )}
+        </div>
+
+        {/* Self-contained bottom-left marker */}
+        {van.selfContained && (
+          <div className="absolute bottom-4 left-4 bg-blue-600/90 backdrop-blur-md text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-xl flex items-center gap-1.5 border border-white/20">
+            <div className="w-2 h-2 rounded-full bg-blue-300 animate-pulse" />
+            Self-Contained
           </div>
         )}
       </div>
 
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-2xl font-bold text-gray-900">
-            {formatPrice ? formatPrice(van.price) : `$${(van.price || 0).toLocaleString()}`}
-          </div>
-          {van.selfContained && (
-            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-              {t('filters.self_contained')}
-            </span>
-          )}
-        </div>
-
-        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{van.title}</h3>
-
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-          <span>{van.year}</span>
-          <span>-</span>
-          <span>{(van.mileage || 0).toLocaleString()} km</span>
-          <span>-</span>
-          <span className="flex items-center gap-1">
-            <MapPin size={12} />
-            {van.location}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className={`rounded-lg px-3 py-2 ${van.wofExpiry && safeDate(van.wofExpiry) ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className={`text-[10px] font-semibold uppercase ${van.wofExpiry && safeDate(van.wofExpiry) ? 'text-emerald-600' : 'text-gray-400'}`}>{t('filters.wof')}</div>
-            <div className={`text-sm font-bold ${van.wofExpiry && safeDate(van.wofExpiry) ? 'text-emerald-700' : 'text-gray-400'}`}>
-              {van.wofExpiry && safeDate(van.wofExpiry) ? safeDate(van.wofExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
-            </div>
-          </div>
-          <div className={`rounded-lg px-3 py-2 ${van.regoExpiry && safeDate(van.regoExpiry) ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200'}`}>
-            <div className={`text-[10px] font-semibold uppercase ${van.regoExpiry && safeDate(van.regoExpiry) ? 'text-blue-600' : 'text-gray-400'}`}>{t('filters.rego')}</div>
-            <div className={`text-sm font-bold ${van.regoExpiry && safeDate(van.regoExpiry) ? 'text-blue-700' : 'text-gray-400'}`}>
-              {van.regoExpiry && safeDate(van.regoExpiry) ? safeDate(van.regoExpiry).toLocaleDateString('en-NZ', { month: 'short', year: 'numeric' }) : 'Not specified'}
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="font-bold text-slate-900 text-lg leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2 min-h-[3.5rem]">
+              {van.title}
+            </h3>
+            <div className="flex items-center gap-1.5 text-slate-400 text-sm mt-1">
+              <MapPin size={14} className="text-emerald-500" />
+              <span className="font-medium">{van.location}</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-end pt-2 border-t border-gray-100">
-          {van.buyBack && (
-            <span className="text-xs font-semibold text-green-600 flex items-center gap-1">
-              <Shield size={12} />
-              {t('filters.buyback')}
-            </span>
-          )}
+        <div className="flex items-center gap-3 text-slate-500 mb-6 bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+          <div className="flex flex-col flex-1">
+            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Year</span>
+            <span className="text-slate-900 font-bold">{van.year}</span>
+          </div>
+          <div className="w-[1px] h-6 bg-slate-200" />
+          <div className="flex flex-col flex-1">
+            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Km</span>
+            <span className="text-slate-900 font-bold">{(van.mileage || 0).toLocaleString()}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-1">Price</span>
+            <div className="text-2xl font-black text-slate-900">
+              {formatPrice ? formatPrice(van.price) : `$${(van.price || 0).toLocaleString()}`}
+            </div>
+          </div>
+
+          <div className="bg-emerald-600 text-white p-2.5 rounded-2xl shadow-lg shadow-emerald-200 group-hover:scale-110 group-hover:translate-x-1 transition-all">
+            <ChevronRight size={20} />
+          </div>
         </div>
       </div>
     </Link>

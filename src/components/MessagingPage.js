@@ -45,31 +45,31 @@ function LanguageSelector() {
     domains.forEach(domain => {
       document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${domain ? ' domain=' + domain + ';' : ''}`;
     });
-    
+
     // 2. Supprimer aussi du localStorage
     try {
       localStorage.removeItem('googtrans');
       sessionStorage.clear();
-    } catch (e) {}
+    } catch (e) { }
 
     // 3. Supprimer les éléments Google Translate du DOM
     const gtFrame = document.querySelector('.goog-te-banner-frame');
     if (gtFrame) gtFrame.remove();
     const gtElement = document.getElementById('google_translate_element');
     if (gtElement) gtElement.innerHTML = '';
-    
+
     // 4. Réinitialiser le body
     document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
     const html = document.documentElement;
     html.className = html.className.replace(/translated-[a-z]+/g, '');
-    
+
     // 5. Supprimer le script Google Translate pour forcer une réinitialisation
     const oldScript = document.getElementById('google-translate-script');
     if (oldScript) oldScript.remove();
-    
+
     // 6. Supprimer les iframes Google
     document.querySelectorAll('iframe.goog-te-menu-frame, iframe.goog-te-banner-frame').forEach(el => el.remove());
-    
+
     if (langCode === 'en') {
       // Retour à l'anglais - reload COMPLET sans cache
       setTimeout(() => {
@@ -82,7 +82,7 @@ function LanguageSelector() {
     const langCookie = `/en/${langCode}`;
     document.cookie = `googtrans=${langCookie}; path=/;`;
     document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
-    
+
     // Force reload avec cache bypass
     setTimeout(() => {
       window.location.replace(window.location.pathname + '?lang=' + langCode + '&t=' + Date.now());
@@ -161,11 +161,10 @@ function LanguageSelector() {
               <button
                 key={lang.code}
                 onClick={() => changeLanguage(lang.code)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${
-                  currentLang === lang.code
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentLang === lang.code
                     ? 'bg-emerald-50 text-emerald-700 font-semibold'
                     : 'hover:bg-gray-50 text-gray-700'
-                }`}
+                  }`}
               >
                 <img
                   src={lang.flag}
@@ -186,19 +185,19 @@ export default function MessagingPage({ onBack }) {
   const { currentUser } = useAuth();
   const { checkAndRecord } = useRateLimit(currentUser?.uid);
   const navigate = useNavigate();
-  
+
   // Handle browser back button
   useEffect(() => {
     // Push a state when opening
     window.history.pushState({ messaging: true }, '', window.location.href);
-    
+
     const handlePopState = (event) => {
       // When user clicks browser back, close messaging
       onBack();
     };
-    
+
     window.addEventListener('popstate', handlePopState);
-    
+
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
@@ -217,21 +216,21 @@ export default function MessagingPage({ onBack }) {
           clearInterval(intervalId);
         }
       }, 500);
-      
+
       // Timeout après 5 secondes
       setTimeout(() => clearInterval(intervalId), 5000);
-      
+
       return () => clearInterval(intervalId);
     }
   }, []);
-  
+
   // Write lastSeen heartbeat while on messaging page
   useEffect(() => {
     if (!currentUser) return;
 
     const userRef = doc(db, 'users', currentUser.uid);
     const writeLastSeen = () => {
-      setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
+      setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true }).catch(() => { });
     };
 
     // Write immediately, then every 5 minutes (300000ms) to reduce Firestore writes
@@ -241,7 +240,7 @@ export default function MessagingPage({ onBack }) {
     return () => {
       clearInterval(interval);
       // Mark as offline when leaving
-      setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
+      setDoc(userRef, { lastSeen: serverTimestamp() }, { merge: true }).catch(() => { });
     };
   }, [currentUser]);
 
@@ -281,7 +280,7 @@ export default function MessagingPage({ onBack }) {
   const [isTyping, setIsTyping] = useState(false);
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [customOffer, setCustomOffer] = useState('');
-  
+
   const [otherUserLastSeen, setOtherUserLastSeen] = useState(null);
 
   const messagesEndRef = useRef(null);
@@ -320,10 +319,10 @@ export default function MessagingPage({ onBack }) {
       where('participants', 'array-contains', currentUser.uid)
     );
 
-    const unsubscribe = onSnapshot(q, 
+    const unsubscribe = onSnapshot(q,
       (snapshot) => {
         console.log('✅ Found conversations:', snapshot.docs.length);
-        
+
         const convos = snapshot.docs.map(docSnap => {
           const data = docSnap.data();
           return {
@@ -333,14 +332,14 @@ export default function MessagingPage({ onBack }) {
             otherUserId: data.participants.find(p => p !== currentUser.uid)
           };
         });
-        
+
         // Sort client-side by lastMessageAt (newest first)
         convos.sort((a, b) => {
           const timeA = a.lastMessageAt?.toDate?.() || new Date(0);
           const timeB = b.lastMessageAt?.toDate?.() || new Date(0);
           return timeB - timeA;
         });
-        
+
         setConversations(convos);
         setLoading(false);
 
@@ -531,7 +530,7 @@ export default function MessagingPage({ onBack }) {
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     const now = new Date();
     const diff = now - date;
-    
+
     if (diff < 60000) return 'Just now';
     if (diff < 3600000) return `${Math.floor(diff / 60000)}m`;
     if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`;
@@ -541,7 +540,7 @@ export default function MessagingPage({ onBack }) {
 
   // Filter conversations
   const filteredConversations = conversations.filter(conv => {
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       conv.van?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conv.participantNames?.[conv.otherUserId]?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = activeFilter === 'all' || conv.status === activeFilter;
@@ -589,7 +588,7 @@ export default function MessagingPage({ onBack }) {
       <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={onBack}
               className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all"
             >
@@ -607,14 +606,14 @@ export default function MessagingPage({ onBack }) {
               </div>
             </div>
           </div>
-          
+
           {/* Navigation Icons */}
           <div className="flex items-center gap-1">
             {/* Language Selector */}
             <LanguageSelector />
-            
+
             {/* Favoris */}
-            <button 
+            <button
               onClick={onBack}
               className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
               title="Favorites"
@@ -624,7 +623,7 @@ export default function MessagingPage({ onBack }) {
             </button>
 
             {/* Messages (actif) */}
-            <button 
+            <button
               className="relative flex flex-col items-center p-2.5 bg-white/20 rounded-xl transition"
               title="Messages"
             >
@@ -633,7 +632,7 @@ export default function MessagingPage({ onBack }) {
             </button>
 
             {/* Profil */}
-            <button 
+            <button
               onClick={onBack}
               className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
               title="Profile"
@@ -649,7 +648,7 @@ export default function MessagingPage({ onBack }) {
 
       {/* Main Content - 3 Columns */}
       <div className="flex-1 flex overflow-hidden max-w-7xl mx-auto w-full">
-        
+
         {/* Column 1: Conversations List */}
         <div className={`
           w-full md:w-80 lg:w-96 border-r border-gray-200 flex flex-col bg-white
@@ -667,16 +666,15 @@ export default function MessagingPage({ onBack }) {
                 className="w-full pl-10 pr-4 py-2.5 bg-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
               />
             </div>
-            
+
             {/* Filter Tabs */}
             <div className="flex gap-1 overflow-x-auto pb-1">
               <button
                 onClick={() => setActiveFilter('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${
-                  activeFilter === 'all' 
-                    ? 'bg-emerald-100 text-emerald-700' 
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeFilter === 'all'
+                    ? 'bg-emerald-100 text-emerald-700'
                     : 'text-gray-600 hover:bg-gray-100'
-                }`}
+                  }`}
               >
                 All
               </button>
@@ -684,11 +682,10 @@ export default function MessagingPage({ onBack }) {
                 <button
                   key={status.id}
                   onClick={() => setActiveFilter(status.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-                    activeFilter === status.id 
-                      ? 'bg-emerald-100 text-emerald-700' 
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${activeFilter === status.id
+                      ? 'bg-emerald-100 text-emerald-700'
                       : 'text-gray-600 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <span className={`w-2 h-2 rounded-full ${status.color}`}></span>
                   {status.label}
@@ -717,9 +714,8 @@ export default function MessagingPage({ onBack }) {
                     setSelectedConversation(conv);
                     setMobileView('chat');
                   }}
-                  className={`p-4 border-b border-gray-100 cursor-pointer transition-all hover:bg-gray-50 ${
-                    selectedConversation?.id === conv.id ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : ''
-                  }`}
+                  className={`p-4 border-b border-gray-100 cursor-pointer transition-all hover:bg-gray-50 ${selectedConversation?.id === conv.id ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : ''
+                    }`}
                 >
                   <div className="flex gap-3">
                     {/* Van Image */}
@@ -781,17 +777,17 @@ export default function MessagingPage({ onBack }) {
               {/* Chat Header */}
               <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <button 
+                  <button
                     onClick={() => setMobileView('list')}
                     className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100"
                   >
                     <ChevronLeft size={20} />
                   </button>
-                  
+
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">
                     {getInitials(getOtherUserName(selectedConversation))}
                   </div>
-                  
+
                   <div>
                     <h3 className="font-semibold text-gray-900">
                       {getOtherUserName(selectedConversation)}
@@ -800,9 +796,9 @@ export default function MessagingPage({ onBack }) {
                       {isTyping ? (
                         <span className="text-emerald-600 flex items-center gap-1">
                           <span className="flex gap-0.5">
-                            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
-                            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
-                            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
+                            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                            <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                           </span>
                           typing...
                         </span>
@@ -818,7 +814,7 @@ export default function MessagingPage({ onBack }) {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <select
                     value={selectedConversation.status || 'new'}
@@ -829,8 +825,8 @@ export default function MessagingPage({ onBack }) {
                       <option key={status.id} value={status.id}>{status.label}</option>
                     ))}
                   </select>
-                  
-                  <button 
+
+                  <button
                     onClick={() => {
                       setShowDetailsPanel(!showDetailsPanel);
                       if (mobileView === 'chat') setMobileView('details');
@@ -865,7 +861,7 @@ export default function MessagingPage({ onBack }) {
                 {messages.map((msg, idx) => {
                   const isOwn = msg.senderId === currentUser.uid;
                   const showAvatar = idx === 0 || messages[idx - 1]?.senderId !== msg.senderId;
-                  
+
                   return (
                     <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                       <div className={`flex items-end gap-2 max-w-[80%] ${isOwn ? 'flex-row-reverse' : ''}`}>
@@ -876,12 +872,11 @@ export default function MessagingPage({ onBack }) {
                         ) : (
                           <div className="w-8 flex-shrink-0"></div>
                         )}
-                        
-                        <div className={`px-4 py-2.5 rounded-2xl ${
-                          isOwn 
-                            ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-br-md' 
+
+                        <div className={`px-4 py-2.5 rounded-2xl ${isOwn
+                            ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-br-md'
                             : 'bg-white text-gray-800 shadow-sm rounded-bl-md'
-                        }`}>
+                          }`}>
                           <p className="text-sm leading-relaxed">{msg.text}</p>
                           <div className={`flex items-center justify-end gap-1 mt-1 ${isOwn ? 'text-white/70' : 'text-gray-400'}`}>
                             <span className="text-[10px]">{formatTime(msg.createdAt)}</span>
@@ -902,19 +897,19 @@ export default function MessagingPage({ onBack }) {
                     </div>
                   );
                 })}
-                
+
                 {isTyping && (
                   <div className="flex justify-start">
                     <div className="bg-white px-4 py-3 rounded-2xl shadow-sm">
                       <div className="flex gap-1">
-                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}}></span>
-                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}}></span>
-                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}}></span>
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
 
@@ -931,7 +926,7 @@ export default function MessagingPage({ onBack }) {
                       Make an Offer
                       <ChevronRight size={16} className={`transition-transform ${showOfferModal ? 'rotate-90' : ''}`} />
                     </button>
-                    
+
                     {/* Offer Options Modal */}
                     {showOfferModal && (
                       <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-10">
@@ -941,7 +936,7 @@ export default function MessagingPage({ onBack }) {
                         <p className="text-xs text-gray-500 mb-3">
                           Listed price: <span className="font-bold text-emerald-600">${selectedConversation.van.price?.toLocaleString()}</span>
                         </p>
-                        
+
                         {/* Preset Options */}
                         <div className="grid grid-cols-2 gap-2 mb-3">
                           {[5, 10, 15, 20].map((percent) => {
@@ -962,7 +957,7 @@ export default function MessagingPage({ onBack }) {
                             );
                           })}
                         </div>
-                        
+
                         {/* Custom Amount */}
                         <div className="flex gap-2">
                           <div className="relative flex-1">
@@ -990,7 +985,7 @@ export default function MessagingPage({ onBack }) {
                             Send
                           </button>
                         </div>
-                        
+
                         {/* Close button */}
                         <button
                           onClick={() => setShowOfferModal(false)}
@@ -1002,19 +997,19 @@ export default function MessagingPage({ onBack }) {
                     )}
                   </div>
                 )}
-                
+
                 <div className="flex items-end gap-2">
                   <textarea
                     ref={inputRef}
                     value={newMessage}
                     onChange={(e) => { setNewMessage(e.target.value); handleTyping(); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }}}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                     placeholder="Type a message..."
                     rows={1}
                     className="flex-1 px-4 py-3 bg-gray-100 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all text-sm"
                     style={{ minHeight: '48px', maxHeight: '120px' }}
                   />
-                  
+
                   <button
                     onClick={() => sendMessage()}
                     disabled={!newMessage.trim() || sendingMessage}
@@ -1052,7 +1047,7 @@ export default function MessagingPage({ onBack }) {
               </button>
               <h3 className="font-semibold text-gray-900 ml-2">Details</h3>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto">
               {selectedConversation.van && (
                 <div className="p-4 border-b border-gray-100">
@@ -1077,7 +1072,7 @@ export default function MessagingPage({ onBack }) {
                   <p className={`text-2xl font-black mb-4 ${selectedConversation.van.status === 'sold' ? 'text-gray-400' : 'text-emerald-600'}`}>
                     ${selectedConversation.van.price?.toLocaleString()}
                   </p>
-                  
+
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-2">
                       <Calendar size={18} className="text-gray-400" />
@@ -1128,12 +1123,11 @@ export default function MessagingPage({ onBack }) {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center justify-between py-2 border-b border-gray-100">
                     <span className="text-gray-500">Status</span>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      selectedConversation.status === 'new' ? 'bg-blue-100 text-blue-700' :
-                      selectedConversation.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                      selectedConversation.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedConversation.status === 'new' ? 'bg-blue-100 text-blue-700' :
+                        selectedConversation.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                          selectedConversation.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                            'bg-gray-100 text-gray-700'
+                      }`}>
                       {selectedConversation.status || 'New'}
                     </span>
                   </div>
@@ -1150,10 +1144,22 @@ export default function MessagingPage({ onBack }) {
             </div>
 
             <div className="p-4 border-t border-gray-200 space-y-2">
-              <button className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-medium text-sm hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
+              <button
+                onClick={() => {
+                  if (selectedConversation.van?.id) {
+                    // Close messaging and navigate to the van page
+                    onBack();
+                    setTimeout(() => navigate(`/van/${selectedConversation.van.id}`), 100);
+                  }
+                }}
+                className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-medium text-sm hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
+              >
                 <Eye size={18} /> View Listing
               </button>
-              <button className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-200 transition-all flex items-center justify-center gap-2">
+              <button
+                onClick={() => updateStatus('resolved')}
+                className="w-full py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium text-sm hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
+              >
                 <Archive size={18} /> Archive
               </button>
             </div>

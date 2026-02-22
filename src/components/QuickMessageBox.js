@@ -19,7 +19,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
-  
+
   // ✅ États pour la vérification email
   const [resendingEmail, setResendingEmail] = useState(false);
   const [emailResent, setEmailResent] = useState(false);
@@ -89,7 +89,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       setError('Please enter a message');
       return;
     }
-    
+
     if (!currentUser) {
       setError('Please sign in to send messages');
       return;
@@ -100,26 +100,26 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       setError('Please verify your email before sending messages');
       return;
     }
-    
+
     if (!van) {
       setError('Van information not available');
       return;
     }
-    
+
     const sellerInfo = getSellerInfo();
     if (!sellerInfo.uid) {
       setError('Unable to contact seller. Please try again later.');
       console.error('❌ Seller UID not found:', { seller, van });
       return;
     }
-    
+
     // 🛡️ RATE LIMIT: Max 30 messages par heure
     const rateCheck = checkAndRecord('sendMessage');
     if (!rateCheck.allowed) {
       setError(rateCheck.error);
       return;
     }
-    
+
     setSending(true);
     setError(null);
 
@@ -129,10 +129,10 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
         collection(db, 'conversations'),
         where('participants', 'array-contains', currentUser.uid)
       );
-      
+
       const snapshot = await getDocs(q);
       let conversationId = null;
-      
+
       // Find existing conversation for this van
       for (const docSnap of snapshot.docs) {
         const data = docSnap.data();
@@ -207,10 +207,10 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
 
       setSent(true);
       setMessage('');
-      
+
       // Reset after 3 seconds
       setTimeout(() => setSent(false), 3000);
-      
+
       if (onMessageSent) onMessageSent();
 
     } catch (err) {
@@ -231,7 +231,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
   }
 
   const sellerUid = getSellerUid();
-  
+
   // Don't show if user is the seller
   if (sellerUid && currentUser.uid === sellerUid) {
     return null;
@@ -265,10 +265,10 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
               📧 Verify your email to contact sellers
             </h4>
             <p className="text-amber-700 text-sm mb-3">
-              We sent a verification link to <strong>{currentUser.email}</strong>. 
+              We sent a verification link to <strong>{currentUser.email}</strong>.
               Please check your inbox (and spam folder).
             </p>
-            
+
             {emailResent ? (
               <p className="text-emerald-600 text-sm font-medium flex items-center gap-1">
                 <Check size={16} />
@@ -312,7 +312,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
                 </button>
               </div>
             )}
-            
+
             {error && (
               <p className="text-red-600 text-sm mt-2">{error}</p>
             )}
@@ -330,16 +330,15 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
           <MessageCircle size={18} className="text-emerald-600" />
           Contact Seller
         </h4>
-        
+
         {/* ✅ Indicateur de messages restants (visible si < 10) */}
         {messageLimit.remaining <= 10 && (
-          <div className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
-            messageLimit.remaining === 0 
-              ? 'bg-red-100 text-red-700' 
-              : messageLimit.remaining <= 5 
-                ? 'bg-amber-100 text-amber-700' 
+          <div className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${messageLimit.remaining === 0
+              ? 'bg-red-100 text-red-700'
+              : messageLimit.remaining <= 5
+                ? 'bg-amber-100 text-amber-700'
                 : 'bg-gray-100 text-gray-600'
-          }`}>
+            }`}>
             {messageLimit.remaining === 0 ? (
               <>
                 <AlertCircle size={12} />
@@ -407,11 +406,10 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
         <button
           onClick={() => sendMessage(message)}
           disabled={!message.trim() || sending}
-          className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
-            sent 
-              ? 'bg-emerald-500 text-white' 
+          className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${sent
+              ? 'bg-emerald-500 text-white'
               : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50'
-          }`}
+            }`}
         >
           {sending ? (
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -423,10 +421,22 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
         </button>
       </div>
 
-      {/* Success Message */}
+      {/* Success Message — avec bouton Open Full Chat */}
       {sent && (
-        <div className="mt-2 text-center text-sm text-emerald-600 font-medium animate-pulse">
-          ✓ Message sent! The seller will be notified.
+        <div className="mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+          <p className="text-sm text-emerald-700 font-medium flex items-center gap-2 mb-2">
+            <Check size={16} className="text-emerald-600" />
+            Message sent! The seller will be notified.
+          </p>
+          {onOpenFullChat && (
+            <button
+              onClick={onOpenFullChat}
+              className="w-full py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg text-sm font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all flex items-center justify-center gap-2"
+            >
+              <MessageCircle size={16} />
+              Open Full Chat
+            </button>
+          )}
         </div>
       )}
 

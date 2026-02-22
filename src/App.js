@@ -818,95 +818,32 @@ function MainApp() {
     );
   };
 
-  // Si page Buyback Calculator ouverte
-  if (showBuybackCalculator) {
-    return (
-      <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
-        <SeoHead title={t('menu.calculator')} />
-        <Suspense fallback={<PageLoader />}>
-          <div className="min-h-screen relative">
-            <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
-              <div className="max-w-7xl mx-auto px-4">
-                <div className="flex items-center justify-between h-16">
-                  <button
-                    onClick={() => setShowBuybackCalculator(false)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition text-white font-semibold"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                    <span className="hidden sm:inline">{t('header.subtitle').replace('🇳🇿', '')}</span>
-                  </button>
+  // ✅ HEADER PROPS
+  const headerProps = {
+    setShowBuybackCalculator,
+    searchTerm,
+    setSearchTerm,
+    currentUser,
+    favoritesCount,
+    setShowFavorites,
+    setShowAuthModal,
+    setShowMessagingPage,
+    setShowUserMenu,
+    setShowMobileMenu,
+    showMobileMenu,
+    isAdmin,
+    logout,
+    setShowAdminDashboard,
+    setShowUserProfile
+  };
 
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowFavorites(true) : setShowAuthModal(true), 100); }}
-                      className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                    >
-                      <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
-                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.favorites')}</span>
-                    </button>
-
-                    <button
-                      onClick={() => { setShowBuybackCalculator(false); setTimeout(() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true), 100); }}
-                      className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                    >
-                      <MessageCircle size={22} className="text-white" />
-                      <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.messages')}</span>
-                    </button>
-
-                    {!currentUser ? (
-                      <button
-                        onClick={() => setShowAuthModal(true)}
-                        className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                      >
-                        <Users size={22} className="text-white" />
-                        <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.signin')}</span>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => { setShowBuybackCalculator(false); setShowUserMenu(true); }}
-                        className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                      >
-                        <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
-                          {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
-                        </div>
-                        <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.profile')}</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            <BuybackCalculator />
-
-            <AuthModal
-              isOpen={showAuthModal}
-              onClose={() => setShowAuthModal(false)}
-            />
-          </div>
-        </Suspense>
-      </NotificationProvider>
-    );
-  }
-
-  // Si page messagerie ouverte
-  if (showMessagingPage) {
-    return (
-      <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
-        <SeoHead title={t('menu.messages')} />
-        <Suspense fallback={<PageLoader />}>
-          <MessagingPage onBack={() => setShowMessagingPage(false)} />
-        </Suspense>
-      </NotificationProvider>
-    );
-  }
 
   return (
     <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
       {/* WebViewWarning desactive - le site s'affiche directement */}
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-slate-50">
+        <Header {...headerProps} />
+
         {/* Skip to main content link for accessibility */}
         <a
           href="#main-content"
@@ -915,105 +852,188 @@ function MainApp() {
           Skip to main content
         </a>
 
-        {/* ========== ANNOUNCEMENT BANNER ========== */}
-        <div
-          className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2 px-4 text-center text-sm font-medium cursor-pointer hover:from-orange-600 hover:to-amber-600 transition-all"
-          onClick={() => navigate('/sell')}
-        >
-          🚐 Sell your van FOR FREE → List now
-        </div>
+        {showBuybackCalculator ? (
+          <div className="animate-fade-in-up">
+            <Suspense fallback={<PageLoader />}>
+              <BuybackCalculator />
+            </Suspense>
+          </div>
+        ) : showMessagingPage ? (
+          <div className="animate-fade-in-up">
+            <Suspense fallback={<PageLoader />}>
+              <MessagingPage onBack={() => setShowMessagingPage(false)} />
+            </Suspense>
+          </div>
+        ) : (
+          <>
 
-        <Header
-          setShowBuybackCalculator={setShowBuybackCalculator}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          currentUser={currentUser}
-          favoritesCount={favoritesCount}
-          setShowFavorites={setShowFavorites}
-          setShowAuthModal={setShowAuthModal}
-          setShowMessagingPage={setShowMessagingPage}
-          setShowUserMenu={setShowUserMenu}
-          setShowMobileMenu={setShowMobileMenu}
-          showMobileMenu={showMobileMenu}
-          isAdmin={isAdmin}
-          logout={logout}
-          setShowAdminDashboard={setShowAdminDashboard}
-          setShowUserProfile={setShowUserProfile}
-        />
+            {/* ========== HERO SECTION 2.0 ========== */}
+            <section className="relative pt-6 pb-20 overflow-hidden">
+              {/* Background Elements */}
+              <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-white" />
+                <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-emerald-100/50 blur-[120px] rounded-full" />
+                <div className="absolute -bottom-[10%] -left-[10%] w-[30%] h-[30%] bg-teal-100/50 blur-[120px] rounded-full" />
+              </div>
 
+              <div className="max-w-7xl mx-auto px-4 relative z-10">
+                <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
 
-        {/* MVP_DISABLED: Stripe/Payments - TrustBanner
-        <TrustBanner />
-        */}
+                  {/* Text Content */}
+                  <div className="flex-1 text-center lg:text-left animate-fade-in-up stagger-1">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold mb-6 tracking-wide uppercase">
+                      <Zap size={14} className="fill-emerald-700" />
+                      NZ's #1 Campervan Marketplace
+                    </div>
 
-        {/* ========== MAIN CONTENT ========== */}
-        <main id="main-content" role="main">
+                    <h2 className="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-[1.1]">
+                      Start Your <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">NZ Adventure</span> Today.
+                    </h2>
 
-          {/* ========== SEARCH MOBILE + FILTRES ========== */}
-          <QuickFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            filters={filters}
-            setFilters={setFilters}
-            showFilters={showFilters}
-            setShowFilters={setShowFilters}
-            showBuyBackInfo={showBuyBackInfo}
-            setShowBuyBackInfo={setShowBuyBackInfo}
-            showRegoInfo={showRegoInfo}
-            setShowRegoInfo={setShowRegoInfo}
-            showSelfContainedInfo={showSelfContainedInfo}
-            setShowSelfContainedInfo={setShowSelfContainedInfo}
-            showWofInfo={showWofInfo}
-            setShowWofInfo={setShowWofInfo}
-          />
+                    <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                      The most trusted platform to buy and sell campervans in New Zealand.
+                      Verified sellers, transparent pricing, and 100% free for buyers.
+                    </p>
 
-          {/* ========== RÉSULTATS ========== */}
-          <Listings
-            loading={loading}
-            filteredVans={filteredVans}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            formatPrice={formatPrice}
-          />
+                    <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
+                      <button
+                        onClick={() => {
+                          const el = document.getElementById('listings-start');
+                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="btn-primary flex items-center gap-3 group px-8 py-4 text-lg"
+                      >
+                        Browse Listings
+                        <ChevronDown size={20} className="group-hover:translate-y-1 transition-transform" />
+                      </button>
+                      <button
+                        onClick={() => navigate('/sell')}
+                        className="px-8 py-4 bg-white border-2 border-slate-100 text-slate-900 font-bold rounded-2xl hover:bg-slate-50 hover:border-emerald-200 transition-all flex items-center gap-2 text-lg"
+                      >
+                        <Plus size={22} className="text-emerald-600" />
+                        Sell Your Van
+                      </button>
+                    </div>
 
-          {/* How It Works */}
-          <div className="bg-white py-16 mt-12">
-            <div className="max-w-7xl mx-auto px-4">
-              <h2 className="text-4xl font-bold text-center mb-12">{t('how_it_works.title')}</h2>
-              <div className="grid md:grid-cols-3 gap-8">
-                <div className="text-center">
-                  <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search size={32} className="text-emerald-600" />
+                    {/* Trust Stats */}
+                    <div className="mt-12 flex flex-wrap justify-center lg:justify-start gap-8 border-t border-slate-100 pt-8">
+                      <div className="flex flex-col">
+                        <span className="text-3xl font-black text-slate-900">1.2k+</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Vans</span>
+                      </div>
+                      <div className="h-10 w-[1px] bg-slate-100 hidden sm:block" />
+                      <div className="flex flex-col">
+                        <span className="text-3xl font-black text-slate-900">5k+</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Happy Travelers</span>
+                      </div>
+                      <div className="h-10 w-[1px] bg-slate-100 hidden sm:block" />
+                      <div className="flex flex-col">
+                        <span className="text-3xl font-black text-slate-900">100%</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Trusted Sellers</span>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="font-bold text-xl mb-2">1. {t('how_it_works.step1_title')}</h3>
-                  <p className="text-gray-600">{t('how_it_works.step1_desc')}</p>
-                </div>
-                <div className="text-center">
-                  <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Phone size={32} className="text-emerald-600" />
+
+                  {/* Visual Element */}
+                  <div className="flex-1 relative w-full aspect-square max-w-[500px] animate-fade-in-up stagger-2">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[3rem] rotate-3 opacity-20" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[3rem] -rotate-3 overflow-hidden shadow-2xl">
+                      <img
+                        src="https://images.unsplash.com/photo-1527786356703-4b100091cd2c?auto=format&fit=crop&q=80&w=1200"
+                        alt="New Zealand Campervan Trip"
+                        className="w-full h-full object-cover mix-blend-overlay opacity-90 grayscale-[20%] hover:scale-110 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+
+                      {/* Floating Card */}
+                      <div className="absolute bottom-6 left-6 right-6 glass-effect p-6 rounded-3xl animate-fade-in-up stagger-3">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-lg">
+                            <MapPin size={24} />
+                          </div>
+                          <div>
+                            <p className="text-white font-bold">Mount Cook, NZ</p>
+                            <p className="text-white/70 text-sm">Your next destination awaits.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="font-bold text-xl mb-2">2. {t('how_it_works.step2_title')}</h3>
-                  <p className="text-gray-600">{t('how_it_works.step2_desc')}</p>
-                </div>
-                <div className="text-center">
-                  <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle size={32} className="text-emerald-600" />
-                  </div>
-                  <h3 className="font-bold text-xl mb-2">3. {t('how_it_works.step3_title')}</h3>
-                  <p className="text-gray-600">{t('how_it_works.step3_desc')}</p>
                 </div>
               </div>
-            </div>
-          </div>
+            </section>
 
-          {/* SEO Section */}
-          <Suspense fallback={null}>
-            <HomeSeoSection />
-          </Suspense>
+            {/* ========== MAIN CONTENT ========== */}
+            <main id="main-content" role="main">
+              <div id="listings-start" className="scroll-mt-24" />
 
-        </main>
+              {/* ========== SEARCH MOBILE + FILTRES ========== */}
+              <QuickFilters
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                filters={filters}
+                setFilters={setFilters}
+                showFilters={showFilters}
+                setShowFilters={setShowFilters}
+                showBuyBackInfo={showBuyBackInfo}
+                setShowBuyBackInfo={setShowBuyBackInfo}
+                showRegoInfo={showRegoInfo}
+                setShowRegoInfo={setShowRegoInfo}
+                showSelfContainedInfo={showSelfContainedInfo}
+                setShowSelfContainedInfo={setShowSelfContainedInfo}
+                showWofInfo={showWofInfo}
+                setShowWofInfo={setShowWofInfo}
+              />
+
+              {/* ========== RÉSULTATS ========== */}
+              <Listings
+                loading={loading}
+                filteredVans={filteredVans}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                formatPrice={formatPrice}
+              />
+
+              {/* How It Works */}
+              <div className="bg-white py-16 mt-12">
+                <div className="max-w-7xl mx-auto px-4">
+                  <h2 className="text-4xl font-bold text-center mb-12">{t('how_it_works.title')}</h2>
+                  <div className="grid md:grid-cols-3 gap-8">
+                    <div className="text-center">
+                      <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Search size={32} className="text-emerald-600" />
+                      </div>
+                      <h3 className="font-bold text-xl mb-2">1. {t('how_it_works.step1_title')}</h3>
+                      <p className="text-gray-600">{t('how_it_works.step1_desc')}</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Phone size={32} className="text-emerald-600" />
+                      </div>
+                      <h3 className="font-bold text-xl mb-2">2. {t('how_it_works.step2_title')}</h3>
+                      <p className="text-gray-600">{t('how_it_works.step2_desc')}</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle size={32} className="text-emerald-600" />
+                      </div>
+                      <h3 className="font-bold text-xl mb-2">3. {t('how_it_works.step3_title')}</h3>
+                      <p className="text-gray-600">{t('how_it_works.step3_desc')}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SEO Section */}
+              <Suspense fallback={null}>
+                <HomeSeoSection />
+              </Suspense>
+
+            </main>
+          </>
+        )}
         {/* ========== END MAIN CONTENT ========== */}
 
         <Footer
@@ -1300,6 +1320,11 @@ export default function KiwiVanMarket() {
         <Route path="/buyback-calculator" element={
           <Suspense fallback={<PageLoader />}>
             <BuybackCalculator />
+          </Suspense>
+        } />
+        <Route path="/messages" element={
+          <Suspense fallback={<PageLoader />}>
+            <MessagingPage onBack={() => window.history.back()} />
           </Suspense>
         } />
 

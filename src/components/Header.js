@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -50,207 +50,242 @@ export default function Header({
 }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const [showUserMenuDropdown, setShowUserMenuDropdown] = useState(false);
 
     return (
-        <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg sticky top-0 z-30">
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="flex items-center justify-between h-16">
+        <header className="sticky top-0 z-50 w-full px-4 py-3">
+            <div className="max-w-7xl mx-auto glass-effect rounded-[2rem] px-6 py-2 transition-all duration-300">
+                <div className="flex items-center justify-between h-14">
 
                     {/* Logo */}
-                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.href = '/'}>
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
-                            <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-9 h-9 object-contain" width="36" height="36" />
+                    <Link to="/" className="flex items-center gap-3 group">
+                        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg bg-[#f7eedd] overflow-hidden transition-transform group-hover:scale-110">
+                            <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-8 h-8 object-contain" width="32" height="32" />
                         </div>
                         <div className="hidden sm:block">
-                            <h1 className="text-xl font-bold">Kiwi Van Market</h1>
-                            <p className="text-xs text-white/80">Buy & Sell Campervans 🇳🇿</p>
+                            <h1 className="text-lg font-bold text-slate-900 leading-tight">KiwiVan</h1>
+                            <p className="text-[10px] uppercase tracking-widest font-black text-emerald-600 leading-none">Market</p>
                         </div>
-                    </div>
+                    </Link>
 
-                    {/* Boutons d'action - Desktop */}
-                    <div className="hidden md:flex items-center gap-3 ml-10">
+                    {/* Navigation - Desktop Central */}
+                    <nav className="hidden md:flex items-center gap-1 ml-6">
                         <Link
                             to="/guides"
-                            className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
+                            className="px-4 py-2 text-slate-600 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2 text-sm"
                         >
-                            <BookOpen size={18} />
-                            <span className="hidden lg:inline">Guides</span>
+                            <BookOpen size={16} />
+                            <span>Guides</span>
                         </Link>
 
                         <Link
                             to="/buyback-calculator"
-                            className="bg-white/20 text-white px-3 py-2 rounded-xl font-semibold hover:bg-white/30 transition flex items-center gap-2 text-sm"
+                            className="px-4 py-2 text-slate-600 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2 text-sm"
                         >
-                            <Calculator size={18} />
-                            <span className="hidden lg:inline">Calculator</span>
+                            <Calculator size={16} />
+                            <span>Calculator</span>
                         </Link>
+                    </nav>
 
-                        <button
-                            onClick={() => navigate('/sell')}
-                            className="bg-white text-emerald-600 px-4 py-2 rounded-xl font-semibold hover:bg-emerald-50 transition flex items-center gap-2 text-sm shadow-md"
-                        >
-                            <Plus size={18} />
-                            <span>Sell your van</span>
-                        </button>
-                    </div>
-
-                    {/* Barre de recherche - Desktop */}
-                    <div className="hidden lg:flex flex-1 max-w-md mx-6">
-                        <div className="relative w-full">
+                    {/* Barre de recherche - Desktop Content-Aware */}
+                    <div className="hidden lg:flex flex-1 max-w-sm mx-8">
+                        <div className="relative w-full group">
                             <input
                                 type="text"
                                 placeholder="Search campervans..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-4 pr-12 py-2.5 bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-xl text-white placeholder-white/70 focus:bg-white focus:text-gray-800 focus:placeholder-gray-400 focus:border-white outline-none transition-all text-sm"
+                                className="w-full pl-10 pr-4 py-2 bg-slate-100/50 border border-transparent rounded-2xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all text-sm"
                                 aria-label="Search campervans"
                             />
-                            <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70" aria-hidden="true" />
+                            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                         </div>
                     </div>
 
-                    {/* Navigation Icons - Desktop */}
-                    <div className="hidden md:flex items-center gap-1">
+                    {/* Actions & Profile - Desktop Right */}
+                    <div className="hidden md:flex items-center gap-2">
+                        <button
+                            onClick={() => navigate('/sell')}
+                            className="btn-primary text-xs px-5 py-2.5 flex items-center gap-2 mr-2"
+                        >
+                            <Plus size={16} />
+                            <span>Sell Van</span>
+                        </button>
+
+                        <div className="h-8 w-[1px] bg-slate-200 mx-1" />
+
                         <LanguageSelector />
 
                         {currentUser && (
                             <NotificationBell
                                 user={currentUser}
                                 onNotificationClick={(notif) => {
-                                    if (notif.type === 'new_message') {
-                                        setShowMessagingPage(true);
-                                    }
+                                    if (notif.type === 'new_message') navigate('/messages');
                                 }}
                             />
                         )}
 
                         <button
                             onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
-                            className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                            title="My Favorites"
-                            aria-label={t('header.favorites')}
+                            className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all relative"
+                            title="Favorites"
                         >
-                            <Heart size={22} className={favoritesCount > 0 ? "text-red-400 fill-red-400" : "text-white"} />
-                            <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.favorites')}</span>
+                            <Heart size={20} className={favoritesCount > 0 ? "fill-red-500 text-red-500" : ""} />
                         </button>
 
                         <button
-                            onClick={() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true)}
-                            className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                            title="My Messages"
-                            aria-label={t('header.messages')}
+                            onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
+                            className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all relative"
+                            title="Messages"
                         >
-                            <MessageCircle size={22} className="text-white" />
-                            <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.messages')}</span>
+                            <MessageCircle size={20} />
                             <MessageBadge />
                         </button>
 
                         {!currentUser ? (
                             <button
                                 onClick={() => setShowAuthModal(true)}
-                                className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
+                                className="ml-2 px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition-all shadow-md active:scale-95"
                             >
-                                <Users size={22} className="text-white" />
-                                <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.signin')}</span>
+                                {t('header.signin')}
                             </button>
                         ) : (
-                            <button
-                                onClick={() => setShowUserMenu(true)}
-                                className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-                            >
-                                <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
+                            <div className="relative ml-2">
+                                <button
+                                    onClick={() => setShowUserMenuDropdown(v => !v)}
+                                    className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-white shadow-md flex items-center justify-center text-white font-bold text-sm hover:scale-105 transition-transform"
+                                >
                                     {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
-                                </div>
-                                <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">{t('header.profile')}</span>
-                            </button>
+                                </button>
+
+                                {showUserMenuDropdown && (
+                                    <>
+                                        <div className="fixed inset-0 z-[100]" onClick={() => setShowUserMenuDropdown(false)} />
+                                        <div className="absolute right-0 top-full mt-3 w-64 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
+                                            <div className="px-5 py-4 bg-slate-50/50 border-b border-slate-100">
+                                                <p className="font-bold text-slate-900 truncate">{currentUser.displayName || 'Account'}</p>
+                                                <p className="text-xs text-slate-500 truncate mt-0.5">{currentUser.email}</p>
+                                            </div>
+                                            <div className="p-2">
+                                                <button
+                                                    onClick={() => { navigate('/profile'); setShowUserMenuDropdown(false); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-2xl transition-all"
+                                                >
+                                                    <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600"><User size={16} /></div>
+                                                    My Profile
+                                                </button>
+                                                <button
+                                                    onClick={() => { navigate('/my-listings'); setShowUserMenuDropdown(false); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-2xl transition-all"
+                                                >
+                                                    <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600"><MapPin size={16} /></div>
+                                                    My Listings
+                                                </button>
+                                                {isAdmin && (
+                                                    <button
+                                                        onClick={() => { setShowAdminDashboard(true); setShowUserMenuDropdown(false); }}
+                                                        className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-amber-900 hover:bg-amber-50 rounded-2xl transition-all"
+                                                    >
+                                                        <div className="p-2 bg-amber-100 rounded-xl text-amber-600"><Settings size={16} /></div>
+                                                        Admin Panel
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="p-2 border-t border-slate-100">
+                                                <button
+                                                    onClick={() => { logout(); setShowUserMenuDropdown(false); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50 rounded-2xl transition-all"
+                                                >
+                                                    <div className="p-2 bg-red-100 rounded-xl text-red-600"><LogOut size={16} /></div>
+                                                    Sign Out
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         )}
                     </div>
 
-                    <div className="md:hidden flex items-center gap-2">
-                        <LanguageSelector />
+                    {/* Mobile Controls */}
+                    <div className="md:hidden flex items-center gap-3">
                         <button
-                            onClick={() => currentUser ? setShowMessagingPage(true) : setShowAuthModal(true)}
-                            className="w-10 h-10 flex items-center justify-center relative shrink-0"
-                            aria-label={t('header.messages')}
+                            onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
+                            className="p-2 text-slate-600 relative"
                         >
                             <MessageCircle size={22} />
                             <MessageBadge />
                         </button>
                         <button
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
-                            className="w-10 h-10 flex items-center justify-center bg-white/20 rounded-xl shrink-0"
-                            aria-label="Toggle menu"
-                            aria-expanded={showMobileMenu}
+                            className="w-10 h-10 flex items-center justify-center bg-slate-900 text-white rounded-2xl shadow-lg transition-transform active:scale-90"
                         >
-                            {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
+                            {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
                         </button>
                     </div>
                 </div>
 
-                {/* Mobile Dropdown Menu */}
+                {/* Mobile Menu */}
                 {showMobileMenu && (
-                    <div className="md:hidden py-4 border-t border-white/10 animate-in fade-in slide-in-from-top-4 duration-200">
-                        <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="md:hidden pt-4 pb-2 border-t border-slate-100 animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div className="grid grid-cols-2 gap-3 mb-6">
                             <Link
-                                to="/guide/buying-campervan-nz"
+                                to="/guides"
                                 onClick={() => setShowMobileMenu(false)}
-                                className="bg-white/10 p-3 rounded-xl flex flex-col items-center gap-1"
+                                className="bg-slate-50 p-4 rounded-3xl flex flex-col items-center gap-2 border border-slate-100"
                             >
-                                <BookOpen size={20} />
-                                <span className="text-xs font-semibold">Guides</span>
+                                <div className="p-3 bg-white rounded-2xl shadow-sm"><BookOpen size={20} className="text-emerald-600" /></div>
+                                <span className="text-xs font-bold text-slate-800">Guides</span>
                             </Link>
-                            <button
-                                onClick={() => { setShowBuybackCalculator(true); setShowMobileMenu(false); }}
-                                className="bg-white/10 p-3 rounded-xl flex flex-col items-center gap-1"
+                            <Link
+                                to="/buyback-calculator"
+                                onClick={() => setShowMobileMenu(false)}
+                                className="bg-slate-50 p-4 rounded-3xl flex flex-col items-center gap-2 border border-slate-100"
                             >
-                                <Calculator size={20} />
-                                <span className="text-xs font-semibold">Calculator</span>
-                            </button>
+                                <div className="p-3 bg-white rounded-2xl shadow-sm"><Calculator size={20} className="text-emerald-600" /></div>
+                                <span className="text-xs font-bold text-slate-800">Calculator</span>
+                            </Link>
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                             {!currentUser ? (
                                 <button
                                     onClick={() => { setShowAuthModal(true); setShowMobileMenu(false); }}
-                                    className="w-full flex items-center gap-3 px-4 py-3 bg-white text-emerald-600 rounded-xl font-bold shadow-lg"
+                                    className="w-full flex items-center justify-center gap-3 py-4 bg-slate-900 text-white rounded-[1.5rem] font-bold shadow-xl active:scale-95 transition-all"
                                 >
                                     <Users size={20} />
                                     <span>{t('header.signin')}</span>
                                 </button>
                             ) : (
                                 <>
-                                    <button
-                                        onClick={() => { setShowUserProfile(true); setShowMobileMenu(false); }}
-                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
-                                    >
-                                        <Users size={20} />
-                                        <span>My Profile</span>
-                                    </button>
-                                    <button
-                                        onClick={() => { navigate('/my-listings'); setShowMobileMenu(false); }}
-                                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition"
-                                    >
-                                        <MapPin size={20} />
-                                        <span>My Listings</span>
-                                    </button>
-                                    {isAdmin && (
+                                    <div className="p-2 bg-slate-50 rounded-[1.5rem] border border-slate-100 mb-4">
                                         <button
-                                            onClick={() => { setShowAdminDashboard(true); setShowMobileMenu(false); }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 rounded-xl transition text-yellow-300"
+                                            onClick={() => { navigate('/profile'); setShowMobileMenu(false); }}
+                                            className="w-full flex items-center gap-4 px-4 py-3 text-slate-700 font-semibold"
                                         >
-                                            <Settings size={20} />
-                                            <span>Admin Dashboard</span>
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white"><User size={20} /></div>
+                                            <span>My Profile</span>
                                         </button>
-                                    )}
+                                        <button
+                                            onClick={() => { navigate('/my-listings'); setShowMobileMenu(false); }}
+                                            className="w-full flex items-center gap-4 px-4 py-3 text-slate-700 font-semibold border-t border-slate-100"
+                                        >
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white"><MapPin size={20} /></div>
+                                            <span>My Listings</span>
+                                        </button>
+                                    </div>
                                     <button
                                         onClick={() => { logout(); setShowMobileMenu(false); }}
-                                        className="w-full flex items-center gap-3 px-4 py-3 text-red-300 hover:bg-white/10 rounded-xl transition"
+                                        className="w-full py-4 text-red-600 font-bold bg-red-50 rounded-[1.5rem] flex items-center justify-center gap-2"
                                     >
-                                        <X size={20} />
+                                        <LogOut size={20} />
                                         <span>Sign Out</span>
                                     </button>
                                 </>
                             )}
+                            <div className="pt-4 flex justify-center">
+                                <LanguageSelector />
+                            </div>
                         </div>
                     </div>
                 )}
