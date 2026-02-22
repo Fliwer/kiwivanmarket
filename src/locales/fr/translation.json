@@ -196,5 +196,19 @@
             "copied": "Copié !",
             "more_guides": "Autres Guides"
         }
+    },
+    "home": {
+        "badge": "N°1 du marché des vans en NZ",
+        "title_part1": "Commencez votre",
+        "title_highlight": "aventure en NZ",
+        "title_part2": "aujourd'hui.",
+        "subtitle": "Trouvez votre van parfait ou vendez en toute confiance. Une plateforme simple, sécurisée et transparente pour les aventuriers en Nouvelle-Zélande.",
+        "cta_browse_listings": "Voir les annonces",
+        "cta_sell_van": "Vendre mon van",
+        "stat_active_vans": "Vans actifs",
+        "stat_travelers": "Voyageurs satisfaits",
+        "stat_rating": "Évaluation moyenne",
+        "destination_title": "Mount Cook, NZ",
+        "destination_subtitle": "Votre prochaine destination vous attend."
     }
 }

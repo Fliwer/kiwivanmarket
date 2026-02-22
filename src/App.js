@@ -56,23 +56,29 @@ const MyListingsPage = lazy(() => import('./components/MyListingsPage'));
 // const ReserveButton = lazy(() => import('./components/PaymentSystem').then(m => ({ default: m.ReserveButton })));
 
 // ✅ LOADING COMPONENTS
-const LoadingSpinner = ({ text = "Loading..." }) => (
-  <div className="flex items-center justify-center py-12">
-    <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mb-3"></div>
-      <p className="text-gray-500 text-sm">{text}</p>
+const LoadingSpinner = ({ text }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mb-3"></div>
+        <p className="text-gray-500 text-sm">{text ?? t('common.loading')}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
-const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4"></div>
-      <p className="text-xl text-gray-600 font-semibold">Loading...</p>
+const PageLoader = () => {
+  const { t } = useTranslation();
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4"></div>
+        <p className="text-xl text-gray-600 font-semibold">{t('common.loading')}</p>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 
 // ✅ Calcule le nombre de jours depuis la création
@@ -89,6 +95,7 @@ const getDaysAgo = (createdAt) => {
 // Détecteur WebView (Messenger, Instagram, etc.)
 function WebViewWarning() {
   const [isWebView, setIsWebView] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const ua = navigator.userAgent || navigator.vendor || window.opera;
@@ -103,20 +110,20 @@ function WebViewWarning() {
       <div className="bg-white rounded-2xl p-6 max-w-sm text-center shadow-2xl">
         <div className="text-5xl mb-4">🌐</div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">
-          Open in Browser
+          {t('webview.title')}
         </h2>
         <p className="text-gray-600 mb-4 text-sm">
-          For the best experience, please open this link in your browser (Safari, Chrome, etc.)
+          {t('webview.desc')}
         </p>
         <div className="bg-gray-100 rounded-xl p-3 mb-4">
-          <p className="text-xs text-gray-500 mb-1">Tap the menu ••• then</p>
-          <p className="font-semibold text-gray-800">"Open in Browser"</p>
+          <p className="text-xs text-gray-500 mb-1">{t('webview.tap_menu')}</p>
+          <p className="font-semibold text-gray-800">{t('webview.open_in_browser')}</p>
         </div>
         <button
           onClick={() => setIsWebView(false)}
           className="text-sm text-gray-400 hover:text-gray-600"
         >
-          Continue anyway →
+          {t('webview.continue_anyway')}
         </button>
       </div>
     </div>
@@ -137,6 +144,7 @@ const CURRENCIES = {
 function CurrencySelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentCurrency, setCurrentCurrency] = useState('NZD');
+  const { t } = useTranslation();
 
   useEffect(() => {
     const savedCurrency = safeStorage.getItem('kiwivanmarket_currency') || 'NZD';
@@ -157,7 +165,7 @@ function CurrencySelector() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
-        title="Change currency"
+        title={t('common.change_currency')}
       >
         <img src={currency.flag} alt={currency.code} className="w-6 h-4 object-cover rounded-sm" />
         <span className="hidden sm:inline">{currency.code}</span>
@@ -517,7 +525,7 @@ function MainApp() {
             <div className="relative bg-gray-900 h-[280px] md:h-[600px] lg:h-[800px] -mt-16 md:mt-0">
               <img
                 src={getLargeImage(images[currentImageIndex])}
-                alt={van.title || 'Van'}
+                alt={van.title || t('modal.untitled_van')}
                 className="w-full h-full object-contain"
                 loading="lazy"
               />
@@ -549,7 +557,7 @@ function MainApp() {
                 {van.featured && (
                   <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg flex items-center gap-1.5 md:gap-2">
                     <Star size={14} fill="currentColor" />
-                    FEATURED
+                    {t('van_page.featured')}
                   </div>
                 )}
                 {van.selfContained && (
@@ -557,13 +565,13 @@ function MainApp() {
                     ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
                     : 'bg-gradient-to-r from-green-500 to-emerald-500'
                     }`}>
-                    ✓ Self-Contained {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
+                    ✓ {t('filters.self_contained')} {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
                   </div>
                 )}
                 {van.buyBack && (
                   <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg flex items-center gap-1.5 md:gap-2">
                     <Shield size={14} />
-                    Buy-Back
+                    {t('filters.buyback')}
                   </div>
                 )}
               </div>
@@ -583,14 +591,14 @@ function MainApp() {
 
               <div className="mb-6 pb-6 border-b-2 border-gray-100">
                 <h1 className="text-3xl lg:text-4xl font-black text-gray-900 mb-3 leading-tight">
-                  {van.title || 'Untitled Van'}
+                  {van.title || t('modal.untitled_van')}
                 </h1>
                 <div className="flex items-center gap-2 text-gray-600 mb-4">
                   <MapPin size={20} className="text-emerald-600" />
-                  <span className="font-medium">{van.location || 'Unknown'}, {van.region || ''}</span>
+                  <span className="font-medium">{van.location || t('modal.unknown')}, {van.region || ''}</span>
                 </div>
                 <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-2xl border-2 border-emerald-200">
-                  <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-1">Price</p>
+                  <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-1">{t('modal.price')}</p>
                   <p className="text-4xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                     {formatPrice(van.price)}
                   </p>
@@ -600,39 +608,39 @@ function MainApp() {
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Calendar className="text-emerald-600 mb-2" size={20} />
-                  <p className="text-xs text-gray-500 font-semibold mb-1">YEAR</p>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">{t('modal.year')}</p>
                   <p className="text-xl font-bold text-gray-900">{van.year || 'N/A'}</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Gauge className="text-emerald-600 mb-2" size={20} />
-                  <p className="text-xs text-gray-500 font-semibold mb-1">MILEAGE</p>
-                  <p className="text-xl font-bold text-gray-900">{(van.mileage || 0).toLocaleString()} km</p>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">{t('modal.mileage')}</p>
+                  <p className="text-xl font-bold text-gray-900">{(van.mileage || 0).toLocaleString()} {t('van_page.unit_km')}</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Users className="text-emerald-600 mb-2" size={20} />
-                  <p className="text-xs text-gray-500 font-semibold mb-1">CAPACITY</p>
-                  <p className="text-xl font-bold text-gray-900">{van.capacity || 2} people</p>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">{t('modal.capacity')}</p>
+                  <p className="text-xl font-bold text-gray-900">{van.capacity || 2} {t('van_page.unit_people')}</p>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Clock className="text-emerald-600 mb-2" size={20} />
-                  <p className="text-xs text-gray-500 font-semibold mb-1">POSTED</p>
-                  <p className="text-xl font-bold text-gray-900">{getDaysAgo(van.createdAt)}d ago</p>
+                  <p className="text-xs text-gray-500 font-semibold mb-1">{t('modal.posted')}</p>
+                  <p className="text-xl font-bold text-gray-900">{t('modal.days_ago_short', { count: getDaysAgo(van.createdAt) })}</p>
                 </div>
               </div>
 
               <div className="mb-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
-                  Description
+                  {t('modal.description')}
                 </h3>
-                <p className="text-gray-700 leading-relaxed">{van.description || 'No description available.'}</p>
+                <p className="text-gray-700 leading-relaxed">{van.description || t('van_page.no_description')}</p>
               </div>
 
               {features.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
-                    Features
+                    {t('modal.features')}
                   </h3>
                   <div className="grid grid-cols-1 gap-2">
                     {features.map((feature, idx) => (
@@ -651,30 +659,30 @@ function MainApp() {
                 <div className="mb-6">
                   <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
                     <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
-                    Equipment
+                    {t('modal.equipment')}
                   </h3>
                   <div className="grid grid-cols-2 gap-2">
-                    {van.equipment.doubleBed && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛏️ Double Bed</div>}
-                    {van.equipment.fridge && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🧊 Fridge</div>}
-                    {van.equipment.gasStove && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔥 Gas Stove</div>}
-                    {van.equipment.sink && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚰 Sink</div>}
-                    {van.equipment.toilet && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚽 Toilet</div>}
-                    {van.equipment.solarPanel && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">☀️ Solar Panel</div>}
-                    {van.equipment.leisureBattery && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔋 Leisure Battery</div>}
-                    {van.equipment.heater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🌡️ Heater</div>}
-                    {van.equipment.hotWater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">♨️ Boiler</div>}
-                    {van.equipment.outdoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚿 Outdoor Shower</div>}
-                    {van.equipment.indoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛁 Indoor Shower</div>}
-                    {van.equipment.awning && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">⛺ Awning</div>}
-                    {van.equipment.reverseCamera && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📷 Reverse Camera</div>}
-                    {van.equipment.bluetooth && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📊 Bluetooth</div>}
+                    {van.equipment.doubleBed && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛏️ {t('equipment.double_bed')}</div>}
+                    {van.equipment.fridge && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🧊 {t('equipment.fridge')}</div>}
+                    {van.equipment.gasStove && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔥 {t('equipment.gas_stove')}</div>}
+                    {van.equipment.sink && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚰 {t('equipment.sink')}</div>}
+                    {van.equipment.toilet && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚽 {t('equipment.toilet')}</div>}
+                    {van.equipment.solarPanel && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">☀️ {t('equipment.solar_panel')}</div>}
+                    {van.equipment.leisureBattery && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔋 {t('equipment.leisure_battery')}</div>}
+                    {van.equipment.heater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🌡️ {t('equipment.heater')}</div>}
+                    {van.equipment.hotWater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">♨️ {t('equipment.boiler')}</div>}
+                    {van.equipment.outdoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚿 {t('equipment.outdoor_shower')}</div>}
+                    {van.equipment.indoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛁 {t('equipment.indoor_shower')}</div>}
+                    {van.equipment.awning && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">⛺ {t('equipment.awning')}</div>}
+                    {van.equipment.reverseCamera && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📷 {t('equipment.reverse_camera')}</div>}
+                    {van.equipment.bluetooth && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📊 {t('equipment.bluetooth')}</div>}
                   </div>
                 </div>
               )}
 
               {van.customFeatures && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <h4 className="text-sm font-bold text-gray-700 mb-2">✏️ Other Features</h4>
+                  <h4 className="text-sm font-bold text-gray-700 mb-2">✏️ {t('modal.other_features')}</h4>
                   <p className="text-gray-600 text-sm">{van.customFeatures}</p>
                 </div>
               )}
@@ -683,19 +691,19 @@ function MainApp() {
               <div className="bg-gradient-to-r from-emerald-50 to-blue-50 p-4 rounded-xl border border-gray-200 mb-6">
                 <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
                   <Shield size={16} className="text-emerald-600" />
-                  Vehicle Status
+                  {t('modal.vehicle_status')}
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
                   <div className={`bg-white p-3 rounded-lg border text-center ${van.wofExpiry && safeDate(van.wofExpiry) ? 'border-emerald-200' : 'border-gray-200'}`}>
-                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">WOF Valid</div>
+                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">{t('van_page.wof_valid')}</div>
                     <div className={`text-lg font-bold ${van.wofExpiry && safeDate(van.wofExpiry) ? 'text-emerald-600' : 'text-gray-400'}`}>
-                      {van.wofExpiry && safeDate(van.wofExpiry) ? safeDate(van.wofExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
+                      {van.wofExpiry && safeDate(van.wofExpiry) ? safeDate(van.wofExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : t('van_page.not_specified')}
                     </div>
                   </div>
                   <div className={`bg-white p-3 rounded-lg border text-center ${van.regoExpiry && safeDate(van.regoExpiry) ? 'border-blue-200' : 'border-gray-200'}`}>
-                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">REGO Until</div>
+                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">{t('van_page.rego_valid')}</div>
                     <div className={`text-lg font-bold ${van.regoExpiry && safeDate(van.regoExpiry) ? 'text-blue-600' : 'text-gray-400'}`}>
-                      {van.regoExpiry && safeDate(van.regoExpiry) ? safeDate(van.regoExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Not specified'}
+                      {van.regoExpiry && safeDate(van.regoExpiry) ? safeDate(van.regoExpiry).toLocaleDateString('en-NZ', { day: '2-digit', month: 'short', year: 'numeric' }) : t('van_page.not_specified')}
                     </div>
                   </div>
                   <div className={`p-3 rounded-lg border text-center ${van.selfContained
@@ -704,14 +712,14 @@ function MainApp() {
                       : 'bg-green-50 border-green-200'
                     : 'bg-gray-50 border-gray-200'
                     }`}>
-                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">Self-Contained</div>
+                    <div className="text-[10px] text-gray-500 font-semibold uppercase mb-1">{t('modal.self_contained_label')}</div>
                     <div className={`text-lg font-bold ${van.selfContained
                       ? van.selfContainedType === 'blue' ? 'text-blue-600' : 'text-green-600'
                       : 'text-gray-400'
                       }`}>
                       {van.selfContained
-                        ? van.selfContainedType === 'blue' ? '✓ Blue' : '✓ Green'
-                        : '✗ No'}
+                        ? van.selfContainedType === 'blue' ? `✓ ${t('van_page.sticker_blue')}` : `✓ ${t('van_page.sticker_green')}`
+                        : `✗ ${t('modal.no')}`}
                     </div>
                   </div>
                 </div>
@@ -722,30 +730,30 @@ function MainApp() {
                 <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
                   <h3 className="text-lg font-bold text-green-700 mb-3 flex items-center gap-2">
                     <Shield size={20} />
-                    Buy-Back Guarantee
+                    {t('modal.buyback_guarantee')}
                   </h3>
                   <div className="grid grid-cols-2 gap-3 mb-3">
                     <div className="bg-white p-3 rounded-lg border border-green-200">
-                      <div className="text-xs text-gray-500 font-semibold">Buy-Back Price</div>
+                      <div className="text-xs text-gray-500 font-semibold">{t('van_page.buyback_price')}</div>
                       <div className="text-xl font-bold text-green-600">
-                        {van.buyBackPrice ? formatPrice(van.buyBackPrice) : 'Contact seller'}
+                        {van.buyBackPrice ? formatPrice(van.buyBackPrice) : t('van_page.contact_seller')}
                       </div>
                     </div>
                     <div className="bg-white p-3 rounded-lg border border-green-200">
-                      <div className="text-xs text-gray-500 font-semibold">Valid For</div>
+                      <div className="text-xs text-gray-500 font-semibold">{t('van_page.valid_for')}</div>
                       <div className="text-xl font-bold text-green-600">
-                        {van.buyBackDuration ? `${van.buyBackDuration} months` : 'Contact seller'}
+                        {van.buyBackDuration ? `${van.buyBackDuration} ${t('van_page.months')}` : t('van_page.contact_seller')}
                       </div>
                     </div>
                   </div>
                   {van.buyBackMaxKm && (
                     <p className="text-sm text-gray-600 mb-2">
-                      <strong>Max km:</strong> {van.buyBackMaxKm.toLocaleString()} km
+                      <strong>{t('modal.max_km')}</strong> {van.buyBackMaxKm.toLocaleString()} {t('van_page.unit_km')}
                     </p>
                   )}
                   {van.buyBackConditions && (
                     <p className="text-sm text-gray-600">
-                      <strong>Conditions:</strong> {van.buyBackConditions}
+                      <strong>{t('van_page.conditions')}</strong> {van.buyBackConditions}
                     </p>
                   )}
                 </div>
@@ -759,14 +767,14 @@ function MainApp() {
                     {seller.name?.[0] || 'U'}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900">{seller.name || 'Unknown Seller'}</p>
-                    <p className="text-sm text-gray-500">Private seller</p>
+                    <p className="font-bold text-gray-900">{seller.name || t('modal.unknown_seller')}</p>
+                    <p className="text-sm text-gray-500">{t('modal.private_seller')}</p>
                   </div>
                 </div>
               </div>
 
               {/* Quick Message Box - Lazy */}
-              <Suspense fallback={<LoadingSpinner text="Loading..." />}>
+              <Suspense fallback={<LoadingSpinner />}>
                 <QuickMessageBox
                   van={van}
                   seller={seller}
@@ -805,7 +813,7 @@ function MainApp() {
                     <Star size={18} className="text-yellow-500" />
                     Seller Reviews
                   </h3>
-                  <Suspense fallback={<LoadingSpinner text="Loading reviews..." />}>
+                  <Suspense fallback={<LoadingSpinner />}>
                     <SellerReviews sellerId={seller.uid || van.seller?.uid} limit={3} />
                   </Suspense>
                 </div>
@@ -849,7 +857,7 @@ function MainApp() {
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-emerald-600 focus:text-white focus:rounded-lg focus:outline-none"
         >
-          Skip to main content
+          {t('common.skip_to_main')}
         </a>
 
         {showBuybackCalculator ? (
@@ -883,16 +891,19 @@ function MainApp() {
                   <div className="flex-1 text-center lg:text-left animate-fade-in-up stagger-1">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold mb-6 tracking-wide uppercase">
                       <Zap size={14} className="fill-emerald-700" />
-                      NZ's #1 Campervan Marketplace
+                      {t('home.badge')}
                     </div>
 
                     <h2 className="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-[1.1]">
-                      Start Your <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">NZ Adventure</span> Today.
+                      {t('home.title_part1')}{' '}
+                      <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                        {t('home.title_highlight')}
+                      </span>{' '}
+                      {t('home.title_part2')}
                     </h2>
 
                     <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                      The most trusted platform to buy and sell campervans in New Zealand.
-                      Verified sellers, transparent pricing, and 100% free for buyers.
+                      {t('home.subtitle')}
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
@@ -903,7 +914,7 @@ function MainApp() {
                         }}
                         className="btn-primary flex items-center gap-3 group px-8 py-4 text-lg"
                       >
-                        Browse Listings
+                        {t('home.cta_browse_listings')}
                         <ChevronDown size={20} className="group-hover:translate-y-1 transition-transform" />
                       </button>
                       <button
@@ -911,25 +922,25 @@ function MainApp() {
                         className="px-8 py-4 bg-white border-2 border-slate-100 text-slate-900 font-bold rounded-2xl hover:bg-slate-50 hover:border-emerald-200 transition-all flex items-center gap-2 text-lg"
                       >
                         <Plus size={22} className="text-emerald-600" />
-                        Sell Your Van
+                        {t('home.cta_sell_van')}
                       </button>
                     </div>
 
                     {/* Trust Stats */}
                     <div className="mt-12 flex flex-wrap justify-center lg:justify-start gap-8 border-t border-slate-100 pt-8">
                       <div className="flex flex-col">
-                        <span className="text-3xl font-black text-slate-900">1.2k+</span>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Vans</span>
+                        <span className="text-3xl font-black text-slate-900">50+</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('home.stat_active_vans')}</span>
                       </div>
                       <div className="h-10 w-[1px] bg-slate-100 hidden sm:block" />
                       <div className="flex flex-col">
-                        <span className="text-3xl font-black text-slate-900">5k+</span>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Happy Travelers</span>
+                        <span className="text-3xl font-black text-slate-900">150+</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('home.stat_travelers')}</span>
                       </div>
                       <div className="h-10 w-[1px] bg-slate-100 hidden sm:block" />
                       <div className="flex flex-col">
-                        <span className="text-3xl font-black text-slate-900">100%</span>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Trusted Sellers</span>
+                        <span className="text-3xl font-black text-slate-900">4.8/5</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('home.stat_rating')}</span>
                       </div>
                     </div>
                   </div>
@@ -939,9 +950,9 @@ function MainApp() {
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[3rem] rotate-3 opacity-20" />
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[3rem] -rotate-3 overflow-hidden shadow-2xl">
                       <img
-                        src="https://images.unsplash.com/photo-1527786356703-4b100091cd2c?auto=format&fit=crop&q=80&w=1200"
-                        alt="New Zealand Campervan Trip"
-                        className="w-full h-full object-cover mix-blend-overlay opacity-90 grayscale-[20%] hover:scale-110 transition-transform duration-700"
+                        src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=1200"
+                        alt="New Zealand Campervan Adventure"
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
 
@@ -952,8 +963,8 @@ function MainApp() {
                             <MapPin size={24} />
                           </div>
                           <div>
-                            <p className="text-white font-bold">Mount Cook, NZ</p>
-                            <p className="text-white/70 text-sm">Your next destination awaits.</p>
+                            <p className="text-white font-bold">{t('home.destination_title')}</p>
+                            <p className="text-white/70 text-sm">{t('home.destination_subtitle')}</p>
                           </div>
                         </div>
                       </div>

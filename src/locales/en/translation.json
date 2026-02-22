@@ -196,5 +196,19 @@
             "copied": "Copied!",
             "more_guides": "More Guides"
         }
+    },
+    "home": {
+        "badge": "NZ's #1 Campervan Marketplace",
+        "title_part1": "Start Your",
+        "title_highlight": "NZ Adventure",
+        "title_part2": "Today.",
+        "subtitle": "Find your perfect van or sell with confidence. A simple, secure and transparent platform for adventurers in New Zealand.",
+        "cta_browse_listings": "Browse Listings",
+        "cta_sell_van": "Sell Your Van",
+        "stat_active_vans": "Active Vans",
+        "stat_travelers": "Happy Travelers",
+        "stat_rating": "Average Rating",
+        "destination_title": "Mount Cook, NZ",
+        "destination_subtitle": "Your next destination awaits."
     }
 }
