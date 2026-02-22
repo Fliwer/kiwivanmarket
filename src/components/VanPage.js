@@ -9,7 +9,7 @@ import { safeDate } from '../utils/dateHelper';
 import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
-  Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink
+  Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SeoHead from './SeoHead';

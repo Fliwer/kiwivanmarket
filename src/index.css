@@ -13,6 +13,11 @@
 }
 
 @layer base {
+  html {
+    overflow-y: scroll;
+    scrollbar-gutter: stable;
+  }
+  
   body {
     @apply antialiased text-slate-800 bg-[#f8fafc];
     font-family: 'Inter', system-ui, -apple-system, sans-serif;

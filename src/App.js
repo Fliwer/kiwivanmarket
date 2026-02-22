@@ -71,10 +71,11 @@ const LoadingSpinner = ({ text }) => {
 const PageLoader = () => {
   const { t } = useTranslation();
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <div className="text-center">
-        <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4"></div>
-        <p className="text-xl text-gray-600 font-semibold">{t('common.loading')}</p>
+        <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4 shadow-lg shadow-emerald-600/20"></div>
+        <p className="text-xl text-slate-700 font-semibold">{t('common.loading')}</p>
+        <p className="text-sm text-slate-500 mt-2">Préparation de votre plateforme...</p>
       </div>
     </div>
   );
