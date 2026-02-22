@@ -9,13 +9,15 @@ import { safeDate } from '../utils/dateHelper';
 import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
-  Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen
+  Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen, User, LogOut
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SeoHead from './SeoHead';
 
 // Lazy load du QuickMessageBox
 const QuickMessageBox = lazy(() => import('./QuickMessageBox'));
+const AuthModal = lazy(() => import('./AuthModal'));
+const Footer = lazy(() => import('./Footer'));
 
 // ✅ Composant SEO avec Schema.org pour les vans
 const VanSEO = ({ van }) => {
