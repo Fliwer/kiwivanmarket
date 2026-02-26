@@ -13,6 +13,7 @@ import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import NotificationBell from './components/NotificationBell';
 import SeoHead from './components/SeoHead';
+import ToastProvider from './components/ToastProvider';
 import Header from './components/Header';
 import { CURRENCIES } from './components/CurrencySelector';
 import QuickFilters from './components/QuickFilters';
@@ -832,228 +833,229 @@ function MainApp() {
 
 
   return (
-    <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
-      {/* WebViewWarning desactive - le site s'affiche directement */}
-      <div className="min-h-screen bg-slate-50">
-        <Header {...headerProps} />
+    <ToastProvider>
+      <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
+        {/* WebViewWarning desactive - le site s'affiche directement */}
+        <div className="min-h-screen bg-slate-50">
+          <Header {...headerProps} />
 
-        {/* Skip to main content link for accessibility */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-emerald-600 focus:text-white focus:rounded-lg focus:outline-none"
-        >
-          {t('common.skip_to_main')}
-        </a>
+          {/* Skip to main content link for accessibility */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-emerald-600 focus:text-white focus:rounded-lg focus:outline-none"
+          >
+            {t('common.skip_to_main')}
+          </a>
 
-        {showBuybackCalculator ? (
-          <div className="animate-fade-in-up">
-            <Suspense fallback={<PageLoader />}>
-              <BuybackCalculator />
-            </Suspense>
-          </div>
-        ) : showMessagingPage ? (
-          <div className="animate-fade-in-up">
-            <Suspense fallback={<PageLoader />}>
-              <MessagingPage onBack={() => setShowMessagingPage(false)} />
-            </Suspense>
-          </div>
-        ) : (
-          <>
-
-            {/* ========== HERO SECTION 2.0 ========== */}
-            <section className="relative pt-6 pb-20 overflow-hidden min-h-[600px] flex items-center">
-              {/* Cinematic Background Layer */}
-              <div className="absolute inset-0 z-0">
-                <img
-                  src="/nz-road-bg.png"
-                  alt="NZ Road Adventure"
-                  className="w-full h-full object-cover opacity-30 scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-50/90 to-white" />
-                <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-emerald-100/30 blur-[120px] rounded-full" />
-              </div>
-
-              <div className="max-w-7xl mx-auto px-4 relative z-10">
-                <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
-
-                  {/* Text Content */}
-                  <div className="flex-1 text-center lg:text-left animate-fade-in-up stagger-1">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold mb-6 tracking-wide uppercase">
-                      <Zap size={14} className="fill-emerald-700" />
-                      {t('home.badge')}
-                    </div>
-
-                    <h2 className="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-[1.1]">
-                      {t('home.title_part1')}{' '}
-                      <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                        {t('home.title_highlight')}
-                      </span>{' '}
-                      {t('home.title_part2')}
-                    </h2>
-
-                    <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                      {t('home.subtitle')}
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
-                      <button
-                        onClick={() => {
-                          const el = document.getElementById('listings-start');
-                          if (el) el.scrollIntoView({ behavior: 'smooth' });
-                        }}
-                        className="btn-primary flex items-center gap-3 group px-8 py-4 text-lg"
-                      >
-                        {t('home.cta_browse_listings')}
-                        <ChevronDown size={20} className="group-hover:translate-y-1 transition-transform" />
-                      </button>
-                      <button
-                        onClick={() => navigate('/sell')}
-                        className="px-8 py-4 bg-white border-2 border-slate-100 text-slate-900 font-bold rounded-2xl hover:bg-slate-50 hover:border-emerald-200 transition-all flex items-center gap-2 text-lg"
-                      >
-                        <Plus size={22} className="text-emerald-600" />
-                        {t('home.cta_sell_van')}
-                      </button>
-                    </div>
-
-                    {/* Trust Stats */}
-                    <div className="mt-12 flex flex-wrap justify-center lg:justify-start gap-8 border-t border-slate-100 pt-8">
-                      <div className="flex flex-col">
-                        <span className="text-3xl font-black text-slate-900">50+</span>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('home.stat_active_vans')}</span>
-                      </div>
-                      <div className="h-10 w-[1px] bg-slate-100 hidden sm:block" />
-                      <div className="flex flex-col">
-                        <span className="text-3xl font-black text-slate-900">150+</span>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('home.stat_travelers')}</span>
-                      </div>
-                      <div className="h-10 w-[1px] bg-slate-100 hidden sm:block" />
-                      <div className="flex flex-col">
-                        <span className="text-3xl font-black text-slate-900">4.8/5</span>
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('home.stat_rating')}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Visual Element - Straightened & hiace */}
-                  <div className="flex-1 relative w-full aspect-[4/3] max-w-[600px] animate-fade-in-up stagger-2">
-                    <div className="absolute -inset-4 bg-emerald-50 rounded-[2.5rem] opacity-40 blur-2xl" />
-                    <div className="relative h-full w-full bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border-[12px] border-white">
-                      <img
-                        src="/hiace-camper.png"
-                        alt="Toyota Hiace NZ Campervan"
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* ========== MAIN CONTENT ========== */}
-            <main id="main-content" role="main">
-              <div id="listings-start" className="scroll-mt-24" />
-
-              {/* ========== SEARCH MOBILE + FILTRES ========== */}
-              <QuickFilters
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                filters={filters}
-                setFilters={setFilters}
-                showFilters={showFilters}
-                setShowFilters={setShowFilters}
-                showBuyBackInfo={showBuyBackInfo}
-                setShowBuyBackInfo={setShowBuyBackInfo}
-                showRegoInfo={showRegoInfo}
-                setShowRegoInfo={setShowRegoInfo}
-                showSelfContainedInfo={showSelfContainedInfo}
-                setShowSelfContainedInfo={setShowSelfContainedInfo}
-                showWofInfo={showWofInfo}
-                setShowWofInfo={setShowWofInfo}
-              />
-
-              {/* ========== RÉSULTATS ========== */}
-              <Listings
-                loading={loading}
-                filteredVans={filteredVans}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                formatPrice={formatPrice}
-              />
-
-              {/* How It Works */}
-              <div className="bg-white py-16 mt-12">
-                <div className="max-w-7xl mx-auto px-4">
-                  <h2 className="text-4xl font-bold text-center mb-12">{t('how_it_works.title')}</h2>
-                  <div className="grid md:grid-cols-3 gap-8">
-                    <div className="text-center">
-                      <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Search size={32} className="text-emerald-600" />
-                      </div>
-                      <h3 className="font-bold text-xl mb-2">1. {t('how_it_works.step1_title')}</h3>
-                      <p className="text-gray-600">{t('how_it_works.step1_desc')}</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Phone size={32} className="text-emerald-600" />
-                      </div>
-                      <h3 className="font-bold text-xl mb-2">2. {t('how_it_works.step2_title')}</h3>
-                      <p className="text-gray-600">{t('how_it_works.step2_desc')}</p>
-                    </div>
-                    <div className="text-center">
-                      <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle size={32} className="text-emerald-600" />
-                      </div>
-                      <h3 className="font-bold text-xl mb-2">3. {t('how_it_works.step3_title')}</h3>
-                      <p className="text-gray-600">{t('how_it_works.step3_desc')}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Guides Preview Section */}
-              <GuidePreviewSection />
-
-              {/* SEO Section */}
-              <Suspense fallback={null}>
-                <HomeSeoSection />
+          {showBuybackCalculator ? (
+            <div className="animate-fade-in-up">
+              <Suspense fallback={<PageLoader />}>
+                <BuybackCalculator />
               </Suspense>
+            </div>
+          ) : showMessagingPage ? (
+            <div className="animate-fade-in-up">
+              <Suspense fallback={<PageLoader />}>
+                <MessagingPage onBack={() => setShowMessagingPage(false)} />
+              </Suspense>
+            </div>
+          ) : (
+            <>
 
-            </main>
-          </>
-        )}
-        {/* ========== END MAIN CONTENT ========== */}
+              {/* ========== HERO SECTION 2.0 ========== */}
+              <section className="relative pt-6 pb-20 overflow-hidden min-h-[600px] flex items-center">
+                {/* Cinematic Background Layer */}
+                <div className="absolute inset-0 z-0">
+                  <img
+                    src="/nz-road-bg.png"
+                    alt="NZ Road Adventure"
+                    className="w-full h-full object-cover opacity-30 scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-50/90 to-white" />
+                  <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-emerald-100/30 blur-[120px] rounded-full" />
+                </div>
 
-        <Footer
-          onOpenFAQ={() => setShowFAQ(true)}
-          onOpenTerms={() => setShowTerms(true)}
-        />
+                <div className="max-w-7xl mx-auto px-4 relative z-10">
+                  <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
 
-        {/* Modals */}
-        {selectedVan && <VanDetailsModal van={selectedVan} />}
+                    {/* Text Content */}
+                    <div className="flex-1 text-center lg:text-left animate-fade-in-up stagger-1">
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-bold mb-6 tracking-wide uppercase">
+                        <Zap size={14} className="fill-emerald-700" />
+                        {t('home.badge')}
+                      </div>
 
-        {
-          showAddVanForm && (
-            <Suspense fallback={<PageLoader />}>
-              <AddVanForm
-                onClose={() => setShowAddVanForm(false)}
-                onVanAdded={refreshVans}
-              />
-            </Suspense>
-          )
-        }
+                      <h2 className="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-[1.1]">
+                        {t('home.title_part1')}{' '}
+                        <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                          {t('home.title_highlight')}
+                        </span>{' '}
+                        {t('home.title_part2')}
+                      </h2>
 
-        {
-          showMyVans && (
-            <Suspense fallback={<PageLoader />}>
-              <MyVans onClose={() => setShowMyVans(false)} />
-            </Suspense>
-          )
-        }
+                      <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                        {t('home.subtitle')}
+                      </p>
 
-        {/* MVP_DISABLED: Reservations
+                      <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
+                        <button
+                          onClick={() => {
+                            const el = document.getElementById('listings-start');
+                            if (el) el.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="btn-primary flex items-center gap-3 group px-8 py-4 text-lg"
+                        >
+                          {t('home.cta_browse_listings')}
+                          <ChevronDown size={20} className="group-hover:translate-y-1 transition-transform" />
+                        </button>
+                        <button
+                          onClick={() => navigate('/sell')}
+                          className="px-8 py-4 bg-white border-2 border-slate-100 text-slate-900 font-bold rounded-2xl hover:bg-slate-50 hover:border-emerald-200 transition-all flex items-center gap-2 text-lg"
+                        >
+                          <Plus size={22} className="text-emerald-600" />
+                          {t('home.cta_sell_van')}
+                        </button>
+                      </div>
+
+                      {/* Trust Stats */}
+                      <div className="mt-12 flex flex-wrap justify-center lg:justify-start gap-8 border-t border-slate-100 pt-8">
+                        <div className="flex flex-col">
+                          <span className="text-3xl font-black text-slate-900">50+</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('home.stat_active_vans')}</span>
+                        </div>
+                        <div className="h-10 w-[1px] bg-slate-100 hidden sm:block" />
+                        <div className="flex flex-col">
+                          <span className="text-3xl font-black text-slate-900">150+</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('home.stat_travelers')}</span>
+                        </div>
+                        <div className="h-10 w-[1px] bg-slate-100 hidden sm:block" />
+                        <div className="flex flex-col">
+                          <span className="text-3xl font-black text-slate-900">4.8/5</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('home.stat_rating')}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Visual Element - Straightened & hiace */}
+                    <div className="flex-1 relative w-full aspect-[4/3] max-w-[600px] animate-fade-in-up stagger-2">
+                      <div className="absolute -inset-4 bg-emerald-50 rounded-[2.5rem] opacity-40 blur-2xl" />
+                      <div className="relative h-full w-full bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border-[12px] border-white">
+                        <img
+                          src="/hiace-camper.png"
+                          alt="Toyota Hiace NZ Campervan"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* ========== MAIN CONTENT ========== */}
+              <main id="main-content" role="main">
+                <div id="listings-start" className="scroll-mt-24" />
+
+                {/* ========== SEARCH MOBILE + FILTRES ========== */}
+                <QuickFilters
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  filters={filters}
+                  setFilters={setFilters}
+                  showFilters={showFilters}
+                  setShowFilters={setShowFilters}
+                  showBuyBackInfo={showBuyBackInfo}
+                  setShowBuyBackInfo={setShowBuyBackInfo}
+                  showRegoInfo={showRegoInfo}
+                  setShowRegoInfo={setShowRegoInfo}
+                  showSelfContainedInfo={showSelfContainedInfo}
+                  setShowSelfContainedInfo={setShowSelfContainedInfo}
+                  showWofInfo={showWofInfo}
+                  setShowWofInfo={setShowWofInfo}
+                />
+
+                {/* ========== RÉSULTATS ========== */}
+                <Listings
+                  loading={loading}
+                  filteredVans={filteredVans}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  formatPrice={formatPrice}
+                />
+
+                {/* How It Works */}
+                <div className="bg-white py-16 mt-12">
+                  <div className="max-w-7xl mx-auto px-4">
+                    <h2 className="text-4xl font-bold text-center mb-12">{t('how_it_works.title')}</h2>
+                    <div className="grid md:grid-cols-3 gap-8">
+                      <div className="text-center">
+                        <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Search size={32} className="text-emerald-600" />
+                        </div>
+                        <h3 className="font-bold text-xl mb-2">1. {t('how_it_works.step1_title')}</h3>
+                        <p className="text-gray-600">{t('how_it_works.step1_desc')}</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Phone size={32} className="text-emerald-600" />
+                        </div>
+                        <h3 className="font-bold text-xl mb-2">2. {t('how_it_works.step2_title')}</h3>
+                        <p className="text-gray-600">{t('how_it_works.step2_desc')}</p>
+                      </div>
+                      <div className="text-center">
+                        <div className="bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <CheckCircle size={32} className="text-emerald-600" />
+                        </div>
+                        <h3 className="font-bold text-xl mb-2">3. {t('how_it_works.step3_title')}</h3>
+                        <p className="text-gray-600">{t('how_it_works.step3_desc')}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Guides Preview Section */}
+                <GuidePreviewSection />
+
+                {/* SEO Section */}
+                <Suspense fallback={null}>
+                  <HomeSeoSection />
+                </Suspense>
+
+              </main>
+            </>
+          )}
+          {/* ========== END MAIN CONTENT ========== */}
+
+          <Footer
+            onOpenFAQ={() => setShowFAQ(true)}
+            onOpenTerms={() => setShowTerms(true)}
+          />
+
+          {/* Modals */}
+          {selectedVan && <VanDetailsModal van={selectedVan} />}
+
+          {
+            showAddVanForm && (
+              <Suspense fallback={<PageLoader />}>
+                <AddVanForm
+                  onClose={() => setShowAddVanForm(false)}
+                  onVanAdded={refreshVans}
+                />
+              </Suspense>
+            )
+          }
+
+          {
+            showMyVans && (
+              <Suspense fallback={<PageLoader />}>
+                <MyVans onClose={() => setShowMyVans(false)} />
+              </Suspense>
+            )
+          }
+
+          {/* MVP_DISABLED: Reservations
         {showMyReservations && (
           <Suspense fallback={<PageLoader />}>
             <MyReservations 
@@ -1070,177 +1072,178 @@ function MainApp() {
         )}
         */}
 
-        {
-          showFavorites && (
-            <Suspense fallback={<PageLoader />}>
-              <FavoritesPage
-                onClose={() => setShowFavorites(false)}
-                onVanClick={(van) => setSelectedVan(van)}
-              />
-            </Suspense>
-          )
-        }
+          {
+            showFavorites && (
+              <Suspense fallback={<PageLoader />}>
+                <FavoritesPage
+                  onClose={() => setShowFavorites(false)}
+                  onVanClick={(van) => setSelectedVan(van)}
+                />
+              </Suspense>
+            )
+          }
 
-        {
-          showUserProfile && (
-            <Suspense fallback={<PageLoader />}>
-              <UserProfile onClose={() => setShowUserProfile(false)} />
-            </Suspense>
-          )
-        }
+          {
+            showUserProfile && (
+              <Suspense fallback={<PageLoader />}>
+                <UserProfile onClose={() => setShowUserProfile(false)} />
+              </Suspense>
+            )
+          }
 
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-        />
+          <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+          />
 
-        <FAQModal
-          isOpen={showFAQ}
-          onClose={() => setShowFAQ(false)}
-        />
+          <FAQModal
+            isOpen={showFAQ}
+            onClose={() => setShowFAQ(false)}
+          />
 
-        {
-          showTerms && (
-            <Suspense fallback={<PageLoader />}>
-              <TermsOfServiceModal
-                isOpen={showTerms}
-                onClose={() => setShowTerms(false)}
-              />
-            </Suspense>
-          )
-        }
+          {
+            showTerms && (
+              <Suspense fallback={<PageLoader />}>
+                <TermsOfServiceModal
+                  isOpen={showTerms}
+                  onClose={() => setShowTerms(false)}
+                />
+              </Suspense>
+            )
+          }
 
-        {
-          showHowItWorks && (
-            <div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
-              onClick={() => setShowHowItWorks(false)}
-            >
+          {
+            showHowItWorks && (
               <div
-                className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
+                onClick={() => setShowHowItWorks(false)}
               >
-                <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-teal-600 p-6 rounded-t-3xl">
-                  <button
-                    onClick={() => setShowHowItWorks(false)}
-                    className="absolute top-4 right-4 text-white/80 hover:text-white"
-                  >
-                    <X size={24} />
-                  </button>
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <HelpCircle size={28} />
-                    {t('how_it_works_modal.title')}
-                  </h2>
-                  <p className="text-emerald-100 mt-1">{t('how_it_works_modal.subtitle')}</p>
-                </div>
+                <div
+                  className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-teal-600 p-6 rounded-t-3xl">
+                    <button
+                      onClick={() => setShowHowItWorks(false)}
+                      className="absolute top-4 right-4 text-white/80 hover:text-white"
+                    >
+                      <X size={24} />
+                    </button>
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                      <HelpCircle size={28} />
+                      {t('how_it_works_modal.title')}
+                    </h2>
+                    <p className="text-emerald-100 mt-1">{t('how_it_works_modal.subtitle')}</p>
+                  </div>
 
-                <div className="p-6 space-y-6">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                      🔍 {t('how_it_works_modal.buyers_title')}
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex gap-4">
-                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="font-bold text-emerald-600">1</span>
+                  <div className="p-6 space-y-6">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        🔍 {t('how_it_works_modal.buyers_title')}
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="flex gap-4">
+                          <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="font-bold text-emerald-600">1</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step1_buyer_title')}</h4>
+                            <p className="text-gray-600 text-sm">{t('how_it_works_modal.step1_buyer_desc')}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step1_buyer_title')}</h4>
-                          <p className="text-gray-600 text-sm">{t('how_it_works_modal.step1_buyer_desc')}</p>
+                        <div className="flex gap-4">
+                          <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="font-bold text-emerald-600">2</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step2_buyer_title')}</h4>
+                            <p className="text-gray-600 text-sm">{t('how_it_works_modal.step2_buyer_desc')}</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="font-bold text-emerald-600">2</span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step2_buyer_title')}</h4>
-                          <p className="text-gray-600 text-sm">{t('how_it_works_modal.step2_buyer_desc')}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="font-bold text-emerald-600">3</span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step3_buyer_title')}</h4>
-                          <p className="text-gray-600 text-sm">{t('how_it_works_modal.step3_buyer_desc')}</p>
+                        <div className="flex gap-4">
+                          <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="font-bold text-emerald-600">3</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step3_buyer_title')}</h4>
+                            <p className="text-gray-600 text-sm">{t('how_it_works_modal.step3_buyer_desc')}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <hr className="border-gray-200" />
+                    <hr className="border-gray-200" />
 
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                      💰 {t('how_it_works_modal.sellers_title')}
-                    </h3>
-                    <div className="space-y-4">
-                      <div className="flex gap-4">
-                        <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="font-bold text-teal-600">1</span>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        💰 {t('how_it_works_modal.sellers_title')}
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="flex gap-4">
+                          <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="font-bold text-teal-600">1</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step1_seller_title')}</h4>
+                            <p className="text-gray-600 text-sm">{t('how_it_works_modal.step1_seller_desc')}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step1_seller_title')}</h4>
-                          <p className="text-gray-600 text-sm">{t('how_it_works_modal.step1_seller_desc')}</p>
+                        <div className="flex gap-4">
+                          <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="font-bold text-teal-600">2</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step2_seller_title')}</h4>
+                            <p className="text-gray-600 text-sm">{t('how_it_works_modal.step2_seller_desc')}</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="font-bold text-teal-600">2</span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step2_seller_title')}</h4>
-                          <p className="text-gray-600 text-sm">{t('how_it_works_modal.step2_seller_desc')}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-4">
-                        <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="font-bold text-teal-600">3</span>
-                        </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step3_seller_title')}</h4>
-                          <p className="text-gray-600 text-sm">{t('how_it_works_modal.step3_seller_desc')}</p>
+                        <div className="flex gap-4">
+                          <div className="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="font-bold text-teal-600">3</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">{t('how_it_works_modal.step3_seller_title')}</h4>
+                            <p className="text-gray-600 text-sm">{t('how_it_works_modal.step3_seller_desc')}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
+
+                    <hr className="border-gray-200" />
+
+                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                      <h3 className="font-bold text-amber-800 mb-2 flex items-center gap-2">
+                        💡 {t('how_it_works_modal.pro_tips_title')}
+                      </h3>
+                      <ul className="text-sm text-amber-700 space-y-1">
+                        {t('how_it_works_modal.pro_tips_list', { returnObjects: true }).map((tip, i) => (
+                          <li key={i}>• {tip}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <button
+                      onClick={() => setShowHowItWorks(false)}
+                      className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition"
+                    >
+                      {t('how_it_works_modal.cta')}
+                    </button>
                   </div>
-
-                  <hr className="border-gray-200" />
-
-                  <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
-                    <h3 className="font-bold text-amber-800 mb-2 flex items-center gap-2">
-                      💡 {t('how_it_works_modal.pro_tips_title')}
-                    </h3>
-                    <ul className="text-sm text-amber-700 space-y-1">
-                      {t('how_it_works_modal.pro_tips_list', { returnObjects: true }).map((tip, i) => (
-                        <li key={i}>• {tip}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <button
-                    onClick={() => setShowHowItWorks(false)}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition"
-                  >
-                    {t('how_it_works_modal.cta')}
-                  </button>
                 </div>
               </div>
-            </div>
-          )
-        }
+            )
+          }
 
-        {
-          showAdminDashboard && (
-            <Suspense fallback={<PageLoader />}>
-              <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
-            </Suspense>
-          )
-        }
-      </div >
-    </NotificationProvider >
+          {
+            showAdminDashboard && (
+              <Suspense fallback={<PageLoader />}>
+                <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
+              </Suspense>
+            )
+          }
+        </div >
+      </NotificationProvider >
+    </ToastProvider>
   );
 }
 

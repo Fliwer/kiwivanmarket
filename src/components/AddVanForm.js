@@ -5,6 +5,7 @@ import { useAuth } from '../AuthContext';
 import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import { sanitizeString, sanitizeText } from '../securityUtils';
+import { useToast } from './ToastProvider';
 
 // Helper pour convertir les dates Firestore (Timestamp) en format input HTML
 const formatDateForInput = (date) => {
@@ -21,6 +22,7 @@ const formatDateForInput = (date) => {
 
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = false, vanData = null }) {
   const { currentUser } = useAuth();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [uploadingIndex, setUploadingIndex] = useState(null);
@@ -144,7 +146,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         sellerPhone: vanData.seller?.phone || '',
         sellerFacebook: vanData.seller?.facebook || ''
       });
-      
+
       // Charger les images existantes
       if (vanData.images && vanData.images.length > 0) {
         setImages(vanData.images.map(url => ({ url, uploading: false })));
@@ -164,17 +166,17 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
   // Upload image
   const handleImageUpload = async (file) => {
     if (images.length >= 5) {
-      alert(' Maximum 5 photos!');
+      toast.warning('Maximum 5 photos!');
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      alert(' Invalid file!');
+      toast.error('Invalid file type!');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert(' Image too large (max 10MB)');
+      toast.error('Image too large (max 10MB)');
       return;
     }
 
@@ -190,7 +192,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
     try {
       const result = await uploadToCloudinary(file);
-      
+
       setImages(prev => {
         const updated = [...prev];
         updated[newIndex] = { url: result.url, uploading: false };
@@ -199,7 +201,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     } catch (error) {
       console.error('Upload error:', error);
       setImages(prev => prev.filter((_, i) => i !== newIndex));
-      alert(' Upload error');
+      toast.error('Upload error. Please try again.');
     } finally {
       setUploadingIndex(null);
     }
@@ -214,7 +216,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
     //  SCURIT: Vrifier que l'utilisateur est connect
     if (!currentUser) {
-      alert(' Please sign in to add a van!');
+      toast.error('Please sign in to add a van!');
       return;
     }
 
@@ -227,7 +229,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         );
         const userVansSnapshot = await getDocs(userVansQuery);
         const userVanCount = userVansSnapshot.size;
-        
+
         if (userVanCount >= 20) {
           const upgrade = window.confirm(
             ' You have reached the maximum of 20 free listings!\n\n' +
@@ -246,43 +248,43 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
 
     //  VALIDATION COMPLTE avec messages d'erreur dtaills
     const errors = [];
-    
+
     // Photos
     if (images.length === 0) {
       errors.push(' At least 1 photo is required');
     }
-    
+
     // Titre (min 3 caractres)
     if (!formData.title) {
       errors.push(' Title is required');
     } else if (formData.title.length < 3) {
       errors.push(' Title must be at least 3 characters');
     }
-    
+
     // Prix
     if (!formData.price) {
       errors.push(' Price is required');
     } else if (parseInt(formData.price) < 1 || parseInt(formData.price) > 500000) {
       errors.push(' Price must be between $1 and $500,000');
     }
-    
+
     // Ville
     if (!formData.location) {
       errors.push(' City is required');
     }
-    
+
     // Anne
     if (!formData.year) {
       errors.push(' Year is required');
     } else if (parseInt(formData.year) < 1950 || parseInt(formData.year) > 2026) {
       errors.push(' Year must be between 1950 and 2026');
     }
-    
+
     // Kilomtrage
     if (!formData.mileage && formData.mileage !== 0) {
       errors.push(' Mileage is required');
     }
-    
+
     // WOF & REGO
     if (!formData.wofExpiry) {
       errors.push(' WOF expiry date is required');
@@ -290,22 +292,22 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     if (!formData.regoExpiry) {
       errors.push(' REGO expiry date is required');
     }
-    
+
     // Description (min 10 caractres)
     if (!formData.description) {
       errors.push(' Description is required');
     } else if (formData.description.length < 10) {
       errors.push(' Description must be at least 10 characters (currently ' + formData.description.length + ')');
     }
-    
+
     // Buy-back
     if (formData.buyBack && !formData.buyBackPrice) {
       errors.push(' Buy-back price is required when buy-back is enabled');
     }
-    
+
     // Afficher les erreurs
     if (errors.length > 0) {
-      alert(' Please fix the following errors:\n\n' + errors.join('\n'));
+      toast.error(errors[0]); // Show first error as toast
       return;
     }
 
@@ -349,10 +351,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         localStorage.removeItem('kiwiVanMarket_vans');
         localStorage.removeItem('kiwiVanMarket_timestamp');
 
-        alert('Van updated successfully!');
+        toast.success('Van updated successfully! ✅');
         onVanAdded && onVanAdded();
         onClose();
-        
+
       } else {
         // MODE CRATION - Add new van
         const newVanData = {
@@ -396,8 +398,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         localStorage.removeItem('kiwiVanMarket_vans');
         localStorage.removeItem('kiwiVanMarket_timestamp');
 
-        alert('Van added successfully!');
-        
+        toast.success('Van listed successfully! 🎉');
+
         // Appeler le callback pour rafraichir la liste
         if (onVanAdded) {
           await onVanAdded();
@@ -408,10 +410,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           window.location.reload();
         }
       }
-      
+
     } catch (error) {
       console.error('Error:', error);
-      alert(' Error adding van');
+      toast.error('Error saving van. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -420,7 +422,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
   // Composant Tooltip rutilisable
   const InfoTooltip = ({ show, onMouseEnter, onMouseLeave, title, emoji, children }) => (
     <div className="relative inline-block">
-      <div 
+      <div
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
         className="bg-gray-200 hover:bg-emerald-500 hover:text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold text-gray-600 cursor-help transition ml-1">
@@ -441,15 +443,15 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
   );
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
       onClick={onClose}
     >
-      <div 
+      <div
         className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col relative shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        
+
         {/*  HEADER STICKY - Toujours visible */}
         <div className="sticky top-0 z-20 bg-white rounded-t-3xl border-b border-gray-100 px-8 py-6 flex items-center justify-between">
           <div>
@@ -460,7 +462,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               {editMode ? 'Update your van details' : 'Upload photos and fill in details'}
             </p>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="bg-gray-100 hover:bg-gray-200 rounded-full p-3 transition-all hover:scale-110">
             <X size={24} className="text-gray-600" />
@@ -471,7 +473,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         <div className="flex-1 overflow-y-auto px-8 lg:px-10 py-6">
 
           <form onSubmit={handleSubmit} id="addVanForm">
-            
+
             {/* PHOTOS SECTION */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
@@ -483,8 +485,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
                     <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg">
-                      <img 
-                        src={image.url} 
+                      <img
+                        src={image.url}
                         alt={`Photo ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
@@ -557,13 +559,12 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Toyota Hiace 2015"
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors ${
-                    formData.title && formData.title.length < 3 
-                      ? 'border-red-300 focus:border-red-500' 
+                  className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors ${formData.title && formData.title.length < 3
+                      ? 'border-red-300 focus:border-red-500'
                       : 'border-gray-200 focus:border-emerald-500'
-                  }`}
+                    }`}
                   required
                 />
                 {formData.title && formData.title.length < 3 && (
@@ -576,7 +577,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 <input
                   type="number"
                   value={formData.price}
-                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   placeholder="18500"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   required
@@ -587,7 +588,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 <label className="block text-sm font-semibold text-gray-700 mb-2">City *</label>
                 <select
                   value={formData.location}
-                  onChange={(e) => setFormData({...formData, location: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   required
                 >
@@ -607,7 +608,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Region *</label>
                 <select
                   value={formData.region}
-                  onChange={(e) => setFormData({...formData, region: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, region: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
                   <option>North Island</option>
                   <option>South Island</option>
@@ -619,7 +620,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 <input
                   type="number"
                   value={formData.year}
-                  onChange={(e) => setFormData({...formData, year: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, year: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   required
                 />
@@ -630,7 +631,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 <input
                   type="number"
                   value={formData.mileage}
-                  onChange={(e) => setFormData({...formData, mileage: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, mileage: e.target.value })}
                   placeholder="145000"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   required
@@ -641,7 +642,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Type</label>
                 <select
                   value={formData.type}
-                  onChange={(e) => setFormData({...formData, type: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
                   <option value="Car">Car</option>
                   <option value="Van">Van</option>
@@ -654,7 +655,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 <input
                   type="number"
                   value={formData.capacity}
-                  onChange={(e) => setFormData({...formData, capacity: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
@@ -663,22 +664,22 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               <div>
                 <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
                   WOF Expiry *
-                  <InfoTooltip 
+                  <InfoTooltip
                     show={showWofTooltip}
                     onMouseEnter={() => setShowWofTooltip(true)}
                     onMouseLeave={() => setShowWofTooltip(false)}
                     title="Warrant of Fitness"
                     emoji=""
                   >
-                    A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months for all vehicles in NZ. 
-                    It checks brakes, lights, tyres, steering and other safety features. 
+                    A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months for all vehicles in NZ.
+                    It checks brakes, lights, tyres, steering and other safety features.
                     <span className="text-white font-semibold"> You can't legally drive without a valid WOF!</span>
                   </InfoTooltip>
                 </label>
                 <input
                   type="date"
                   value={formData.wofExpiry}
-                  onChange={(e) => setFormData({...formData, wofExpiry: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, wofExpiry: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   required
                 />
@@ -688,22 +689,22 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               <div>
                 <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
                   REGO Expiry *
-                  <InfoTooltip 
+                  <InfoTooltip
                     show={showRegoTooltip}
                     onMouseEnter={() => setShowRegoTooltip(true)}
                     onMouseLeave={() => setShowRegoTooltip(false)}
                     title="Vehicle Registration"
                     emoji=""
                   >
-                    <span className="text-white font-semibold">Registration fee</span> that must be paid to legally drive on NZ roads. 
-                    Can be bought in 3, 6 or 12 month periods at any PostShop or online. 
+                    <span className="text-white font-semibold">Registration fee</span> that must be paid to legally drive on NZ roads.
+                    Can be bought in 3, 6 or 12 month periods at any PostShop or online.
                     <span className="text-white font-semibold"> Check the sticker on the windscreen!</span>
                   </InfoTooltip>
                 </label>
                 <input
                   type="date"
                   value={formData.regoExpiry}
-                  onChange={(e) => setFormData({...formData, regoExpiry: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, regoExpiry: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   required
                 />
@@ -717,14 +718,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Perfect backpacker van, well maintained, ready for adventure..."
                 rows={4}
-                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors resize-none ${
-                  formData.description && formData.description.length < 10 
-                    ? 'border-red-300 focus:border-red-500' 
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors resize-none ${formData.description && formData.description.length < 10
+                    ? 'border-red-300 focus:border-red-500'
                     : 'border-gray-200 focus:border-emerald-500'
-                }`}
+                  }`}
                 required
               />
               <div className="flex justify-between mt-1">
@@ -744,13 +744,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border-2 border-green-200 rounded-xl">
                   <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                   </svg>
                 </div>
                 <input
                   type="tel"
                   value={formData.sellerPhone}
-                  onChange={(e) => setFormData({...formData, sellerPhone: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, sellerPhone: e.target.value })}
                   placeholder="+64 21 123 4567"
                   className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
@@ -768,13 +768,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl">
                   <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 008.44-9.9c0-5.53-4.5-10.02-10-10.02z"/>
+                    <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 008.44-9.9c0-5.53-4.5-10.02-10-10.02z" />
                   </svg>
                 </div>
                 <input
                   type="text"
                   value={formData.sellerFacebook}
-                  onChange={(e) => setFormData({...formData, sellerFacebook: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, sellerFacebook: e.target.value })}
                   placeholder="your.name or facebook.com/your.name"
                   className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
                 />
@@ -787,56 +787,56 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             {/* EQUIPMENT - Simplifie */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-3"> Equipment & Features</label>
-              
+
               {/* ESSENTIELS - Toujours visible */}
               <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl mb-4">
                 <h4 className="text-sm font-bold text-emerald-700 mb-3">{"✨"} Key Features <span className="font-normal text-emerald-600">(most searched by buyers)</span></h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
-                    <input type="checkbox" checked={formData.equipment.doubleBed} 
-                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, doubleBed: e.target.checked}})}
+                    <input type="checkbox" checked={formData.equipment.doubleBed}
+                      onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, doubleBed: e.target.checked } })}
                       className="w-4 h-4 text-emerald-600 rounded" />
                     <span className="text-sm">{"🛏️"} Double Bed</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
-                    <input type="checkbox" checked={formData.equipment.fridge} 
-                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, fridge: e.target.checked}})}
+                    <input type="checkbox" checked={formData.equipment.fridge}
+                      onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, fridge: e.target.checked } })}
                       className="w-4 h-4 text-emerald-600 rounded" />
                     <span className="text-sm">{"🧊"} Fridge</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
-                    <input type="checkbox" checked={formData.equipment.gasStove} 
-                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, gasStove: e.target.checked}})}
+                    <input type="checkbox" checked={formData.equipment.gasStove}
+                      onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, gasStove: e.target.checked } })}
                       className="w-4 h-4 text-emerald-600 rounded" />
                     <span className="text-sm">{"🔥"} Gas Stove</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
-                    <input type="checkbox" checked={formData.equipment.sink} 
-                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, sink: e.target.checked}})}
+                    <input type="checkbox" checked={formData.equipment.sink}
+                      onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, sink: e.target.checked } })}
                       className="w-4 h-4 text-emerald-600 rounded" />
                     <span className="text-sm">{"🚰"} Sink</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
-                    <input type="checkbox" checked={formData.equipment.toilet} 
-                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, toilet: e.target.checked}})}
+                    <input type="checkbox" checked={formData.equipment.toilet}
+                      onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, toilet: e.target.checked } })}
                       className="w-4 h-4 text-emerald-600 rounded" />
                     <span className="text-sm">{"🚽"} Toilet</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
-                    <input type="checkbox" checked={formData.equipment.solarPanel} 
-                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, solarPanel: e.target.checked}})}
+                    <input type="checkbox" checked={formData.equipment.solarPanel}
+                      onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, solarPanel: e.target.checked } })}
                       className="w-4 h-4 text-emerald-600 rounded" />
                     <span className="text-sm">{"☀️"} Solar Panel</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
-                    <input type="checkbox" checked={formData.equipment.leisureBattery} 
-                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, leisureBattery: e.target.checked}})}
+                    <input type="checkbox" checked={formData.equipment.leisureBattery}
+                      onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, leisureBattery: e.target.checked } })}
                       className="w-4 h-4 text-emerald-600 rounded" />
                     <span className="text-sm">{"🔋"} Leisure Battery</span>
                   </label>
                   <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
-                    <input type="checkbox" checked={formData.equipment.dieselHeater || formData.equipment.heater} 
-                      onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, heater: e.target.checked}})}
+                    <input type="checkbox" checked={formData.equipment.dieselHeater || formData.equipment.heater}
+                      onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, heater: e.target.checked } })}
                       className="w-4 h-4 text-emerald-600 rounded" />
                     <span className="text-sm">{"🌡️"} Heater</span>
                   </label>
@@ -855,32 +855,32 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               {/* OPTIONS AVANCES - Simplifies pour backpackers */}
               {showAdvancedEquipment && (
                 <div className="space-y-4 mb-4">
-                  
+
                   {/* Sleeping */}
                   <div className="p-3 bg-indigo-50 rounded-xl">
                     <h4 className="text-xs font-bold text-indigo-600 mb-2">{"🛏️"} Sleeping</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.singleBeds} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, singleBeds: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.singleBeds}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, singleBeds: e.target.checked } })}
                           className="w-4 h-4 text-indigo-600 rounded" />
                         {"🛏️"} Single Beds
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.roofBed} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, roofBed: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.roofBed}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, roofBed: e.target.checked } })}
                           className="w-4 h-4 text-indigo-600 rounded" />
                         {"🏕️"} Pop-top / Roof Bed
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.bedding} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, bedding: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.bedding}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, bedding: e.target.checked } })}
                           className="w-4 h-4 text-indigo-600 rounded" />
                         {"🛌"} Bedding Included
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-indigo-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.curtains} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, curtains: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.curtains}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, curtains: e.target.checked } })}
                           className="w-4 h-4 text-indigo-600 rounded" />
                         {"🪟"} Privacy Curtains
                       </label>
@@ -892,8 +892,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     <h4 className="text-xs font-bold text-orange-600 mb-2">{"🍳"} Kitchen</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-orange-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.cookware} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, cookware: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.cookware}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, cookware: e.target.checked } })}
                           className="w-4 h-4 text-orange-600 rounded" />
                         {"🍳"} Pots, Pans & Utensils
                       </label>
@@ -905,32 +905,32 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     <h4 className="text-xs font-bold text-cyan-600 mb-2">{"💧"} Water & Bathroom</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.freshWaterTank} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, freshWaterTank: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.freshWaterTank}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, freshWaterTank: e.target.checked } })}
                           className="w-4 h-4 text-cyan-600 rounded" />
                         {"💧"} Fresh Water Tank
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.greyWaterTank} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, greyWaterTank: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.greyWaterTank}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, greyWaterTank: e.target.checked } })}
                           className="w-4 h-4 text-cyan-600 rounded" />
                         {"🚿"} Grey Water Tank
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.outdoorShower} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, outdoorShower: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.outdoorShower}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, outdoorShower: e.target.checked } })}
                           className="w-4 h-4 text-cyan-600 rounded" />
                         {"🚿"} Outdoor Shower
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.indoorShower} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, indoorShower: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.indoorShower}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, indoorShower: e.target.checked } })}
                           className="w-4 h-4 text-cyan-600 rounded" />
                         {"🛁"} Indoor Shower
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-cyan-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.portaPotti} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, portaPotti: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.portaPotti}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, portaPotti: e.target.checked } })}
                           className="w-4 h-4 text-cyan-600 rounded" />
                         {"🚽"} Porta Potti
                       </label>
@@ -942,26 +942,26 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     <h4 className="text-xs font-bold text-yellow-600 mb-2">{"⚡"} Power</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.splitCharger} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, splitCharger: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.splitCharger}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, splitCharger: e.target.checked } })}
                           className="w-4 h-4 text-yellow-600 rounded" />
                         {"🔌"} Charges While Driving
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.inverter} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, inverter: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.inverter}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, inverter: e.target.checked } })}
                           className="w-4 h-4 text-yellow-600 rounded" />
                         {"🔌"} 230V Inverter
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.usb} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, usb: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.usb}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, usb: e.target.checked } })}
                           className="w-4 h-4 text-yellow-600 rounded" />
                         {"🔋"} USB Charging Ports
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-yellow-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.ledLights} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, ledLights: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.ledLights}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, ledLights: e.target.checked } })}
                           className="w-4 h-4 text-yellow-600 rounded" />
                         {"💡"} LED Lights
                       </label>
@@ -973,26 +973,26 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     <h4 className="text-xs font-bold text-rose-600 mb-2">{"🌡️"} Comfort</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.dieselHeater} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, dieselHeater: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.dieselHeater}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, dieselHeater: e.target.checked } })}
                           className="w-4 h-4 text-rose-600 rounded" />
                         {"🔥"} Diesel Heater (Webasto)
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.roofFan} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, roofFan: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.roofFan}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, roofFan: e.target.checked } })}
                           className="w-4 h-4 text-rose-600 rounded" />
                         {"🌀"} Roof Vent / Fan
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.insulation} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, insulation: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.insulation}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, insulation: e.target.checked } })}
                           className="w-4 h-4 text-rose-600 rounded" />
                         {"🧥"} Insulated
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-rose-100 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.awning} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, awning: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.awning}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, awning: e.target.checked } })}
                           className="w-4 h-4 text-rose-600 rounded" />
                         {"⛺"} Awning
                       </label>
@@ -1004,32 +1004,32 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                     <h4 className="text-xs font-bold text-gray-600 mb-2">{"🚗"} Vehicle</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.reverseCamera} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, reverseCamera: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.reverseCamera}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, reverseCamera: e.target.checked } })}
                           className="w-4 h-4 text-gray-600 rounded" />
                         {"📷"} Reverse Camera
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.bluetooth} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, bluetooth: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.bluetooth}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, bluetooth: e.target.checked } })}
                           className="w-4 h-4 text-gray-600 rounded" />
                         {"🔊"} Bluetooth Audio
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.swivelSeats} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, swivelSeats: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.swivelSeats}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, swivelSeats: e.target.checked } })}
                           className="w-4 h-4 text-gray-600 rounded" />
                         {"💺"} Swivel Front Seats
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.bikeRack} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, bikeRack: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.bikeRack}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, bikeRack: e.target.checked } })}
                           className="w-4 h-4 text-gray-600 rounded" />
                         {"🚴"} Bike Rack
                       </label>
                       <label className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-gray-200 transition text-sm">
-                        <input type="checkbox" checked={formData.equipment.surfRack} 
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, surfRack: e.target.checked}})}
+                        <input type="checkbox" checked={formData.equipment.surfRack}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, surfRack: e.target.checked } })}
                           className="w-4 h-4 text-gray-600 rounded" />
                         {"🏄"} Surf / Kayak Rack
                       </label>
@@ -1041,12 +1041,12 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               {/* CHAMP LIBRE - Autres quipements */}
               <div className="p-4 bg-gray-50 rounded-xl">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                   Other features <span className="font-normal text-gray-400">(optional)</span>
+                  Other features <span className="font-normal text-gray-400">(optional)</span>
                 </label>
                 <input
                   type="text"
                   value={formData.customFeatures || ''}
-                  onChange={(e) => setFormData({...formData, customFeatures: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, customFeatures: e.target.value })}
                   placeholder="e.g. Surfboard rack, Kayak holder, TV, Coffee machine..."
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
@@ -1058,7 +1058,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
             <div className="mb-8">
               <label className="block text-sm font-semibold text-gray-700 mb-3"> Certifications & Options</label>
               <div className="space-y-3">
-                
+
                 {/* Self-Contained avec tooltip */}
                 <div className="p-3 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2">
@@ -1066,38 +1066,37 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                       <input
                         type="checkbox"
                         checked={formData.selfContained}
-                        onChange={(e) => setFormData({...formData, selfContained: e.target.checked})}
+                        onChange={(e) => setFormData({ ...formData, selfContained: e.target.checked })}
                         className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
                       />
                       <span className="font-medium text-gray-700">Self-Contained Certified</span>
                     </label>
                     {/* Tooltip Self-Contained */}
-                    <InfoTooltip 
+                    <InfoTooltip
                       show={showSelfContainedTooltip}
                       onMouseEnter={() => setShowSelfContainedTooltip(true)}
                       onMouseLeave={() => setShowSelfContainedTooltip(false)}
                       title="Self-Contained"
                       emoji=""
                     >
-                      A certified van with <span className="text-white font-semibold">toilet, fresh water tank & grey water tank</span>. 
-                      Required for freedom camping in most areas of NZ. 
-                      <span className="text-green-400 font-semibold"> Green sticker</span> = fixed toilet. 
+                      A certified van with <span className="text-white font-semibold">toilet, fresh water tank & grey water tank</span>.
+                      Required for freedom camping in most areas of NZ.
+                      <span className="text-green-400 font-semibold"> Green sticker</span> = fixed toilet.
                       <span className="text-blue-400 font-semibold"> Blue sticker</span> = porta-potty allowed.
                       <span className="text-white font-semibold"> Essential for free camping!</span>
                     </InfoTooltip>
                   </div>
-                  
+
                   {/* Choix Vert ou Bleu si coch */}
                   {formData.selfContained && (
                     <div className="mt-3 ml-8 flex gap-4 flex-wrap">
-                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${
-                        formData.selfContainedType === 'green' 
-                          ? 'border-green-500 bg-green-50' 
+                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'green'
+                          ? 'border-green-500 bg-green-50'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}>
+                        }`}>
                         <input type="radio" name="selfContainedType" value="green"
                           checked={formData.selfContainedType === 'green'}
-                          onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})}
+                          onChange={(e) => setFormData({ ...formData, selfContainedType: e.target.value })}
                           className="hidden" />
                         <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-xs font-bold"></span>
@@ -1107,15 +1106,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                           <p className="text-xs text-gray-500">Fixed toilet</p>
                         </div>
                       </label>
-                      
-                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${
-                        formData.selfContainedType === 'blue' 
-                          ? 'border-blue-500 bg-blue-50' 
+
+                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'blue'
+                          ? 'border-blue-500 bg-blue-50'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}>
+                        }`}>
                         <input type="radio" name="selfContainedType" value="blue"
                           checked={formData.selfContainedType === 'blue'}
-                          onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})}
+                          onChange={(e) => setFormData({ ...formData, selfContainedType: e.target.value })}
                           className="hidden" />
                         <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-xs font-bold"></span>
@@ -1136,93 +1134,93 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                       <input
                         type="checkbox"
                         checked={formData.buyBack}
-                        onChange={(e) => setFormData({...formData, buyBack: e.target.checked})}
+                        onChange={(e) => setFormData({ ...formData, buyBack: e.target.checked })}
                         className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
                       />
                       <span className="font-medium text-gray-700">Buy-Back Available</span>
                     </label>
                     {/* Tooltip Buy-Back */}
-                    <InfoTooltip 
+                    <InfoTooltip
                       show={showBuyBackTooltip}
                       onMouseEnter={() => setShowBuyBackTooltip(true)}
                       onMouseLeave={() => setShowBuyBackTooltip(false)}
                       title="Buy-Back Guarantee"
                       emoji=""
                     >
-                      Offer to buy back the van at an agreed price if the buyer returns it within a specified period. 
+                      Offer to buy back the van at an agreed price if the buyer returns it within a specified period.
                       <span className="text-white font-semibold"> Great for attracting backpackers!</span>
                     </InfoTooltip>
                   </div>
 
-                {/* Options Buy-Back (affiches si coch) */}
-                {formData.buyBack && (
-                  <div className="ml-8 mt-3 p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl space-y-4">
-                    <h4 className="font-bold text-emerald-700 flex items-center gap-2">
-                       Buy-Back Details
-                    </h4>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Guaranteed Buy-Back Price (NZ$) *
-                        </label>
-                        <input
-                          type="number"
-                          value={formData.buyBackPrice}
-                          onChange={(e) => setFormData({...formData, buyBackPrice: e.target.value})}
-                          placeholder="e.g. 10000"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                          required={formData.buyBack}
-                        />
-                        <p className="text-xs text-gray-500 mt-1">Price you'll pay to buy back the van</p>
+                  {/* Options Buy-Back (affiches si coch) */}
+                  {formData.buyBack && (
+                    <div className="ml-8 mt-3 p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl space-y-4">
+                      <h4 className="font-bold text-emerald-700 flex items-center gap-2">
+                        Buy-Back Details
+                      </h4>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Guaranteed Buy-Back Price (NZ$) *
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.buyBackPrice}
+                            onChange={(e) => setFormData({ ...formData, buyBackPrice: e.target.value })}
+                            placeholder="e.g. 10000"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                            required={formData.buyBack}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Price you'll pay to buy back the van</p>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Valid For *
+                          </label>
+                          <select
+                            value={formData.buyBackDuration}
+                            onChange={(e) => setFormData({ ...formData, buyBackDuration: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                          >
+                            <option value="1">1 month</option>
+                            <option value="2">2 months</option>
+                            <option value="3">3 months</option>
+                            <option value="6">6 months</option>
+                            <option value="12">12 months</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Maximum Kilometers
+                          </label>
+                          <input
+                            type="number"
+                            value={formData.buyBackMaxKm}
+                            onChange={(e) => setFormData({ ...formData, buyBackMaxKm: e.target.value })}
+                            placeholder="e.g. 10000"
+                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Max km buyer can add (leave empty for unlimited)</p>
+                        </div>
                       </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Valid For *
+                          Additional Conditions
                         </label>
-                        <select
-                          value={formData.buyBackDuration}
-                          onChange={(e) => setFormData({...formData, buyBackDuration: e.target.value})}
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                        >
-                          <option value="1">1 month</option>
-                          <option value="2">2 months</option>
-                          <option value="3">3 months</option>
-                          <option value="6">6 months</option>
-                          <option value="12">12 months</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Maximum Kilometers
-                        </label>
-                        <input
-                          type="number"
-                          value={formData.buyBackMaxKm}
-                          onChange={(e) => setFormData({...formData, buyBackMaxKm: e.target.value})}
-                          placeholder="e.g. 10000"
-                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                        <textarea
+                          value={formData.buyBackConditions}
+                          onChange={(e) => setFormData({ ...formData, buyBackConditions: e.target.value })}
+                          placeholder="e.g. No major damage, regular maintenance required, must return in Auckland..."
+                          rows={3}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Max km buyer can add (leave empty for unlimited)</p>
                       </div>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Additional Conditions
-                      </label>
-                      <textarea
-                        value={formData.buyBackConditions}
-                        onChange={(e) => setFormData({...formData, buyBackConditions: e.target.value})}
-                        placeholder="e.g. No major damage, regular maintenance required, must return in Auckland..."
-                        rows={3}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none"
-                      />
-                    </div>
-                  </div>
-                )}
+                  )}
                 </div>
               </div>
             </div>
@@ -1246,8 +1244,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               form="addVanForm"
               disabled={loading || images.length === 0}
               className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-              {loading 
-                ? (editMode ? 'Saving...' : 'Adding...') 
+              {loading
+                ? (editMode ? 'Saving...' : 'Adding...')
                 : (editMode ? 'Save Changes' : 'Add Van')
               }
             </button>

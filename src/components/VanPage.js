@@ -15,6 +15,7 @@ import {
   Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from './ToastProvider';
 import SeoHead from './SeoHead';
 import EquipmentBadges from './EquipmentBadges';
 
@@ -198,6 +199,7 @@ export default function VanPage() {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
   const { toggleFavorite, isFavorite, count: favoritesCount } = useFavorites();
+  const toast = useToast();
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -223,7 +225,7 @@ export default function VanPage() {
       localStorage.removeItem('kiwiVanMarket_timestamp');
     } catch (err) {
       console.error('Error toggling sold status:', err);
-      alert('Error updating status');
+      toast.error('Error updating status');
     } finally {
       setIsUpdating(false);
     }
@@ -241,7 +243,7 @@ export default function VanPage() {
       localStorage.removeItem('kiwiVanMarket_timestamp');
     } catch (err) {
       console.error('Error toggling pause status:', err);
-      alert('Error updating status');
+      toast.error('Error updating status');
     } finally {
       setIsUpdating(false);
     }
@@ -258,7 +260,7 @@ export default function VanPage() {
       navigate('/my-listings');
     } catch (err) {
       console.error('Error deleting van:', err);
-      alert('Error during deletion');
+      toast.error('Error during deletion');
       setIsUpdating(false);
       setShowDeleteConfirm(false);
     }
@@ -337,7 +339,7 @@ export default function VanPage() {
     if (platform === 'copy') {
       await navigator.clipboard.writeText(shareUrl);
       // We could use t() for this alert if needed, but keeping it simple for now
-      alert('Link copied to clipboard!');
+      toast.success('Link copied to clipboard!');
     } else {
       window.open(urls[platform], '_blank', 'width=600,height=400');
     }
@@ -374,7 +376,7 @@ ${shareUrl}
 #nzcampervan #vanlifeNZ #backpackernz #campervanforsale`;
 
     navigator.clipboard.writeText(text);
-    alert(i18n.language.startsWith('fr') ? 'Texte copié ! Vous pouvez maintenant le coller sur Facebook.' : 'Text copied! You can now paste it on Facebook.');
+    toast.success(i18n.language.startsWith('fr') ? 'Texte copié ! Collez-le sur Facebook.' : 'Text copied! Paste it on Facebook.');
   };
 
   // Format prix

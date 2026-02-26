@@ -12,11 +12,13 @@ import {
   DollarSign, Crown, Loader, Car, AlertTriangle, CheckCircle, RotateCcw
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from './ToastProvider';
 
 export default function MyListingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const toast = useToast();
   const [myVans, setMyVans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingVan, setEditingVan] = useState(null);
@@ -112,11 +114,11 @@ export default function MyListingsPage() {
       localStorage.removeItem('kiwiVanMarket_vans');
       localStorage.removeItem('kiwiVanMarket_timestamp');
 
-      alert(t('my_listings.delete_success'));
+      toast.success(t('my_listings.delete_success'));
 
     } catch (error) {
       console.error('Error deleting:', error);
-      alert('Error during deletion. Check your permissions.');
+      toast.error('Error during deletion. Check your permissions.');
     }
   };
 
@@ -141,7 +143,7 @@ export default function MyListingsPage() {
       localStorage.removeItem('kiwiVanMarket_timestamp');
     } catch (error) {
       console.error('Error updating status:', error);
-      alert(t('my_listings.status_updated'));
+      toast.error('Error updating status');
     }
   };
 
