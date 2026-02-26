@@ -156,6 +156,10 @@
             "card_3_desc": "Freedom camping y Spots secretos",
             "grid_title": "Guías Destacadas",
             "read_btn": "Leer Guía",
+            "featured_story": "Historia Destacada",
+            "min_read": "{{count}} min de lectura",
+            "read_full": "LEER LA GUÍA COMPLETA",
+            "continue_reading": "CONTINUAR LEYENDO",
             "cta_title": "¿No encuentras lo que buscas?",
             "cta_subtitle": "Añadimos contenido constantemente. Sugiere un tema y redactaremos una guía experta para ti.",
             "cta_btn": "Contactar al Equipo"

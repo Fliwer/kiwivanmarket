@@ -177,6 +177,10 @@
             "card_3_desc": "Freedom camping & Spots",
             "grid_title": "Featured Guides",
             "read_btn": "Read Guide",
+            "featured_story": "Featured Story",
+            "min_read": "{{count}} min read",
+            "read_full": "READ THE FULL GUIDE",
+            "continue_reading": "CONTINUE READING",
             "cta_title": "Can't find what you're looking for?",
             "cta_subtitle": "We're constantly adding new content to help you on your road trip. Suggest a topic and we'll write an expert guide for you.",
             "cta_btn": "Contact Team"

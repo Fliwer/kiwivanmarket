@@ -98,11 +98,11 @@ export default function GuidesHubPage() {
 
                             <div className="lg:w-2/5 p-10 lg:p-16 flex flex-col justify-center bg-white relative">
                                 <div className="flex items-center gap-4 text-emerald-600 mb-6">
-                                    <span className="text-xs font-black uppercase tracking-widest">Featured Story</span>
+                                    <span className="text-xs font-black uppercase tracking-widest">{t('guides.hub.featured_story')}</span>
                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-200" />
                                     <div className="flex items-center gap-1.5 text-slate-400">
                                         <Clock size={14} />
-                                        <span className="text-xs font-bold uppercase">12 min read</span>
+                                        <span className="text-xs font-bold uppercase">{t('guides.hub.min_read', { count: 12 })}</span>
                                     </div>
                                 </div>
 
@@ -116,7 +116,7 @@ export default function GuidesHubPage() {
 
                                 <div className="flex items-center gap-3 text-slate-900 font-black group-hover:gap-5 transition-all">
                                     <span className="border-b-4 border-emerald-500/20 group-hover:border-emerald-500 transition-all">
-                                        READ THE FULL GUIDE
+                                        {t('guides.hub.read_full')}
                                     </span>
                                     <ArrowRight size={20} className="text-emerald-500" />
                                 </div>
@@ -147,9 +147,9 @@ export default function GuidesHubPage() {
 
                             <div className="px-2">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">Guides</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{t('guides.hub.breadcrumb_guide', { defaultValue: 'Guides' })}</span>
                                     <span className="text-slate-300">•</span>
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">8 min read</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{t('guides.hub.min_read', { count: 8 })}</span>
                                 </div>
 
                                 <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors leading-tight">
@@ -161,7 +161,7 @@ export default function GuidesHubPage() {
                                 </p>
 
                                 <div className="flex items-center gap-2 text-xs font-black text-slate-900 group-hover:translate-x-1 transition-transform">
-                                    CONTINUE READING <ArrowRight size={14} className="text-emerald-500" />
+                                    {t('guides.hub.continue_reading')} <ArrowRight size={14} className="text-emerald-500" />
                                 </div>
                             </div>
                         </Link>

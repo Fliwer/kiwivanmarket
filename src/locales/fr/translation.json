@@ -177,6 +177,10 @@
             "card_3_desc": "Camping sauvage & Spots secrets",
             "grid_title": "Guides en Vedette",
             "read_btn": "Lire le Guide",
+            "featured_story": "Histoire à la Une",
+            "min_read": "{{count}} min de lecture",
+            "read_full": "LIRE LE GUIDE COMPLET",
+            "continue_reading": "CONTINUER LA LECTURE",
             "cta_title": "Vous ne trouvez pas ce que vous cherchez ?",
             "cta_subtitle": "Nous ajoutons constamment du contenu. Suggérez un sujet et nous rédigerons un guide expert pour vous.",
             "cta_btn": "Contacter l'Équipe"
