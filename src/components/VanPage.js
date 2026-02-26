@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, increment, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
@@ -10,7 +11,8 @@ import { safeDate } from '../utils/dateHelper';
 import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
-  Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen, User, LogOut
+  Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen, User, LogOut,
+  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SeoHead from './SeoHead';
@@ -199,12 +201,68 @@ export default function VanPage() {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const { t, i18n } = useTranslation();
 
   const [van, setVan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Management functions for owner
+  const handleToggleSold = async () => {
+    if (!van) return;
+    setIsUpdating(true);
+    const newStatus = van.status === 'sold' ? 'active' : 'sold';
+    try {
+      await updateDoc(doc(db, 'vans', van.id), { status: newStatus });
+      setVan(prev => ({ ...prev, status: newStatus }));
+      // Invalidate cache
+      localStorage.removeItem('kiwiVanMarket_vans');
+      localStorage.removeItem('kiwiVanMarket_timestamp');
+    } catch (err) {
+      console.error('Error toggling sold status:', err);
+      alert('Error updating status');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleTogglePause = async () => {
+    if (!van) return;
+    setIsUpdating(true);
+    const newStatus = van.status === 'paused' ? 'active' : 'paused';
+    try {
+      await updateDoc(doc(db, 'vans', van.id), { status: newStatus });
+      setVan(prev => ({ ...prev, status: newStatus }));
+      // Invalidate cache
+      localStorage.removeItem('kiwiVanMarket_vans');
+      localStorage.removeItem('kiwiVanMarket_timestamp');
+    } catch (err) {
+      console.error('Error toggling pause status:', err);
+      alert('Error updating status');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!van) return;
+    setIsUpdating(true);
+    try {
+      await deleteDoc(doc(db, 'vans', van.id));
+      // Invalidate cache
+      localStorage.removeItem('kiwiVanMarket_vans');
+      localStorage.removeItem('kiwiVanMarket_timestamp');
+      navigate('/my-listings');
+    } catch (err) {
+      console.error('Error deleting van:', err);
+      alert('Error during deletion');
+      setIsUpdating(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   // Ref pour éviter d'incrémenter les vues 2x (React StrictMode)
   const viewIncremented = useRef(false);
@@ -342,6 +400,7 @@ ${shareUrl}
   if (error || !van) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <SeoHead title={t('van_page.not_found')} noindex={true} />
         <div className="text-center p-8">
           <div className="text-6xl mb-4">🚐</div>
           <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('van_page.not_found')}</h1>
@@ -438,9 +497,12 @@ ${shareUrl}
                   {showUserMenu && (
                     <>
                       <div className="fixed inset-0 z-[100]" onClick={() => setShowUserMenu(false)} />
-                      <div className="absolute right-0 top-full mt-3 w-48 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
+                      <div className="absolute right-0 top-full mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
                         <Link to="/profile" className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
                           <User size={18} className="text-slate-400" /> {t('header.profile')}
+                        </Link>
+                        <Link to="/my-listings" className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
+                          <MapPin size={18} className="text-slate-400" /> {t('header.my_listings') || 'My Listings'}
                         </Link>
                         <button onClick={logout} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-red-50 text-slate-700 hover:text-red-700 font-bold transition-all">
                           <LogOut size={18} className="text-slate-400" /> {t('header.logout')}
@@ -572,6 +634,80 @@ ${shareUrl}
 
             {/* INFORMATIONS */}
             <div className="space-y-8">
+
+              {/* ✅ OWNER DASHBOARD */}
+              {currentUser?.uid === van.seller?.uid && (
+                <div className="bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-800 p-8 text-white relative overflow-hidden group">
+                  {/* Decorative background icon */}
+                  <LayoutDashboard size={120} className="absolute -right-8 -bottom-8 text-white/5 group-hover:scale-110 transition-transform duration-700" />
+
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                          <LayoutDashboard size={20} />
+                        </div>
+                        <h3 className="text-lg font-black uppercase tracking-widest">{t('owner.dashboard') || 'Owner Dashboard'}</h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {van.status === 'paused' && (
+                          <span className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-400 text-[10px] font-black uppercase tracking-widest animate-pulse">Paused</span>
+                        )}
+                        {van.status === 'sold' && (
+                          <span className="px-3 py-1 bg-red-500/20 border border-red-500/40 rounded-full text-red-400 text-[10px] font-black uppercase tracking-widest">Sold</span>
+                        )}
+                        {(!van.status || van.status === 'active') && (
+                          <span className="px-3 py-1 bg-emerald-500/20 border border-emerald-500/40 rounded-full text-emerald-400 text-[10px] font-black uppercase tracking-widest">Live</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="space-y-3">
+                        <Link
+                          to={`/sell?edit=${van.id}`}
+                          className="flex items-center justify-center gap-3 w-full bg-white/10 hover:bg-white text-white hover:text-slate-900 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
+                        >
+                          <Edit2 size={16} />
+                          {t('my_listings.edit')}
+                        </Link>
+
+                        <button
+                          onClick={handleToggleSold}
+                          disabled={isUpdating}
+                          className={`flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${van.status === 'sold'
+                            ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
+                            : 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                            }`}
+                        >
+                          <CheckCircle size={16} />
+                          {van.status === 'sold' ? t('my_listings.reactivate') : t('my_listings.mark_as_sold')}
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        <button
+                          onClick={handleTogglePause}
+                          disabled={isUpdating}
+                          className="flex items-center justify-center gap-3 w-full bg-white/10 hover:bg-amber-500 hover:text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
+                        >
+                          {van.status === 'paused' ? <Play size={16} /> : <Pause size={16} />}
+                          {van.status === 'paused' ? t('my_listings.resume') || 'Resume' : t('my_listings.pause') || 'Pause'}
+                        </button>
+
+                        <button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          disabled={isUpdating}
+                          className="flex items-center justify-center gap-3 w-full bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
+                        >
+                          <Trash2 size={16} />
+                          {t('my_listings.delete')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Titre & Prix - Premium Design */}
               <div className="premium-card p-8 bg-white">
@@ -996,6 +1132,55 @@ ${shareUrl}
           </div>
         </footer>
         {/* Modals & Overlays */}
+        <AnimatePresence>
+          {showDeleteConfirm && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowDeleteConfirm(false)}
+                className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="bg-white rounded-[2.5rem] w-full max-w-md p-8 relative z-10 shadow-2xl overflow-hidden"
+              >
+                {/* Warning icon */}
+                <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mb-6 mx-auto">
+                  <AlertTriangle size={40} />
+                </div>
+
+                <h3 className="text-2xl font-black text-slate-900 text-center mb-4 uppercase tracking-tight">
+                  {t('my_listings.delete_confirm_title') || 'Delete Listing?'}
+                </h3>
+                <p className="text-slate-500 text-center mb-8 font-medium leading-relaxed">
+                  {t('my_listings.delete_confirm_desc') || 'Are you sure you want to permanently delete this listing? This action cannot be undone.'}
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={handleDelete}
+                    disabled={isUpdating}
+                    className="w-full py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-red-200 active:scale-95 disabled:opacity-50"
+                  >
+                    {isUpdating ? t('common.loading') : (t('my_listings.delete') || 'Delete Permanently')}
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isUpdating}
+                    className="w-full py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
         <AuthModal
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}

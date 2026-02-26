@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation, useNavigationType } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -76,49 +77,53 @@ const PageLoader = () => {
   const { t } = useTranslation();
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white relative overflow-hidden">
-      {/* Background Decorative Elements */}
-      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-50 rounded-full blur-3xl opacity-60 animate-pulse"></div>
-      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-teal-50 rounded-full blur-3xl opacity-60 animate-pulse" style={{ animationDelay: '1s' }}></div>
+      {/* Background Decorative Elements - Refined Gradients */}
+      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-emerald-50 rounded-full blur-[120px] opacity-40 animate-pulse"></div>
+      <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-50 rounded-full blur-[120px] opacity-40 animate-pulse" style={{ animationDelay: '1.5s' }}></div>
 
-      <div className="relative z-10 flex flex-col items-center">
-        {/* Logo Container */}
-        <div className="relative mb-8">
-          <div className="w-24 h-24 bg-[#f7eedd] rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-emerald-600/10 animate-scale-in">
+      <div className="relative z-10 flex flex-col items-center max-w-sm w-full px-6">
+        {/* Logo Container - Minimalist Pro */}
+        <div className="relative mb-12">
+          <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-2xl shadow-emerald-600/5 border border-slate-50 animate-scale-in">
             <img
               src="/kiwi-van-logo-48.webp"
               alt="Kiwi Van Market"
-              className="w-16 h-16 object-contain animate-float"
+              className="w-12 h-12 object-contain animate-float"
             />
           </div>
-          {/* Pulsing ring */}
-          <div className="absolute inset-0 rounded-[2.5rem] border-2 border-emerald-500/20 animate-ping shadow-lg shadow-emerald-500/20"></div>
+          {/* Subtle slow pulse ring */}
+          <div className="absolute inset-0 rounded-3xl border border-emerald-500/10 animate-ping shadow-xl shadow-emerald-500/5" style={{ animationDuration: '3s' }}></div>
         </div>
 
-        {/* Text & Progress */}
-        <div className="text-center space-y-4">
-          <div className="flex flex-col items-center">
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+        {/* Text & Refined Progress */}
+        <div className="text-center w-full space-y-6">
+          <div className="space-y-1">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">
               KiwiVan <span className="text-emerald-600">Market</span>
             </h2>
-            <div className="h-1 w-12 bg-emerald-500 rounded-full mt-1 animate-width-grow"></div>
-          </div>
-
-          <div className="flex flex-col items-center gap-3">
-            <div className="flex gap-1">
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-            </div>
-            <p className="text-sm text-slate-400 font-medium tracking-wide uppercase italic">
-              {t('common.loading')}
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-[0.3em] italic">
+              Aventure in NZ
             </p>
           </div>
+
+          <div className="relative w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: "0%", x: "-100%" }}
+              animate={{ width: "30%", x: "400%" }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              className="absolute top-0 h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]"
+            />
+          </div>
+
+          <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest animate-pulse">
+            {t('common.loading')}...
+          </p>
         </div>
       </div>
 
-      {/* Footer Branding */}
-      <div className="absolute bottom-12 text-slate-300 text-xs font-bold tracking-[0.2em] uppercase">
-        New Zealand's #1 Van Marketplace
+      {/* Footer Branding - Clean Typography */}
+      <div className="absolute bottom-12 text-slate-300 text-[10px] font-black tracking-[0.4em] uppercase">
+        Premium Marketplace
       </div>
     </div>
   );
@@ -855,12 +860,16 @@ function MainApp() {
           <>
 
             {/* ========== HERO SECTION 2.0 ========== */}
-            <section className="relative pt-6 pb-20 overflow-hidden">
-              {/* Background Elements */}
+            <section className="relative pt-6 pb-20 overflow-hidden min-h-[600px] flex items-center">
+              {/* Cinematic Background Layer */}
               <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-gradient-to-b from-slate-50 to-white" />
-                <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-emerald-100/50 blur-[120px] rounded-full" />
-                <div className="absolute -bottom-[10%] -left-[10%] w-[30%] h-[30%] bg-teal-100/50 blur-[120px] rounded-full" />
+                <img
+                  src="/nz-road-bg.png"
+                  alt="NZ Road Adventure"
+                  className="w-full h-full object-cover opacity-30 scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-50/90 to-white" />
+                <div className="absolute -top-[10%] -right-[10%] w-[40%] h-[40%] bg-emerald-100/30 blur-[120px] rounded-full" />
               </div>
 
               <div className="max-w-7xl mx-auto px-4 relative z-10">
@@ -924,29 +933,16 @@ function MainApp() {
                     </div>
                   </div>
 
-                  {/* Visual Element */}
-                  <div className="flex-1 relative w-full aspect-square max-w-[500px] animate-fade-in-up stagger-2">
-                    <div className="absolute inset-0 bg-emerald-50 rounded-[3.5rem] rotate-3 opacity-60" />
-                    <div className="absolute inset-0 bg-white rounded-[3.5rem] -rotate-3 overflow-hidden shadow-2xl border-8 border-white">
+                  {/* Visual Element - Straightened & hiace */}
+                  <div className="flex-1 relative w-full aspect-[4/3] max-w-[600px] animate-fade-in-up stagger-2">
+                    <div className="absolute -inset-4 bg-emerald-50 rounded-[2.5rem] opacity-40 blur-2xl" />
+                    <div className="relative h-full w-full bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border-[12px] border-white">
                       <img
-                        src="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&q=80&w=1200"
-                        alt="New Zealand Campervan Adventure"
-                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
+                        src="/hiace-camper.png"
+                        alt="Toyota Hiace NZ Campervan"
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-40" />
-
-                      {/* Floating Card - Mockup Style */}
-                      <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-xl p-4 rounded-[2rem] animate-fade-in-up stagger-3 shadow-xl border border-white/50">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
-                            <MapPin size={22} className="fill-emerald-600/10" />
-                          </div>
-                          <div>
-                            <p className="text-slate-900 font-black text-lg leading-tight uppercase tracking-tight">{t('home.destination_title')}</p>
-                            <p className="text-slate-500 text-xs font-semibold">{t('home.destination_subtitle')}</p>
-                          </div>
-                        </div>
-                      </div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
                     </div>
                   </div>
                 </div>
@@ -1296,7 +1292,11 @@ export default function KiwiVanMarket() {
             <GuidePage />
           </Suspense>
         } />
-        <Route path="/sell" element={<SellPage />} />
+        <Route path="/sell" element={
+          <Suspense fallback={<PageLoader />}>
+            <SellPage />
+          </Suspense>
+        } />
         <Route path="/profile" element={
           <Suspense fallback={<PageLoader />}>
             <ProfilePage />

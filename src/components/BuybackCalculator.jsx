@@ -187,9 +187,19 @@ export default function BuybackCalculator({ isEmbedded = false }) {
         />
       )}
 
+      {/* Cinematic Background Layer */}
+      <div className="fixed inset-0 z-0">
+        <img
+          src="/nz-road-bg.png"
+          alt="NZ Road Adventure"
+          className="w-full h-full object-cover opacity-[0.03] scale-105 pointer-events-none"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/20 via-white to-blue-50/20 pointer-events-none" />
+      </div>
+
       {/* Subtle Brand Accents */}
-      <div className="fixed top-0 right-0 w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[120px] pointer-events-none opacity-40" />
-      <div className="fixed bottom-0 left-0 w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px] pointer-events-none opacity-40" />
+      <div className="fixed top-0 right-0 w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
+      <div className="fixed bottom-0 left-0 w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
 
       <div className="max-w-6xl mx-auto relative z-10">
 

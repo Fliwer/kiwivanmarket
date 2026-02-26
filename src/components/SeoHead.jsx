@@ -10,13 +10,19 @@ import { useTranslation } from 'react-i18next';
  * @param {string} image - URL de l'image (pour OG/Twitter)
  * @param {string} type - Type OG (website, article, product...)
  */
-export default function SeoHead({ title, description, image, type = 'website' }) {
+export default function SeoHead({ title, description, image, type = 'website', noindex = false }) {
     const { i18n, t } = useTranslation();
     const location = useLocation();
 
     // Base URL
     const origin = 'https://kiwivanmarket.com';
-    const currentPath = location.pathname;
+
+    // Normalize Path: Remove trailing slash (except for homepage) and ensure lowercase
+    let normalizedPath = location.pathname;
+    if (normalizedPath !== '/' && normalizedPath.endsWith('/')) {
+        normalizedPath = normalizedPath.slice(0, -1);
+    }
+    normalizedPath = normalizedPath.toLowerCase();
 
     // Get language from URL parameters to ensure stable canonicals for SEO
     const searchParams = new URLSearchParams(location.search);
@@ -24,9 +30,11 @@ export default function SeoHead({ title, description, image, type = 'website' })
     const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
 
     // Canonical URL logic: Stable URL based on the presence of ?lang parameter
-    const canonicalUrl = (!urlLang || urlLang === 'en')
-        ? `${origin}${currentPath}`
-        : `${origin}${currentPath}?lang=${urlLang}`;
+    // We strip all other query parameters to avoid duplicate content warnings
+    const canonicalLang = (urlLang && ['fr', 'es'].includes(urlLang)) ? urlLang : null;
+    const canonicalUrl = canonicalLang
+        ? `${origin}${normalizedPath}?lang=${canonicalLang}`
+        : `${origin}${normalizedPath}`;
 
     // Supported languages
     const languages = ['en', 'fr', 'es'];
@@ -36,20 +44,27 @@ export default function SeoHead({ title, description, image, type = 'website' })
             {/* Basic Meta Tags */}
             <title>{title ? `${title} | Kiwi Van Market` : t('header.subtitle') + ' | Kiwi Van Market'}</title>
             <meta name="description" content={description || t('hero.subtitle')} />
-            <link rel="canonical" href={canonicalUrl} />
+
+            {/* Indexing Control */}
+            {noindex ? (
+                <meta name="robots" content="noindex, follow" />
+            ) : (
+                <link rel="canonical" href={canonicalUrl} />
+            )}
+
             <html lang={currentLang} />
 
             {/* Hreflang Tags pour SEO International */}
-            {languages.map(lang => (
+            {!noindex && languages.map(lang => (
                 <link
                     key={lang}
                     rel="alternate"
                     hreflang={lang}
-                    href={lang === 'en' ? `${origin}${currentPath}` : `${origin}${currentPath}?lang=${lang}`}
+                    href={lang === 'en' ? `${origin}${normalizedPath}` : `${origin}${normalizedPath}?lang=${lang}`}
                 />
             ))}
             {/* x-default pour la version par défaut (Anglais) */}
-            <link rel="alternate" hreflang="x-default" href={`${origin}${currentPath}`} />
+            {!noindex && <link rel="alternate" hreflang="x-default" href={`${origin}${normalizedPath}`} />}
 
             {/* Open Graph / Facebook */}
             <meta property="og:type" content={type} />

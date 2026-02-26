@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { collection, query, where, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
+import SeoHead from './SeoHead';
 import { isAdmin, AdminBadge } from '../utils/adminHelper';
 import AddVanForm from './AddVanForm';
 import {
@@ -177,10 +178,10 @@ export default function MyListingsPage() {
 
   return (
     <>
-      <Helmet>
-        <title>{t('my_listings.title')} | Kiwi Van Market</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      <SeoHead
+        title={t('my_listings.title')}
+        noindex={true}
+      />
 
       <div className="min-h-screen bg-gray-50">
         {/* Header */}

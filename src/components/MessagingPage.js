@@ -15,6 +15,8 @@ import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useRateLimit } from '../hooks/useRateLimit';
 import { sanitizeText } from '../securityUtils';
+import SeoHead from './SeoHead';
+import { useTranslation } from 'react-i18next';
 
 // ============================================
 // MESSAGING PAGE - Full Page 3 Columns
@@ -162,8 +164,8 @@ function LanguageSelector() {
                 key={lang.code}
                 onClick={() => changeLanguage(lang.code)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentLang === lang.code
-                    ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                    : 'hover:bg-gray-50 text-gray-700'
+                  ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                  : 'hover:bg-gray-50 text-gray-700'
                   }`}
               >
                 <img
@@ -584,6 +586,10 @@ export default function MessagingPage({ onBack }) {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
+      <SeoHead
+        title="Messages"
+        noindex={true}
+      />
       {/* Header */}
       <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -672,8 +678,8 @@ export default function MessagingPage({ onBack }) {
               <button
                 onClick={() => setActiveFilter('all')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all ${activeFilter === 'all'
-                    ? 'bg-emerald-100 text-emerald-700'
-                    : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : 'text-gray-600 hover:bg-gray-100'
                   }`}
               >
                 All
@@ -683,8 +689,8 @@ export default function MessagingPage({ onBack }) {
                   key={status.id}
                   onClick={() => setActiveFilter(status.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${activeFilter === status.id
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'text-gray-600 hover:bg-gray-100'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'text-gray-600 hover:bg-gray-100'
                     }`}
                 >
                   <span className={`w-2 h-2 rounded-full ${status.color}`}></span>
@@ -874,8 +880,8 @@ export default function MessagingPage({ onBack }) {
                         )}
 
                         <div className={`px-4 py-2.5 rounded-2xl ${isOwn
-                            ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-br-md'
-                            : 'bg-white text-gray-800 shadow-sm rounded-bl-md'
+                          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-br-md'
+                          : 'bg-white text-gray-800 shadow-sm rounded-bl-md'
                           }`}>
                           <p className="text-sm leading-relaxed">{msg.text}</p>
                           <div className={`flex items-center justify-end gap-1 mt-1 ${isOwn ? 'text-white/70' : 'text-gray-400'}`}>
@@ -1124,9 +1130,9 @@ export default function MessagingPage({ onBack }) {
                   <div className="flex items-center justify-between py-2 border-b border-gray-100">
                     <span className="text-gray-500">Status</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedConversation.status === 'new' ? 'bg-blue-100 text-blue-700' :
-                        selectedConversation.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                          selectedConversation.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                            'bg-gray-100 text-gray-700'
+                      selectedConversation.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                        selectedConversation.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                          'bg-gray-100 text-gray-700'
                       }`}>
                       {selectedConversation.status || 'New'}
                     </span>

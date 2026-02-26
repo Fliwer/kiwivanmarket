@@ -7,6 +7,7 @@ import { useAuth } from '../AuthContext';
 import { Upload, Trash2, CheckCircle, ArrowLeft, Camera, FileText, Send, PartyPopper, Eye, Home } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import AuthModal from './AuthModal';
+import SeoHead from './SeoHead';
 
 export default function SellPage() {
   const navigate = useNavigate();
@@ -307,10 +308,10 @@ export default function SellPage() {
   if (!currentUser) {
     return (
       <>
-        <Helmet>
-          <title>Sell Your Campervan | Kiwi Van Market</title>
-          <meta name="description" content="List your campervan for FREE on New Zealand's #1 campervan marketplace. Reach thousands of backpackers looking to buy." />
-        </Helmet>
+        <SeoHead
+          title="Sell Your Campervan"
+          description="List your campervan for FREE on New Zealand's #1 campervan marketplace. Reach thousands of backpackers looking to buy."
+        />
         <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center">
             <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -342,29 +343,13 @@ export default function SellPage() {
 
   return (
     <>
-      <Helmet>
-        <title>Sell Your Campervan for FREE | Kiwi Van Market NZ</title>
-        <meta name="description" content="List your campervan, van, or motorhome for FREE on Kiwi Van Market. Reach thousands of backpackers in New Zealand looking to buy their adventure vehicle." />
-        <meta name="keywords" content="sell campervan NZ, sell van New Zealand, campervan for sale, backpacker van, sell motorhome" />
-        <link rel="canonical" href="https://kiwivanmarket.com/sell" />
-        <meta property="og:title" content="Sell Your Campervan for FREE | Kiwi Van Market" />
-        <meta property="og:description" content="List your campervan for FREE and reach thousands of backpackers in New Zealand." />
-        <meta property="og:url" content="https://kiwivanmarket.com/sell" />
-        <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "WebPage",
-            "name": "Sell Your Campervan",
-            "description": "List your campervan for FREE on New Zealand's #1 marketplace",
-            "url": "https://kiwivanmarket.com/sell",
-            "isPartOf": {
-              "@type": "WebSite",
-              "name": "Kiwi Van Market",
-              "url": "https://kiwivanmarket.com"
-            }
-          })}
-        </script>
-      </Helmet>
+      <SeoHead
+        title="Sell Your Campervan for FREE"
+        description="List your campervan, van, or motorhome for FREE on Kiwi Van Market. Reach thousands of backpackers in New Zealand looking to buy their adventure vehicle."
+        keywords="sell campervan NZ, sell van New Zealand, campervan for sale, backpacker van, sell motorhome"
+        canonicalUrl="https://kiwivanmarket.com/sell"
+        type="WebPage"
+      />
 
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
@@ -499,13 +484,12 @@ export default function SellPage() {
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => { setFormData({...formData, title: e.target.value}); if (e.target.value.length >= 5) setCurrentStep(3); }}
+                    onChange={(e) => { setFormData({ ...formData, title: e.target.value }); if (e.target.value.length >= 5) setCurrentStep(3); }}
                     placeholder="Toyota Hiace 2015"
-                    className={`w-full px-4 py-3 border-2 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors ${
-                      formData.title.length > 0 && formData.title.length < 5
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors ${formData.title.length > 0 && formData.title.length < 5
                         ? 'border-red-300'
                         : 'border-gray-200'
-                    }`}
+                      }`}
                     required
                     maxLength={200}
                   />
@@ -519,7 +503,7 @@ export default function SellPage() {
                   <input
                     type="number"
                     value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     placeholder="18500"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     required
@@ -530,7 +514,7 @@ export default function SellPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">City *</label>
                   <select
                     value={formData.location}
-                    onChange={(e) => setFormData({...formData, location: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     required
                   >
@@ -550,7 +534,7 @@ export default function SellPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Region *</label>
                   <select
                     value={formData.region}
-                    onChange={(e) => setFormData({...formData, region: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, region: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   >
                     <option>North Island</option>
@@ -563,7 +547,7 @@ export default function SellPage() {
                   <input
                     type="number"
                     value={formData.year}
-                    onChange={(e) => setFormData({...formData, year: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, year: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     required
                   />
@@ -574,7 +558,7 @@ export default function SellPage() {
                   <input
                     type="number"
                     value={formData.mileage}
-                    onChange={(e) => setFormData({...formData, mileage: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, mileage: e.target.value })}
                     placeholder="145000"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     required
@@ -585,7 +569,7 @@ export default function SellPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Vehicle Type</label>
                   <select
                     value={formData.type}
-                    onChange={(e) => setFormData({...formData, type: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   >
                     <option value="Car">Car</option>
@@ -599,7 +583,7 @@ export default function SellPage() {
                   <input
                     type="number"
                     value={formData.capacity}
-                    onChange={(e) => setFormData({...formData, capacity: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   />
                 </div>
@@ -620,7 +604,7 @@ export default function SellPage() {
                   <input
                     type="date"
                     value={formData.wofExpiry}
-                    onChange={(e) => setFormData({...formData, wofExpiry: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, wofExpiry: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     required
                   />
@@ -642,7 +626,7 @@ export default function SellPage() {
                   <input
                     type="date"
                     value={formData.regoExpiry}
-                    onChange={(e) => setFormData({...formData, regoExpiry: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, regoExpiry: e.target.value })}
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     required
                   />
@@ -654,22 +638,20 @@ export default function SellPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Description *</label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Perfect backpacker van, well maintained, ready for adventure..."
                   rows={4}
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none ${
-                    formData.description.length > 0 && formData.description.length < 20
+                  className={`w-full px-4 py-3 border-2 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none ${formData.description.length > 0 && formData.description.length < 20
                       ? 'border-red-300'
                       : 'border-gray-200'
-                  }`}
+                    }`}
                   required
                 />
                 <div className="flex justify-between mt-1">
-                  <span className={`text-xs ${
-                    formData.description.length < 20
+                  <span className={`text-xs ${formData.description.length < 20
                       ? 'text-red-500'
                       : 'text-green-600'
-                  }`}>
+                    }`}>
                     {formData.description.length < 20
                       ? `Minimum 20 characters (${formData.description.length}/20)`
                       : `${formData.description.length} characters`}
@@ -685,7 +667,7 @@ export default function SellPage() {
                   <input
                     type="tel"
                     value={formData.sellerPhone}
-                    onChange={(e) => setFormData({...formData, sellerPhone: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, sellerPhone: e.target.value })}
                     placeholder="+64 21 123 4567"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   />
@@ -695,7 +677,7 @@ export default function SellPage() {
                   <input
                     type="text"
                     value={formData.sellerFacebook}
-                    onChange={(e) => setFormData({...formData, sellerFacebook: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, sellerFacebook: e.target.value })}
                     placeholder="your.name"
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   />
@@ -721,7 +703,7 @@ export default function SellPage() {
                         <input
                           type="checkbox"
                           checked={formData.equipment[item.key]}
-                          onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, [item.key]: e.target.checked}})}
+                          onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, [item.key]: e.target.checked } })}
                           className="w-4 h-4 text-emerald-600 rounded"
                         />
                         <span className="text-sm">{item.emoji} {item.label}</span>
@@ -754,7 +736,7 @@ export default function SellPage() {
                             <input
                               type="checkbox"
                               checked={formData.equipment[item.key]}
-                              onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, [item.key]: e.target.checked}})}
+                              onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, [item.key]: e.target.checked } })}
                               className="w-4 h-4 text-cyan-600 rounded"
                             />
                             {item.label}
@@ -776,7 +758,7 @@ export default function SellPage() {
                             <input
                               type="checkbox"
                               checked={formData.equipment[item.key]}
-                              onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, [item.key]: e.target.checked}})}
+                              onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, [item.key]: e.target.checked } })}
                               className="w-4 h-4 text-yellow-600 rounded"
                             />
                             {item.label}
@@ -802,7 +784,7 @@ export default function SellPage() {
                             <input
                               type="checkbox"
                               checked={formData.equipment[item.key]}
-                              onChange={(e) => setFormData({...formData, equipment: {...formData.equipment, [item.key]: e.target.checked}})}
+                              onChange={(e) => setFormData({ ...formData, equipment: { ...formData.equipment, [item.key]: e.target.checked } })}
                               className="w-4 h-4 text-rose-600 rounded"
                             />
                             {item.label}
@@ -819,7 +801,7 @@ export default function SellPage() {
                   <input
                     type="text"
                     value={formData.customFeatures || ''}
-                    onChange={(e) => setFormData({...formData, customFeatures: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, customFeatures: e.target.value })}
                     placeholder="e.g. TV, Coffee machine..."
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   />
@@ -834,7 +816,7 @@ export default function SellPage() {
                       <input
                         type="checkbox"
                         checked={formData.selfContained}
-                        onChange={(e) => setFormData({...formData, selfContained: e.target.checked})}
+                        onChange={(e) => setFormData({ ...formData, selfContained: e.target.checked })}
                         className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
                       />
                       <span className="font-medium text-gray-700">Self-Contained Certified</span>
@@ -853,12 +835,12 @@ export default function SellPage() {
                   {formData.selfContained && (
                     <div className="mt-3 ml-8 flex gap-4 flex-wrap">
                       <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'green' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
-                        <input type="radio" name="selfContainedType" value="green" checked={formData.selfContainedType === 'green'} onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})} className="hidden" />
+                        <input type="radio" name="selfContainedType" value="green" checked={formData.selfContainedType === 'green'} onChange={(e) => setFormData({ ...formData, selfContainedType: e.target.value })} className="hidden" />
                         <div className="w-6 h-6 bg-green-500 rounded-full"></div>
                         <span className="font-semibold text-green-700">Green Sticker</span>
                       </label>
                       <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'blue' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}>
-                        <input type="radio" name="selfContainedType" value="blue" checked={formData.selfContainedType === 'blue'} onChange={(e) => setFormData({...formData, selfContainedType: e.target.value})} className="hidden" />
+                        <input type="radio" name="selfContainedType" value="blue" checked={formData.selfContainedType === 'blue'} onChange={(e) => setFormData({ ...formData, selfContainedType: e.target.value })} className="hidden" />
                         <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
                         <span className="font-semibold text-blue-700">Blue Sticker</span>
                       </label>
@@ -872,7 +854,7 @@ export default function SellPage() {
                       <input
                         type="checkbox"
                         checked={formData.buyBack}
-                        onChange={(e) => setFormData({...formData, buyBack: e.target.checked})}
+                        onChange={(e) => setFormData({ ...formData, buyBack: e.target.checked })}
                         className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
                       />
                       <span className="font-medium text-gray-700">Buy-Back Available</span>
@@ -896,7 +878,7 @@ export default function SellPage() {
                           <input
                             type="number"
                             value={formData.buyBackPrice}
-                            onChange={(e) => setFormData({...formData, buyBackPrice: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, buyBackPrice: e.target.value })}
                             placeholder="10000"
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none"
                           />
@@ -905,7 +887,7 @@ export default function SellPage() {
                           <label className="block text-sm font-semibold text-gray-700 mb-2">Valid For</label>
                           <select
                             value={formData.buyBackDuration}
-                            onChange={(e) => setFormData({...formData, buyBackDuration: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, buyBackDuration: e.target.value })}
                             className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none"
                           >
                             <option value="1">1 month</option>

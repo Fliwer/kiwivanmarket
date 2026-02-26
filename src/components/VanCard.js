@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Heart, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Heart, Shield, ChevronLeft, ChevronRight, CheckCircle, Calendar } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
 import { getThumbnail } from '../utils/imageOptimizer';
 import { safeDate } from '../utils/dateHelper';
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 // Carousel de photos pour la card
 const ImageCarousel = ({ images, title, priority = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStart = useRef(null);
 
   const allImages = images?.length > 0
     ? images
@@ -26,8 +27,27 @@ const ImageCarousel = ({ images, title, priority = false }) => {
     setCurrentIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
 
+  // Simple swipe logic
+  const onTouchStart = (e) => {
+    touchStart.current = e.targetTouches[0].clientX;
+  };
+
+  const onTouchEnd = (e) => {
+    if (!touchStart.current) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart.current - touchEnd;
+
+    if (diff > 50) goNext(); // Swipe left
+    if (diff < -50) goPrev(); // Swipe right
+    touchStart.current = null;
+  };
+
   return (
-    <div className="relative group overflow-hidden h-64">
+    <div
+      className="relative group overflow-hidden h-64"
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
       {/* Background for images while loading */}
       <div className="absolute inset-0 bg-slate-100 z-0" />
 
@@ -102,29 +122,39 @@ export default function VanCard({ van, formatPrice, priority = false }) {
           />
         </button>
 
-        {/* Status Badges Overlay */}
+        {/* Compliance Badges Overlay */}
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-          {van.featured && (
-            <div className="bg-amber-400 text-amber-950 px-3 py-1 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-amber-300 flex items-center gap-1.5">
-              <Shield size={12} fill="currentColor" />
-              Featured
-            </div>
-          )}
           {van.buyBack && (
-            <div className="bg-emerald-500 text-white px-3 py-1 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-emerald-400 flex items-center gap-1.5">
+            <div className="bg-emerald-600/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/20 flex items-center gap-1.5">
               <Shield size={12} fill="currentColor" />
               Buyback
             </div>
           )}
+          {van.wof && (
+            <div className="bg-white/90 backdrop-blur-md text-slate-900 px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/50 flex items-center gap-1.5">
+              <CheckCircle size={12} className="text-emerald-600" />
+              WOF{' '}
+              <span className="text-slate-400 font-bold ml-0.5">
+                {van.wofExpiry ? safeDate(van.wofExpiry)?.toLocaleDateString() : 'OK'}
+              </span>
+            </div>
+          )}
+          {van.rego && (
+            <div className="bg-white/90 backdrop-blur-md text-slate-900 px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/50 flex items-center gap-1.5">
+              <Calendar size={12} className="text-blue-600" />
+              REGO{' '}
+              <span className="text-slate-400 font-bold ml-0.5">
+                {van.regoExpiry ? safeDate(van.regoExpiry)?.toLocaleDateString() : 'OK'}
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Self-contained bottom-left marker */}
+        {/* Self-contained marker */}
         {van.selfContained && (
-          <div className={`absolute bottom-4 left-4 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-xl flex items-center gap-1.5 border border-white/20 ${van.selfContainedType === 'blue'
-              ? 'bg-blue-600/90'
-              : 'bg-emerald-600/90'
+          <div className={`absolute bottom-4 left-4 backdrop-blur-md text-white px-3 py-2 rounded-2xl text-[10px] font-black tracking-widest uppercase shadow-2xl flex items-center gap-2 border border-white/30 ${van.selfContainedType === 'blue' ? 'bg-blue-600/90' : 'bg-emerald-600/90'
             }`}>
-            {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
+            <span className="text-sm leading-none">{van.selfContainedType === 'blue' ? '🔵' : '🟢'}</span>
             {van.selfContainedType === 'blue' ? t('van_page.sticker_blue') : t('van_page.sticker_green')}
           </div>
         )}

@@ -184,7 +184,7 @@ export default function Header({
                                                     className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-2xl transition-all"
                                                 >
                                                     <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600"><MapPin size={16} /></div>
-                                                    My Listings
+                                                    {t('header.my_listings') || 'My Listings'}
                                                 </button>
                                                 {isAdmin && (
                                                     <button
@@ -303,8 +303,10 @@ export default function Header({
                                             onClick={() => { navigate('/my-listings'); setShowMobileMenu(false); }}
                                             className="w-full flex items-center gap-4 px-4 py-3 text-slate-700 font-semibold border-t border-slate-100"
                                         >
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white"><MapPin size={20} /></div>
-                                            <span>My Listings</span>
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm transition-transform active:scale-95">
+                                                <MapPin size={20} />
+                                            </div>
+                                            <span>{t('header.my_listings') || 'My Listings'}</span>
                                         </button>
                                     </div>
                                     <button
@@ -326,6 +328,6 @@ export default function Header({
                     </div>
                 )}
             </div>
-        </header>
+        </header >
     );
 }

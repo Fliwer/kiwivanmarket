@@ -152,20 +152,23 @@ export default function LocationPage() {
   // 404 si location non trouvée
   if (!locationConfig) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center p-8">
-          <div className="text-6xl mb-4">📍</div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Location Not Found</h1>
-          <p className="text-gray-600 mb-6">We don't have this location listed yet.</p>
-          <Link
-            to="/"
-            className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition inline-flex items-center gap-2"
-          >
-            <ArrowLeft size={20} />
-            Browse All Vans
-          </Link>
+      <>
+        <SeoHead title="Location Not Found" noindex={true} />
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center p-8">
+            <div className="text-6xl mb-4">📍</div>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Location Not Found</h1>
+            <p className="text-gray-600 mb-6">We don't have this location listed yet.</p>
+            <Link
+              to="/"
+              className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition inline-flex items-center gap-2"
+            >
+              <ArrowLeft size={20} />
+              Browse All Vans
+            </Link>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 

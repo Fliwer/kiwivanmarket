@@ -11,6 +11,9 @@ import {
   Star, Eye, AlertCircle, Edit3, Save, Loader, User, Car
 } from 'lucide-react';
 
+import { useTranslation } from 'react-i18next';
+import SeoHead from './SeoHead';
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -272,10 +275,10 @@ export default function ProfilePage() {
 
   return (
     <>
-      <Helmet>
-        <title>My Profile | Kiwi Van Market</title>
-        <meta name="robots" content="noindex, nofollow" />
-      </Helmet>
+      <SeoHead
+        title="My Profile"
+        noindex={true}
+      />
 
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
