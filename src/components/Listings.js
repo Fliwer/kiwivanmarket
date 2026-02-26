@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search } from 'lucide-react';
+import { Search, BookOpen, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import VanCard from './VanCard';
 
 export default function Listings({
@@ -92,6 +93,34 @@ export default function Listings({
                             >
                                 Reset all filters
                             </button>
+                        </div>
+                    )}
+
+                    {/* ===== GUIDE BANNER ===== */}
+                    {filteredVans.length > 0 && (
+                        <div className="mt-16 relative rounded-[2.5rem] overflow-hidden bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 p-8 md:p-12 flex flex-col md:flex-row items-center gap-8 border border-white/5">
+                            {/* Decorative glow */}
+                            <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,_#10b981,_transparent_60%)]" />
+                            <div className="relative z-10 flex-1">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <BookOpen size={22} className="text-emerald-400" />
+                                    <span className="text-emerald-400 font-black text-xs uppercase tracking-[0.2em]">Expert Guides</span>
+                                </div>
+                                <h3 className="text-2xl md:text-3xl font-black text-white leading-snug mb-2">
+                                    First time buying a van in NZ?
+                                </h3>
+                                <p className="text-slate-400 text-base max-w-lg">
+                                    Read our expert guides on WOF, REGO, self-contained certification, and how to inspect a van before buying.
+                                </p>
+                            </div>
+                            <Link
+                                to="/guides"
+                                className="relative z-10 flex-shrink-0 inline-flex items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-white font-black px-8 py-4 rounded-2xl shadow-xl shadow-emerald-900/30 transition-all group active:scale-95"
+                            >
+                                <BookOpen size={20} />
+                                Read the Guides
+                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                            </Link>
                         </div>
                     )}
                 </>

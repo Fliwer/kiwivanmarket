@@ -131,7 +131,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
           />
         </button>
 
-        {/* Compliance Badges Overlay */}
+        {/* Compliance Badges Overlay - always visible when present */}
         <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
           {van.buyBack && (
             <div className="bg-emerald-600/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/20 flex items-center gap-1.5">
@@ -139,21 +139,21 @@ export default function VanCard({ van, formatPrice, priority = false }) {
               Buyback
             </div>
           )}
-          {van.wof && (
-            <div className="bg-white/90 backdrop-blur-md text-slate-900 px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/50 flex items-center gap-1.5">
+          {van.wofExpiry && (
+            <div className="bg-white/95 backdrop-blur-md text-slate-900 px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-emerald-200 flex items-center gap-1.5">
               <CheckCircle size={12} className="text-emerald-600" />
-              WOF{' '}
-              <span className="text-slate-400 font-bold ml-0.5">
-                {van.wofExpiry ? safeDate(van.wofExpiry)?.toLocaleDateString() : 'OK'}
+              WOF
+              <span className="text-slate-500 font-semibold ml-0.5 normal-case tracking-normal">
+                {safeDate(van.wofExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || 'OK'}
               </span>
             </div>
           )}
-          {van.rego && (
-            <div className="bg-white/90 backdrop-blur-md text-slate-900 px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/50 flex items-center gap-1.5">
+          {van.regoExpiry && (
+            <div className="bg-white/95 backdrop-blur-md text-slate-900 px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-blue-200 flex items-center gap-1.5">
               <Calendar size={12} className="text-blue-600" />
-              REGO{' '}
-              <span className="text-slate-400 font-bold ml-0.5">
-                {van.regoExpiry ? safeDate(van.regoExpiry)?.toLocaleDateString() : 'OK'}
+              REGO
+              <span className="text-slate-500 font-semibold ml-0.5 normal-case tracking-normal">
+                {safeDate(van.regoExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || 'OK'}
               </span>
             </div>
           )}
@@ -182,7 +182,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 text-slate-500 mb-6 bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+        <div className="flex items-center gap-3 text-slate-500 mb-4 bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
           <div className="flex flex-col flex-1">
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Year</span>
             <span className="text-slate-900 font-bold">{van.year}</span>
@@ -193,6 +193,33 @@ export default function VanCard({ van, formatPrice, priority = false }) {
             <span className="text-slate-900 font-bold">{(van.mileage || 0).toLocaleString()}</span>
           </div>
         </div>
+
+        {/* Compliance row — always visible */}
+        {(van.wofExpiry || van.regoExpiry || van.selfContained) && (
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {van.wofExpiry && (
+              <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
+                <CheckCircle size={11} className="text-emerald-600" />
+                WOF ✓
+              </span>
+            )}
+            {van.regoExpiry && (
+              <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
+                <Calendar size={11} className="text-blue-600" />
+                REGO ✓
+              </span>
+            )}
+            {van.selfContained && (
+              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide border ${van.selfContainedType === 'blue'
+                  ? 'bg-blue-50 border-blue-300 text-blue-800'
+                  : 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                }`}>
+                <span className="text-[11px] leading-none">{van.selfContainedType === 'blue' ? '🔵' : '🟢'}</span>
+                Self-Contained
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center justify-between pt-4 border-t border-slate-100">
           <div className="flex flex-col">

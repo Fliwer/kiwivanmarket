@@ -915,6 +915,13 @@ function MainApp() {
                           <Plus size={22} className="text-emerald-600" />
                           {t('home.cta_sell_van')}
                         </button>
+                        <Link
+                          to="/guides"
+                          className="flex items-center gap-2 text-slate-600 hover:text-emerald-600 font-bold transition-colors text-base group"
+                        >
+                          <BookOpen size={18} className="text-emerald-500" />
+                          <span className="border-b border-dashed border-slate-300 group-hover:border-emerald-400 transition-colors">Buying Guides</span>
+                        </Link>
                       </div>
 
                       {/* Trust Stats */}
