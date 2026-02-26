@@ -359,12 +359,12 @@ export default function GuidePage() {
                           >
                             <div className="p-12 md:p-16 bg-slate-900 rounded-[4rem] text-white shadow-3xl relative overflow-hidden">
                               <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px]" />
-                              <div className="relative z-10 max-w-2xl mx-auto text-center mb-16">
+                              <div className="relative z-10 max-w-2xl mx-auto text-center mb-12">
                                 <div className="inline-flex items-center gap-3 bg-emerald-500/20 text-emerald-400 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
                                   <Calculator size={14} /> TOOL: BUYBACK ESTIMATOR
                                 </div>
-                                <h2 className="text-4xl md:text-5xl font-black text-white mb-6">Estimate your resale value.</h2>
-                                <p className="text-slate-400 text-lg">Use our exceptional market tool to simulate your rachat garanti price based on real-time seasonality.</p>
+                                <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Estimate your resale value.</h2>
+                                <p className="text-slate-400 text-lg font-medium">Simulate your rachat garanti price based on real-time market seasonality.</p>
                               </div>
                               <BuybackCalculator isEmbedded={true} />
                             </div>
@@ -405,7 +405,7 @@ export default function GuidePage() {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-12">
                   <div className="flex items-center gap-8 bg-slate-50 p-6 rounded-[2.5rem] border border-slate-100">
                     <div className="relative shadow-2xl">
-                      <img src="https://images.unsplash.com/photo-1537367663815-2250ec4be574?w=200" className="w-20 h-20 rounded-3xl border-4 border-white object-cover" alt="Author" />
+                      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop" className="w-20 h-20 rounded-3xl border-4 border-white object-cover" alt="Author" />
                       <div className="absolute -bottom-2 -right-2 bg-slate-900 text-emerald-400 p-2 rounded-2xl border-4 border-white shadow-xl">
                         <Shield size={16} />
                       </div>

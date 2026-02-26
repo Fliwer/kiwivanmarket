@@ -232,17 +232,19 @@ export default function BuybackCalculator({ isEmbedded = false }) {
       )}
 
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <span className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-4 inline-block shadow-sm">
-            {t.badge}
-          </span>
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
-            {t.title} <span className="text-emerald-600 italic">{t.titleHighlight}</span>
-          </h1>
-          <p className="text-slate-500 max-w-lg mx-auto font-medium">
-            {t.subtitle}
-          </p>
-        </div>
+        {!isEmbedded && (
+          <div className="text-center mb-12">
+            <span className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-4 inline-block shadow-sm">
+              {t.badge}
+            </span>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
+              {t.title} <span className="text-emerald-600 italic">{t.titleHighlight}</span>
+            </h1>
+            <p className="text-slate-500 max-w-lg mx-auto font-medium">
+              {t.subtitle}
+            </p>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-12 gap-8">
           {/* Inputs Section */}
