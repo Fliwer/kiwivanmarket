@@ -17,14 +17,11 @@
  */
 export const sanitizeString = (str) => {
   if (typeof str !== 'string') return '';
-  
+
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;')
     .trim();
 };
 
@@ -33,13 +30,11 @@ export const sanitizeString = (str) => {
  */
 export const sanitizeText = (str) => {
   if (typeof str !== 'string') return '';
-  
+
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
     .trim();
 };
 
@@ -59,7 +54,7 @@ export const sanitizeObject = (obj) => {
   if (typeof obj === 'string') return sanitizeString(obj);
   if (typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(sanitizeObject);
-  
+
   const sanitized = {};
   for (const [key, value] of Object.entries(obj)) {
     sanitized[sanitizeString(key)] = sanitizeObject(value);
@@ -77,7 +72,7 @@ export const sanitizeObject = (obj) => {
  */
 export const validateVanData = (data) => {
   const errors = [];
-  
+
   // Titre
   if (!data.title || typeof data.title !== 'string') {
     errors.push('Title is required');
@@ -86,7 +81,7 @@ export const validateVanData = (data) => {
   } else if (data.title.length > 200) {
     errors.push('Title must be less than 200 characters');
   }
-  
+
   // Prix
   const price = parseInt(data.price);
   if (isNaN(price) || price <= 0) {
@@ -94,7 +89,7 @@ export const validateVanData = (data) => {
   } else if (price > 500000) {
     errors.push('Price seems too high (max $500,000)');
   }
-  
+
   // Description
   if (!data.description || typeof data.description !== 'string') {
     errors.push('Description is required');
@@ -103,21 +98,21 @@ export const validateVanData = (data) => {
   } else if (data.description.length > 5000) {
     errors.push('Description must be less than 5000 characters');
   }
-  
+
   // Location
   if (!data.location || typeof data.location !== 'string') {
     errors.push('Location is required');
   } else if (data.location.length > 100) {
     errors.push('Location must be less than 100 characters');
   }
-  
+
   // Année
   const year = parseInt(data.year);
   const currentYear = new Date().getFullYear();
   if (isNaN(year) || year < 1950 || year > currentYear + 1) {
     errors.push(`Year must be between 1950 and ${currentYear + 1}`);
   }
-  
+
   // Kilométrage
   const mileage = parseInt(data.mileage);
   if (isNaN(mileage) || mileage < 0) {
@@ -125,14 +120,14 @@ export const validateVanData = (data) => {
   } else if (mileage > 1000000) {
     errors.push('Mileage seems too high');
   }
-  
+
   // Images
   if (!data.images || !Array.isArray(data.images) || data.images.length === 0) {
     errors.push('At least one image is required');
   } else if (data.images.length > 10) {
     errors.push('Maximum 10 images allowed');
   }
-  
+
   // Vérifier que les URLs d'images sont valides
   if (data.images && Array.isArray(data.images)) {
     for (const url of data.images) {
@@ -142,7 +137,7 @@ export const validateVanData = (data) => {
       }
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors
@@ -154,7 +149,7 @@ export const validateVanData = (data) => {
  */
 export const validateMessageData = (data) => {
   const errors = [];
-  
+
   if (!data.text || typeof data.text !== 'string') {
     errors.push('Message text is required');
   } else if (data.text.trim().length === 0) {
@@ -162,7 +157,7 @@ export const validateMessageData = (data) => {
   } else if (data.text.length > 2000) {
     errors.push('Message must be less than 2000 characters');
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors
@@ -174,13 +169,13 @@ export const validateMessageData = (data) => {
  */
 export const isValidImageUrl = (url) => {
   if (typeof url !== 'string') return false;
-  
+
   // Accepter seulement Cloudinary et Firebase Storage
   const allowedDomains = [
     'res.cloudinary.com',
     'firebasestorage.googleapis.com',
   ];
-  
+
   try {
     const parsedUrl = new URL(url);
     return allowedDomains.some(domain => parsedUrl.hostname.includes(domain));
@@ -222,21 +217,21 @@ const rateLimitMap = new Map();
 export const isRateLimited = (action, maxPerMinute = 10) => {
   const now = Date.now();
   const key = action;
-  
+
   if (!rateLimitMap.has(key)) {
     rateLimitMap.set(key, []);
   }
-  
+
   const timestamps = rateLimitMap.get(key);
-  
+
   // Nettoyer les timestamps de plus d'une minute
   const recentTimestamps = timestamps.filter(t => now - t < 60000);
   rateLimitMap.set(key, recentTimestamps);
-  
+
   if (recentTimestamps.length >= maxPerMinute) {
     return true; // Rate limited
   }
-  
+
   recentTimestamps.push(now);
   return false;
 };
@@ -265,7 +260,7 @@ export const prepareVanDataForFirestore = (rawData, userId) => {
   if (!validation.isValid) {
     throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
   }
-  
+
   // Nettoyage et formatage
   return {
     title: sanitizeString(rawData.title),
@@ -308,7 +303,7 @@ export const prepareMessageForFirestore = (text, senderId, senderName) => {
   if (!validation.isValid) {
     throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
   }
-  
+
   return {
     text: sanitizeText(text.trim()),
     senderId,

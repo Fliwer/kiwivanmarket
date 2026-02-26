@@ -150,6 +150,11 @@ export default function GuidePage() {
         description={guide.description}
         image={guide.heroImage}
         type="article"
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Guides', path: '/guides' },
+          { name: guide.title, path: `/guide/${slug}` },
+        ]}
       />
       <GuideSchema guide={guide} url={url} />
 
@@ -177,7 +182,7 @@ export default function GuidePage() {
             alt={guide.title}
             className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-[20s] ease-linear scale-110 group-hover:scale-100"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#FDFDFC] via-slate-900/40 to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
 
           <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-end pb-24">
             <div className="max-w-4xl">

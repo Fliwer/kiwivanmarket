@@ -1278,7 +1278,21 @@ export default function KiwiVanMarket() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <SeoHead />
+      <SeoHead
+        isHomepage
+        title="Buy or Sell a Campervan in New Zealand | #1 Van Marketplace NZ"
+        description="Find your perfect campervan in New Zealand. Free listings, no commission. Buy or sell campervans, motorhomes, and converted vans across NZ — Auckland, Wellington, Christchurch, Queenstown."
+        faqs={[
+          { q: "How do I buy a campervan in New Zealand?", a: "Browse listings on Kiwi Van Market, filter by location, price, or features like self-contained certification. Contact sellers directly via WhatsApp or Facebook Messenger. Always check the WOF (Warrant of Fitness) and REGO expiry dates before buying. Read our complete buying guide at kiwivanmarket.com/guide/buying-campervan-nz." },
+          { q: "How do I sell my campervan in New Zealand?", a: "Create a free listing on Kiwi Van Market in minutes. Upload photos, describe your van's features, set your price, and add your WOF and REGO dates. Your listing is visible to thousands of backpackers and travellers looking for vans in NZ. No commission fees." },
+          { q: "What is a WOF in New Zealand?", a: "A WOF (Warrant of Fitness) is a mandatory vehicle safety inspection in New Zealand. It checks brakes, tyres, lights, steering and other safety features. All vehicles need a valid WOF to be legally driven. Most vans require a WOF every 6 or 12 months." },
+          { q: "What is self-contained certification in New Zealand?", a: "Self-contained certification (green sticker or blue sticker) means the van has an onboard toilet and waste storage system, allowing you to freedom camp in designated areas. The green sticker (SCC) is the standard NZ certification. The blue sticker is for newer Blue Freeze approved systems." },
+          { q: "What is freedom camping in New Zealand?", a: "Freedom camping means camping outside of official campgrounds, for free, on public land. In NZ, you can freedom camp in many places with a self-contained vehicle. Non-self-contained vehicles can only freedom camp in designated areas. Fines for illegal freedom camping can reach $200." },
+          { q: "What is the best campervan for backpackers in NZ?", a: "The Toyota Hiace is the most popular backpacker van in New Zealand, known for reliability and ease of maintenance. Other popular options include the Nissan Caravan, Mazda Bongo, and Toyota TownAce. These Japanese vans offer great value in the NZD 8,000–20,000 range." },
+          { q: "How much does a campervan cost in New Zealand?", a: "Budget campervans in NZ start from around NZD 5,000–8,000 for older Toyota Hiace or Nissan Caravan models. Mid-range converted vans with beds, fridges, and solar panels typically cost NZD 10,000–20,000. High-end or newer motorhomes can cost NZD 30,000–80,000+." },
+          { q: "Can I sell my van back after travelling NZ?", a: "Some sellers on Kiwi Van Market offer a buy-back guarantee — they agree to buy the van back at a fixed price after your trip. This is a popular option for backpackers on a set itinerary. Look for the 'Buyback' badge on listings." },
+        ]}
+      />
       <Routes>
         {/* ✅ SEO: Pages avec URLs propres pour le référencement */}
         <Route path="/van/:id" element={

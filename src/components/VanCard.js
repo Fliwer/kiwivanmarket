@@ -131,33 +131,16 @@ export default function VanCard({ van, formatPrice, priority = false }) {
           />
         </button>
 
-        {/* Compliance Badges Overlay - always visible when present */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-          {van.buyBack && (
+
+        {/* Overlay — Buyback badge only on image */}
+        {van.buyBack && (
+          <div className="absolute top-4 left-4 z-10">
             <div className="bg-emerald-600/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/20 flex items-center gap-1.5">
               <Shield size={12} fill="currentColor" />
               Buyback
             </div>
-          )}
-          {van.wofExpiry && (
-            <div className="bg-white/95 backdrop-blur-md text-slate-900 px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-emerald-200 flex items-center gap-1.5">
-              <CheckCircle size={12} className="text-emerald-600" />
-              WOF
-              <span className="text-slate-500 font-semibold ml-0.5 normal-case tracking-normal">
-                {safeDate(van.wofExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || 'OK'}
-              </span>
-            </div>
-          )}
-          {van.regoExpiry && (
-            <div className="bg-white/95 backdrop-blur-md text-slate-900 px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-blue-200 flex items-center gap-1.5">
-              <Calendar size={12} className="text-blue-600" />
-              REGO
-              <span className="text-slate-500 font-semibold ml-0.5 normal-case tracking-normal">
-                {safeDate(van.regoExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || 'OK'}
-              </span>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Self-contained marker */}
         {van.selfContained && (
@@ -200,19 +183,25 @@ export default function VanCard({ van, formatPrice, priority = false }) {
             {van.wofExpiry && (
               <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
                 <CheckCircle size={11} className="text-emerald-600" />
-                WOF ✓
+                WOF
+                <span className="font-semibold normal-case tracking-normal text-emerald-600 ml-0.5">
+                  · {safeDate(van.wofExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || '✓'}
+                </span>
               </span>
             )}
             {van.regoExpiry && (
               <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
                 <Calendar size={11} className="text-blue-600" />
-                REGO ✓
+                REGO
+                <span className="font-semibold normal-case tracking-normal text-blue-600 ml-0.5">
+                  · {safeDate(van.regoExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || '✓'}
+                </span>
               </span>
             )}
             {van.selfContained && (
               <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide border ${van.selfContainedType === 'blue'
-                  ? 'bg-blue-50 border-blue-300 text-blue-800'
-                  : 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                ? 'bg-blue-50 border-blue-300 text-blue-800'
+                : 'bg-emerald-50 border-emerald-300 text-emerald-800'
                 }`}>
                 <span className="text-[11px] leading-none">{van.selfContainedType === 'blue' ? '🔵' : '🟢'}</span>
                 Self-Contained

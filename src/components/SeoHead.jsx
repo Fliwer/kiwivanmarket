@@ -3,83 +3,188 @@ import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
+const ORIGIN = 'https://kiwivanmarket.com';
+
+// ─── Schema.org sub-components ────────────────────────────────────────────────
+
+function OrganizationSchema() {
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": `${ORIGIN}/#organization`,
+        "name": "Kiwi Van Market",
+        "url": ORIGIN,
+        "logo": {
+            "@type": "ImageObject",
+            "url": `${ORIGIN}/kiwi-van-logo-48.webp`,
+            "width": 48,
+            "height": 48
+        },
+        "description": "The #1 campervan marketplace in New Zealand for backpackers and travellers. Buy or sell campervans, motorhomes, and vans peer-to-peer.",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "kiwivanmarket.contact@gmail.com",
+            "contactType": "customer service",
+            "availableLanguage": ["English", "French"]
+        },
+        "areaServed": { "@type": "Country", "name": "New Zealand" },
+        "sameAs": ["https://www.facebook.com/kiwivanmarket"]
+    };
+    return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
+}
+
+function WebSiteSchema() {
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": `${ORIGIN}/#website`,
+        "url": ORIGIN,
+        "name": "Kiwi Van Market",
+        "description": "Buy and sell campervans in New Zealand — Free listings, no commissions.",
+        "publisher": { "@id": `${ORIGIN}/#organization` },
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": { "@type": "EntryPoint", "urlTemplate": `${ORIGIN}/?search={search_term_string}` },
+            "query-input": "required name=search_term_string"
+        },
+        "inLanguage": ["en", "fr"]
+    };
+    return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
+}
+
+function FAQSchema({ faqs }) {
+    if (!faqs || faqs.length === 0) return null;
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faqs.map(({ q, a }) => ({
+            "@type": "Question",
+            "name": q,
+            "acceptedAnswer": { "@type": "Answer", "text": a }
+        }))
+    };
+    return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
+}
+
+function BreadcrumbSchema({ breadcrumbs }) {
+    if (!breadcrumbs || breadcrumbs.length === 0) return null;
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": breadcrumbs.map((crumb, i) => ({
+            "@type": "ListItem",
+            "position": i + 1,
+            "name": crumb.name,
+            "item": `${ORIGIN}${crumb.path}`
+        }))
+    };
+    return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
+}
+
+// ─── Main SeoHead ─────────────────────────────────────────────────────────────
+
 /**
- * Composant SEO global pour gérer les balises meta, titre et hreflang
- * @param {string} title - Titre de la page (sera suffixé par "| Kiwi Van Market")
- * @param {string} description - Description meta
- * @param {string} image - URL de l'image (pour OG/Twitter)
- * @param {string} type - Type OG (website, article, product...)
+ * @param {string}  title
+ * @param {string}  description
+ * @param {string}  image
+ * @param {string}  type          OG type (website, article, product)
+ * @param {boolean} noindex
+ * @param {Array}   faqs          [{ q, a }] — renders FAQPage schema
+ * @param {Array}   breadcrumbs   [{ name, path }] — renders BreadcrumbList schema
+ * @param {boolean} isHomepage    renders WebSite + Organization schema
  */
-export default function SeoHead({ title, description, image, type = 'website', noindex = false }) {
+export default function SeoHead({
+    title,
+    description,
+    image,
+    type = 'website',
+    noindex = false,
+    faqs,
+    breadcrumbs,
+    isHomepage = false,
+}) {
     const { i18n, t } = useTranslation();
     const location = useLocation();
 
-    // Base URL
-    const origin = 'https://kiwivanmarket.com';
-
-    // Normalize Path: Remove trailing slash (except for homepage) and ensure lowercase
     let normalizedPath = location.pathname;
     if (normalizedPath !== '/' && normalizedPath.endsWith('/')) {
         normalizedPath = normalizedPath.slice(0, -1);
     }
     normalizedPath = normalizedPath.toLowerCase();
 
-    // Get language from URL parameters to ensure stable canonicals for SEO
     const searchParams = new URLSearchParams(location.search);
     const urlLang = searchParams.get('lang');
     const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
-
-    // Canonical URL logic: Stable URL based on the presence of ?lang parameter
-    // We strip all other query parameters to avoid duplicate content warnings
     const canonicalLang = (urlLang && ['fr', 'es'].includes(urlLang)) ? urlLang : null;
     const canonicalUrl = canonicalLang
-        ? `${origin}${normalizedPath}?lang=${canonicalLang}`
-        : `${origin}${normalizedPath}`;
+        ? `${ORIGIN}${normalizedPath}?lang=${canonicalLang}`
+        : `${ORIGIN}${normalizedPath}`;
 
-    // Supported languages
     const languages = ['en', 'fr', 'es'];
+    const fullTitle = title
+        ? `${title} | Kiwi Van Market`
+        : `${t('header.subtitle')} | Kiwi Van Market`;
+    const metaDesc = description || t('hero.subtitle');
+    const ogImage = image || `${ORIGIN}/og-default.jpg`;
 
     return (
-        <Helmet>
-            {/* Basic Meta Tags */}
-            <title>{title ? `${title} | Kiwi Van Market` : t('header.subtitle') + ' | Kiwi Van Market'}</title>
-            <meta name="description" content={description || t('hero.subtitle')} />
+        <>
+            <Helmet>
+                {/* ── Basic ───────────────────────────────────────────── */}
+                <title>{fullTitle}</title>
+                <meta name="description" content={metaDesc} />
+                <meta name="author" content="Kiwi Van Market" />
+                <meta name="keywords" content="campervan New Zealand, buy van NZ, sell campervan NZ, backpacker van NZ, motorhome New Zealand, Toyota Hiace NZ, WOF REGO NZ, van life NZ, freedom camping New Zealand, campervan Auckland Wellington Christchurch Queenstown" />
 
-            {/* Indexing Control */}
-            {noindex ? (
-                <meta name="robots" content="noindex, follow" />
-            ) : (
-                <link rel="canonical" href={canonicalUrl} />
-            )}
+                {/* ── Indexing / canonical ────────────────────────────── */}
+                {noindex ? (
+                    <meta name="robots" content="noindex, follow" />
+                ) : (
+                    <>
+                        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+                        <link rel="canonical" href={canonicalUrl} />
+                    </>
+                )}
 
-            <html lang={currentLang} />
+                <html lang={currentLang} />
 
-            {/* Hreflang Tags pour SEO International */}
-            {!noindex && languages.map(lang => (
-                <link
-                    key={lang}
-                    rel="alternate"
-                    hreflang={lang}
-                    href={lang === 'en' ? `${origin}${normalizedPath}` : `${origin}${normalizedPath}?lang=${lang}`}
-                />
-            ))}
-            {/* x-default pour la version par défaut (Anglais) */}
-            {!noindex && <link rel="alternate" hreflang="x-default" href={`${origin}${normalizedPath}`} />}
+                {/* ── Hreflang ────────────────────────────────────────── */}
+                {!noindex && languages.map(lang => (
+                    <link
+                        key={lang}
+                        rel="alternate"
+                        hreflang={lang}
+                        href={lang === 'en'
+                            ? `${ORIGIN}${normalizedPath}`
+                            : `${ORIGIN}${normalizedPath}?lang=${lang}`}
+                    />
+                ))}
+                {!noindex && <link rel="alternate" hreflang="x-default" href={`${ORIGIN}${normalizedPath}`} />}
 
-            {/* Open Graph / Facebook */}
-            <meta property="og:type" content={type} />
-            <meta property="og:url" content={canonicalUrl} />
-            <meta property="og:title" content={title ? `${title} | Kiwi Van Market` : 'Kiwi Van Market'} />
-            <meta property="og:description" content={description || t('hero.subtitle')} />
-            <meta property="og:locale" content={currentLang} />
-            {image && <meta property="og:image" content={image} />}
+                {/* ── Open Graph ──────────────────────────────────────── */}
+                <meta property="og:type" content={type} />
+                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:title" content={fullTitle} />
+                <meta property="og:description" content={metaDesc} />
+                <meta property="og:locale" content={currentLang === 'fr' ? 'fr_FR' : 'en_NZ'} />
+                <meta property="og:site_name" content="Kiwi Van Market" />
+                <meta property="og:image" content={ogImage} />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
 
-            {/* Twitter */}
-            <meta property="twitter:card" content="summary_large_image" />
-            <meta property="twitter:url" content={canonicalUrl} />
-            <meta property="twitter:title" content={title ? `${title} | Kiwi Van Market` : 'Kiwi Van Market'} />
-            <meta property="twitter:description" content={description || t('hero.subtitle')} />
-            {image && <meta property="twitter:image" content={image} />}
-        </Helmet>
+                {/* ── Twitter / X ─────────────────────────────────────── */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:url" content={canonicalUrl} />
+                <meta name="twitter:title" content={fullTitle} />
+                <meta name="twitter:description" content={metaDesc} />
+                <meta name="twitter:image" content={ogImage} />
+            </Helmet>
+
+            {/* ── Schema.org structured data ───────────────────────── */}
+            {isHomepage && <OrganizationSchema />}
+            {isHomepage && <WebSiteSchema />}
+            {faqs && faqs.length > 0 && <FAQSchema faqs={faqs} />}
+            {breadcrumbs && breadcrumbs.length > 0 && <BreadcrumbSchema breadcrumbs={breadcrumbs} />}
+        </>
     );
 }
