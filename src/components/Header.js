@@ -74,10 +74,10 @@ export default function Header({
                     <nav className="hidden md:flex items-center gap-1 ml-6">
                         <Link
                             to="/guides"
-                            className="px-4 py-2 text-slate-600 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2 text-sm"
+                            className="px-4 py-2 bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 rounded-xl transition-all flex items-center gap-2 text-sm border border-emerald-200/50 hover:border-emerald-300"
                         >
-                            <BookOpen size={16} />
-                            <span>Guides</span>
+                            <BookOpen size={15} className="text-emerald-600" />
+                            <span>Expert Guides</span>
                         </Link>
 
                         <Link

@@ -3,9 +3,9 @@ import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where }
 import { db, functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
 import { useAuth } from '../AuthContext';
-import { 
-  X, Search, Filter, Trash2, Edit, Eye, EyeOff, Check, Ban, 
-  Users, Car, TrendingUp, AlertTriangle, Shield, Star, 
+import {
+  X, Search, Filter, Trash2, Edit, Eye, EyeOff, Check, Ban,
+  Users, Car, TrendingUp, AlertTriangle, Shield, Star,
   ChevronDown, ChevronUp, RefreshCw, Download, BarChart3,
   MapPin, Calendar, DollarSign, MessageCircle, Settings,
   ExternalLink, Mail, Phone, Clock, CheckCircle, XCircle
@@ -93,11 +93,14 @@ export default function AdminDashboard({ onClose, onEditVan }) {
     setStats({
       totalVans: vansData.length,
       activeVans: vansData.filter(v => v.status !== 'hidden' && v.status !== 'rejected').length,
+      soldVans: vansData.filter(v => v.status === 'sold').length,
       hiddenVans: vansData.filter(v => v.status === 'hidden').length,
+      totalViews: vansData.reduce((sum, v) => sum + (v.views || 0), 0),
+      // ... previous stats
       vansWithBuyBack: vansData.filter(v => v.buyBack).length,
       selfContainedVans: vansData.filter(v => v.selfContained).length,
       featuredVans: vansData.filter(v => v.featured).length,
-      averagePrice: vansData.length > 0 
+      averagePrice: vansData.length > 0
         ? Math.round(vansData.reduce((sum, v) => sum + (v.price || 0), 0) / vansData.length)
         : 0,
       totalValue: vansData.reduce((sum, v) => sum + (v.price || 0), 0),
@@ -162,7 +165,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
 
   const handleDeleteVan = async (vanId, vanTitle) => {
     if (!window.confirm(`⚠️ Delete "${vanTitle}" permanently?\n\nThis action cannot be undone.`)) return;
-    
+
     try {
       await deleteDoc(doc(db, 'vans', vanId));
       setVans(vans.filter(v => v.id !== vanId));
@@ -193,12 +196,12 @@ export default function AdminDashboard({ onClose, onEditVan }) {
         bannedAt: !currentBanned ? new Date() : null,
         bannedBy: !currentBanned ? currentUser.email : null
       });
-      
+
       setUsers(users.map(u => u.id === userId ? { ...u, banned: !currentBanned } : u));
       setShowBanConfirm(null);
-      
-      alert(currentBanned 
-        ? `✅ ${userEmail} has been unbanned` 
+
+      alert(currentBanned
+        ? `✅ ${userEmail} has been unbanned`
         : `🚫 ${userEmail} has been banned`
       );
     } catch (error) {
@@ -231,7 +234,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
   // 📥 Export CSV
   const handleExportCSV = () => {
     const headers = ['Title', 'Price', 'Year', 'Mileage', 'Location', 'Type', 'Seller Name', 'Seller Email', 'Self-Contained', 'Buy-Back', 'Featured', 'Status', 'Created At'];
-    
+
     const rows = vans.map(van => [
       van.title?.replace(/,/g, ';') || '',
       van.price || 0,
@@ -258,18 +261,18 @@ export default function AdminDashboard({ onClose, onEditVan }) {
 
   // 🔍 Filtrer les vans
   const filteredVans = vans.filter(van => {
-    const matchSearch = 
+    const matchSearch =
       van.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       van.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       van.seller?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       van.seller?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchStatus = filterStatus === 'all' || 
+
+    const matchStatus = filterStatus === 'all' ||
       (filterStatus === 'featured' && van.featured) ||
       (filterStatus === 'buyback' && van.buyBack) ||
       (filterStatus === 'selfcontained' && van.selfContained) ||
       (filterStatus === 'hidden' && van.status === 'hidden');
-    
+
     return matchSearch && matchStatus;
   });
 
@@ -355,20 +358,18 @@ export default function AdminDashboard({ onClose, onEditVan }) {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition ${
-                  activeTab === item.id
-                    ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                    : 'text-gray-600 hover:bg-gray-50'
-                }`}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition ${activeTab === item.id
+                  ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                  : 'text-gray-600 hover:bg-gray-50'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <item.icon className="w-5 h-5" />
                   <span>{item.label}</span>
                 </div>
                 {item.count !== undefined && (
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    activeTab === item.id ? 'bg-emerald-200' : 'bg-gray-200'
-                  }`}>
+                  <span className={`text-xs px-2 py-1 rounded-full ${activeTab === item.id ? 'bg-emerald-200' : 'bg-gray-200'
+                    }`}>
                     {item.count}
                   </span>
                 )}
@@ -418,11 +419,10 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${
-                      activeTab === item.id
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-white text-gray-600'
-                    }`}
+                    className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition ${activeTab === item.id
+                      ? 'bg-emerald-500 text-white'
+                      : 'bg-white text-gray-600'
+                      }`}
                   >
                     {item.label}
                   </button>
@@ -433,7 +433,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
               {activeTab === 'overview' && (
                 <div className="space-y-6">
                   <h2 className="text-2xl font-bold text-gray-900">Overview</h2>
-                  
+
                   {/* Stats Cards */}
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-white rounded-2xl p-5 border border-gray-200 hover:shadow-lg transition">
@@ -449,23 +449,24 @@ export default function AdminDashboard({ onClose, onEditVan }) {
 
                     <div className="bg-white rounded-2xl p-5 border border-gray-200 hover:shadow-lg transition">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                          <Shield className="w-5 h-5 text-green-600" />
+                        <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
+                          <CheckCircle className="w-5 h-5 text-emerald-600" />
                         </div>
-                        <span className="text-gray-600 text-sm">Buy-Back</span>
+                        <span className="text-gray-600 text-sm">Sold Listings</span>
                       </div>
-                      <p className="text-3xl font-bold text-gray-900">{stats.vansWithBuyBack}</p>
-                      <p className="text-xs text-gray-500 mt-1">{stats.totalVans > 0 ? Math.round((stats.vansWithBuyBack / stats.totalVans) * 100) : 0}% of listings</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.soldVans || 0}</p>
+                      <p className="text-xs text-gray-500 mt-1">Success rate: {stats.totalVans > 0 ? Math.round((stats.soldVans / stats.totalVans) * 100) : 0}%</p>
                     </div>
 
                     <div className="bg-white rounded-2xl p-5 border border-gray-200 hover:shadow-lg transition">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
-                          <Star className="w-5 h-5 text-yellow-600" />
+                        <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
+                          <Eye className="w-5 h-5 text-blue-600" />
                         </div>
-                        <span className="text-gray-600 text-sm">Featured</span>
+                        <span className="text-gray-600 text-sm">Total Views</span>
                       </div>
-                      <p className="text-3xl font-bold text-gray-900">{stats.featuredVans}</p>
+                      <p className="text-3xl font-bold text-gray-900">{(stats.totalViews || 0).toLocaleString()}</p>
+                      <p className="text-xs text-gray-500 mt-1">Global engagement</p>
                     </div>
 
                     <div className="bg-white rounded-2xl p-5 border border-gray-200 hover:shadow-lg transition">
@@ -499,7 +500,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                   <span className="text-gray-500">{count}</span>
                                 </div>
                                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                  <div 
+                                  <div
                                     className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"
                                     style={{ width: `${(count / stats.totalVans) * 100}%` }}
                                   />
@@ -532,7 +533,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                   <span className="text-gray-500">{count}</span>
                                 </div>
                                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                                  <div 
+                                  <div
                                     className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"
                                     style={{ width: `${(count / stats.totalVans) * 100}%` }}
                                   />
@@ -548,7 +549,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                   <div className="bg-white rounded-2xl p-6 border border-gray-200">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-bold text-gray-900">Latest Listings</h3>
-                      <button 
+                      <button
                         onClick={() => setActiveTab('vans')}
                         className="text-sm text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
                       >
@@ -571,8 +572,8 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                             <tr key={van.id} className="border-b last:border-0 hover:bg-gray-50">
                               <td className="py-3">
                                 <div className="flex items-center gap-3">
-                                  <img 
-                                    src={van.imageUrl || van.images?.[0] || 'https://via.placeholder.com/48'} 
+                                  <img
+                                    src={van.imageUrl || van.images?.[0] || 'https://via.placeholder.com/48'}
                                     alt={van.title}
                                     className="w-12 h-12 rounded-lg object-cover"
                                   />
@@ -620,7 +621,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                 <div className="space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <h2 className="text-2xl font-bold text-gray-900">Manage Listings</h2>
-                    
+
                     {/* Search & Filters */}
                     <div className="flex gap-3 flex-wrap">
                       <div className="relative">
@@ -666,8 +667,8 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                             <tr key={van.id} className="border-t border-gray-100 hover:bg-gray-50">
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-3">
-                                  <img 
-                                    src={van.imageUrl || van.images?.[0] || 'https://via.placeholder.com/56'} 
+                                  <img
+                                    src={van.imageUrl || van.images?.[0] || 'https://via.placeholder.com/56'}
                                     alt={van.title}
                                     className="w-14 h-14 rounded-xl object-cover"
                                   />
@@ -722,11 +723,10 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                   {/* Featured Toggle */}
                                   <button
                                     onClick={() => handleToggleFeatured(van.id, van.featured)}
-                                    className={`p-2 rounded-lg transition ${
-                                      van.featured 
-                                        ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200' 
-                                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                                    }`}
+                                    className={`p-2 rounded-lg transition ${van.featured
+                                      ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
+                                      : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                      }`}
                                     title={van.featured ? 'Remove featured' : 'Set as featured'}
                                   >
                                     <Star className="w-4 h-4" fill={van.featured ? 'currentColor' : 'none'} />
@@ -734,11 +734,10 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                   {/* Visibility Toggle */}
                                   <button
                                     onClick={() => handleToggleVisibility(van.id, van.status)}
-                                    className={`p-2 rounded-lg transition ${
-                                      van.status === 'hidden'
-                                        ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                                        : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                                    }`}
+                                    className={`p-2 rounded-lg transition ${van.status === 'hidden'
+                                      ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                                      : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                                      }`}
                                     title={van.status === 'hidden' ? 'Show listing' : 'Hide listing'}
                                   >
                                     {van.status === 'hidden' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -758,7 +757,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                         </tbody>
                       </table>
                     </div>
-                    
+
                     {filteredVans.length === 0 && (
                       <div className="text-center py-12 text-gray-500">
                         <Car className="w-12 h-12 mx-auto mb-3 text-gray-300" />
@@ -779,13 +778,13 @@ export default function AdminDashboard({ onClose, onEditVan }) {
               {activeTab === 'users' && (
                 <div className="space-y-6">
                   <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-                  
+
                   {users.length === 0 ? (
                     <div className="bg-white rounded-2xl p-12 text-center border border-gray-200">
                       <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-gray-600 mb-2">No users collection</h3>
                       <p className="text-gray-500 text-sm">
-                        Users are managed via Firebase Auth.<br/>
+                        Users are managed via Firebase Auth.<br />
                         You can see their info from the listings they post.
                       </p>
                     </div>
@@ -831,11 +830,10 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                 <div className="flex items-center justify-end gap-2">
                                   <button
                                     onClick={() => setShowBanConfirm(user)}
-                                    className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                                      user.banned
-                                        ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                        : 'bg-red-100 text-red-700 hover:bg-red-200'
-                                    }`}
+                                    className={`px-3 py-1 rounded-lg text-sm font-medium transition ${user.banned
+                                      ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                      : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                      }`}
                                   >
                                     {user.banned ? 'Unban' : 'Ban'}
                                   </button>
@@ -897,7 +895,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
               {activeTab === 'stats' && (
                 <div className="space-y-6">
                   <h2 className="text-2xl font-bold text-gray-900">Detailed Statistics</h2>
-                  
+
                   <div className="grid md:grid-cols-3 gap-6">
                     {/* Summary */}
                     <div className="bg-white rounded-2xl p-6 border border-gray-200">
@@ -1013,9 +1011,8 @@ export default function AdminDashboard({ onClose, onEditVan }) {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full">
             <div className="text-center mb-6">
-              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${
-                showBanConfirm.banned ? 'bg-green-100' : 'bg-red-100'
-              }`}>
+              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${showBanConfirm.banned ? 'bg-green-100' : 'bg-red-100'
+                }`}>
                 {showBanConfirm.banned ? (
                   <CheckCircle className="w-8 h-8 text-green-600" />
                 ) : (
@@ -1041,11 +1038,10 @@ export default function AdminDashboard({ onClose, onEditVan }) {
               </button>
               <button
                 onClick={() => handleBanUser(showBanConfirm.id, showBanConfirm.email, showBanConfirm.banned)}
-                className={`flex-1 px-4 py-3 rounded-xl font-semibold transition ${
-                  showBanConfirm.banned
-                    ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-red-600 text-white hover:bg-red-700'
-                }`}
+                className={`flex-1 px-4 py-3 rounded-xl font-semibold transition ${showBanConfirm.banned
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-red-600 text-white hover:bg-red-700'
+                  }`}
               >
                 {showBanConfirm.banned ? 'Unban' : 'Ban User'}
               </button>

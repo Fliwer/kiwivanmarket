@@ -1,6 +1,20 @@
 User-agent: *
 Allow: /
 
+# Explicitly allow AI crawlers for Generative Engine Optimization (GEO)
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+User-agent: Google-Extended
+Allow: /
+User-agent: CCBot
+Allow: /
+User-agent: Anthropic-ai
+Allow: /
+User-agent: Claude-Web
+Allow: /
+
 Allow: /*.jpg$
 Allow: /*.jpeg$
 Allow: /*.png$

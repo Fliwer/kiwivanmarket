@@ -7,7 +7,7 @@ import { safeDate } from '../utils/dateHelper';
 import { useTranslation } from 'react-i18next';
 
 // Carousel de photos pour la card
-const ImageCarousel = ({ images, title, priority = false }) => {
+const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStart = useRef(null);
 
@@ -52,11 +52,20 @@ const ImageCarousel = ({ images, title, priority = false }) => {
       <div className="absolute inset-0 bg-slate-100 z-0" />
 
       <img
-        src={getThumbnail(allImages[currentIndex])}
+        src={getThumbnail(allImages[currentIndex]) || '/placeholder-van.jpg'}
         alt={`${title} - ${currentIndex + 1}`}
-        className="relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-100"
+        className={`relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${vanStatus === 'sold' ? 'grayscale-[0.5] contrast-[0.8]' : 'opacity-100'}`}
         loading={priority ? "eager" : "lazy"}
       />
+
+      {vanStatus === 'sold' && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center p-4">
+          <div className="bg-red-600/90 backdrop-blur-md text-white px-8 py-3 rounded-2xl font-black text-2xl uppercase tracking-[0.2em] shadow-2xl border-2 border-white/30 rotate-[-12deg] flex items-center gap-2">
+            <CheckCircle size={24} fill="currentColor" strokeWidth={3} className="text-red-100" />
+            Sold
+          </div>
+        </div>
+      )}
 
       {/* Navigation arrows */}
       {allImages.length > 1 && (
@@ -109,7 +118,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
       className="premium-card group block overflow-hidden"
     >
       <div className="relative">
-        <ImageCarousel images={images} title={van.title} priority={priority} />
+        <ImageCarousel images={images} title={van.title} vanStatus={van.status} priority={priority} />
 
         {/* Favorite button */}
         <button

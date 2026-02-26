@@ -25,6 +25,7 @@ import safeStorage, { safeSessionStorage } from './utils/safeStorage';
 import { safeDate } from './utils/dateHelper';
 import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
+import GuidePreviewSection from './components/GuidePreviewSection';
 // MVP_DISABLED: Stripe/Payments
 // import { TrustBanner } from './components/SecurityBadge';
 
@@ -1011,6 +1012,9 @@ function MainApp() {
                   </div>
                 </div>
               </div>
+
+              {/* Guides Preview Section */}
+              <GuidePreviewSection />
 
               {/* SEO Section */}
               <Suspense fallback={null}>
