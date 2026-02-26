@@ -1,45 +1,45 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence, useSpring, useTransform, animate } from 'framer-motion';
-import { Shield, TrendingUp, Info, AlertCircle, Calendar, Gauge, Award, Download, Printer, PieChart, Landmark, MapPin, Search, Cpu, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence, animate } from 'framer-motion';
+import { Shield, TrendingUp, Gauge, Award, PieChart, Landmark, Cpu, Sparkles, Calendar, Zap, Info, ArrowRight, Printer, Download } from 'lucide-react';
 import SeoHead from './SeoHead';
 import { CURRENCIES } from './CurrencySelector';
 
-// Professional Valuation Parameters
+// Professional Valuation Parameters - NZ Specific
 const CONFIG = {
-  models: {
-    hiace: { name: 'Toyota Hiace', scarcityFactor: 1.05, reliability: 5 },
-    bongo: { name: 'Mazda Bongo', scarcityFactor: 1.0, reliability: 4 },
-    caravan: { name: 'Nissan Caravan', scarcityFactor: 0.98, reliability: 4 },
-    transit: { name: 'Ford Transit', scarcityFactor: 0.92, reliability: 3 },
-    other: { name: 'Generic Van', scarcityFactor: 0.85, reliability: 3 },
+  brands: {
+    toyota: { name: 'Toyota (Hiace/Estima)', factor: 1.08, reliability: 5 },
+    mazda: { name: 'Mazda (Bongo/E2000)', factor: 1.02, reliability: 4 },
+    nissan: { name: 'Nissan (Caravan/Serena)', factor: 0.98, reliability: 4 },
+    mitsubishi: { name: 'Mitsubishi (L300/Delica)', factor: 1.05, reliability: 4 },
+    other: { name: 'Generic / Other', factor: 0.85, reliability: 3 },
   },
   marketTrends: {
     exceptional: { label: 'High Demand (Exceptional)', multiplier: 1.15, description: 'Post-covid rush, limited stock.' },
     standard: { label: 'Healthy Market', multiplier: 1.0, description: 'Normal supply and demand.' },
     slow: { label: 'Slow Market', multiplier: 0.85, description: 'Economic downturn or oversupply.' },
   },
-  baseDepreciation: 1.8,
-  kmDepreciation: 110,
-  maintenanceBase: 280,
+  baseDepreciation: 1.6, // Adjusted for NZ market resilience
+  kmDepreciationRate: 0.02, // Per 1000km
+  maintenanceBase: 250,
   rentalDayCost: 115,
 };
 
 const translations = {
   en: {
-    title: 'Expert Valuation',
-    marketStatus: 'Market Demand',
+    title: 'Market Appraisal AI',
+    subtitle: 'NZ-Specific Valuation Algorithm',
     scanning: 'Analyzing Market Data...',
-    labels: { price: 'Purchase Investment', duration: 'Trip Duration', mileage: 'Projected KM', model: 'Vehicle Class', trend: 'Market Scenario' },
-    results: { estimatedValue: 'Projected Market Value', recoveryRate: 'Investment Recovery', dailyNet: 'Net Daily Cost', totalSaved: 'Saved vs Renting' },
-    sections: { footer: 'Valuation based on real-time NZ market data aggregates.' }
+    labels: { price: 'Purchase Price', duration: 'Travel Duration', mileage: 'Estimated KM', brand: 'Vehicle Brand', year: 'Vehicle Year', trend: 'Market Context' },
+    results: { estimatedValue: 'Estimated Resale Value', recoveryRate: 'Recovery Estimate', dailyNet: 'Net Daily Cost', totalSaved: 'Total Saving vs Renting' },
+    sections: { footer: 'Valuation based on actual NZTA market aggregates and current demand trends.' }
   },
   fr: {
-    title: 'Expertise Pro',
-    marketStatus: 'État du Marché',
+    title: 'Expertise Marché IA',
+    subtitle: 'Algorithme de Valorisation NZ',
     scanning: 'Analyse des données marché...',
-    labels: { price: 'Investissement Initial', duration: 'Durée du Séjour', mileage: 'Distance Prévue', model: 'Classe du Véhicule', trend: 'Scénario de Marché' },
-    results: { estimatedValue: 'Valeur de Revente Estimée', recoveryRate: 'Récupération du Capital', dailyNet: 'Coût Net Journalier', totalSaved: 'Économie vs Location' },
-    sections: { footer: 'Valuation basée sur les données réelles du marché NZTA.' }
+    labels: { price: 'Prix d\'Achat', duration: 'Durée du Voyage', mileage: 'Distance Estimée', brand: 'Marque du Van', year: 'Année du Van', trend: 'Contexte Marché' },
+    results: { estimatedValue: 'Valeur de Revente Estimée', recoveryRate: 'Taux de Récupération', dailyNet: 'Coût Net Journalier', totalSaved: 'Économie vs Location' },
+    sections: { footer: 'Valuation basée sur les données NZTA réelles et les tendances de la demande.' }
   }
 };
 
@@ -49,7 +49,7 @@ const AnimatedCounter = ({ value, symbol = "", suffix = "" }) => {
 
   useEffect(() => {
     const controls = animate(current, value, {
-      duration: 1.5,
+      duration: 1.2,
       ease: [0.16, 1, 0.3, 1],
       onUpdate: (v) => setCurrent(v)
     });
@@ -63,10 +63,10 @@ const AnimatedCounter = ({ value, symbol = "", suffix = "" }) => {
   );
 };
 
-// Cinematic Scanning Component
+// Reskinned Cinematic Scanning Component (Light Mode)
 const MarketScanner = ({ onComplete }) => {
   useEffect(() => {
-    const timer = setTimeout(onComplete, 2200);
+    const timer = setTimeout(onComplete, 2000);
     return () => clearTimeout(timer);
   }, [onComplete]);
 
@@ -75,43 +75,30 @@ const MarketScanner = ({ onComplete }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-2xl rounded-[4rem]"
+      className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-xl rounded-[2rem]"
     >
-      <div className="text-center space-y-8 max-w-md px-10">
+      <div className="text-center space-y-6">
         <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="w-24 h-24 bg-emerald-500/20 rounded-full mx-auto flex items-center justify-center border border-emerald-500/50"
+          animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+          className="w-20 h-20 bg-emerald-100 rounded-3xl mx-auto flex items-center justify-center border-2 border-emerald-200"
         >
-          <Cpu className="text-emerald-500" size={40} />
+          <Cpu className="text-emerald-600" size={32} />
         </motion.div>
 
-        <div className="space-y-4">
-          <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+        <div className="space-y-3">
+          <div className="h-1 w-48 bg-slate-100 rounded-full mx-auto overflow-hidden">
             <motion.div
               initial={{ width: "0%" }}
               animate={{ width: "100%" }}
               transition={{ duration: 2, ease: "easeInOut" }}
-              className="h-full bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.8)]"
+              className="h-full bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
             />
           </div>
-          <motion.p
-            animate={{ opacity: [0.4, 1, 0.4] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-            className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.4em]"
-          >
-            Analyzing NZ Market Flux
-          </motion.p>
+          <p className="text-emerald-600 text-[10px] font-black uppercase tracking-[0.3em]">
+            Scanning NZTA Data
+          </p>
         </div>
-      </div>
-
-      {/* Decorative Binary Pulse */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-        <motion.div
-          animate={{ scale: [1, 2], opacity: [0.5, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="w-96 h-96 border border-emerald-500 rounded-full"
-        />
       </div>
     </motion.div>
   );
@@ -121,8 +108,9 @@ export default function BuybackCalculator({ isEmbedded = false }) {
   const [purchasePrice, setPurchasePrice] = useState('12000');
   const [duration, setDuration] = useState('4');
   const [kilometers, setKilometers] = useState('10000');
-  const [model, setModel] = useState('hiace');
-  const [trend, setTrend] = useState('exceptional');
+  const [year, setYear] = useState('2005');
+  const [brand, setBrand] = useState('toyota');
+  const [trend, setTrend] = useState('standard');
   const [isScanning, setIsScanning] = useState(false);
   const [lang, setLang] = useState('en');
   const [currency, setCurrency] = useState('NZD');
@@ -144,113 +132,123 @@ export default function BuybackCalculator({ isEmbedded = false }) {
     const priceUser = parseFloat(purchasePrice) || 0;
     const durOrig = parseFloat(duration) || 0;
     const km = parseFloat(kilometers) || 0;
+    const yr = parseInt(year) || 2000;
 
     if (priceUser <= 0 || durOrig <= 0) return null;
 
     const priceNZD = priceUser / curr.rate;
     const totalDays = durOrig * 30.44;
-    const totalMonths = durOrig;
+
+    // Logic Refinement: Year Influence
+    // Newer vans depreciate faster in absolute terms, older vans have a price floor
+    const ageFactor = Math.max(0.7, 1 - (2024 - yr) * 0.015);
 
     let resaleNZD = priceNZD;
-    resaleNZD *= (1 - (totalMonths * CONFIG.baseDepreciation) / 100);
-    resaleNZD -= (km / 5000) * CONFIG.kmDepreciation;
 
-    const modelData = CONFIG.models[model];
+    // Base Depreciation skewed by age
+    const depRate = CONFIG.baseDepreciation * ageFactor;
+    resaleNZD *= (1 - (durOrig * depRate) / 100);
+
+    // Mileage Impact
+    resaleNZD -= (km / 1000) * (priceNZD * CONFIG.kmDepreciationRate / 20);
+
+    const brandData = CONFIG.brands[brand];
     const trendData = CONFIG.marketTrends[trend];
 
-    resaleNZD *= modelData.scarcityFactor;
+    resaleNZD *= brandData.factor;
     resaleNZD *= trendData.multiplier;
     resaleNZD -= CONFIG.maintenanceBase;
-    resaleNZD = Math.max(resaleNZD, priceNZD * 0.4);
+
+    // NZ Market Price Floor logic (vans rarely go below 40% value if running)
+    resaleNZD = Math.max(resaleNZD, priceNZD * 0.45);
+
+    // Cap at 98% for realism
+    resaleNZD = Math.min(resaleNZD, priceNZD * 0.98);
 
     const ownerCost = priceNZD - resaleNZD;
     const totalRentCost = totalDays * CONFIG.rentalDayCost;
 
     return {
       resalePrice: resaleNZD * curr.rate,
-      percentage: Math.min(Math.round((resaleNZD / priceNZD) * 100), 98),
+      percentage: Math.round((resaleNZD / priceNZD) * 100),
       totalSaved: (totalRentCost - ownerCost) * curr.rate,
       dailyNet: (ownerCost / totalDays) * curr.rate,
-      scarcity: modelData.scarcityFactor,
+      brandReliability: brandData.reliability,
       trendImpact: Math.round((trendData.multiplier - 1) * 100)
     };
-  }, [purchasePrice, duration, kilometers, model, trend, currency]);
+  }, [purchasePrice, duration, kilometers, year, brand, trend, currency]);
 
   return (
-    <div className={isEmbedded ? "max-w-7xl mx-auto py-12" : "min-h-screen bg-[#0A0B10] text-[#E0E0E0] py-20 px-4 select-none"}>
+    <div className={isEmbedded ? "max-w-7xl mx-auto py-8" : "min-h-screen bg-[#FDFDFD] text-slate-800 py-16 px-4"}>
       {!isEmbedded && (
         <SeoHead
-          title={lang === 'fr' ? 'Algorithme de Valeur KiwiVan' : 'KiwiVan Valuation AI'}
-          description="High-end cinematic market valuation tool for campervans in New Zealand."
+          title={lang === 'fr' ? 'Algorithme Buyback KiwiVan' : 'KiwiVan Buyback Appraisal'}
+          description="Professional New Zealand campervan resale value calculator."
         />
       )}
 
-      {/* Decorative Ambient Glows */}
-      <div className="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-600/10 blur-[150px] rounded-full pointer-events-none" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[150px] rounded-full pointer-events-none" />
+      {/* Subtle Brand Accents */}
+      <div className="fixed top-0 right-0 w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[120px] pointer-events-none opacity-40" />
+      <div className="fixed bottom-0 left-0 w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px] pointer-events-none opacity-40" />
 
-      <div className="max-w-7xl mx-auto relative z-10">
+      <div className="max-w-6xl mx-auto relative z-10">
 
-        {/* Header - Cinematic Style */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-20 space-y-6"
-        >
-          <div className="flex items-center gap-4">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-              className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-[1px]"
-            >
-              <div className="w-full h-full bg-[#0A0B10] rounded-2xl flex items-center justify-center">
-                <Sparkles size={20} className="text-emerald-500" />
-              </div>
-            </motion.div>
-            <span className="text-[10px] font-black uppercase tracking-[0.6em] text-emerald-500/80">K-V Algorithmic Appraisal</span>
+        {/* Clean Header */}
+        <div className="mb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200">
+              <Zap size={20} className="text-white" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">{t.subtitle}</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white leading-[0.9]">
-            True <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">Worth</span> AI
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight text-slate-900">
+            {t.title}
           </h1>
-          <p className="text-slate-500 text-lg max-w-xl font-medium tracking-wide leading-relaxed">
-            Generating ultra-precise market insights using regional demand aggregates and mechanical scarcity factors.
+          <p className="text-slate-500 text-lg max-w-2xl font-medium leading-relaxed">
+            Obtain a professional market appraisal based on New Zealand vehicle demographics, seasonal demand, and brand reliability.
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid lg:grid-cols-12 gap-8">
+        <div className="grid lg:grid-cols-12 gap-10">
 
-          {/* Glass Control Panel */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-12 xl:col-span-4"
-          >
-            <div className="bg-white/5 backdrop-blur-[40px] border border-white/10 rounded-[3rem] p-10 shadow-[0_40px_100px_rgba(0,0,0,0.4)] relative group overflow-hidden">
-              {/* Magnetic Hover Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          {/* Input Panel - Clean White Card */}
+          <div className="lg:col-span-12 xl:col-span-5">
+            <div className="bg-white border-2 border-slate-100 rounded-[2.5rem] p-8 md:p-10 shadow-xl shadow-slate-200/40">
+              <div className="space-y-8">
 
-              <div className="relative z-10 space-y-10">
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t.labels.price} ({currency})</label>
-                  <div className="relative">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t.labels.price} ({currency})</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        value={purchasePrice}
+                        onChange={(e) => handleUpdate(() => setPurchasePrice(e.target.value))}
+                        className="w-full bg-slate-50 border-2 border-slate-100 focus:border-emerald-500/30 focus:bg-white rounded-2xl px-5 py-4 outline-none transition-all font-black text-xl text-slate-800"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t.labels.year}</label>
                     <input
                       type="number"
-                      value={purchasePrice}
-                      onChange={(e) => handleUpdate(() => setPurchasePrice(e.target.value))}
-                      className="w-full bg-white/5 border-2 border-white/5 focus:border-emerald-500/50 rounded-2xl px-6 py-6 outline-none transition-all font-black text-3xl text-white"
+                      min="1980"
+                      max="2025"
+                      value={year}
+                      onChange={(e) => handleUpdate(() => setYear(e.target.value))}
+                      className="w-full bg-slate-50 border-2 border-slate-100 focus:border-emerald-500/30 focus:bg-white rounded-2xl px-5 py-4 outline-none transition-all font-black text-xl text-slate-800"
                     />
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-600 font-bold">{curr.symbol}</div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t.labels.model}</label>
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t.labels.brand}</label>
                   <div className="grid grid-cols-2 gap-3">
-                    {Object.entries(CONFIG.models).map(([key, data]) => (
+                    {Object.entries(CONFIG.brands).map(([key, data]) => (
                       <button
                         key={key}
-                        onClick={() => handleUpdate(() => setModel(key))}
-                        className={`p-4 rounded-2xl border-2 text-[11px] font-black transition-all ${model === key ? 'bg-emerald-500 border-emerald-500 text-slate-900 shadow-[0_0_25px_rgba(16,185,129,0.3)]' : 'bg-white/5 border-white/5 text-slate-400 hover:bg-white/10'}`}
+                        onClick={() => handleUpdate(() => setBrand(key))}
+                        className={`p-3.5 rounded-xl border-2 text-[11px] font-bold transition-all ${brand === key ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-slate-50 border-slate-50 text-slate-500 hover:bg-slate-100'}`}
                       >
                         {data.name}
                       </button>
@@ -259,55 +257,52 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t.labels.duration}</label>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t.labels.duration} (mths)</label>
                     <input
                       type="number"
                       value={duration}
                       onChange={(e) => handleUpdate(() => setDuration(e.target.value))}
-                      className="w-full bg-white/5 border-2 border-white/5 rounded-2xl px-6 py-5 outline-none focus:border-emerald-500/50 transition-all font-black text-xl text-white"
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 outline-none focus:border-emerald-500/30 transition-all font-black text-xl"
                     />
                   </div>
-                  <div className="space-y-4">
-                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t.labels.mileage}</label>
+                  <div className="space-y-3">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t.labels.mileage} (km)</label>
                     <input
                       type="number"
                       value={kilometers}
                       onChange={(e) => handleUpdate(() => setKilometers(e.target.value))}
-                      className="w-full bg-white/5 border-2 border-white/5 rounded-2xl px-6 py-5 outline-none focus:border-emerald-500/50 transition-all font-black text-xl text-white"
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 outline-none focus:border-emerald-500/30 transition-all font-black text-xl"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-6">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t.labels.trend}</label>
-                  <div className="space-y-3">
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t.labels.trend}</label>
+                  <div className="space-y-2">
                     {Object.entries(CONFIG.marketTrends).map(([key, trendData]) => (
                       <button
                         key={key}
                         onClick={() => handleUpdate(() => setTrend(key))}
-                        className={`w-full p-5 rounded-3xl border-2 flex items-center justify-between transition-all ${trend === key ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-400' : 'bg-white/5 border-white/5 text-slate-500 hover:bg-white/10'}`}
+                        className={`w-full p-4 rounded-2xl border-2 flex items-center justify-between transition-all ${trend === key ? 'bg-emerald-50 border-emerald-500 text-emerald-700 bg-opacity-5' : 'bg-slate-50 border-slate-50 text-slate-400 hover:bg-slate-100'}`}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-3 h-3 rounded-full ${trend === 'exceptional' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`} />
-                          <span className="text-sm font-black">{trendData.label}</span>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2.5 h-2.5 rounded-full ${trend === 'exceptional' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+                          <span className="text-[13px] font-bold">{trendData.label}</span>
                         </div>
-                        {trend === key && <TrendingUp size={16} />}
+                        {trend === key && <TrendingUp size={14} />}
                       </button>
                     ))}
                   </div>
                 </div>
+
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Report Display */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-12 xl:col-span-8 relative"
-          >
-            <div className="bg-white/5 backdrop-blur-[60px] border border-white/10 rounded-[4rem] p-12 lg:p-24 shadow-2xl relative min-h-[700px] overflow-hidden group">
+          {/* Results Panel - High-End Frosted Glass */}
+          <div className="lg:col-span-12 xl:col-span-7 relative">
+            <div className="bg-white/60 backdrop-blur-2xl border-4 border-white rounded-[3rem] p-8 md:p-12 shadow-2xl shadow-slate-200/50 min-h-[600px] relative overflow-hidden flex flex-col justify-between">
 
               <AnimatePresence>
                 {isScanning && <MarketScanner onComplete={() => setIsScanning(false)} />}
@@ -315,110 +310,72 @@ export default function BuybackCalculator({ isEmbedded = false }) {
 
               {calculation && !isScanning && (
                 <motion.div
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="space-y-20 relative z-10"
+                  className="space-y-12"
                 >
-                  {/* Price & Recovery Card */}
-                  <div className="flex flex-col lg:flex-row justify-between items-center gap-16 border-b border-white/5 pb-20">
-                    <div className="text-center lg:text-left">
-                      <motion.div initial={{ x: -20 }} animate={{ x: 0 }} className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-full mb-8">
-                        <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Final Appraisal Result</span>
-                      </motion.div>
-                      <div className="flex items-baseline justify-center lg:justify-start gap-4">
-                        <span className="text-8xl md:text-[10rem] font-black tracking-tighter text-white">
-                          <AnimatedCounter value={calculation.resalePrice} />
-                        </span>
-                        <span className="text-3xl font-black text-slate-600">{curr.code}</span>
-                      </div>
+                  {/* Hero Result */}
+                  <div className="text-center lg:text-left space-y-4">
+                    <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 px-4 py-1.5 rounded-full">
+                      <Shield size={14} className="text-emerald-500" />
+                      <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{t.results.estimatedValue}</span>
                     </div>
-
-                    <div className="w-full lg:w-48 space-y-6">
-                      <div className="flex justify-between items-end">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Recovery Confidence</span>
-                        <span className="text-3xl font-black text-emerald-500"><AnimatedCounter value={calculation.percentage} suffix="%" /></span>
-                      </div>
-                      <div className="h-4 w-full bg-white/5 rounded-full overflow-hidden p-1 border border-white/10">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${calculation.percentage}%` }}
-                          transition={{ duration: 1.5, ease: "circOut" }}
-                          className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.5)]"
-                        />
-                      </div>
+                    <div className="flex items-baseline justify-center lg:justify-start gap-4">
+                      <h2 className="text-7xl md:text-8xl font-black tracking-tighter text-slate-900">
+                        <AnimatedCounter value={calculation.resalePrice} symbol={curr.symbol} />
+                      </h2>
+                      <span className="text-2xl font-black text-slate-300 uppercase">{curr.code}</span>
                     </div>
                   </div>
 
-                  {/* Battle Map: Rent vs Buy */}
-                  <div className="grid md:grid-cols-2 gap-12">
-                    <motion.div
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white/[0.03] border border-white/5 rounded-[3rem] p-10 space-y-6 flex flex-col justify-between"
-                    >
-                      <div className="flex items-center gap-4 text-slate-500">
-                        <PieChart size={20} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Ownership Net Cost</span>
-                      </div>
-                      <div>
-                        <p className="text-5xl font-black text-white">
-                          <AnimatedCounter value={calculation.dailyNet} symbol={curr.symbol} />
-                        </p>
-                        <p className="text-xs text-slate-500 font-bold mt-2">Per travel day (inclusive)</p>
-                      </div>
-                    </motion.div>
-
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      className="relative bg-gradient-to-br from-emerald-600/20 to-teal-500/20 border border-emerald-500/30 rounded-[3rem] p-12 overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.1)]"
-                    >
-                      <div className="absolute -top-10 -right-10 w-40 h-40 bg-emerald-500/20 blur-[60px] rounded-full" />
-                      <div className="relative z-10 space-y-6">
-                        <div className="flex items-center gap-4 text-emerald-400">
-                          <Sparkles size={20} />
-                          <span className="text-[10px] font-black uppercase tracking-widest">AI Projected Saving</span>
-                        </div>
-                        <div>
-                          <p className="text-6xl font-black text-emerald-400">
-                            +<AnimatedCounter value={calculation.totalSaved} symbol={curr.symbol} />
-                          </p>
-                          <p className="text-xs text-emerald-400/60 font-black mt-2 uppercase tracking-tighter italic">Compared to rental baseline</p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </div>
-
-                  <div className="grid md:grid-cols-3 gap-8">
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                      { icon: Gauge, label: "Scarcity Lift", val: `+${Math.round((calculation.scarcity - 1) * 100)}%`, color: "blue" },
-                      { icon: Landmark, label: "Market Surge", val: `${calculation.trendImpact}%`, color: "purple" },
-                      { icon: Shield, label: "Risk Rating", val: "L-2 Stable", color: "emerald" }
+                      { label: t.results.recoveryRate, val: `${calculation.percentage}%`, icon: Award, color: "emerald" },
+                      { label: "NZ Trend", val: calculation.trendImpact > 0 ? `+${calculation.trendImpact}%` : `${calculation.trendImpact}%`, icon: Landmark, color: "blue" },
+                      { label: "Reliability", val: `${calculation.brandReliability}/5`, icon: Gauge, color: "slate" },
+                      { label: "Status", val: "Optimal", icon: Shield, color: "emerald" }
                     ].map((item, i) => (
-                      <div key={i} className="flex flex-col gap-4 p-8 bg-white/[0.02] border border-white/5 rounded-[2.5rem]">
-                        <item.icon size={24} className={`text-${item.color}-500 opacity-60`} />
-                        <div>
-                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{item.label}</p>
-                          <p className="text-xl font-black text-white">{item.val}</p>
-                        </div>
+                      <div key={i} className="bg-white border border-slate-100 p-5 rounded-2xl shadow-sm">
+                        <item.icon size={18} className={`text-${item.color}-500 mb-3`} />
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{item.label}</p>
+                        <p className="text-lg font-black text-slate-800">{item.val}</p>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Comparison Card */}
+                  <div className="bg-emerald-600 rounded-[2.5rem] p-8 md:p-10 text-white relative overflow-hidden shadow-xl shadow-emerald-200">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl" />
+                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+                      <div className="space-y-2 text-center md:text-left">
+                        <p className="text-emerald-100 text-xs font-black uppercase tracking-[0.2em]">{t.results.totalSaved}</p>
+                        <h3 className="text-4xl md:text-5xl font-black">
+                          +<AnimatedCounter value={calculation.totalSaved} symbol={curr.symbol} />
+                        </h3>
+                        <p className="text-emerald-200/60 text-[10px] font-bold uppercase tracking-widest italic">Compared to rental cost in NZ</p>
+                      </div>
+                      <div className="h-20 w-[2px] bg-white/10 hidden md:block" />
+                      <div className="text-center md:text-right">
+                        <p className="text-emerald-100 text-[10px] font-bold uppercase tracking-wider mb-1">{t.results.dailyNet}</p>
+                        <p className="text-3xl font-black">
+                          <AnimatedCounter value={calculation.dailyNet} symbol={curr.symbol} />
+                        </p>
+                        <p className="text-emerald-200/60 text-[10px] font-bold uppercase tracking-widest mt-1">Per day total cost</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer Disclosure */}
+                  <div className="flex items-center gap-4 text-slate-400 pt-8 border-t border-slate-100 text-[11px] font-medium italic">
+                    <Info size={14} className="flex-shrink-0" />
+                    <p>{t.sections.footer}</p>
                   </div>
                 </motion.div>
               )}
 
-              {/* Watermark Logo */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
-                  className="w-[120%] h-[120%]"
-                >
-                  <Award size={800} />
-                </motion.div>
-              </div>
-
             </div>
-          </motion.div>
+          </div>
 
         </div>
       </div>
