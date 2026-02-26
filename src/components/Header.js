@@ -17,11 +17,13 @@ import {
     HelpCircle,
     Clock,
     LogOut,
-    User
+    User,
+    Mail
 } from 'lucide-react';
-import LanguageSelector from './LanguageSelector'; // Wait, LanguageSelector is in App.js currently
+import LanguageSelector from './LanguageSelector';
 import NotificationBell from './NotificationBell';
-import MessageBadge from './MessageBadge'; // Also in App.js
+import MessageBadge from './MessageBadge';
+import CurrencySelector from './CurrencySelector';
 
 // Note: I will move LanguageSelector, MessageBadge to their own files if they are not already.
 // According to my previous list_dir, they are NOT separate files in src/components.
@@ -114,7 +116,10 @@ export default function Header({
 
                         <div className="h-8 w-[1px] bg-slate-200 mx-1" />
 
-                        <LanguageSelector />
+                        <div className="flex items-center gap-1">
+                            <CurrencySelector />
+                            <LanguageSelector />
+                        </div>
 
                         {currentUser && (
                             <NotificationBell
@@ -127,7 +132,7 @@ export default function Header({
 
                         <button
                             onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
-                            className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all relative"
+                            className="p-2.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all relative"
                             title="Favorites"
                         >
                             <Heart size={20} className={favoritesCount > 0 ? "fill-red-500 text-red-500" : ""} />
@@ -135,7 +140,7 @@ export default function Header({
 
                         <button
                             onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
-                            className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all relative"
+                            className="p-2.5 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all relative"
                             title="Messages"
                         >
                             <MessageCircle size={20} />
@@ -190,6 +195,13 @@ export default function Header({
                                                         Admin Panel
                                                     </button>
                                                 )}
+                                                <button
+                                                    onClick={() => { navigate('/contact'); setShowUserMenuDropdown(false); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-2xl transition-all"
+                                                >
+                                                    <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600"><HelpCircle size={16} /></div>
+                                                    Contact Us
+                                                </button>
                                             </div>
                                             <div className="p-2 border-t border-slate-100">
                                                 <button
@@ -208,7 +220,14 @@ export default function Header({
                     </div>
 
                     {/* Mobile Controls */}
-                    <div className="md:hidden flex items-center gap-3">
+                    <div className="md:hidden flex items-center gap-2">
+                        <button
+                            onClick={() => navigate('/sell')}
+                            className="w-10 h-10 flex items-center justify-center bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
+                            title="Add Van"
+                        >
+                            <Plus size={20} />
+                        </button>
                         <button
                             onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
                             className="p-2 text-slate-600 relative"
@@ -244,6 +263,20 @@ export default function Header({
                             >
                                 <div className="p-3 bg-white rounded-2xl shadow-sm"><Calculator size={20} className="text-emerald-600" /></div>
                                 <span className="text-xs font-bold text-slate-800">Calculator</span>
+                            </Link>
+                        </div>
+
+                        <div className="px-1 mb-6">
+                            <Link
+                                to="/contact"
+                                onClick={() => setShowMobileMenu(false)}
+                                className="w-full bg-slate-50 p-4 rounded-3xl flex items-center gap-4 border border-slate-100"
+                            >
+                                <div className="p-3 bg-white rounded-2xl shadow-sm text-emerald-600"><Mail size={20} /></div>
+                                <div className="text-left">
+                                    <p className="text-xs font-bold text-slate-800">Need Help?</p>
+                                    <p className="text-[10px] text-slate-400">Contact our support team</p>
+                                </div>
                             </Link>
                         </div>
 
@@ -283,8 +316,11 @@ export default function Header({
                                     </button>
                                 </>
                             )}
-                            <div className="pt-4 flex justify-center">
-                                <LanguageSelector />
+                            <div className="pt-4 flex flex-col items-center gap-4">
+                                <div className="flex items-center gap-3">
+                                    <CurrencySelector />
+                                    <LanguageSelector />
+                                </div>
                             </div>
                         </div>
                     </div>

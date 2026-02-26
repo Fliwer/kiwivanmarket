@@ -5,6 +5,7 @@ import { doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
+import { useHideLoader } from '../hooks/useHideLoader';
 import { safeDate } from '../utils/dateHelper';
 import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
 import {
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import SeoHead from './SeoHead';
+import EquipmentBadges from './EquipmentBadges';
 
 // Lazy load du QuickMessageBox
 const QuickMessageBox = lazy(() => import('./QuickMessageBox'));

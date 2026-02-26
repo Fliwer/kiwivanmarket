@@ -33,12 +33,12 @@ const NotificationBell = ({ user, onNotificationClick }) => {
         id: doc.id,
         ...doc.data()
       }));
-      
+
       if (notifs.length > notifications.length && notifications.length > 0) {
         setIsAnimating(true);
         setTimeout(() => setIsAnimating(false), 600);
       }
-      
+
       setNotifications(notifs);
     });
 
@@ -49,7 +49,7 @@ const NotificationBell = ({ user, onNotificationClick }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
-          bellRef.current && !bellRef.current.contains(event.target)) {
+        bellRef.current && !bellRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
@@ -84,7 +84,7 @@ const NotificationBell = ({ user, onNotificationClick }) => {
   const deleteNotification = async (e, notifId) => {
     e.stopPropagation();
     setDeletingId(notifId);
-    
+
     try {
       await deleteDoc(doc(db, 'notifications', notifId));
     } catch (error) {
@@ -97,7 +97,7 @@ const NotificationBell = ({ user, onNotificationClick }) => {
   // 🗑️ Delete all notifications
   const deleteAllNotifications = async () => {
     if (!window.confirm('Delete all notifications? This cannot be undone.')) return;
-    
+
     try {
       const batch = writeBatch(db);
       notifications.forEach(n => {
@@ -128,8 +128,8 @@ const NotificationBell = ({ user, onNotificationClick }) => {
   const formatFullDate = (timestamp) => {
     if (!timestamp) return '';
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -202,7 +202,7 @@ const NotificationBell = ({ user, onNotificationClick }) => {
     const style = getNotificationStyle(notif.type);
     const IconComponent = style.icon;
     const isDeleting = deletingId === notif.id;
-    
+
     return (
       <div
         onClick={() => handleNotificationClick(notif)}
@@ -211,8 +211,8 @@ const NotificationBell = ({ user, onNotificationClick }) => {
           transition-all duration-300
           border-l-4 ${style.accentColor}
           ${isDeleting ? 'opacity-50 scale-95' : ''}
-          ${!notif.read 
-            ? 'bg-gradient-to-r from-emerald-50/80 via-white to-white hover:from-emerald-100/80' 
+          ${!notif.read
+            ? 'bg-gradient-to-r from-emerald-50/80 via-white to-white hover:from-emerald-100/80'
             : 'bg-white hover:bg-gray-50'
           }
         `}
@@ -274,29 +274,28 @@ const NotificationBell = ({ user, onNotificationClick }) => {
           onClick={() => setIsOpen(!isOpen)}
           className={`
             relative p-2.5 rounded-xl transition-all duration-300
-            ${isOpen 
-              ? 'bg-white/30 scale-105' 
-              : 'hover:bg-white/20 hover:scale-105'
+            ${isOpen
+              ? 'bg-emerald-50 text-emerald-600'
+              : 'hover:bg-slate-50 text-slate-500 hover:text-emerald-600'
             }
             ${isAnimating ? 'animate-wiggle' : ''}
           `}
           aria-label="Notifications"
         >
-          <Bell 
-            size={22} 
-            className={`transition-all duration-300 ${
-              isOpen ? 'text-white fill-white/20' : 'text-white'
-            }`}
+          <Bell
+            size={22}
+            className={`transition-all duration-300 ${isOpen ? 'fill-emerald-600/10' : ''
+              }`}
           />
-          
+
           {/* Badge */}
           {unreadCount > 0 && (
             <span className={`
               absolute flex items-center justify-center
               font-bold text-white shadow-lg
               transition-all duration-300 transform
-              ${unreadCount > 9 
-                ? 'top-0 right-0 min-w-[20px] h-[20px] text-[10px] px-1 rounded-full bg-gradient-to-r from-red-500 to-pink-500' 
+              ${unreadCount > 9
+                ? 'top-0 right-0 min-w-[20px] h-[20px] text-[10px] px-1 rounded-full bg-gradient-to-r from-red-500 to-pink-500'
                 : 'top-0.5 right-0.5 w-[18px] h-[18px] text-[11px] rounded-full bg-gradient-to-r from-red-500 to-pink-500'
               }
               ${isAnimating ? 'scale-125' : 'scale-100'}
@@ -309,11 +308,11 @@ const NotificationBell = ({ user, onNotificationClick }) => {
         {/* 📋 Dropdown Panel */}
         {isOpen && (
           <>
-            <div 
+            <div
               className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[100] md:hidden"
               onClick={() => setIsOpen(false)}
             />
-            
+
             <div
               ref={dropdownRef}
               className="fixed md:absolute z-[101] left-4 right-4 md:left-auto md:right-0 top-20 md:top-full md:mt-3 md:w-[380px] lg:w-[420px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-slideDown"
@@ -363,7 +362,7 @@ const NotificationBell = ({ user, onNotificationClick }) => {
               {/* Footer */}
               {notifications.length > 0 && (
                 <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-4 pb-3 px-5 border-t border-gray-100">
-                  <button 
+                  <button
                     onClick={handleViewAllClick}
                     className="w-full py-2.5 text-center text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors"
                   >
@@ -404,7 +403,7 @@ const NotificationBell = ({ user, onNotificationClick }) => {
       {showAllNotifications && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
-            
+
             {/* Header */}
             <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-5 flex-shrink-0">
               <div className="flex items-center justify-between">
@@ -417,14 +416,14 @@ const NotificationBell = ({ user, onNotificationClick }) => {
                     {notifications.length} notification{notifications.length !== 1 ? 's' : ''} • {unreadCount} unread
                   </p>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowAllNotifications(false)}
                   className="p-2 hover:bg-white/20 rounded-xl transition text-white"
                 >
                   <X size={24} />
                 </button>
               </div>
-              
+
               {/* Action buttons */}
               <div className="flex gap-2 mt-3">
                 {unreadCount > 0 && (

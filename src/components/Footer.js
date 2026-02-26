@@ -154,9 +154,9 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
                 </Link>
               </li>
               <li>
-                <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-gray-300 hover:text-white transition">
+                <Link to="/contact" className="text-gray-300 hover:text-white transition">
                   {t('footer.contact')}
-                </a>
+                </Link>
               </li>
             </ul>
             <h3 className="font-bold mb-3 mt-6 text-emerald-400 text-sm uppercase tracking-wider">{t('header.guides')}</h3>

@@ -7,13 +7,16 @@ import { db } from './firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
+import { useHideLoader } from './hooks/useHideLoader';
 import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import NotificationBell from './components/NotificationBell';
 import SeoHead from './components/SeoHead';
 import Header from './components/Header';
+import { CURRENCIES } from './components/CurrencySelector';
 import QuickFilters from './components/QuickFilters';
 import Listings from './components/Listings';
+import EquipmentBadges from './components/EquipmentBadges';
 
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
@@ -43,6 +46,7 @@ const VanPage = lazy(() => import('./components/VanPage'));
 const BrandPage = lazy(() => import('./components/BrandPage'));
 const LocationPage = lazy(() => import('./components/LocationPage'));
 const GuidePage = lazy(() => import('./components/GuidePage'));
+const ContactPage = lazy(() => import('./components/ContactPage'));
 // ✅ User pages
 const ProfilePage = lazy(() => import('./components/ProfilePage'));
 const MyListingsPage = lazy(() => import('./components/MyListingsPage'));
@@ -71,11 +75,50 @@ const LoadingSpinner = ({ text }) => {
 const PageLoader = () => {
   const { t } = useTranslation();
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
-      <div className="text-center">
-        <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-emerald-600 mb-4 shadow-lg shadow-emerald-600/20"></div>
-        <p className="text-xl text-slate-700 font-semibold">{t('common.loading')}</p>
-        <p className="text-sm text-slate-500 mt-2">Préparation de votre plateforme...</p>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white relative overflow-hidden">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-50 rounded-full blur-3xl opacity-60 animate-pulse"></div>
+      <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-teal-50 rounded-full blur-3xl opacity-60 animate-pulse" style={{ animationDelay: '1s' }}></div>
+
+      <div className="relative z-10 flex flex-col items-center">
+        {/* Logo Container */}
+        <div className="relative mb-8">
+          <div className="w-24 h-24 bg-[#f7eedd] rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-emerald-600/10 animate-scale-in">
+            <img
+              src="/kiwi-van-logo-48.webp"
+              alt="Kiwi Van Market"
+              className="w-16 h-16 object-contain animate-float"
+            />
+          </div>
+          {/* Pulsing ring */}
+          <div className="absolute inset-0 rounded-[2.5rem] border-2 border-emerald-500/20 animate-ping shadow-lg shadow-emerald-500/20"></div>
+        </div>
+
+        {/* Text & Progress */}
+        <div className="text-center space-y-4">
+          <div className="flex flex-col items-center">
+            <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+              KiwiVan <span className="text-emerald-600">Market</span>
+            </h2>
+            <div className="h-1 w-12 bg-emerald-500 rounded-full mt-1 animate-width-grow"></div>
+          </div>
+
+          <div className="flex flex-col items-center gap-3">
+            <div className="flex gap-1">
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+            </div>
+            <p className="text-sm text-slate-400 font-medium tracking-wide uppercase italic">
+              {t('common.loading')}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Branding */}
+      <div className="absolute bottom-12 text-slate-300 text-xs font-bold tracking-[0.2em] uppercase">
+        New Zealand's #1 Van Marketplace
       </div>
     </div>
   );
@@ -132,78 +175,7 @@ function WebViewWarning() {
 }
 
 
-
-// 💱 Sélecteur de devise pour le header
-const CURRENCIES = {
-  NZD: { symbol: '$', code: 'NZD', flag: 'https://flagcdn.com/24x18/nz.png', rate: 1 },
-  EUR: { symbol: '€', code: 'EUR', flag: 'https://flagcdn.com/24x18/eu.png', rate: 0.54 },
-  USD: { symbol: '$', code: 'USD', flag: 'https://flagcdn.com/24x18/us.png', rate: 0.59 },
-  AUD: { symbol: '$', code: 'AUD', flag: 'https://flagcdn.com/24x18/au.png', rate: 0.92 },
-  GBP: { symbol: '£', code: 'GBP', flag: 'https://flagcdn.com/24x18/gb.png', rate: 0.47 },
-};
-
-function CurrencySelector() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentCurrency, setCurrentCurrency] = useState('NZD');
-  const { t } = useTranslation();
-
-  useEffect(() => {
-    const savedCurrency = safeStorage.getItem('kiwivanmarket_currency') || 'NZD';
-    setCurrentCurrency(savedCurrency);
-  }, []);
-
-  const changeCurrency = (code) => {
-    setIsOpen(false);
-    setCurrentCurrency(code);
-    safeStorage.setItem('kiwivanmarket_currency', code);
-    window.dispatchEvent(new CustomEvent('currencyChange', { detail: code }));
-  };
-
-  const currency = CURRENCIES[currentCurrency];
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
-        title={t('common.change_currency')}
-      >
-        <img src={currency.flag} alt={currency.code} className="w-6 h-4 object-cover rounded-sm" />
-        <span className="hidden sm:inline">{currency.code}</span>
-        <ChevronDown
-          size={14}
-          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-[100]"
-            onClick={() => setIsOpen(false)}
-          />
-
-          <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[140px] z-[101]">
-            {Object.entries(CURRENCIES).map(([code, curr]) => (
-              <button
-                key={code}
-                onClick={() => changeCurrency(code)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentCurrency === code
-                  ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                  : 'hover:bg-gray-50 text-gray-700'
-                  }`}
-              >
-                <img src={curr.flag} alt={code} className="w-6 h-4 object-cover rounded-sm" />
-                <span className="font-medium">{code}</span>
-                <span className="text-gray-400 ml-auto">{curr.symbol}</span>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
+// 💱 CurrencySelector déplacé dans src/components/CurrencySelector.js
 
 
 
@@ -211,6 +183,8 @@ function CurrencySelector() {
 // COMPOSANT PRINCIPAL DE L'APPLICATION
 // ========================================
 function MainApp() {
+  useHideLoader();
+
   const navigate = useNavigate();
   const [vans, setVans] = useState([]);
   const [filteredVans, setFilteredVans] = useState([]);
@@ -285,16 +259,6 @@ function MainApp() {
 
     window.addEventListener('currencyChange', handleCurrencyChange);
     return () => window.removeEventListener('currencyChange', handleCurrencyChange);
-  }, []);
-
-  useEffect(() => {
-    const loader = document.getElementById('app-loader');
-    if (loader) {
-      setTimeout(() => {
-        loader.classList.add('fade-out');
-        setTimeout(() => loader.remove(), 500);
-      }, 300);
-    }
   }, []);
 
   // ✨ OPTIMISATION : Chargement avec cache localStorage
@@ -469,12 +433,33 @@ function MainApp() {
     const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % images.length);
     const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
+    // ✅ Swiping Logic
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e) => {
+      setTouchEnd(null);
+      setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+
+    const onTouchEnd = () => {
+      if (!touchStart || !touchEnd) return;
+      const distance = touchStart - touchEnd;
+      const isLeftSwipe = distance > minSwipeDistance;
+      const isRightSwipe = distance < -minSwipeDistance;
+      if (isLeftSwipe) nextImage();
+      if (isRightSwipe) prevImage();
+    };
+
     return (
       <div
-        className="fixed inset-0 bg-black md:bg-black/70 md:backdrop-blur-sm flex items-start md:items-center justify-center z-[60] overflow-y-auto"
+        className="fixed inset-0 bg-black md:bg-black/70 md:backdrop-blur-sm flex items-start md:items-center justify-center z-[60] overflow-y-auto animate-in fade-in duration-300"
         onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }}>
         <div
-          className="bg-white w-full md:rounded-3xl md:max-w-7xl md:my-8 relative shadow-2xl overflow-hidden min-h-screen md:min-h-0"
+          className="bg-white w-full md:rounded-3xl md:max-w-7xl md:my-8 relative shadow-2xl overflow-hidden min-h-screen md:min-h-0 animate-in slide-in-from-bottom-4 duration-500"
           onClick={(e) => e.stopPropagation()}>
 
           {/* Header mobile */}
@@ -482,7 +467,7 @@ function MainApp() {
             <div className="flex items-center justify-between p-4">
               <button
                 onClick={() => { setSelectedVan(null); setCurrentImageIndex(0); }}
-                className="bg-white/20 backdrop-blur-sm rounded-full p-2 text-white">
+                className="bg-white/20 backdrop-blur-sm rounded-full p-2 text-white transition-transform active:scale-90">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
@@ -490,12 +475,12 @@ function MainApp() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={(e) => { e.stopPropagation(); navigate(`/van/${van.id}`); setSelectedVan(null); }}
-                  className="bg-white/20 backdrop-blur-sm rounded-full p-2 text-white">
+                  className="bg-white/20 backdrop-blur-sm rounded-full p-2 text-white transition-transform active:scale-90">
                   <ExternalLink size={22} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
-                  className="bg-white/20 backdrop-blur-sm rounded-full p-2">
+                  className="bg-white/20 backdrop-blur-sm rounded-full p-2 transition-transform active:scale-90">
                   <Heart
                     size={22}
                     className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-white'}
@@ -523,11 +508,19 @@ function MainApp() {
           <div className="grid lg:grid-cols-2">
 
             {/* GALERIE PHOTO - Optimise pour reduire le bandwidth */}
-            <div className="relative bg-gray-900 h-[280px] md:h-[600px] lg:h-[800px] -mt-16 md:mt-0">
+            <div
+              className="relative bg-black h-[320px] md:h-[600px] lg:h-[800px] -mt-16 md:mt-0 flex items-center justify-center overflow-hidden group/gallery"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent z-10"></div>
+
               <img
+                key={currentImageIndex}
                 src={getLargeImage(images[currentImageIndex])}
                 alt={van.title || t('modal.untitled_van')}
-                className="w-full h-full object-contain"
+                className="max-w-full max-h-full object-contain animate-fade-in duration-500"
                 loading="lazy"
               />
 
@@ -535,42 +528,42 @@ function MainApp() {
                 <>
                   <button
                     onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                    className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2 md:p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
-                    <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all hover:scale-110 z-20 hidden md:flex active:scale-95">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                    className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-2 md:p-3 shadow-xl hover:bg-white transition-all hover:scale-110">
-                    <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all hover:scale-110 z-20 hidden md:flex active:scale-95">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
 
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-semibold">
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-2xl text-xs font-bold tracking-widest z-20 shadow-2xl border border-white/10 uppercase">
                     {currentImageIndex + 1} / {images.length}
                   </div>
                 </>
               )}
 
-              <div className="absolute top-20 md:top-6 left-4 md:left-6 flex flex-col gap-2 md:gap-3">
+              <div className="absolute top-24 md:top-8 left-6 md:left-8 flex flex-col gap-3 z-20">
                 {van.featured && (
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg flex items-center gap-1.5 md:gap-2">
+                  <div className="bg-gradient-to-r from-amber-400 to-orange-500 text-white px-4 py-2 rounded-2xl text-xs font-black shadow-xl shadow-orange-500/20 flex items-center gap-2 animate-scale-in">
                     <Star size={14} fill="currentColor" />
                     {t('van_page.featured')}
                   </div>
                 )}
                 {van.selfContained && (
-                  <div className={`text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg ${van.selfContainedType === 'blue'
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
-                    : 'bg-gradient-to-r from-green-500 to-emerald-500'
+                  <div className={`text-white px-4 py-2 rounded-2xl text-xs font-black shadow-xl animate-scale-in stagger-1 ${van.selfContainedType === 'blue'
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 shadow-blue-500/20'
+                    : 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-emerald-500/20'
                     }`}>
                     ✓ {t('filters.self_contained')} {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
                   </div>
                 )}
                 {van.buyBack && (
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold shadow-lg flex items-center gap-1.5 md:gap-2">
+                  <div className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-2xl text-xs font-black shadow-xl shadow-emerald-600/20 flex items-center gap-2 animate-scale-in stagger-2">
                     <Shield size={14} />
                     {t('filters.buyback')}
                   </div>
@@ -579,10 +572,10 @@ function MainApp() {
 
               <button
                 onClick={(e) => { e.stopPropagation(); toggleFavorite(van.id); }}
-                className="hidden md:block absolute bottom-6 right-6 bg-white rounded-full p-3 shadow-xl hover:scale-110 transition-all">
+                className="hidden md:block absolute bottom-8 right-8 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl hover:scale-110 transition-all z-20 group/fav">
                 <Heart
                   size={24}
-                  className={isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-gray-700'}
+                  className={`${isFavorite(van.id) ? 'text-red-500 fill-red-500' : 'text-slate-400 group-hover/fav:text-red-400'} transition-colors`}
                 />
               </button>
             </div>
@@ -662,22 +655,7 @@ function MainApp() {
                     <div className="w-1 h-6 bg-emerald-600 rounded-full"></div>
                     {t('modal.equipment')}
                   </h3>
-                  <div className="grid grid-cols-2 gap-2">
-                    {van.equipment.doubleBed && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛏️ {t('equipment.double_bed')}</div>}
-                    {van.equipment.fridge && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🧊 {t('equipment.fridge')}</div>}
-                    {van.equipment.gasStove && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔥 {t('equipment.gas_stove')}</div>}
-                    {van.equipment.sink && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚰 {t('equipment.sink')}</div>}
-                    {van.equipment.toilet && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚽 {t('equipment.toilet')}</div>}
-                    {van.equipment.solarPanel && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">☀️ {t('equipment.solar_panel')}</div>}
-                    {van.equipment.leisureBattery && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🔋 {t('equipment.leisure_battery')}</div>}
-                    {van.equipment.heater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🌡️ {t('equipment.heater')}</div>}
-                    {van.equipment.hotWater && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">♨️ {t('equipment.boiler')}</div>}
-                    {van.equipment.outdoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🚿 {t('equipment.outdoor_shower')}</div>}
-                    {van.equipment.indoorShower && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">🛁 {t('equipment.indoor_shower')}</div>}
-                    {van.equipment.awning && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">⛺ {t('equipment.awning')}</div>}
-                    {van.equipment.reverseCamera && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📷 {t('equipment.reverse_camera')}</div>}
-                    {van.equipment.bluetooth && <div className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 px-3 py-2 rounded-lg text-sm">📊 {t('equipment.bluetooth')}</div>}
-                  </div>
+                  <EquipmentBadges equipment={van.equipment} />
                 </div>
               )}
 
@@ -948,24 +926,24 @@ function MainApp() {
 
                   {/* Visual Element */}
                   <div className="flex-1 relative w-full aspect-square max-w-[500px] animate-fade-in-up stagger-2">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-[3rem] rotate-3 opacity-20" />
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[3rem] -rotate-3 overflow-hidden shadow-2xl">
+                    <div className="absolute inset-0 bg-emerald-50 rounded-[3.5rem] rotate-3 opacity-60" />
+                    <div className="absolute inset-0 bg-white rounded-[3.5rem] -rotate-3 overflow-hidden shadow-2xl border-8 border-white">
                       <img
-                        src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&q=80&w=1200"
+                        src="https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&q=80&w=1200"
                         alt="New Zealand Campervan Adventure"
                         className="w-full h-full object-cover hover:scale-110 transition-transform duration-700"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-40" />
 
-                      {/* Floating Card */}
-                      <div className="absolute bottom-6 left-6 right-6 glass-effect p-6 rounded-3xl animate-fade-in-up stagger-3">
+                      {/* Floating Card - Mockup Style */}
+                      <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-xl p-4 rounded-[2rem] animate-fade-in-up stagger-3 shadow-xl border border-white/50">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-lg">
-                            <MapPin size={24} />
+                          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
+                            <MapPin size={22} className="fill-emerald-600/10" />
                           </div>
                           <div>
-                            <p className="text-white font-bold">{t('home.destination_title')}</p>
-                            <p className="text-white/70 text-sm">{t('home.destination_subtitle')}</p>
+                            <p className="text-slate-900 font-black text-lg leading-tight uppercase tracking-tight">{t('home.destination_title')}</p>
+                            <p className="text-slate-500 text-xs font-semibold">{t('home.destination_subtitle')}</p>
                           </div>
                         </div>
                       </div>
@@ -1352,6 +1330,11 @@ export default function KiwiVanMarket() {
           </Suspense>
         } />
         */}
+        <Route path="/contact" element={
+          <Suspense fallback={<PageLoader />}>
+            <ContactPage />
+          </Suspense>
+        } />
         <Route path="*" element={<MainApp />} />
       </Routes>
     </BrowserRouter>

@@ -1,490 +1,455 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import SeoHead from './SeoHead';
+import { CURRENCIES } from './CurrencySelector';
 
 // Depreciation parameters configuration
 const CONFIG = {
-  depreciationPerMonth: 2,
-  depreciationPerKmBlock: 150,
+  depreciationPerMonth: 2.2, // Base monthly depreciation
   kmBlockSize: 5000,
+  depreciationPerKmBlock: 120, // Depreciation per 5000km
+  maintenanceBase: 250, // Standard maintenance cost (NZD)
+  seasonalFactors: {
+    summer: 1.05, // Dec - Feb: Resale is higher
+    standard: 0.95, // Shoulder seasons
+    winter: 0.85,  // May - Aug: Resale is lower
+  },
   conditionMultipliers: {
     excellent: 1.0,
-    good: 0.92,
-    fair: 0.80,
+    good: 0.95,
+    fair: 0.82,
     poor: 0.65,
   },
-};
-
-// 💱 Currency configuration with flag images
-const CURRENCIES = {
-  NZD: { symbol: '$', code: 'NZD', flag: 'https://flagcdn.com/24x18/nz.png', rate: 1 },
-  EUR: { symbol: '€', code: 'EUR', flag: 'https://flagcdn.com/24x18/eu.png', rate: 0.54 },
-  USD: { symbol: '$', code: 'USD', flag: 'https://flagcdn.com/24x18/us.png', rate: 0.59 },
-  AUD: { symbol: '$', code: 'AUD', flag: 'https://flagcdn.com/24x18/au.png', rate: 0.92 },
-  GBP: { symbol: '£', code: 'GBP', flag: 'https://flagcdn.com/24x18/gb.png', rate: 0.47 },
+  avgRentalPriceDay: 110, // Average cost to rent a similar van in NZD
 };
 
 // 🌐 Traductions EN/FR
 const translations = {
   en: {
-    badge: 'Buyback Calculator',
-    title: 'Estimate your',
-    titleHighlight: 'buyback price',
-    subtitle: 'Calculate how much you could get back at the end of your New Zealand adventure',
-    labelPrice: '💰 Van purchase price',
-    labelDuration: '📅 Trip duration',
-    labelKilometers: '🛣️ Kilometers driven',
-    labelCondition: '🔍 Vehicle condition on return',
+    badge: 'Premium Buyback Tool',
+    title: 'Smart Buyback',
+    titleHighlight: 'Calculator',
+    subtitle: 'A professional estimation based on NZ market seasonality and real-time depreciation.',
+
+    // Inputs
+    labelPrice: '💰 Purchase Price',
+    labelDuration: '📅 Trip Duration',
+    labelKilometers: '🛣️ Distance Driven',
+    labelCondition: '🔍 Condition on Return',
+    labelSeason: '☀️ Sale Season',
+
+    // Units
     weeks: 'Weeks',
     months: 'Months',
-    calculateBtn: 'Calculate buyback price',
-    resultTitle: 'Estimated buyback price',
-    resultRecovered: 'of purchase price recovered',
-    breakdownTitle: 'Calculation breakdown',
-    initialPrice: 'Initial purchase price',
-    timeDepreciation: 'Time depreciation',
-    mileageDepreciation: 'Mileage depreciation',
-    conditionAdjustment: 'Condition adjustment',
-    estimatedPrice: 'Estimated buyback price',
-    disclaimer: 'This calculation is based on standard parameters. The final buyback price may vary depending on the mechanical condition of the vehicle, current market conditions, and specific seller terms.',
-    disclaimerTitle: '⚠️ Estimate only:',
-    newCalculation: 'New calculation',
-    poweredBy: 'Powered by',
-    monthsLabel: 'months',
-    currency: 'Currency',
+    estimateBtn: 'Generate Professional Report',
+
+    // Results
+    resultTitle: 'Projected Resale Value',
+    percentageRecovered: 'Money Recovered',
+    breakdownTitle: 'Market Breakdown',
+    comparativeTitle: 'Rent vs Buy Comparison',
+
+    // Table items
+    initialPrice: 'Initial Investment',
+    marketDepreciation: 'Market Depreciation',
+    mileageImpact: 'Mileage Impact',
+    seasonalAdjustment: 'Seasonal Factor',
+    maintenanceReserve: 'Maintenance Reserve',
+    buybackTotal: 'Final Buyback Price',
+
+    // Rent vs Buy
+    rentCost: 'Cost to Rent',
+    buybackSaving: 'Total Saved by Buying',
+    savingLabel: 'You save',
+    perDay: 'per day',
+
+    // Context
+    seasons: {
+      summer: { label: 'Summer (High Demand)', icon: '☀️' },
+      standard: { label: 'Shoulder Season', icon: '⛅' },
+      winter: { label: 'Winter (Low Demand)', icon: '❄️' }
+    },
     conditions: {
-      excellent: { label: 'Excellent', description: 'Like new, no damage' },
-      good: { label: 'Good', description: 'Normal wear, well maintained' },
-      fair: { label: 'Fair', description: 'Visible wear, minor issues' },
-      poor: { label: 'Poor', description: 'Damage or repairs needed' },
-    }
+      excellent: { label: 'Mint', desc: 'No damage, clean history' },
+      good: { label: 'Normal', desc: 'Typical travel wear' },
+      fair: { label: 'Worn', desc: 'Visible cosmetic issues' },
+      poor: { label: 'Damaged', desc: 'Mechanical/body work needed' }
+    },
+    disclaimer: 'This estimation uses real-world NZ market data but remains indicative. Prices fluctuate based on model popularity and mechanical WOF checks.',
+    currency: 'Currency'
   },
   fr: {
-    badge: 'Calculateur Buyback',
-    title: 'Estimez votre',
-    titleHighlight: 'prix de rachat',
-    subtitle: 'Calculez combien vous pourriez récupérer à la fin de votre aventure en Nouvelle-Zélande',
-    labelPrice: '💰 Prix d\'achat du van',
-    labelDuration: '📅 Durée du voyage',
-    labelKilometers: '🛣️ Kilomètres parcourus',
-    labelCondition: '🔍 État du véhicule au retour',
+    badge: 'Outil Buyback Premium',
+    title: 'Calculateur',
+    titleHighlight: 'Buyback Intelligent',
+    subtitle: 'Une estimation professionnelle basée sur la saisonnalité du marché NZ et la dépréciation réelle.',
+
+    // Inputs
+    labelPrice: '💰 Prix d\'Achat',
+    labelDuration: '📅 Durée du Voyage',
+    labelKilometers: '🛣️ Distance Parcourue',
+    labelCondition: '🔍 État au Retour',
+    labelSeason: '☀️ Saison de Vente',
+
+    // Units
     weeks: 'Semaines',
     months: 'Mois',
-    calculateBtn: 'Calculer le prix de rachat',
-    resultTitle: 'Prix de rachat estimé',
-    resultRecovered: 'du prix d\'achat récupéré',
-    breakdownTitle: 'Détail du calcul',
-    initialPrice: 'Prix d\'achat initial',
-    timeDepreciation: 'Dépréciation temps',
-    mileageDepreciation: 'Dépréciation kilométrage',
-    conditionAdjustment: 'Ajustement état',
-    estimatedPrice: 'Prix de rachat estimé',
-    disclaimer: 'Ce calcul est une estimation basée sur des paramètres standards. Le prix final de rachat peut varier selon l\'état mécanique du véhicule, le marché actuel, et les conditions spécifiques de chaque vendeur.',
-    disclaimerTitle: '⚠️ Estimation indicative :',
-    newCalculation: 'Nouveau calcul',
-    poweredBy: 'Propulsé par',
-    monthsLabel: 'mois',
-    currency: 'Devise',
+    estimateBtn: 'Générer le Rapport',
+
+    // Results
+    resultTitle: 'Valeur de Revente Projetée',
+    percentageRecovered: 'Capital Récupéré',
+    breakdownTitle: 'Détail du Marché',
+    comparativeTitle: 'Comparatif Achat vs Location',
+
+    // Table items
+    initialPrice: 'Investissement Initial',
+    marketDepreciation: 'Dépréciation du Marché',
+    mileageImpact: 'Impact Kilométrage',
+    seasonalAdjustment: 'Ajustement Saisonnier',
+    maintenanceReserve: 'Réserve Entretien',
+    buybackTotal: 'Prix de Rachat Final',
+
+    // Rent vs Buy
+    rentCost: 'Coût en Location',
+    buybackSaving: 'Économie Totale (Achat)',
+    savingLabel: 'Vous économisez',
+    perDay: 'par jour',
+
+    // Context
+    seasons: {
+      summer: { label: 'Été (Forte Demande)', icon: '☀️' },
+      standard: { label: 'Intersaison', icon: '⛅' },
+      winter: { label: 'Hiver (Basse Demande)', icon: '❄️' }
+    },
     conditions: {
-      excellent: { label: 'Excellent', description: 'Comme neuf, aucun dégât' },
-      good: { label: 'Bon état', description: 'Usure normale, bien entretenu' },
-      fair: { label: 'Correct', description: 'Usure visible, petits défauts' },
-      poor: { label: 'Usé', description: 'Dégâts ou réparations nécessaires' },
-    }
+      excellent: { label: 'Impeccable', desc: 'État neuf, historique clair' },
+      good: { label: 'Normal', desc: 'Usure de voyage classique' },
+      fair: { label: 'Fatigué', desc: 'Défauts esthétiques visibles' },
+      poor: { label: 'Abîmé', desc: 'Réparations nécessaires' }
+    },
+    disclaimer: 'Cette estimation utilise des données réelles du marché NZ mais reste indicative. Les prix fluctuent selon la popularité du modèle.',
+    currency: 'Devise'
   }
 };
 
 export default function BuybackCalculator({ isEmbedded = false }) {
   const [purchasePrice, setPurchasePrice] = useState('');
   const [duration, setDuration] = useState('');
-  const [durationUnit, setDurationUnit] = useState('weeks');
+  const [durationUnit, setDurationUnit] = useState('months');
   const [kilometers, setKilometers] = useState('');
   const [condition, setCondition] = useState('good');
+  const [season, setSeason] = useState('standard');
   const [showResult, setShowResult] = useState(false);
   const [lang, setLang] = useState('en');
   const [currency, setCurrency] = useState('NZD');
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
 
-  // 🌐 Détecter la langue depuis le cookie Google Translate
+  // 🌐 Detect language
   useEffect(() => {
     const detectLanguage = () => {
       const match = document.cookie.match(/googtrans=\/en\/([^;]+)/);
-      if (match && match[1] === 'fr') {
-        setLang('fr');
-      } else {
-        setLang('en');
-      }
+      if (match && match[1] === 'fr') setLang('fr');
+      else setLang('en');
     };
-
     detectLanguage();
-    const interval = setInterval(detectLanguage, 1000);
+    const interval = setInterval(detectLanguage, 2000);
     return () => clearInterval(interval);
   }, []);
 
-  // 💱 Charger la devise sauvegardée
+  // 🔄 Sync currency
   useEffect(() => {
-    const savedCurrency = localStorage.getItem('kiwivanmarket_currency');
-    if (savedCurrency && CURRENCIES[savedCurrency]) {
-      setCurrency(savedCurrency);
-    }
+    const saved = localStorage.getItem('kiwivanmarket_currency') || 'NZD';
+    setCurrency(saved);
+
+    const handleGlobalChange = (e) => {
+      if (e.detail && CURRENCIES[e.detail]) setCurrency(e.detail);
+    };
+    window.addEventListener('currencyChange', handleGlobalChange);
+    return () => window.removeEventListener('currencyChange', handleGlobalChange);
   }, []);
 
   const t = translations[lang];
-  const currentCurrency = CURRENCIES[currency];
-
-  const conditionLabels = {
-    excellent: { ...t.conditions.excellent, emoji: '✨' },
-    good: { ...t.conditions.good, emoji: '👍' },
-    fair: { ...t.conditions.fair, emoji: '👌' },
-    poor: { ...t.conditions.poor, emoji: '🔧' },
-  };
-
-  // 💱 Convertir un montant de la devise actuelle vers NZD (pour calcul interne)
-  const toNZD = (amount) => {
-    return amount / currentCurrency.rate;
-  };
-
-  // 💱 Convertir un montant NZD vers la devise sélectionnée (pour affichage)
-  const fromNZD = (nzdAmount) => {
-    return Math.round(nzdAmount * currentCurrency.rate);
-  };
-
-  // 💱 Formater un prix avec la devise (montant déjà dans la devise actuelle)
-  const formatPrice = (amount) => {
-    return `${Math.round(amount).toLocaleString()} ${currentCurrency.symbol}`;
-  };
-
-  // 💱 Formater un prix NZD converti vers la devise actuelle
-  const formatPriceFromNZD = (nzdAmount) => {
-    const converted = fromNZD(nzdAmount);
-    return `${converted.toLocaleString()} ${currentCurrency.symbol}`;
-  };
+  const curr = CURRENCIES[currency] || CURRENCIES.NZD;
 
   const calculation = useMemo(() => {
-    const curr = CURRENCIES[currency]; // Utiliser la devise actuelle
-    const priceInUserCurrency = parseFloat(purchasePrice) || 0;
-    const dur = parseFloat(duration) || 0;
+    const priceUser = parseFloat(purchasePrice) || 0;
+    const durOrig = parseFloat(duration) || 0;
     const km = parseFloat(kilometers) || 0;
 
-    if (priceInUserCurrency <= 0) return null;
+    if (priceUser <= 0 || durOrig <= 0) return null;
 
-    // Convertir le prix en NZD pour le calcul
-    const priceNZD = priceInUserCurrency / curr.rate;
+    // Internal calculation always in NZD
+    const priceNZD = priceUser / curr.rate;
+    const totalDays = durationUnit === 'weeks' ? durOrig * 7 : durOrig * 30.44;
+    const totalMonths = totalDays / 30.44;
 
-    const months = durationUnit === 'weeks' ? dur / 4.33 : dur;
-    const timeDepreciation = Math.min(months * CONFIG.depreciationPerMonth, 50) / 100;
-    const kmBlocks = Math.floor(km / CONFIG.kmBlockSize);
-    const kmDepreciationNZD = kmBlocks * CONFIG.depreciationPerKmBlock;
-    const conditionMultiplier = CONFIG.conditionMultipliers[condition];
-    const priceAfterTimeNZD = priceNZD * (1 - timeDepreciation);
-    const priceAfterKmNZD = Math.max(priceAfterTimeNZD - kmDepreciationNZD, priceNZD * 0.3);
-    const finalPriceNZD = Math.max(priceAfterKmNZD * conditionMultiplier, priceNZD * 0.2);
-    const percentageRecovered = (finalPriceNZD / priceNZD) * 100;
+    // 1. Time Depreciation
+    const timeDeprecRate = (totalMonths * CONFIG.depreciationPerMonth) / 100;
+    const priceAfterTime = priceNZD * (1 - timeDeprecRate);
 
-    // Reconvertir les montants dans la devise de l'utilisateur pour l'affichage
+    // 2. Mileage Depreciation
+    const kmBlocks = km / CONFIG.kmBlockSize;
+    const kmDeprec = kmBlocks * CONFIG.depreciationPerKmBlock;
+    const priceAfterKm = priceAfterTime - kmDeprec;
+
+    // 3. Condition & Seasonality
+    const seasonalFactor = CONFIG.seasonalFactors[season];
+    const conditionFactor = CONFIG.conditionMultipliers[condition];
+
+    let finalNZD = priceAfterKm * conditionFactor * seasonalFactor;
+
+    // 4. Maintenance Reserve
+    finalNZD = Math.max(finalNZD - CONFIG.maintenanceBase, priceNZD * 0.2);
+
+    const percentage = (finalNZD / priceNZD) * 100;
+
+    // 5. Rent vs Buy Logic
+    const totalRentCostNZD = totalDays * CONFIG.avgRentalPriceDay;
+    const netCostOfOwnershipNZD = priceNZD - finalNZD;
+    const totalSavedNZD = totalRentCostNZD - netCostOfOwnershipNZD;
+
     return {
-      originalPrice: priceInUserCurrency, // Prix original tel qu'entré par l'utilisateur
-      timeDepreciationPercent: timeDepreciation * 100,
-      timeDepreciationAmount: priceInUserCurrency * timeDepreciation, // En devise utilisateur
-      kmDepreciation: Math.round(kmDepreciationNZD * curr.rate), // Converti en devise utilisateur
-      conditionMultiplier,
-      conditionAdjustment: Math.round(priceAfterKmNZD * (1 - conditionMultiplier) * curr.rate), // Converti
-      finalPrice: Math.round(finalPriceNZD * curr.rate), // Prix final converti
-      percentageRecovered: Math.round(percentageRecovered),
-      months: months.toFixed(1),
+      resalePrice: finalNZD * curr.rate,
+      percentage: Math.round(percentage),
+      timeDeprec: (priceNZD - priceAfterTime) * curr.rate,
+      kmDeprec: kmDeprec * curr.rate,
+      maintReserve: CONFIG.maintenanceBase * curr.rate,
+      rentCost: totalRentCostNZD * curr.rate,
+      netCost: netCostOfOwnershipNZD * curr.rate,
+      totalSaved: totalSavedNZD * curr.rate,
+      savingPerDay: (totalSavedNZD / totalDays) * curr.rate,
+      days: Math.round(totalDays)
     };
-  }, [purchasePrice, duration, durationUnit, kilometers, condition, currency]);
-
-  const handleCalculate = () => {
-    if (purchasePrice && duration && kilometers) {
-      setShowResult(true);
-    }
-  };
-
-  const handleReset = () => {
-    setPurchasePrice('');
-    setDuration('');
-    setKilometers('');
-    setCondition('good');
-    setShowResult(false);
-  };
-
-  const handleCurrencyChange = (newCurrency) => {
-    setCurrency(newCurrency);
-    localStorage.setItem('kiwivanmarket_currency', newCurrency);
-    setShowCurrencyDropdown(false);
-    // Le résultat se recalcule automatiquement grâce au useMemo
-  };
+  }, [purchasePrice, duration, durationUnit, kilometers, condition, season, currency]);
 
   return (
-    <div className={isEmbedded ? "py-4 px-0" : "min-h-screen bg-gradient-to-br from-stone-100 via-emerald-50 to-stone-100 py-12 px-4"}>
+    <div className={isEmbedded ? "py-4" : "min-h-screen bg-slate-50 py-12 px-4"}>
       {!isEmbedded && (
         <SeoHead
-          title={lang === 'fr' ? 'Calculateur Buy-back Campervan NZ' : 'NZ Campervan Buy-back Calculator'}
-          description={lang === 'fr'
-            ? 'Estimez le prix de rachat de votre van en fin de voyage en Nouvelle-Zélande avec notre outil gratuit.'
-            : 'Estimate your campervan buy-back price at the end of your NZ trip with our free calculator tool.'}
+          title={lang === 'fr' ? 'Calculateur Buyback Premium NZ' : 'Premium NZ Buyback Calculator'}
+          description="Estimate resale value of your campervan with real market seasonality and professional data."
         />
       )}
-      {/* Background decoration */}
-      {!isEmbedded && (
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-emerald-200/30 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-amber-200/30 rounded-full blur-3xl" />
-        </div>
-      )}
 
-      <div className={isEmbedded ? "max-w-full relative" : "max-w-2xl mx-auto relative"}>
-        {/* Header */}
-        <div className={`text-center ${isEmbedded ? 'mb-6' : 'mb-10'}`}>
-          <div className="inline-flex items-center gap-2 bg-emerald-700 text-white px-4 py-1.5 rounded-full text-sm font-medium mb-4">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+          <span className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-4 inline-block shadow-sm">
             {t.badge}
-          </div>
-          <h2 className={`${isEmbedded ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-bold text-stone-800 mb-3`} style={{ fontFamily: 'system-ui' }}>
-            {t.title} <span className="text-emerald-700">{t.titleHighlight}</span>
-          </h2>
-          <p className="text-stone-600 max-w-md mx-auto">
+          </span>
+          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
+            {t.title} <span className="text-emerald-600 italic">{t.titleHighlight}</span>
+          </h1>
+          <p className="text-slate-500 max-w-lg mx-auto font-medium">
             {t.subtitle}
           </p>
         </div>
 
-        {/* Calculator Card */}
-        <div className={`bg-white rounded-3xl ${isEmbedded ? 'border-2 border-emerald-100 shadow-xl' : 'bg-white/80 backdrop-blur-sm shadow-xl shadow-stone-200/50 border border-stone-200/50'} overflow-hidden`}>
-          {/* Form Section */}
-          <div className="p-6 md:p-8 space-y-6">
+        <div className="grid lg:grid-cols-12 gap-8">
+          {/* Inputs Section */}
+          <div className="lg:col-span-12 bg-white rounded-[2.5rem] p-6 shadow-2xl shadow-slate-200/60 border border-slate-100">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 p-4">
 
-            {/* 💱 Currency Selector - More prominent */}
-            <div className="flex justify-center mb-2">
-              <div className="relative">
-                <button
-                  onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-                  className="flex items-center gap-3 px-5 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 rounded-xl transition text-white text-sm font-semibold shadow-lg shadow-emerald-500/25"
-                >
-                  <img src={currentCurrency.flag} alt={currentCurrency.code} className="w-6 h-4 object-cover rounded-sm shadow" />
-                  <span className="text-base">{currentCurrency.code}</span>
-                  <span className="text-emerald-200">({currentCurrency.symbol})</span>
-                  <svg className={`w-4 h-4 transition-transform ${showCurrencyDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {showCurrencyDropdown && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setShowCurrencyDropdown(false)} />
-                    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-white rounded-xl shadow-2xl border border-stone-200 py-2 min-w-[180px] z-20">
-                      <div className="px-3 py-2 text-xs font-semibold text-stone-400 uppercase tracking-wide border-b border-stone-100 mb-1">
-                        {t.currency}
-                      </div>
-                      {Object.entries(CURRENCIES).map(([code, curr]) => (
+              {/* Price & Currency */}
+              <div>
+                <div className="flex justify-between items-center mb-3">
+                  <label className="text-sm font-black text-slate-700 uppercase tracking-tighter">{t.labelPrice}</label>
+                  <button
+                    onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
+                    className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded-lg hover:bg-emerald-100 hover:text-emerald-700 transition-colors uppercase"
+                  >
+                    {currency} ▾
+                  </button>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold">{curr.symbol}</span>
+                  <input
+                    type="number"
+                    value={purchasePrice}
+                    onChange={(e) => { setPurchasePrice(e.target.value); setShowResult(false); }}
+                    className="w-full pl-12 pr-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 focus:bg-white outline-none transition-all font-bold text-slate-800"
+                    placeholder="12000"
+                  />
+                  {showCurrencyDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 shadow-2xl rounded-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                      {Object.entries(CURRENCIES).map(([code, c]) => (
                         <button
                           key={code}
-                          onClick={() => handleCurrencyChange(code)}
-                          className={`w-full flex items-center gap-3 px-4 py-3 text-left text-sm transition ${currency === code
-                            ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                            : 'hover:bg-stone-50 text-stone-700'
-                            }`}
+                          onClick={() => { setCurrency(code); localStorage.setItem('kiwivanmarket_currency', code); setShowCurrencyDropdown(false); }}
+                          className="w-full flex items-center justify-between px-5 py-3 hover:bg-slate-50 text-sm font-bold text-slate-700"
                         >
-                          <img src={curr.flag} alt={code} className="w-6 h-4 object-cover rounded-sm shadow-sm" />
-                          <span className="font-medium">{code}</span>
-                          <span className="text-stone-400 ml-auto">{curr.symbol}</span>
+                          <span>{code}</span>
+                          <span className="text-slate-400">{c.symbol}</span>
                         </button>
                       ))}
                     </div>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Purchase Price */}
-            <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-2">
-                {t.labelPrice}
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-medium">{currentCurrency.symbol}</span>
-                <input
-                  type="number"
-                  value={purchasePrice}
-                  onChange={(e) => {
-                    setPurchasePrice(e.target.value);
-                    // ✅ FIX: Permettre le recalcul en temps réel
-                    if (showResult) setShowResult(false);
-                  }}
-                  placeholder="8500"
-                  className="w-full pl-10 pr-16 py-3.5 bg-stone-50 border-2 border-stone-200 rounded-xl text-stone-800 font-medium placeholder:text-stone-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm">{currentCurrency.code}</span>
-              </div>
-            </div>
-
-            {/* Duration */}
-            <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-2">
-                {t.labelDuration}
-              </label>
-              <div className="flex gap-3">
-                <input
-                  type="number"
-                  value={duration}
-                  onChange={(e) => {
-                    setDuration(e.target.value);
-                    if (showResult) setShowResult(false);
-                  }}
-                  placeholder="12"
-                  className="flex-1 px-4 py-3.5 bg-stone-50 border-2 border-stone-200 rounded-xl text-stone-800 font-medium placeholder:text-stone-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                />
-                <select
-                  value={durationUnit}
-                  onChange={(e) => {
-                    setDurationUnit(e.target.value);
-                    if (showResult) setShowResult(false);
-                  }}
-                  className="px-4 py-3.5 bg-stone-50 border-2 border-stone-200 rounded-xl text-stone-800 font-medium focus:outline-none focus:border-emerald-500 focus:bg-white transition-all cursor-pointer"
-                >
-                  <option value="weeks">{t.weeks}</option>
-                  <option value="months">{t.months}</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Kilometers */}
-            <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-2">
-                {t.labelKilometers}
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={kilometers}
-                  onChange={(e) => {
-                    setKilometers(e.target.value);
-                    if (showResult) setShowResult(false);
-                  }}
-                  placeholder="15000"
-                  className="w-full px-4 py-3.5 bg-stone-50 border-2 border-stone-200 rounded-xl text-stone-800 font-medium placeholder:text-stone-400 focus:outline-none focus:border-emerald-500 focus:bg-white transition-all"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm">km</span>
-              </div>
-            </div>
-
-            {/* Condition */}
-            <div>
-              <label className="block text-sm font-semibold text-stone-700 mb-3">
-                {t.labelCondition}
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {Object.entries(conditionLabels).map(([key, { label, description, emoji }]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => {
-                      setCondition(key);
-                      if (showResult) setShowResult(false);
-                    }}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${condition === key
-                      ? 'border-emerald-500 bg-emerald-50 shadow-md'
-                      : 'border-stone-200 bg-stone-50 hover:border-stone-300 hover:bg-stone-100'
-                      }`}
+              {/* Duration */}
+              <div>
+                <label className="block text-sm font-black text-slate-700 uppercase tracking-tighter mb-3">{t.labelDuration}</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    value={duration}
+                    onChange={(e) => { setDuration(e.target.value); setShowResult(false); }}
+                    className="flex-1 px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 outline-none transition-all font-bold text-slate-800"
+                    placeholder="4"
+                  />
+                  <select
+                    value={durationUnit}
+                    onChange={(e) => setDurationUnit(e.target.value)}
+                    className="px-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-slate-600 outline-none hover:border-slate-300 transition-all"
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span>{emoji}</span>
-                      <span className={`font-semibold ${condition === key ? 'text-emerald-700' : 'text-stone-700'}`}>
-                        {label}
-                      </span>
-                    </div>
-                    <p className="text-xs text-stone-500">{description}</p>
-                  </button>
-                ))}
+                    <option value="weeks">{t.weeks}</option>
+                    <option value="months">{t.months}</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Kilometers */}
+              <div>
+                <label className="block text-sm font-black text-slate-700 uppercase tracking-tighter mb-3">{t.labelKilometers}</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={kilometers}
+                    onChange={(e) => { setKilometers(e.target.value); setShowResult(false); }}
+                    className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:border-emerald-500 outline-none transition-all font-bold text-slate-800"
+                    placeholder="10000"
+                  />
+                  <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">km</span>
+                </div>
+              </div>
+
+              {/* Season Selection */}
+              <div>
+                <label className="block text-sm font-black text-slate-700 uppercase tracking-tighter mb-3">{t.labelSeason}</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(t.seasons).map(([key, s]) => (
+                    <button
+                      key={key}
+                      onClick={() => { setSeason(key); setShowResult(false); }}
+                      className={`flex flex-col items-center p-3 rounded-2xl border-2 transition-all ${season === key ? 'bg-emerald-50 border-emerald-500 shadow-md' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}`}
+                    >
+                      <span className="text-xl mb-1">{s.icon}</span>
+                      <span className="text-[9px] font-black uppercase text-center leading-none">{s.label.split(' ')[0]}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Condition Selection */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-black text-slate-700 uppercase tracking-tighter mb-3">{t.labelCondition}</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {Object.entries(t.conditions).map(([key, cond]) => (
+                    <button
+                      key={key}
+                      onClick={() => { setCondition(key); setShowResult(false); }}
+                      className={`px-4 py-3 rounded-2xl border-2 text-left transition-all ${condition === key ? 'bg-emerald-50 border-emerald-500 shadow-md ring-2 ring-emerald-500/10' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}`}
+                    >
+                      <div className="text-sm font-black text-slate-800 mb-0.5">{cond.label}</div>
+                      <div className="text-[9px] text-slate-500 leading-none">{cond.desc}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Calculate Button */}
-            <button
-              onClick={handleCalculate}
-              disabled={!purchasePrice || !duration || !kilometers}
-              className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-stone-300 disabled:to-stone-400 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25 disabled:shadow-none transition-all transform hover:scale-[1.02] disabled:hover:scale-100 disabled:cursor-not-allowed"
-            >
-              {t.calculateBtn}
-            </button>
+            <div className="p-4 mt-4">
+              <button
+                onClick={() => setShowResult(true)}
+                disabled={!purchasePrice || !duration}
+                className="w-full bg-slate-900 hover:bg-emerald-700 disabled:bg-slate-200 text-white py-5 rounded-3xl font-black text-lg tracking-wider shadow-2xl transition-all active:scale-95 disabled:cursor-not-allowed group"
+              >
+                {t.estimateBtn}
+                <span className="ml-3 group-hover:translate-x-1 inline-block transition-transform">→</span>
+              </button>
+            </div>
           </div>
 
           {/* Results Section */}
           {showResult && calculation && (
-            <div className="border-t-2 border-dashed border-stone-200 bg-gradient-to-b from-emerald-50/50 to-white p-6 md:p-8">
-              {/* Main Result */}
-              <div className="text-center mb-8">
-                <p className="text-sm text-stone-500 mb-2">{t.resultTitle}</p>
-                <div className="flex items-center justify-center gap-2">
-                  <span className="text-5xl md:text-6xl font-bold text-emerald-700">
-                    {formatPrice(calculation.finalPrice)}
-                  </span>
-                  <span className="text-stone-400 text-lg">{currentCurrency.code}</span>
-                </div>
-                <div className="mt-3 inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {calculation.percentageRecovered}% {t.resultRecovered}
-                </div>
-              </div>
+            <div className="lg:col-span-12 grid md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-5 duration-700">
 
-              {/* Breakdown */}
-              <div className="bg-white rounded-2xl border border-stone-200 p-5 mb-6">
-                <h3 className="font-semibold text-stone-700 mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                  {t.breakdownTitle}
-                </h3>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between items-center">
-                    <span className="text-stone-600">{t.initialPrice}</span>
-                    <span className="font-semibold text-stone-800">{formatPrice(calculation.originalPrice)}</span>
+              {/* Main Resale Card */}
+              <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-emerald-200 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl transition-transform group-hover:scale-110" />
+
+                <div className="relative z-10">
+                  <h3 className="text-emerald-100 font-bold text-sm uppercase tracking-widest mb-2">{t.resultTitle}</h3>
+                  <div className="flex items-baseline gap-3 mb-8">
+                    <span className="text-6xl font-black tabular-nums">{Math.round(calculation.resalePrice).toLocaleString()}</span>
+                    <span className="text-2xl font-bold opacity-70">{curr.code}</span>
                   </div>
-                  <div className="flex justify-between items-center text-amber-700">
-                    <span>{t.timeDepreciation} ({calculation.months} {t.monthsLabel})</span>
-                    <span className="font-medium">- {formatPrice(Math.round(calculation.timeDepreciationAmount))}</span>
+
+                  <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
+                    <div className="flex justify-between items-end mb-2">
+                      <span className="text-sm font-bold opacity-90">{t.percentageRecovered}</span>
+                      <span className="text-2xl font-black">{calculation.percentage}%</span>
+                    </div>
+                    <div className="h-4 bg-white/20 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.5)] transition-all duration-1000 ease-out"
+                        style={{ width: `${calculation.percentage}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center text-amber-700">
-                    <span>{t.mileageDepreciation} ({kilometers} km)</span>
-                    <span className="font-medium">- {formatPrice(calculation.kmDepreciation)}</span>
+                </div>
+
+                <div className="mt-8 pt-8 border-t border-white/10 space-y-4 text-emerald-50">
+                  <div className="flex justify-between text-sm">
+                    <span>{t.initialPrice}</span>
+                    <span className="font-bold">{Math.round(calculation.resalePrice + calculation.netCost).toLocaleString()} {curr.code}</span>
                   </div>
-                  <div className="flex justify-between items-center text-amber-700">
-                    <span>{t.conditionAdjustment} ({conditionLabels[condition].label})</span>
-                    <span className="font-medium">- {formatPrice(Math.round(calculation.conditionAdjustment))}</span>
+                  <div className="flex justify-between text-sm">
+                    <span>{t.marketDepreciation}</span>
+                    <span className="text-red-200">-{Math.round(calculation.timeDeprec).toLocaleString()} {curr.code}</span>
                   </div>
-                  <div className="border-t border-stone-200 pt-3 flex justify-between items-center">
-                    <span className="font-bold text-stone-800">{t.estimatedPrice}</span>
-                    <span className="font-bold text-emerald-700 text-lg">{formatPrice(calculation.finalPrice)}</span>
+                  <div className="flex justify-between text-sm">
+                    <span>{t.maintenanceReserve}</span>
+                    <span className="text-amber-200">-{Math.round(calculation.maintReserve).toLocaleString()} {curr.code}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Disclaimer */}
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-                <p className="text-xs text-amber-800 leading-relaxed">
-                  <strong>{t.disclaimerTitle}</strong> {t.disclaimer}
-                </p>
+              {/* Savings Card (Rent vs Buy) */}
+              <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-slate-300 relative overflow-hidden group">
+                <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
+
+                <div className="relative z-10 flex flex-col h-full">
+                  <h3 className="text-slate-400 font-bold text-sm uppercase tracking-widest mb-6">{t.comparativeTitle}</h3>
+
+                  <div className="flex-1 space-y-8">
+                    <div>
+                      <p className="text-slate-500 text-xs font-black uppercase mb-1">{t.rentCost} ({calculation.days}d)</p>
+                      <p className="text-3xl font-bold text-slate-300 line-through decoration-red-500/50 opacity-50">
+                        {Math.round(calculation.rentCost).toLocaleString()} {curr.code}
+                      </p>
+                    </div>
+
+                    <div className="bg-emerald-600/10 border border-emerald-500/20 rounded-[2rem] p-6">
+                      <p className="text-emerald-400 text-xs font-black uppercase mb-2">🔥 {t.savingLabel}</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-5xl font-black text-emerald-400">{Math.round(calculation.totalSaved).toLocaleString()}</span>
+                        <span className="text-xl font-bold text-emerald-500/60">{curr.code}</span>
+                      </div>
+                      <p className="text-emerald-500/80 text-sm font-bold mt-2">
+                        ≈ {Math.round(calculation.savingPerDay).toLocaleString()} {curr.code} {t.perDay}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mt-8 text-[10px] text-slate-500 leading-relaxed italic border-l-2 border-slate-800 pl-4">
+                    {t.disclaimer}
+                  </p>
+                </div>
               </div>
 
-              {/* Reset Button */}
-              <button
-                onClick={handleReset}
-                className="w-full py-3 border-2 border-stone-300 text-stone-600 font-medium rounded-xl hover:bg-stone-50 transition-colors"
-              >
-                {t.newCalculation}
-              </button>
             </div>
           )}
-        </div>
-
-        {/* Footer info */}
-        <div className="mt-8 text-center">
-          <p className="text-sm text-stone-500">
-            {t.poweredBy} <span className="font-semibold text-emerald-700">Kiwi Van Market</span> 🥝
-          </p>
         </div>
       </div>
     </div>

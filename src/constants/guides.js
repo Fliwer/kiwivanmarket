@@ -7,76 +7,92 @@ export const GUIDES = {
             description: 'Everything you need to know about buying a campervan in New Zealand. WOF, REGO, self-contained certification, best brands, prices, and tips for backpackers.',
             heroImage: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=1200',
             content: {
-                intro: `Buying a campervan in New Zealand is one of the best decisions you can make as a backpacker or traveller. It gives you the freedom to explore this beautiful country at your own pace, sleep wherever you want (legally!), and save money on accommodation.`,
+                intro: `Buying a campervan in New Zealand is the ultimate "rite of passage" for any traveller. It's not just a vehicle; it's your home, your freedom, and your ticket to the most remote corners of Aotearoa. But in a market flooded with backpacker vans, how do you separate the gems from the junk?`,
                 sections: [
                     {
-                        title: 'What to Check Before Buying',
+                        title: 'The Mechanical Masterclass',
                         icon: 'CheckCircle',
                         items: [
-                            { title: 'WOF (Warrant of Fitness)', text: 'This is the NZ vehicle safety inspection. Check the expiry date - you need a valid WOF to drive legally. Vans over 12 years old need a WOF every 6 months.', expertTip: true },
-                            { title: 'REGO (Registration)', text: 'Vehicle registration must be current. You can check any vehicle\'s status for free on the NZTA website using the plate number.' },
-                            { title: 'Ownership Papers', text: 'Make sure the seller has the original ownership papers and their ID matches. Never buy a van without seeing these documents.' },
-                            { title: 'Mechanical Condition', text: 'Check oil levels, listen for engine noises, test all gears, check for rust underneath. Consider paying for a professional inspection ($100-200).' },
+                            {
+                                type: 'image',
+                                url: '/van_inspection_expert_1772133711431.png',
+                                caption: 'Expert Tip: Always check the oil color and consistency during a cold start.'
+                            },
+                            {
+                                title: 'WOF & REGO: The Legal Essentials',
+                                text: 'The Warrant of Fitness (WOF) is your safety shield. For older vans (pre-2000), you need this every 6 months. Never buy a van with less than 3 months of WOF remaining, as it indicates the seller might be avoiding a failed inspection.',
+                                expertTip: 'A fresh WOF from VTNZ or AA is worth much more than one from a small local garage. It shows the van has been held to the highest national standards.'
+                            },
+                            {
+                                type: 'callout',
+                                variant: 'warning',
+                                title: 'The "Mayo" Warning',
+                                text: 'Open the oil cap. If you see a milky, beige sludge, the head gasket is likely blown. This is a terminal engine issue—walk away immediately.'
+                            },
+                            {
+                                title: 'Mechanical Pre-Purchase Inspection',
+                                text: 'For $150, a professional mechanic will put the van on a hoist. They will find rust and leaks you simply cannot see from the curb.'
+                            },
                         ]
                     },
                     {
-                        title: 'Self-Contained Certification',
+                        title: 'Certification: Living the Freedom',
                         icon: 'Shield',
                         items: [
-                            { title: 'What is Self-Contained?', text: 'A self-contained vehicle has a toilet, fresh water tank (min 4L per person), and grey water tank that meets NZS 5465 standard.' },
-                            { title: 'Why You Need It', text: 'Self-contained vans can legally freedom camp in many beautiful spots across NZ. Without it, you\'re limited to paid campsites.' },
-                            { title: 'The Blue Card', text: 'Look for the official blue self-contained sticker. It\'s valid for 4 years. Fake stickers can result in $200+ fines.', expertTip: true },
+                            {
+                                type: 'image',
+                                url: '/self_contained_sticker_van_1772133744005.png',
+                                caption: 'The Green Sticker: Your key to legal freedom camping in 2025.'
+                            },
+                            {
+                                title: 'The New 2024 SC Regulations',
+                                text: 'The law has changed. To freedom camp in most places, you now need a "fixed" toilet. Older "portable" toilet certifications are being phased out.',
+                                expertTip: 'Vans with a "Green Sticker" (meeting the latest 2024/2025 rules) have a significantly higher resale value. It\'s a smart investment.'
+                            },
+                            {
+                                type: 'callout',
+                                variant: 'info',
+                                title: 'App Essential',
+                                text: 'Download CamperMate or WikiCamps. They are non-negotiable for finding legal spots and avoiding $400 fines.'
+                            }
                         ]
                     },
                     {
-                        title: 'Best Campervan Brands in NZ',
+                        title: 'Choosing Your Steed',
                         icon: 'Car',
                         items: [
-                            { title: 'Toyota Hiace', text: 'The most popular choice. Reliable, parts are cheap and easy to find, good fuel economy. Prices: $8,000-$20,000.', expertTip: true },
-                            { title: 'Nissan Caravan', text: 'Spacious and affordable. Similar reliability to Hiace. Prices: $6,000-$15,000.' },
-                            { title: 'Mitsubishi Delica', text: '4WD option for adventurous travellers. Great for gravel roads. Prices: $8,000-$18,000.' },
-                            { title: 'Mazda Bongo', text: 'Compact and fuel-efficient. Many have pop-top roofs. Prices: $7,000-$15,000.' },
+                            {
+                                type: 'image',
+                                url: '/freedom_camping_sunrise_nz_1772133726411.png',
+                                caption: 'Waking up at Lake Pukaki is only possible in a certified self-contained van.'
+                            },
+                            {
+                                title: 'Toyota Hiace: The King',
+                                text: 'There is a reason why 70% of rental fleets use the Hiace. It\'s bulletproof. You can find parts in the smallest towns on the West Coast.',
+                                expertTip: 'The 1KZ engine is powerful but thirsty. The 2KD or 1TR engines are more modern and fuel-efficient for long loops.'
+                            },
+                            { title: 'Nissan Caravan', text: 'Spacious, reliable, and often $2,000-$3,000 cheaper than a Hiace. A great alternative for tight budgets.' },
+                            { title: 'Mazda Bongo', text: 'Perfect for solo travellers or couples who prefer a smaller footprint. Easy to park in cities.' },
                         ]
                     },
                     {
-                        title: 'Price Guide',
+                        title: 'Market Pricing & Strategy',
                         icon: 'DollarSign',
                         items: [
-                            { title: 'Budget ($5,000-$10,000)', text: 'Older vans (2000-2005), basic fit-out, may need some work. Good for short trips (1-3 months).' },
-                            { title: 'Mid-Range ($10,000-$18,000)', text: 'Well-maintained vans (2005-2012), decent fit-out, reliable. Ideal for 3-6 month trips.' },
-                            { title: 'Premium ($18,000+)', text: 'Newer vans, professional conversions, solar panels, all amenities. Best for long-term travel.' },
+                            { title: 'The Seasonality Trap', text: 'Prices peak in November/December and crash in April. If you buy in spring, expect to pay 20% more, but you\'ll have the best selection.' },
+                            {
+                                type: 'callout',
+                                variant: 'info',
+                                title: 'Pro Negotiation',
+                                text: 'Always negotiate in person. Showing up with cash (or a ready bank transfer) gives you the upper hand.'
+                            },
                         ]
-                    },
-                    {
-                        title: 'Where to Buy',
-                        icon: 'MapPin',
-                        items: [
-                            { title: 'Auckland', text: 'Largest selection in NZ. Best place to start if arriving from overseas. Many backpacker-focused sellers.' },
-                            { title: 'Christchurch', text: 'Great for South Island adventures. Good selection, slightly lower prices than Auckland.' },
-                            { title: 'Wellington', text: 'Ferry hub between islands. Buy here if you want to explore both islands.' },
-                        ]
-                    },
-                    {
-                        title: 'Buy-Back Options',
-                        icon: 'Shield',
-                        items: [
-                            { title: 'What is Buy-Back?', text: 'Some sellers guarantee to buy the van back at a set price after your trip. Great for peace of mind.' },
-                            { title: 'Typical Terms', text: 'Usually 50-70% of purchase price, valid for 3-12 months. Check conditions carefully (mileage limits, condition requirements).' },
-                            { title: 'Is it Worth It?', text: 'Yes if you want zero stress about selling. You might get slightly more selling privately, but buy-back saves time and hassle.' },
-                        ]
-                    },
-                ],
-                warnings: [
-                    'Never pay a deposit before seeing the van in person',
-                    'Be wary of prices that seem too good to be true',
-                    'Check the van during daylight hours',
-                    'Test drive on different road types (highway, hills)',
-                    'Verify the seller\'s identity matches the ownership papers',
+                    }
                 ],
                 cta: {
-                    title: 'Ready to Find Your Perfect Van?',
-                    text: 'Browse self-contained campervans with valid WOF and buy-back options on Kiwi Van Market.',
-                    buttonText: 'Browse Campervans',
+                    title: 'Your Adventure Starts Here',
+                    text: 'Our marketplace is dedicated to verified campervans with clear history and buy-back options.',
+                    buttonText: 'View Available Vans',
                     buttonLink: '/',
                 }
             }
@@ -383,76 +399,92 @@ export const GUIDES = {
             description: 'Tout ce qu\'il faut savoir sur l\'achat d\'un van en NZ. WOF, REGO, certification Self-contained, prix et astuces pour backpackers.',
             heroImage: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=1200',
             content: {
-                intro: `Acheter un campervan en Nouvelle-Zélande est l'une des meilleures décisions que vous puissiez prendre en tant que voyageur. Cela vous offre la liberté d'explorer ce pays magnifique à votre rythme, de dormir où vous voulez (légalement !) et d'économiser sur l'hébergement.`,
+                intro: `Acheter un campervan en Nouvelle-Zélande est le "rite de passage" ultime pour tout voyageur. Ce n'est pas seulement un véhicule ; c'est votre maison, votre liberté et votre ticket pour les coins les plus reculés d'Aotearoa. Mais dans un marché saturé de vans backpackers, comment différencier les pépites des épaves ?`,
                 sections: [
                     {
-                        title: 'Points à Vérifier Avant l\'Achat',
+                        title: 'Masterclass Mécanique',
                         icon: 'CheckCircle',
                         items: [
-                            { title: 'WOF (Warrant of Fitness)', text: 'Il s\'agit du contrôle technique néo-zélandais. Vérifiez bien la date d\'expiration : vous avez besoin d\'un WOF valide pour rouler. Les vans de plus de 12 ans doivent passer le WOF tous les 6 mois.', expertTip: true },
-                            { title: 'REGO (Registration)', text: 'L\'immatriculation doit être à jour. Vous pouvez vérifier le statut de n\'importe quel véhicule gratuitement sur le site de la NZTA avec le numéro de plaque.' },
-                            { title: 'Papiers de Propriété', text: 'Assurez-vous que le vendeur possède les documents originaux et que son identité correspond. N\'achetez jamais sans voir ces documents.' },
-                            { title: 'État Mécanique', text: 'Vérifiez les niveaux d\'huile, écoutez les bruits du moteur, testez les vitesses et cherchez de la rouille. Une inspection pro ($100-200) est fortement recommandée.' },
+                            {
+                                type: 'image',
+                                url: '/van_inspection_expert_1772133711431.png',
+                                caption: "Conseil d'expert : Vérifiez toujours la couleur et la consistance de l'huile lors d'un démarrage à froid."
+                            },
+                            {
+                                title: 'WOF & REGO : Légal et Vital',
+                                text: "Le Warrant of Fitness (WOF) est votre bouclier de sécurité. Pour les vans de plus de 12 ans, vous en avez besoin tous les 6 mois. N'achetez JAMAIS un van avec moins de 3 mois de WOFrestants, car cela indique souvent que le vendeur évite une inspection qui pourrait échouer.",
+                                expertTip: "Un WOF récent de chez VTNZ ou AA vaut bien plus qu'un WOF d'un petit garage local. Cela prouve que le van respecte les standards nationaux les plus stricts."
+                            },
+                            {
+                                type: 'callout',
+                                variant: 'warning',
+                                title: 'Alerte "Mayonnaise"',
+                                text: "Ouvrez le bouchon d'huile. Si vous voyez un dépôt laiteux et beige (ressemblant à de la mayo), le joint de culasse est probablement HS. C'est une panne moteur fatale — fuyez immédiatement."
+                            },
+                            {
+                                title: 'Inspection Mécanique Pré-Achat',
+                                text: "Pour environ 150$, un mécanicien professionnel mettra le van sur un pont. Il trouvera de la rouille et des fuites que vous ne pouvez tout simplement pas voir depuis le trottoir."
+                            },
                         ]
                     },
                     {
-                        title: 'Certification Self-Contained',
+                        title: 'Certification : Vivre la Liberté',
                         icon: 'Shield',
                         items: [
-                            { title: 'C\'est quoi le Self-Contained ?', text: 'Un véhicule autonome a des toilettes, un réservoir d\'eau propre (min 4L/pers) et un réservoir d\'eaux usées aux normes NZS 5465.' },
-                            { title: 'Pourquoi c\'est Vital', text: 'Les vans certifiés peuvent dormir gratuitement dans de nombreux endroits magnifiques ("Freedom Camping"). Sans cela, vous devrez payer vos campings.' },
-                            { title: 'La Blue Card', text: 'Recherchez l\'autocollant bleu officiel "Self-Contained". Il est valide 4 ans. Les faux autocollants peuvent entraîner des amendes de plus de 200 $.', expertTip: true },
+                            {
+                                type: 'image',
+                                url: '/self_contained_sticker_van_1772133744005.png',
+                                caption: "Le Macaron Vert : Votre sésame pour le freedom camping légal en 2025."
+                            },
+                            {
+                                title: 'Les Nouvelles Règles 2024 SC',
+                                text: "La loi a changé. Pour faire du camping sauvage dans la plupart des endroits, vous avez désormais besoin de toilettes 'fixes'. Les anciennes certifications avec toilettes portables sont en cours de suppression.",
+                                expertTip: "Les vans avec un macaron vert (répondant aux dernières normes 2024/2025) ont une valeur de revente nettement plus élevée. C'est un investissement intelligent."
+                            },
+                            {
+                                type: 'callout',
+                                variant: 'info',
+                                title: 'Application Indispensable',
+                                text: "Téléchargez CamperMate ou WikiCamps. Ils sont indispensables pour trouver des spots légaux et éviter les amendes de 400$."
+                            }
                         ]
                     },
                     {
-                        title: 'Meilleures Marques en NZ',
+                        title: 'Choisir votre Destrier',
                         icon: 'Car',
                         items: [
-                            { title: 'Toyota Hiace', text: 'Le choix le plus populaire. Increvable, pièces pas chères et faciles à trouver, bonne consommation. Prix : 8 000 $ - 20 000 $.', expertTip: true },
-                            { title: 'Nissan Caravan', text: 'Spacieux et abordable, très similaire au Hiace. Prix : 6 000$ - 15 000$.' },
-                            { title: 'Mitsubishi Delica', text: 'Option 4x4 pour les plus aventureux. Idéal pour les routes de gravier. Prix : 8 000$ - 18 000$.' },
-                            { title: 'Mazda Bongo', text: 'Compact et économe. Beaucoup ont des toits relevables (pop-top). Prix : 7 000$ - 15 000$.' },
+                            {
+                                type: 'image',
+                                url: '/freedom_camping_sunrise_nz_1772133726411.png',
+                                caption: "Se réveiller au bord du lac Pukaki n'est possible qu'en van certifié autonome."
+                            },
+                            {
+                                title: 'Toyota Hiace : Le Roi',
+                                text: "Il y a une raison pour laquelle 70% des flottes de location utilisent le Hiace. C'est increvable. Vous trouverez des pièces dans les plus petites villes de la West Coast.",
+                                expertTip: "Le moteur 1KZ est puissant mais gourmand. Les moteurs 2KD ou 1TR sont plus modernes et économes pour les longs trajets."
+                            },
+                            { title: 'Nissan Caravan', text: "Spacieux, fiable et souvent 2 000$ à 3 000$ moins cher qu'un Hiace. Une excellente alternative pour les budgets serrés." },
+                            { title: 'Mazda Bongo', text: "Parfait pour les voyageurs solo ou les couples qui préfèrent un van plus compact. Facile à garer en ville." },
                         ]
                     },
                     {
-                        title: 'Guide des Prix',
+                        title: 'Prix du Marché & Stratégie',
                         icon: 'DollarSign',
                         items: [
-                            { title: 'Budget (5 000$ - 10 000$)', text: 'Vans plus anciens (2000-2005), aménagement simple, peuvent nécessiter des travaux. Bien pour 1-3 mois.' },
-                            { title: 'Milieu de Gamme (10 000$ - 18 000$)', text: 'Vans bien entretenus (2005-2012), bon aménagement, fiables. Idéal pour 3-6 mois.' },
-                            { title: 'Premium (18 000$+)', text: 'Vans récents, conversions pro, panneaux solaires, tout confort. Le top pour le long terme.' },
+                            { title: 'Le Piège de la Saisonnalité', text: "Les prix culminent en novembre/décembre et chutent en avril. Si vous achetez au printemps, attendez-vous à payer 20% de plus, mais vous aurez le meilleur choix." },
+                            {
+                                type: 'callout',
+                                variant: 'info',
+                                title: 'Négociation Pro',
+                                text: "Négociez toujours en personne. Arriver avec le cash (ou un virement prêt) vous donne un avantage considérable."
+                            },
                         ]
-                    },
-                    {
-                        title: 'Où Acheter',
-                        icon: 'MapPin',
-                        items: [
-                            { title: 'Auckland', text: 'Le plus grand choix en NZ. Idéal pour commencer si vous arrivez de l\'étranger. Beaucoup de vendeurs backpackers.' },
-                            { title: 'Christchurch', text: 'Parfait pour l\'Île du Sud. Bon choix, prix parfois un peu plus bas qu\'Auckland.' },
-                            { title: 'Wellington', text: 'Le hub du ferry. Pratique si vous voulez explorer les deux îles rapidement.' },
-                        ]
-                    },
-                    {
-                        title: 'Options de Rachat (Buy-Back)',
-                        icon: 'Shield',
-                        items: [
-                            { title: 'C\'est quoi le Buy-Back ?', text: 'Certains vendeurs garantissent de racheter le van à prix fixe à la fin de votre trip. Idéal pour la tranquillité.' },
-                            { title: 'Conditions Typiques', text: 'Souvent 50-70% du prix d\'achat, valable 3-12 mois. Vérifiez les limites de kilométrage.' },
-                            { title: 'Est-ce rentable ?', text: 'Oui si vous voulez zéro stress pour la revente. Vous pourriez gagner plus en privé, mais le rachat fait gagner un temps précieux.' },
-                        ]
-                    },
-                ],
-                warnings: [
-                    'Ne payez JAMAIS d\'acompte sans avoir vu le van en personne',
-                    'Méfiez-vous des prix trop bas pour être honnêtes',
-                    'Vérifiez le van en plein jour uniquement',
-                    'Faites un essai routier sur différents types de routes (ville et autoroute)',
-                    'Vérifiez que l\'identité du vendeur correspond à la carte grise',
+                    }
                 ],
                 cta: {
-                    title: 'Prêt à Trouver Votre Van Idéal ?',
-                    text: 'Découvrez des campervans certifiés avec WOF valide et options de rachat sur Kiwi Van Market.',
-                    buttonText: 'Chercher un Van',
+                    title: 'Votre Aventure Commence Ici',
+                    text: "Notre marketplace est dédiée aux campervans vérifiés avec un historique clair et des options de rachat.",
+                    buttonText: 'Voir les Vans Disponibles',
                     buttonLink: '/',
                 }
             }
@@ -759,76 +791,92 @@ export const GUIDES = {
             description: 'Todo lo que necesitas saber sobre comprar una campervan en Nueva Zelanda. WOF, REGO, certificación self-contained, mejores marcas, precios y consejos para mochileros.',
             heroImage: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=1200',
             content: {
-                intro: `Comprar una campervan en Nueva Zelanda es una de las mejores decisiones que puedes tomar como mochilero o viajero. Te da la libertad de explorar este hermoso país a tu propio ritmo, dormir donde quieras (¡legalmente!) y ahorrar mucho dinero en alojamiento.`,
+                intro: `Comprar una campervan en Nueva Zelanda es el "rito de paso" definitivo para cualquier viajero. No es solo un vehículo; es tu hogar, tu libertad y tu pasaporte a los rincones más remotos de Aotearoa. Pero en un mercado lleno de furgonetas para mochileros, ¿cómo separar las joyas de la chatarra?`,
                 sections: [
                     {
-                        title: 'Qué revisar antes de comprar',
+                        title: 'Masterclass de Mecánica',
                         icon: 'CheckCircle',
                         items: [
-                            { title: 'WOF (Warrant of Fitness)', text: 'Esta es la inspección técnica de vehículos de Nueva Zelanda. Comprueba la fecha de caducidad: necesitas un WOF válido para conducir legalmente. Las furgonetas de más de 12 años necesitan un WOF cada 6 meses.', expertTip: true },
-                            { title: 'REGO (Registration)', text: 'El registro del vehículo debe estar al día. Puedes verificar el estado de cualquier vehículo gratis en el sitio web de NZTA usando el número de matrícula.' },
-                            { title: 'Papeles de Propiedad', text: 'Asegúrate de que el vendedor tenga los papeles de propiedad originales y que su identificación coincida. Nunca compres una van sin ver estos documentos.' },
-                            { title: 'Estado Mecánico', text: 'Revisa los niveles de aceite, escucha ruidos del motor, prueba todas las marchas y busca óxido debajo. Considera pagar por una inspección profesional ($100-200).' },
+                            {
+                                type: 'image',
+                                url: '/van_inspection_expert_1772133711431.png',
+                                caption: "Consejo de experto: Revisa siempre el color y la consistencia del aceite durante un arranque en frío."
+                            },
+                            {
+                                title: 'WOF & REGO: Lo esencial y legal',
+                                text: "El Warrant of Fitness (WOF) es tu escudo de seguridad. Para furgonetas de más de 12 años, lo necesitas cada 6 meses. Nunca compres una van con menos de 3 meses de WOF restantes; suele indicar que el vendedor evita una inspección que podría fallar.",
+                                expertTip: "Un WOF reciente de VTNZ o AA vale mucho más que uno de un taller local pequeño. Demuestra que la van cumple con los estándares nacionales más exigentes."
+                            },
+                            {
+                                type: 'callout',
+                                variant: 'warning',
+                                title: 'La Alerta de la "Mayonesa"',
+                                text: "Abre el tapón del aceite. Si ves un residuo blanquecino o beige, es probable que la junta de culata esté rota. Es un fallo fatal del motor: huye de inmediato."
+                            },
+                            {
+                                title: 'Inspección Mecánica Pre-compra',
+                                text: "Por unos 150$, un mecánico profesional subirá la van a un elevador. Encontrará óxido y fugas que simplemente no puedes ver desde la acera."
+                            },
                         ]
                     },
                     {
-                        title: 'Certificación Self-Contained',
+                        title: 'Certificación: Vivir la Libertad',
                         icon: 'Shield',
                         items: [
-                            { title: '¿Qué es Self-Contained?', text: 'Un vehículo autónomo tiene baño, tanque de agua limpia (mín. 4L por persona) y tanque de aguas grises que cumple con la norma NZS 5465.' },
-                            { title: 'Por qué lo necesitas', text: 'Las vans self-contained pueden acampar legalmente (freedom camp) en muchos lugares hermosos de NZ. Sin esto, estarás limitado a campings de pago.' },
-                            { title: 'La Tarjeta Azul', text: 'Busca la pegatina oficial de color azul de vehículo autónomo. Tiene una validez de 4 años. Las pegatinas falsas pueden acarrear multas de más de 200 $.', expertTip: true },
+                            {
+                                type: 'image',
+                                url: '/self_contained_sticker_van_1772133744005.png',
+                                caption: "La Pegatina Verde: Tu llave para el freedom camping legal en 2025."
+                            },
+                            {
+                                title: 'Las Nuevas Reglas SC 2024',
+                                text: "La ley ha cambiado. Para acampar libremente en la mayoría de sitios, ahora necesitas un inodoro 'fijo'. Las antiguas certificaciones con inodoros portátiles se están eliminando.",
+                                expertTip: "Las vans con la pegatina verde (que cumplen las normas 2024/2025) tienen un valor de reventa mucho mayor. Es una inversión inteligente."
+                            },
+                            {
+                                type: 'callout',
+                                variant: 'info',
+                                title: 'App Imprescindible',
+                                text: "Descárgate CamperMate o WikiCamps. Son innegociables para encontrar sitios legales y evitar multas de 400$."
+                            }
                         ]
                     },
                     {
-                        title: 'Mejores marcas de campervans en NZ',
+                        title: 'Eligiendo tu Compañera de Ruta',
                         icon: 'Car',
                         items: [
-                            { title: 'Toyota Hiace', text: 'La opción más popular. Fiable, las piezas son baratas y fáciles de encontrar, buen consumo de combustible. Precios: 8.000 $ - 20.000 $.', expertTip: true },
-                            { title: 'Nissan Caravan', text: 'Espaciosa y asequible. Fiabilidad similar a la Hiace. Precios: $6,000-$15,000.' },
-                            { title: 'Mitsubishi Delica', text: 'Opción 4WD para viajeros aventureros. Ideal para caminos de grava. Precios: $8,000-$18,000.' },
-                            { title: 'Mazda Bongo', text: 'Compacta y eficiente. Muchas tienen techos elevables. Precios: $7,000-$15,000.' },
+                            {
+                                type: 'image',
+                                url: '/freedom_camping_sunrise_nz_1772133726411.png',
+                                caption: "Despertar en el Lago Pukaki solo es posible en una van certificada como autónoma."
+                            },
+                            {
+                                title: 'Toyota Hiace: La Reina',
+                                text: "Hay una razón por la que el 70% de las flotas de alquiler usan la Hiace. Es indestructible. Encontrarás piezas hasta en el pueblo más pequeño de la West Coast.",
+                                expertTip: "El motor 1KZ es potente pero consume mucho. Los motores 2KD o 1TR son más modernos y eficientes para rutas largas."
+                            },
+                            { title: 'Nissan Caravan', text: "Espaciosa, fiable y suele ser entre 2.000$ y 3.000$ más barata que una Hiace. Una gran alternativa para presupuestos ajustados." },
+                            { title: 'Mazda Bongo', text: "Perfecta para viajeros solitarios o parejas que prefieren un tamaño más compacto. Fácil de aparcar en ciudades." },
                         ]
                     },
                     {
-                        title: 'Guía de Precios',
+                        title: 'Precios del Mercado y Estrategia',
                         icon: 'DollarSign',
                         items: [
-                            { title: 'Económico ($5,000-$10,000)', text: 'Vans antiguas (2000-2005), equipamiento básico, pueden necesitar arreglos. Buenas para viajes cortos (1-3 meses).' },
-                            { title: 'Gama Media ($10,000-$18,000)', text: 'Vans bien mantenidas (2005-2012), buen equipamiento, fiables. Ideales para viajes de 3-6 meses.' },
-                            { title: 'Premium ($18,000+)', text: 'Vans más nuevas, conversiones profesionales, paneles solares, todas las comodidades. Lo mejor para viajes de largo plazo.' },
+                            { title: 'La Trampa de la Estacionalidad', text: "Los precios alcanzan su máximo en noviembre/diciembre y caen en abril. Si compras en primavera, espera pagar un 20% más, pero tendrás la mejor selección." },
+                            {
+                                type: 'callout',
+                                variant: 'info',
+                                title: 'Negociación Pro',
+                                text: "Negocia siempre en persona. Aparecer con el efectivo (o una transferencia lista) te da la ventaja."
+                            },
                         ]
-                    },
-                    {
-                        title: 'Dónde Comprar',
-                        icon: 'MapPin',
-                        items: [
-                            { title: 'Auckland', text: 'La mayor selección en NZ. El mejor lugar para empezar si vienes del extranjero. Muchos vendedores backpackers.' },
-                            { title: 'Christchurch', text: 'Ideal para aventuras en la Isla Sur. Buena selección, precios a veces más bajos que en Auckland.' },
-                            { title: 'Wellington', text: 'El hub del ferry entre las islas. Compra aquí si quieres explorar ambas rápidamente.' },
-                        ]
-                    },
-                    {
-                        title: 'Opciones de Recompra (Buy-Back)',
-                        icon: 'Shield',
-                        items: [
-                            { title: '¿Qué es el Buy-Back?', text: 'Algunos vendedores garantizan recomprar la van a un precio fijo al final de tu viaje. Ideal para la tranquilidad.' },
-                            { title: 'Términos Típicos', text: 'Suele ser el 50-70% del precio de compra, válido por 3-12 meses. Revisa bien los límites de kilometraje.' },
-                            { title: '¿Vale la pena?', text: 'Sí, si quieres cero estrés al vender. Podrías ganar más en venta privada, pero el buy-back ahorra mucho tiempo.' },
-                        ]
-                    },
-                ],
-                warnings: [
-                    'NUNCA pagues un depósito sin ver la van en persona',
-                    'Desconfía de precios que parezcan demasiado buenos para ser verdad',
-                    'Revisa la van solo durante el día',
-                    'Haz una prueba de manejo en diferentes tipos de camino (autopista, colinas)',
-                    'Verifica que la identidad del vendedor coincida con los papeles de propiedad',
+                    }
                 ],
                 cta: {
-                    title: '¿Listo para encontrar tu van ideal?',
-                    text: 'Explora campervans self-contained con WOF válido y opciones de recompra en Kiwi Van Market.',
-                    buttonText: 'Ver Campervans',
+                    title: 'Tu Aventura Empieza Aquí',
+                    text: "Nuestro marketplace se dedica a campervans verificadas con historial claro y opciones de recompra.",
+                    buttonText: 'Ver Vans Disponibles',
                     buttonLink: '/',
                 }
             }

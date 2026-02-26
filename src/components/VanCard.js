@@ -120,9 +120,12 @@ export default function VanCard({ van, formatPrice, priority = false }) {
 
         {/* Self-contained bottom-left marker */}
         {van.selfContained && (
-          <div className="absolute bottom-4 left-4 bg-blue-600/90 backdrop-blur-md text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-xl flex items-center gap-1.5 border border-white/20">
-            <div className="w-2 h-2 rounded-full bg-blue-300 animate-pulse" />
-            Self-Contained
+          <div className={`absolute bottom-4 left-4 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-xl flex items-center gap-1.5 border border-white/20 ${van.selfContainedType === 'blue'
+              ? 'bg-blue-600/90'
+              : 'bg-emerald-600/90'
+            }`}>
+            {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
+            {van.selfContainedType === 'blue' ? t('van_page.sticker_blue') : t('van_page.sticker_green')}
           </div>
         )}
       </div>

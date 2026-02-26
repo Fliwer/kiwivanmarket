@@ -17,13 +17,17 @@
     overflow-y: scroll;
     scrollbar-gutter: stable;
   }
-  
+
   body {
     @apply antialiased text-slate-800 bg-[#f8fafc];
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
-  
-  h1, h2, h3, h4, .font-display {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
     font-family: 'Outfit', 'Poppins', sans-serif;
     @apply tracking-tight;
   }
@@ -31,9 +35,9 @@
 
 @layer components {
   .glass-effect {
-    @apply backdrop-blur-md bg-white/70 border border-white/20 shadow-xl;
+    @apply backdrop-blur-md bg-white/80 border border-slate-200/50 shadow-2xl shadow-slate-200/50;
   }
-  
+
   .premium-card {
     @apply bg-white rounded-[2rem] border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-900/10 hover:-translate-y-1;
   }
@@ -76,9 +80,46 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes widthGrow {
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 3rem;
   }
 }
 
@@ -86,6 +127,26 @@ body {
   animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
+.animate-scale-in {
+  animation: scaleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-width-grow {
+  animation: widthGrow 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+
+.stagger-3 {
+  animation-delay: 0.3s;
+}
