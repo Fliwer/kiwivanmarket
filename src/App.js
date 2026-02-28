@@ -193,7 +193,7 @@ function MainApp({
 
         const now = Date.now();
         const cacheAge = cacheTimestamp ? now - parseInt(cacheTimestamp) : Infinity;
-        if (initialVans.length > 0 && cacheAge < 120000) return;
+        if (initialVans.length > 0 && cacheAge < 30000) return;
 
         const querySnapshot = await getDocs(collection(db, 'vans'));
         const vansData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
