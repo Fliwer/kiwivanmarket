@@ -10,6 +10,7 @@ import SeoHead from './SeoHead';
 import LanguageSelector from './LanguageSelector';
 import BuybackCalculator from './BuybackCalculator';
 import { GUIDES, IconMap } from '../constants/guides';
+import { useHideLoader } from '../hooks/useHideLoader';
 
 // Schema.org pour les guides
 const GuideSchema = ({ guide, url }) => {
@@ -44,6 +45,7 @@ const GuideSchema = ({ guide, url }) => {
 };
 
 export default function GuidePage() {
+  useHideLoader();
   const { slug } = useParams();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -116,7 +118,6 @@ export default function GuidePage() {
       }
     };
 
-    window.scrollTo(0, 0);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [slug, currentLang]);
@@ -158,22 +159,12 @@ export default function GuidePage() {
       />
       <GuideSchema guide={guide} url={url} />
 
-      <div className="min-h-screen bg-[#FDFDFC]">
+      <div className="bg-[#FDFDFC] pt-24">
         {/* Reading Progress Bar */}
         <div
           className="fixed top-0 left-0 h-1.5 bg-emerald-500 z-[100] transition-all duration-300 ease-out shadow-[0_0_10px_rgba(16,185,129,0.5)]"
           style={{ width: `${scrollProgress}%` }}
         />
-
-        {/* Header Premium Flottant / Mobile Top Bar */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-100 lg:hidden">
-          <div className="flex items-center justify-between px-4 py-3">
-            <Link to="/" className="text-emerald-600 font-bold flex items-center gap-2">
-              <img src="/kiwi-van-logo-48.webp" className="w-8 h-8" alt="Logo" />
-            </Link>
-            <LanguageSelector />
-          </div>
-        </div>
 
         {/* Hero Section */}
         <div className="relative h-[85vh] min-h-[600px] w-full overflow-hidden bg-slate-900 group">
@@ -184,7 +175,7 @@ export default function GuidePage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/20" />
 
-          <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-end pb-24">
+          <div className="relative h-full max-w-7xl mx-auto px-6 flex flex-col justify-end pb-32 pt-20">
             <div className="max-w-4xl">
               <div className="flex items-center gap-3 mb-8 animate-in fade-in slide-in-from-left duration-700">
                 <span className="h-px w-12 bg-emerald-500" />
@@ -444,50 +435,6 @@ export default function GuidePage() {
             </div>
           </div>
         </div>
-
-        {/* Global Footer */}
-        <footer className="bg-slate-900 text-white py-20 mt-24">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-col items-center">
-              <Link to="/" className="flex items-center gap-3 mb-10 group">
-                <div className="w-16 h-16 rounded-2xl bg-[#f7eedd] flex items-center justify-center shadow-2xl transition-transform group-hover:scale-110">
-                  <img src="/kiwi-van-logo-48.webp" className="w-12 h-12 object-contain" alt="Logo" />
-                </div>
-                <div className="text-left">
-                  <span className="block font-black text-2xl tracking-tighter text-white">KiwiVan Market</span>
-                  <span className="block text-slate-400 text-xs font-black uppercase tracking-[0.2em]">{t('van_page.footer_slogan')}</span>
-                </div>
-              </Link>
-
-              <div className="grid md:grid-cols-2 gap-16 w-full max-w-4xl mb-20 border-y border-white/5 py-12">
-                <div>
-                  <h4 className="font-black text-white mb-6 uppercase tracking-[0.2em] text-[10px]">{currentLang === 'fr' ? 'Navigation' : 'Explore'}</h4>
-                  <div className="flex flex-wrap gap-4">
-                    <Link to="/" className="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-bold transition-all">{t('hero.cta_browse')}</Link>
-                    <Link to="/sell" className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold transition-all">{t('hero.cta_sell')}</Link>
-                    <Link to="/guides" className="px-6 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-bold transition-all">{currentLang === 'fr' ? 'Guides' : 'Expert Guides'}</Link>
-                  </div>
-                </div>
-                <div>
-                  <h4 className="font-black text-white mb-6 uppercase tracking-[0.2em] text-[10px]">{currentLang === 'fr' ? 'Langues' : 'Language'}</h4>
-                  <div className="flex gap-4">
-                    <button onClick={() => i18n.changeLanguage('fr')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'fr' ? 'bg-white text-slate-900' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>FR</button>
-                    <button onClick={() => i18n.changeLanguage('en')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'en' ? 'bg-white text-slate-900' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>EN</button>
-                    <button onClick={() => i18n.changeLanguage('es')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${currentLang === 'es' ? 'bg-white text-slate-900' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>ES</button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center">
-                <p className="text-slate-500 text-xs font-black uppercase tracking-[0.3em] mb-4">© 2025 KiwiVan Market • New Zealand</p>
-                <div className="flex justify-center gap-8 text-[10px] font-black uppercase tracking-widest text-slate-600">
-                  <Link to="/terms" className="hover:text-emerald-500 transition-colors">Terms</Link>
-                  <Link to="/privacy" className="hover:text-emerald-500 transition-colors">Privacy</Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </footer>
       </div>
     </>
   );

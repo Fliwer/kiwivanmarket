@@ -269,19 +269,7 @@ export default function VanPage() {
   // Ref pour éviter d'incrémenter les vues 2x (React StrictMode)
   const viewIncremented = useRef(false);
 
-  // Scroll to top on page load
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [id]);
-
-  // Fermer le loader initial
-  useEffect(() => {
-    const loader = document.getElementById('app-loader');
-    if (loader) {
-      loader.classList.add('fade-out');
-      setTimeout(() => loader.remove(), 500);
-    }
-  }, []);
+  useHideLoader();
 
   // Charger le van depuis Firebase
   useEffect(() => {

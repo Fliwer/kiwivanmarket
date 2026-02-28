@@ -48,7 +48,7 @@
     },
     "menu": {
         "profile": "Mon Profil",
-        "listings": "Mes Annonces",
+        "listings": "Mes Vans",
         "admin": "Admin Dashboard",
         "signout": "Déconnexion",
         "sell": "Vendre mon van",
@@ -100,7 +100,7 @@
         "copyright": "© {{year}} Kiwi Van Market. Tous droits réservés."
     },
     "van_page": {
-        "back": "Retour aux annonces",
+        "back": "Retour aux vans",
         "not_found": "Van introuvable",
         "not_found_desc": "Cette annonce a peut-être été supprimée ou vendue.",
         "browse_all": "Voir tous les vans",
@@ -139,7 +139,7 @@
         "not_specified": "Non spécifié"
     },
     "my_listings": {
-        "title": "Mes Annonces",
+        "title": "Mes Vans",
         "manage": "Gérez vos annonces de vans",
         "add_new": "Ajouter un van",
         "stats_listings": "Annonces",

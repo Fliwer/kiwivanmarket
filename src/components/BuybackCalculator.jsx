@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, animate } from 'framer-motion';
 import { Shield, TrendingUp, Gauge, Award, PieChart, Landmark, Cpu, Sparkles, Calendar, Zap, Info, ArrowRight, Printer, Download } from 'lucide-react';
 import SeoHead from './SeoHead';
@@ -188,28 +189,39 @@ export default function BuybackCalculator({ isEmbedded = false }) {
       )}
 
       {/* Cinematic Background Layer */}
-      <div className="fixed inset-0 z-0">
-        <img
-          src="/nz-road-bg.png"
-          alt="NZ Road Adventure"
-          className="w-full h-full object-cover opacity-[0.03] scale-105 pointer-events-none"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/20 via-white to-blue-50/20 pointer-events-none" />
-      </div>
+      {!isEmbedded && (
+        <>
+          <div className="fixed inset-0 z-0">
+            <img
+              src="/nz-road-bg.png"
+              alt="NZ Road Adventure"
+              className="w-full h-full object-cover opacity-[0.03] scale-105 pointer-events-none"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/20 via-white to-blue-50/20 pointer-events-none" />
+          </div>
 
-      {/* Subtle Brand Accents */}
-      <div className="fixed top-0 right-0 w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
-      <div className="fixed bottom-0 left-0 w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
+          {/* Subtle Brand Accents */}
+          <div className="fixed top-0 right-0 w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
+          <div className="fixed bottom-0 left-0 w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
+        </>
+      )}
 
       <div className="max-w-6xl mx-auto relative z-10">
 
         {/* Clean Header */}
-        <div className="mb-12 space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200">
-              <Zap size={20} className="text-white" />
+        <div className="mb-12 flex items-center justify-between gap-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              {!isEmbedded && (
+                <Link to="/" className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                  <img src="/kiwi-van-logo-48.webp" className="w-8 h-8 invert brightness-0" alt="Home" />
+                </Link>
+              )}
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200">
+                <Zap size={20} className="text-white" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">{t.subtitle}</span>
             </div>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">{t.subtitle}</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-black tracking-tight text-slate-900">
             {t.title}

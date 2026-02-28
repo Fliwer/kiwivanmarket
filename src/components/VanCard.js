@@ -5,6 +5,7 @@ import { useFavorites } from '../hooks/useFavorites';
 import { getThumbnail } from '../utils/imageOptimizer';
 import { safeDate } from '../utils/dateHelper';
 import { useTranslation } from 'react-i18next';
+import { useAutoTranslate } from '../hooks/useAutoTranslate';
 
 // Carousel de photos pour la card
 const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
@@ -107,6 +108,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
 export default function VanCard({ van, formatPrice, priority = false }) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { t } = useTranslation();
+  const { translatedText: translatedTitle } = useAutoTranslate(van.title);
 
   const images = van.images?.length > 0
     ? van.images
@@ -118,7 +120,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
       className="premium-card group block overflow-hidden"
     >
       <div className="relative">
-        <ImageCarousel images={images} title={van.title} vanStatus={van.status} priority={priority} />
+        <ImageCarousel images={images} title={translatedTitle} vanStatus={van.status} priority={priority} />
 
         {/* Favorite button */}
         <button
@@ -156,7 +158,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
         <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="font-bold text-slate-900 text-lg leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2 min-h-[3.5rem]">
-              {van.title}
+              {translatedTitle}
             </h3>
             <div className="flex items-center gap-1.5 text-slate-400 text-sm mt-1">
               <MapPin size={14} className="text-emerald-500" />

@@ -184,7 +184,7 @@ export default function Header({
                                                     className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-2xl transition-all"
                                                 >
                                                     <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600"><MapPin size={16} /></div>
-                                                    {t('header.my_listings') || 'My Listings'}
+                                                    {t('menu.listings') || 'My Vans'}
                                                 </button>
                                                 {isAdmin && (
                                                     <button
@@ -306,7 +306,7 @@ export default function Header({
                                             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm transition-transform active:scale-95">
                                                 <MapPin size={20} />
                                             </div>
-                                            <span>{t('header.my_listings') || 'My Listings'}</span>
+                                            <span>{t('menu.listings') || 'My Vans'}</span>
                                         </button>
                                     </div>
                                     <button

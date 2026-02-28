@@ -20,7 +20,7 @@ const formatDateForInput = (date) => {
 };
 
 
-export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = false, vanData = null }) {
+export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode = false, van = null }) {
   const { currentUser } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
@@ -100,9 +100,9 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
-  // Charger les donnes du van en mode dition
+  // Charger les données du van en mode édition
   useEffect(() => {
-    if (editMode && vanData) {
+    if (isEditMode && van) {
       // Default equipment object - Simplified for backpackers
       const defaultEquipment = {
         // Sleeping
@@ -122,39 +122,39 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       };
 
       setFormData({
-        title: vanData.title || '',
-        price: vanData.price?.toString() || '',
-        location: vanData.location || '',
-        region: vanData.region || 'North Island',
-        year: vanData.year || new Date().getFullYear(),
-        mileage: vanData.mileage?.toString() || '',
-        type: vanData.type || 'Van',
-        description: vanData.description || '',
-        capacity: vanData.capacity || 2,
-        selfContained: vanData.selfContained || false,
-        selfContainedType: vanData.selfContainedType || 'green',
-        featured: vanData.featured || false,
-        buyBack: vanData.buyBack || false,
-        buyBackPrice: vanData.buyBackPrice?.toString() || '',
-        buyBackDuration: vanData.buyBackDuration?.toString() || '3',
-        buyBackMaxKm: vanData.buyBackMaxKm?.toString() || '',
-        buyBackConditions: vanData.buyBackConditions || '',
-        equipment: { ...defaultEquipment, ...(vanData.equipment || {}) },
-        wofExpiry: formatDateForInput(vanData.wofExpiry),
-        regoExpiry: formatDateForInput(vanData.regoExpiry),
-        customFeatures: vanData.customFeatures || '',
-        sellerPhone: vanData.seller?.phone || '',
-        sellerFacebook: vanData.seller?.facebook || ''
+        title: van.title || '',
+        price: van.price?.toString() || '',
+        location: van.location || '',
+        region: van.region || 'North Island',
+        year: van.year || new Date().getFullYear(),
+        mileage: van.mileage?.toString() || '',
+        type: van.type || 'Van',
+        description: van.description || '',
+        capacity: van.capacity || 2,
+        selfContained: van.selfContained || false,
+        selfContainedType: van.selfContainedType || 'green',
+        featured: van.featured || false,
+        buyBack: van.buyBack || false,
+        buyBackPrice: van.buyBackPrice?.toString() || '',
+        buyBackDuration: van.buyBackDuration?.toString() || '3',
+        buyBackMaxKm: van.buyBackMaxKm?.toString() || '',
+        buyBackConditions: van.buyBackConditions || '',
+        equipment: { ...defaultEquipment, ...(van.equipment || {}) },
+        wofExpiry: formatDateForInput(van.wofExpiry),
+        regoExpiry: formatDateForInput(van.regoExpiry),
+        customFeatures: van.customFeatures || '',
+        sellerPhone: van.seller?.phone || '',
+        sellerFacebook: van.seller?.facebook || ''
       });
 
       // Charger les images existantes
-      if (vanData.images && vanData.images.length > 0) {
-        setImages(vanData.images.map(url => ({ url, uploading: false })));
-      } else if (vanData.imageUrl) {
-        setImages([{ url: vanData.imageUrl, uploading: false }]);
+      if (van.images && van.images.length > 0) {
+        setImages(van.images.map(url => ({ url, uploading: false })));
+      } else if (van.imageUrl) {
+        setImages([{ url: van.imageUrl, uploading: false }]);
       }
     }
-  }, [editMode, vanData]);
+  }, [isEditMode, van]);
 
   // tats pour les tooltips
   const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
@@ -220,8 +220,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
       return;
     }
 
-    //  SCURIT: Limiter  20 vans par utilisateur (anti-spam)
-    if (!editMode) {
+    //  SÉCURITÉ: Limiter à 20 vans par utilisateur (anti-spam)
+    if (!isEditMode) {
       try {
         const userVansQuery = query(
           collection(db, 'vans'),
@@ -316,8 +316,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
     try {
       const imageUrls = images.map(img => img.url);
 
-      if (editMode && vanData) {
-        // MODE DITION - Update existing van
+      if (isEditMode && van) {
+        // MODE ÉDITION - Update existing van
         const updateData = {
           title: sanitizeString(formData.title),
           price: parseInt(formData.price),
@@ -346,7 +346,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
           updatedAt: new Date()
         };
 
-        await updateDoc(doc(db, 'vans', vanData.id), updateData);
+        await updateDoc(doc(db, 'vans', van.id), updateData);
 
         localStorage.removeItem('kiwiVanMarket_vans');
         localStorage.removeItem('kiwiVanMarket_timestamp');
@@ -456,10 +456,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
         <div className="sticky top-0 z-20 bg-white rounded-t-3xl border-b border-gray-100 px-8 py-6 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-black text-gray-900">
-              {editMode ? 'Edit Van' : 'Add New Van'}
+              {isEditMode ? 'Edit Van' : 'Add New Van'}
             </h2>
             <p className="text-gray-600 mt-1">
-              {editMode ? 'Update your van details' : 'Upload photos and fill in details'}
+              {isEditMode ? 'Update your van details' : 'Upload photos and fill in details'}
             </p>
           </div>
           <button
@@ -562,8 +562,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Toyota Hiace 2015"
                   className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors ${formData.title && formData.title.length < 3
-                      ? 'border-red-300 focus:border-red-500'
-                      : 'border-gray-200 focus:border-emerald-500'
+                    ? 'border-red-300 focus:border-red-500'
+                    : 'border-gray-200 focus:border-emerald-500'
                     }`}
                   required
                 />
@@ -722,8 +722,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                 placeholder="Perfect backpacker van, well maintained, ready for adventure..."
                 rows={4}
                 className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-colors resize-none ${formData.description && formData.description.length < 10
-                    ? 'border-red-300 focus:border-red-500'
-                    : 'border-gray-200 focus:border-emerald-500'
+                  ? 'border-red-300 focus:border-red-500'
+                  : 'border-gray-200 focus:border-emerald-500'
                   }`}
                 required
               />
@@ -1091,8 +1091,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                   {formData.selfContained && (
                     <div className="mt-3 ml-8 flex gap-4 flex-wrap">
                       <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'green'
-                          ? 'border-green-500 bg-green-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-200 hover:border-gray-300'
                         }`}>
                         <input type="radio" name="selfContainedType" value="green"
                           checked={formData.selfContainedType === 'green'}
@@ -1108,8 +1108,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
                       </label>
 
                       <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'blue'
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
                         }`}>
                         <input type="radio" name="selfContainedType" value="blue"
                           checked={formData.selfContainedType === 'blue'}
@@ -1245,8 +1245,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, editMode = 
               disabled={loading || images.length === 0}
               className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
               {loading
-                ? (editMode ? 'Saving...' : 'Adding...')
-                : (editMode ? 'Save Changes' : 'Add Van')
+                ? (isEditMode ? 'Saving...' : 'Adding...')
+                : (isEditMode ? 'Save Changes' : 'Add Van')
               }
             </button>
           </div>

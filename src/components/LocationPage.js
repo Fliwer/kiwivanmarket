@@ -6,6 +6,8 @@ import { db } from '../firebase';
 import { MapPin, ArrowLeft } from 'lucide-react';
 import VanCard from './VanCard';
 import SeoHead from './SeoHead';
+import { useTranslation } from 'react-i18next';
+import { useHideLoader } from '../hooks/useHideLoader';
 
 // Configuration des locations avec descriptions SEO
 const LOCATIONS_CONFIG = {
@@ -102,22 +104,16 @@ const LocationSchema = ({ location, vans, url }) => {
 };
 
 export default function LocationPage() {
+  useHideLoader();
   const { location } = useParams();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const currentLang = (i18n.language || 'en').split('-')[0];
   const [vans, setVans] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const locationConfig = LOCATIONS_CONFIG[location];
   const url = `https://kiwivanmarket.com/location/${location}`;
-
-  // Fermer le loader initial
-  useEffect(() => {
-    const loader = document.getElementById('app-loader');
-    if (loader) {
-      loader.classList.add('fade-out');
-      setTimeout(() => loader.remove(), 500);
-    }
-  }, []);
 
   useEffect(() => {
     const fetchVans = async () => {
@@ -125,13 +121,28 @@ export default function LocationPage() {
         const querySnapshot = await getDocs(collection(db, 'vans'));
         const allVans = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        // Filtrer par location
+        // Filtrer par location et statut (active and sold vans)
         const filtered = allVans.filter(van => {
+          if (van.status && van.status !== 'active' && van.status !== 'sold') return false;
+
           const vanLocation = (van.location || '').toLowerCase();
           const vanRegion = (van.region || '').toLowerCase();
           return locationConfig?.searchTerms.some(term =>
             vanLocation.includes(term) || vanRegion.includes(term)
           );
+        });
+
+        // Tri : Actifs en premier, puis les Vendus (plus récents en premier dans chaque groupe)
+        filtered.sort((a, b) => {
+          const statusOrder = (a.status === 'sold' ? 1 : 0) - (b.status === 'sold' ? 1 : 0);
+          if (statusOrder !== 0) return statusOrder;
+
+          const getTs = (v) => {
+            if (!v.createdAt) return 0;
+            const d = v.createdAt.toDate ? v.createdAt.toDate() : new Date(v.createdAt);
+            return d ? d.getTime() : 0;
+          };
+          return getTs(b) - getTs(a);
         });
 
         setVans(filtered);
@@ -147,167 +158,126 @@ export default function LocationPage() {
     } else {
       setLoading(false);
     }
-  }, [location, locationConfig]);
+  }, [location, locationConfig, currentLang]);
 
-  // 404 si location non trouvée
-  if (!locationConfig) {
+  if (!locationConfig && !loading) {
     return (
-      <>
-        <SeoHead title="Location Not Found" noindex={true} />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center p-8">
-            <div className="text-6xl mb-4">📍</div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Location Not Found</h1>
-            <p className="text-gray-600 mb-6">We don't have this location listed yet.</p>
-            <Link
-              to="/"
-              className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition inline-flex items-center gap-2"
-            >
-              <ArrowLeft size={20} />
-              Browse All Vans
-            </Link>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Location not found</h1>
+          <Link to="/" className="text-emerald-600 hover:underline">Back to listings</Link>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50 pb-12">
       <SeoHead
-        title={locationConfig.title}
-        description={locationConfig.description}
-        type="website"
+        title={locationConfig?.title}
+        description={locationConfig?.description}
+        canonicalUrl={url}
       />
-      <LocationSchema location={locationConfig} vans={vans} url={url} />
 
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <button
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2 text-white/80 hover:text-white mb-4 transition"
-            >
-              <ArrowLeft size={20} />
-              Back to all vans
-            </button>
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin size={28} />
-              <h1 className="text-3xl md:text-4xl font-bold">Campervans in {locationConfig.name}</h1>
+      {locationConfig && <LocationSchema location={locationConfig} vans={vans} url={url} />}
+
+      {/* Hero Section */}
+      <div className="bg-emerald-600 text-white pt-24 pb-12 px-4 shadow-lg">
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-emerald-100 hover:text-white transition mb-6"
+          >
+            <ArrowLeft size={20} />
+            <span>Back</span>
+          </button>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 bg-white/20 rounded-2xl">
+              <MapPin size={32} />
             </div>
-            <p className="text-white/80 text-sm mb-2">{locationConfig.region}, New Zealand</p>
-            <p className="text-white/90 max-w-2xl">
-              {locationConfig.description}
-            </p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="bg-white/20 px-4 py-2 rounded-full text-sm font-semibold">
-                {vans.length} vans in {locationConfig.name}
+            <h1 className="text-4xl md:text-5xl font-black">
+              {locationConfig?.name}
+            </h1>
+          </div>
+          <p className="text-emerald-100 text-lg max-w-2xl leading-relaxed">
+            {locationConfig?.description}
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            {locationConfig?.highlights.map((highlight, idx) => (
+              <span key={idx} className="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold border border-white/20">
+                {highlight}
               </span>
-              {locationConfig.highlights.map((highlight, i) => (
-                <span key={i} className="bg-white/10 px-3 py-1 rounded-full text-xs">
-                  {highlight}
-                </span>
-              ))}
-            </div>
+            ))}
           </div>
-        </header>
-
-        {/* Breadcrumb */}
-        <nav className="max-w-7xl mx-auto px-4 py-3" aria-label="Breadcrumb">
-          <ol className="flex items-center gap-2 text-sm text-gray-500">
-            <li><Link to="/" className="hover:text-emerald-600">Home</Link></li>
-            <li>/</li>
-            <li><Link to="/" className="hover:text-emerald-600">Campervans</Link></li>
-            <li>/</li>
-            <li className="text-gray-800 font-medium">{locationConfig.name}</li>
-          </ol>
-        </nav>
-
-        {/* Van Grid */}
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          {loading ? (
-            <div className="text-center py-20">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-              <p className="mt-4 text-gray-600">Loading vans in {locationConfig.name}...</p>
-            </div>
-          ) : vans.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="text-6xl mb-4">🔍</div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">No vans in {locationConfig.name} right now</h2>
-              <p className="text-gray-600 mb-6">Check back soon or browse all locations.</p>
-              <Link
-                to="/"
-                className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition"
-              >
-                Browse All Vans
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {vans.map(van => (
-                <VanCard key={van.id} van={van} />
-              ))}
-            </div>
-          )}
-
-          {/* SEO Content */}
-          <section className="mt-16 prose prose-emerald max-w-none">
-            <h2>Buying a Campervan in {locationConfig.name}</h2>
-            <p>
-              {locationConfig.name} is a fantastic place to buy a campervan in New Zealand.
-              Located in the {locationConfig.region}, it offers easy access to some of
-              NZ's most incredible destinations. Whether you're starting your adventure
-              or looking to sell at the end of your trip, {locationConfig.name} has
-              a great selection of campervans.
-            </p>
-            <h3>Why {locationConfig.name}?</h3>
-            <ul>
-              {locationConfig.highlights.map((highlight, i) => (
-                <li key={i}>{highlight}</li>
-              ))}
-            </ul>
-            <p>
-              All campervans listed on Kiwi Van Market include verified WOF and
-              registration details. Many sellers in {locationConfig.name} offer
-              buy-back guarantees, perfect for backpackers on working holiday visas.
-            </p>
-          </section>
-
-          {/* Other Locations */}
-          <section className="mt-12">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Browse Other Locations</h3>
-            <div className="flex flex-wrap gap-2">
-              {Object.entries(LOCATIONS_CONFIG)
-                .filter(([key]) => key !== location)
-                .map(([key, loc]) => (
-                  <Link
-                    key={key}
-                    to={`/location/${key}`}
-                    className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm text-gray-700 hover:bg-emerald-50 hover:border-emerald-200 transition"
-                  >
-                    {loc.name}
-                  </Link>
-                ))}
-            </div>
-          </section>
-        </main>
-
-        {/* Footer */}
-        <footer className="bg-gray-900 text-white py-8 mt-12">
-          <div className="max-w-7xl mx-auto px-4 text-center">
-            <Link to="/" className="inline-flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-full overflow-hidden" style={{ backgroundColor: '#f7eedd' }}>
-                <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-full h-full object-contain" />
-              </div>
-              <span className="font-bold text-xl">Kiwi Van Market</span>
-            </Link>
-            <p className="text-gray-400 text-sm">
-              The #1 marketplace for campervans in New Zealand
-            </p>
-          </div>
-        </footer>
+        </div>
       </div>
-    </>
+
+      <div className="max-w-6xl mx-auto px-4 mt-12">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-gray-500 font-bold">Finding vans in {locationConfig?.name}...</p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {vans.length} {vans.length === 1 ? 'Van' : 'Vans'} Available
+              </h2>
+            </div>
+
+            {vans.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center shadow-xl border border-gray-100">
+                <div className="text-6xl mb-6">📍</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">No vans found in {locationConfig?.name}</h2>
+                <p className="text-gray-500 mb-8">Try searching in a nearby region or check all listings.</p>
+                <Link to="/" className="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-emerald-700 transition shadow-lg">
+                  View All Listings
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {vans.map(van => (
+                  <VanCard key={van.id} van={van} />
+                ))}
+              </div>
+            )}
+
+            {/* Premium Location Footer */}
+            <div className="mt-20 bg-slate-900 rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden shadow-2xl">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-black mb-6 leading-tight">
+                    Start your journey in <span className="text-emerald-400">{locationConfig?.name}</span>
+                  </h2>
+                  <p className="text-gray-400 mb-8 text-lg font-medium leading-relaxed">
+                    Auckland is the gateway to New Zealand. Most travelers start here, which means you'll find the best selection of fully equipped campervans and motorhomes ready for your road trip.
+                  </p>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400">
+                        <MapPin size={20} />
+                      </div>
+                      <span className="font-bold">Many pick-up points near the airport</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="relative">
+                  <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl border-4 border-white/10">
+                    <img
+                      src="https://images.unsplash.com/photo-1507699622108-4be3abd695ad?auto=format&fit=crop&q=80&w=800"
+                      alt="Travel NZ"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

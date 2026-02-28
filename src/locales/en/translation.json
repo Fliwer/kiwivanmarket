@@ -48,7 +48,7 @@
     },
     "menu": {
         "profile": "My Profile",
-        "listings": "My Listings",
+        "listings": "My Vans",
         "admin": "Admin Dashboard",
         "signout": "Sign Out",
         "sell": "Sell your van",
@@ -139,7 +139,7 @@
         "not_specified": "Not specified"
     },
     "my_listings": {
-        "title": "My Listings",
+        "title": "My Vans",
         "manage": "Manage your van listings",
         "add_new": "Add New Van",
         "stats_listings": "Listings",
@@ -207,7 +207,7 @@
         "title_highlight": "NZ Adventure",
         "title_part2": "Today.",
         "subtitle": "Find your perfect van or sell with confidence. A simple, secure and transparent platform for adventurers in New Zealand.",
-        "cta_browse_listings": "Browse Listings",
+        "cta_browse_listings": "Browse Vans",
         "cta_sell_van": "Sell Your Van",
         "stat_active_vans": "Active Vans",
         "stat_travelers": "Happy Travelers",

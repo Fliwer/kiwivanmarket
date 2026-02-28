@@ -3,13 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation, useNavigationType } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink, BookOpen, Share2, ArrowRight } from 'lucide-react';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink, BookOpen } from 'lucide-react';
 import { db } from './firebase';
-import { collection, getDocs, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
 import { useHideLoader } from './hooks/useHideLoader';
-import { useAutoTranslate } from './hooks/useAutoTranslate';
 import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import NotificationBell from './components/NotificationBell';
@@ -131,7 +130,8 @@ function MainApp({
   useHideLoader();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
+  const { favorites, toggleFavorite, isFavorite, count: favoritesCount } = useFavorites();
 
   const [vans, setVans] = useState([]);
   const [filteredVans, setFilteredVans] = useState([]);
@@ -254,9 +254,6 @@ function MainApp({
   const VanDetailsModal = ({ van }) => {
     const images = (van.images?.length > 0) ? van.images : (van.imageUrl ? [van.imageUrl] : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800']);
     const seller = van.seller || { name: 'Unknown' };
-    const { translatedText: translatedTitle } = useAutoTranslate(van.title);
-    const { translatedText: translatedDescription } = useAutoTranslate(van.description);
-
     const nextImage = () => setCurrentImageIndex(p => (p + 1) % images.length);
     const prevImage = () => setCurrentImageIndex(p => (p - 1 + images.length) % images.length);
 
@@ -266,7 +263,7 @@ function MainApp({
           <button onClick={() => setSelectedVan(null)} className="absolute top-6 right-6 z-50 bg-white/90 p-2 rounded-full shadow-lg"><X size={24} /></button>
           <div className="grid lg:grid-cols-2">
             <div className="relative bg-black h-[400px] lg:h-[700px] flex items-center justify-center">
-              <img src={getLargeImage(images[currentImageIndex])} alt={translatedTitle} className="max-w-full max-h-full object-contain" />
+              <img src={getLargeImage(images[currentImageIndex])} alt={van.title} className="max-w-full max-h-full object-contain" />
               {images.length > 1 && (
                 <>
                   <button onClick={prevImage} className="absolute left-4 bg-white/90 p-2 rounded-full shadow-lg"><ChevronDown className="rotate-90" /></button>
@@ -275,7 +272,7 @@ function MainApp({
               )}
             </div>
             <div className="p-8 lg:p-12 overflow-y-auto max-h-[700px]">
-              <h2 className="text-4xl font-black mb-4">{translatedTitle}</h2>
+              <h2 className="text-4xl font-black mb-4">{van.title}</h2>
               <div className="flex gap-2 text-gray-600 mb-6"><MapPin size={20} /> {van.location}</div>
               <div className="bg-emerald-50 p-6 rounded-2xl border-2 border-emerald-100 mb-8">
                 <span className="text-sm font-bold text-emerald-600 uppercase">Price</span>
@@ -295,7 +292,7 @@ function MainApp({
               </div>
               <div className="mb-8">
                 <h3 className="text-xl font-bold mb-3">Description</h3>
-                <p className="text-gray-700 leading-relaxed">{translatedDescription}</p>
+                <p className="text-gray-700 leading-relaxed">{van.description}</p>
               </div>
               {van.equipment && (
                 <div className="mb-8">
@@ -324,95 +321,19 @@ function MainApp({
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <section className="relative pt-12 pb-24 lg:pt-20 lg:pb-32 overflow-hidden bg-white">
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left Column: Content */}
-            <div className="flex flex-col items-start text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-xs font-black uppercase tracking-wider mb-8 border border-emerald-100 shadow-sm transition-transform hover:scale-105">
-                <Zap size={14} fill="currentColor" />
-                {t('home.badge')}
-              </div>
-
-              <h2 className="text-6xl lg:text-8xl font-black text-slate-900 mb-8 leading-[1] tracking-tight">
-                {t('home.title_part1')} <br />
-                <span className="text-emerald-500">{t('home.title_highlight')}</span> <br />
-                {t('home.title_part2')}
-              </h2>
-
-              <p className="text-xl text-slate-500 font-medium mb-12 max-w-xl leading-relaxed opacity-90">
-                {t('home.subtitle')}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-4 mb-20 w-full">
-                <button
-                  onClick={() => document.getElementById('listings-start')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="inline-flex items-center gap-3 bg-emerald-600 text-white px-8 py-5 rounded-2xl font-black hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/10 active:scale-95 text-lg"
-                >
-                  {t('home.cta_browse_listings')}
-                  <ChevronDown size={20} />
-                </button>
-
-                <Link
-                  to="/sell"
-                  className="inline-flex items-center gap-3 bg-white text-slate-900 border-2 border-slate-100 px-8 py-5 rounded-2xl font-black hover:border-emerald-200 transition-all shadow-lg shadow-slate-200/50 active:scale-95 text-lg"
-                >
-                  <Plus size={20} className="text-emerald-500" />
-                  {t('home.cta_sell_van')}
-                </Link>
-
-                <Link
-                  to="/guides"
-                  className="flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold transition-colors ml-2 border-b-2 border-dotted border-slate-200 hover:border-emerald-200"
-                >
-                  <BookOpen size={18} />
-                  <span>Buying Guides</span>
-                </Link>
-              </div>
-
-              {/* Stats Section */}
-              <div className="flex flex-wrap items-center gap-12 pt-8 border-t border-slate-100 w-full lg:w-auto">
-                <div>
-                  <div className="text-3xl font-black text-slate-900">50+</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('home.stat_active_vans')}</div>
-                </div>
-                <div className="w-px h-10 bg-slate-100 hidden sm:block" />
-                <div>
-                  <div className="text-3xl font-black text-slate-900">150+</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('home.stat_travelers')}</div>
-                </div>
-                <div className="w-px h-10 bg-slate-100 hidden sm:block" />
-                <div>
-                  <div className="text-3xl font-black text-slate-900">4.8/5</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('home.stat_rating')}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Hero Image Card */}
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-emerald-500/5 rounded-[4rem] blur-3xl group-hover:bg-emerald-500/10 transition-colors" />
-              <div className="relative bg-white p-3 rounded-[3.5rem] shadow-2xl shadow-slate-200 border border-slate-50 overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-700">
-                <div className="rounded-[3rem] overflow-hidden border-[12px] border-white shadow-inner aspect-[4/3] lg:aspect-auto">
-                  <img
-                    src="/hiace-camper.png"
-                    alt="NZ Road Adventure"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
-                  />
-                </div>
-              </div>
-
-              {/* Floating Element */}
-              <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-2xl border border-slate-50 flex items-center gap-4 animate-bounce-slow">
-                <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600">
-                  <CheckCircle size={24} fill="currentColor" className="text-emerald-100" />
-                </div>
-                <div>
-                  <div className="text-sm font-black text-slate-900">Verified Listings</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Secure Marketplace</div>
-                </div>
-              </div>
-            </div>
+      <section className="relative pt-6 pb-20 overflow-hidden min-h-[600px] flex items-center">
+        <div className="absolute inset-0 z-0">
+          <img src="/nz-road-bg.png" alt="NZ Road Adventure" className="w-full h-full object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-50/90 to-white" />
+        </div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          <h2 className="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-[1.1] text-center lg:text-left">
+            {t('home.title_part1')} <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('home.title_highlight')}</span> {t('home.title_part2')}
+          </h2>
+          <div className="flex justify-center lg:justify-start">
+            <button onClick={() => document.getElementById('listings-start')?.scrollIntoView({ behavior: 'smooth' })} className="btn-primary px-8 py-4 text-lg">
+              {t('home.cta_browse_listings')}
+            </button>
           </div>
         </div>
       </section>

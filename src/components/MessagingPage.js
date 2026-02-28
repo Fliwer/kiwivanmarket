@@ -17,6 +17,7 @@ import { useRateLimit } from '../hooks/useRateLimit';
 import { sanitizeText } from '../securityUtils';
 import SeoHead from './SeoHead';
 import { useTranslation } from 'react-i18next';
+import { useHideLoader } from '../hooks/useHideLoader';
 
 // ============================================
 // MESSAGING PAGE - Full Page 3 Columns
@@ -184,6 +185,7 @@ function LanguageSelector() {
 }
 
 export default function MessagingPage({ onBack }) {
+  useHideLoader();
   const { currentUser } = useAuth();
   const { checkAndRecord } = useRateLimit(currentUser?.uid);
   const navigate = useNavigate();

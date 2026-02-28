@@ -7,18 +7,12 @@ import LanguageSelector from './LanguageSelector';
 import ExpertBadge from './guides/ExpertBadge';
 import { GUIDES } from '../constants/guides';
 
+import { useHideLoader } from '../hooks/useHideLoader';
+
 export default function GuidesHubPage() {
+    useHideLoader();
     const { t, i18n } = useTranslation();
     const currentLang = (i18n.language || 'en').split('-')[0];
-
-    useEffect(() => {
-        const loader = document.getElementById('app-loader');
-        if (loader) {
-            loader.classList.add('fade-out');
-            setTimeout(() => loader.remove(), 500);
-        }
-        window.scrollTo(0, 0);
-    }, []);
 
     const localizedGuides = GUIDES[currentLang] || GUIDES.en || {};
     const uniqueGuides = Object.entries(localizedGuides).filter(([key]) => {
@@ -34,9 +28,7 @@ export default function GuidesHubPage() {
             />
 
             {/* Premium Editorial Header */}
-            <header className="relative bg-white pt-24 pb-20 overflow-hidden border-b border-gray-100">
-                <div className="absolute top-0 right-0 w-1/2 h-full bg-emerald-50/50 -skew-x-12 translate-x-1/4 pointer-events-none" />
-
+            <header className="relative bg-white pt-32 pb-20 overflow-hidden border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 relative z-10">
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                         <div className="max-w-3xl">
@@ -56,9 +48,6 @@ export default function GuidesHubPage() {
                         </div>
 
                         <div className="flex flex-col gap-4">
-                            <div className="bg-white p-2 rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100">
-                                <LanguageSelector />
-                            </div>
                             <div className="flex items-center gap-4 px-2">
                                 <div className="flex -space-x-2">
                                     {[1, 2, 3].map(i => (

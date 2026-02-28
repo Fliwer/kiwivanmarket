@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, MessageSquare, Send, CheckCircle, Shield, Clock, MapPin } from 'lucide-react';
 import SeoHead from './SeoHead';
+import { useHideLoader } from '../hooks/useHideLoader';
 
 export default function ContactPage() {
+    useHideLoader();
     const { t } = useTranslation();
     const [status, setStatus] = useState('idle'); // idle, sending, success, error
 
@@ -27,7 +30,6 @@ export default function ContactPage() {
 
             {/* Premium Header */}
             <header className="relative bg-white pt-24 pb-20 overflow-hidden border-b border-gray-100">
-                <div className="absolute top-0 right-0 w-1/3 h-full bg-emerald-50/50 skew-x-12 translate-x-1/4 pointer-events-none" />
 
                 <div className="max-w-7xl mx-auto px-6 relative z-10">
                     <div className="max-w-3xl">
