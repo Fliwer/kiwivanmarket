@@ -27,6 +27,27 @@ export default function GuidesHubPage() {
                 type="website"
             />
 
+            {/* ItemList Schema for Guides */}
+            <script type="application/ld+json">
+                {JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "ItemList",
+                    "name": t('guides.hub.title_1') + " " + t('guides.hub.title_2'),
+                    "numberOfItems": uniqueGuides.length,
+                    "itemListElement": uniqueGuides.map(([slug, guide], index) => ({
+                        "@type": "ListItem",
+                        "position": index + 1,
+                        "item": {
+                            "@type": "Article",
+                            "headline": guide.title,
+                            "url": `https://kiwivanmarket.com/guide/${slug}`,
+                            "image": guide.heroImage,
+                            "author": { "@type": "Organization", "name": "Kiwi Van Market" }
+                        }
+                    }))
+                })}
+            </script>
+
             {/* Premium Editorial Header */}
             <header className="relative bg-white pt-32 pb-20 overflow-hidden border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 relative z-10">

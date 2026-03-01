@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Upload, Trash2, CheckCircle, ArrowLeft, Camera, FileText, Send, PartyPopper, Eye, Home } from 'lucide-react';
+import { Upload, Trash2, CheckCircle, ArrowLeft, Camera, FileText, Send, PartyPopper, Eye, Home, Sparkles, Loader2 } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import AuthModal from './AuthModal';
 import SeoHead from './SeoHead';
+import { useToast } from './ToastProvider';
 
 export default function SellPage() {
   const navigate = useNavigate();
@@ -19,6 +21,34 @@ export default function SellPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [newVanId, setNewVanId] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [generatingAI, setGeneratingAI] = useState(false);
+  const toast = useToast();
+
+  // ✨ IA Generation
+  const handleGenerateAI = async () => {
+    if (!formData.title || formData.title.length < 5) {
+      toast.info('Please enter at least a title (min 5 chars). More details (price, mileage, features) lead to a much better AI description! ✨');
+      return;
+    }
+
+    setGeneratingAI(true);
+    try {
+      const generateDescription = httpsCallable(functions, 'generateVanDescription');
+      const result = await generateDescription(formData);
+
+      if (result.data && result.data.description) {
+        setFormData(prev => ({ ...prev, description: result.data.description }));
+        toast.success('Description generated with AI! ✨');
+      }
+    } catch (error) {
+      console.error('AI error details:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      toast.error('Failed to generate description. Please check your connection.');
+    } finally {
+      setGeneratingAI(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     title: '',
@@ -77,17 +107,17 @@ export default function SellPage() {
   // Upload image
   const handleImageUpload = async (file) => {
     if (images.length >= 5) {
-      alert('Maximum 5 photos!');
+      toast.warning('Maximum 5 photos!');
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      alert('Invalid file!');
+      toast.error('Invalid file type!');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert('Image too large (max 10MB)');
+      toast.error('Image too large (max 10MB)');
       return;
     }
 
@@ -110,7 +140,7 @@ export default function SellPage() {
     } catch (error) {
       console.error('Upload error:', error);
       setImages(prev => prev.filter((_, i) => i !== newIndex));
-      alert('Upload error');
+      toast.error('Upload error. Please try again.');
     } finally {
       setUploadingIndex(null);
     }
@@ -133,7 +163,7 @@ export default function SellPage() {
       const userVansQuery = query(collection(db, 'vans'), where('userId', '==', currentUser.uid));
       const userVansSnapshot = await getDocs(userVansQuery);
       if (userVansSnapshot.size >= 20) {
-        alert('You have reached the maximum of 20 free listings!');
+        toast.warning('You have reached the maximum of 20 free listings!');
         return;
       }
     } catch (error) {
@@ -142,29 +172,20 @@ export default function SellPage() {
 
     // Validation - Must match Firestore security rules
     const errors = [];
-    if (images.length === 0) errors.push('At least 1 photo is required');
-    if (images.length > 10) errors.push('Maximum 10 photos allowed');
-    if (images.some(img => img.uploading)) errors.push('Please wait for all images to finish uploading');
-    // Ensure all images are uploaded to Cloudinary (not base64 data URLs)
+    if (images.length === 0) errors.push('At least 1 photo');
+    if (images.length > 10) errors.push('Max 10 photos');
+    if (images.some(img => img.uploading)) errors.push('Wait for uploads');
     if (images.some(img => !img.url || !img.url.includes('cloudinary.com'))) {
-      errors.push('Some images failed to upload. Please remove and re-upload them.');
+      errors.push('Re-upload failed images');
     }
-    if (!formData.title || formData.title.length < 5) errors.push('Title must be at least 5 characters');
-    if (formData.title && formData.title.length > 200) errors.push('Title must be less than 200 characters');
-    if (!formData.price || parseInt(formData.price) < 1) errors.push('Price is required');
-    if (parseInt(formData.price) > 500000) errors.push('Price must be less than $500,000');
-    if (!formData.location || formData.location.length < 2) errors.push('City is required');
-    if (!formData.year || parseInt(formData.year) < 1950 || parseInt(formData.year) > 2026) errors.push('Year must be between 1950 and 2026');
-    if (!formData.mileage && formData.mileage !== 0) errors.push('Mileage is required');
-    if (parseInt(formData.mileage) > 1000000) errors.push('Mileage must be less than 1,000,000 km');
-    if (!formData.wofExpiry) errors.push('WOF expiry date is required');
-    if (!formData.regoExpiry) errors.push('REGO expiry date is required');
-    if (!formData.description || formData.description.length < 20) errors.push('Description must be at least 20 characters');
-    if (formData.description && formData.description.length > 5000) errors.push('Description must be less than 5000 characters');
-    if (formData.buyBack && !formData.buyBackPrice) errors.push('Buy-back price is required');
+    if (!formData.title || formData.title.length < 5) errors.push('Title too short');
+    if (!formData.price || parseInt(formData.price) < 1) errors.push('Price required');
+    if (!formData.location) errors.push('City required');
+    if (!formData.description || formData.description.length < 20) errors.push('Description too short');
+    if (formData.buyBack && !formData.buyBackPrice) errors.push('Buy-back price required');
 
     if (errors.length > 0) {
-      alert('Please fix:\n\n' + errors.join('\n'));
+      toast.error('Missing: ' + errors.join(', '));
       return;
     }
 
@@ -219,7 +240,7 @@ export default function SellPage() {
       setShowSuccess(true);
     } catch (error) {
       console.error('Error adding van:', error);
-      alert('Error adding van: ' + (error.message || error.code || 'Unknown error'));
+      toast.error('Error adding van: ' + (error.message || 'Check connection'));
     } finally {
       setLoading(false);
     }
@@ -487,8 +508,8 @@ export default function SellPage() {
                     onChange={(e) => { setFormData({ ...formData, title: e.target.value }); if (e.target.value.length >= 5) setCurrentStep(3); }}
                     placeholder="Toyota Hiace 2015"
                     className={`w-full px-4 py-3 border-2 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors ${formData.title.length > 0 && formData.title.length < 5
-                        ? 'border-red-300'
-                        : 'border-gray-200'
+                      ? 'border-red-300'
+                      : 'border-gray-200'
                       }`}
                     required
                     maxLength={200}
@@ -633,57 +654,6 @@ export default function SellPage() {
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Description *</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Perfect backpacker van, well maintained, ready for adventure..."
-                  rows={4}
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors resize-none ${formData.description.length > 0 && formData.description.length < 20
-                      ? 'border-red-300'
-                      : 'border-gray-200'
-                    }`}
-                  required
-                />
-                <div className="flex justify-between mt-1">
-                  <span className={`text-xs ${formData.description.length < 20
-                      ? 'text-red-500'
-                      : 'text-green-600'
-                    }`}>
-                    {formData.description.length < 20
-                      ? `Minimum 20 characters (${formData.description.length}/20)`
-                      : `${formData.description.length} characters`}
-                  </span>
-                  <span className="text-xs text-gray-400">Max 5000</span>
-                </div>
-              </div>
-
-              {/* Contact Info */}
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">WhatsApp Number</label>
-                  <input
-                    type="tel"
-                    value={formData.sellerPhone}
-                    onChange={(e) => setFormData({ ...formData, sellerPhone: e.target.value })}
-                    placeholder="+64 21 123 4567"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Facebook (optional)</label>
-                  <input
-                    type="text"
-                    value={formData.sellerFacebook}
-                    onChange={(e) => setFormData({ ...formData, sellerFacebook: e.target.value })}
-                    placeholder="your.name"
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                  />
-                </div>
-              </div>
-
               {/* Equipment */}
               <div className="mb-6">
                 <label className="block text-sm font-semibold text-gray-700 mb-3">Key Features</label>
@@ -722,7 +692,6 @@ export default function SellPage() {
 
                 {showAdvancedEquipment && (
                   <div className="mt-4 space-y-4">
-                    {/* Additional equipment sections */}
                     <div className="p-3 bg-cyan-50 rounded-xl">
                       <h4 className="text-xs font-bold text-cyan-600 mb-2">Water & Bathroom</h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -795,7 +764,6 @@ export default function SellPage() {
                   </div>
                 )}
 
-                {/* Custom Features */}
                 <div className="mt-4 p-4 bg-gray-50 rounded-xl">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Other features (optional)</label>
                   <input
@@ -902,27 +870,54 @@ export default function SellPage() {
                   )}
                 </div>
               </div>
-            </div>
 
-            {/* Submit Button */}
-            <div className="sticky bottom-4 z-10">
-              <button
-                type="submit"
-                disabled={loading || images.length === 0 || !formData.title || !formData.price}
-                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Publishing...
-                  </>
-                ) : (
-                  <>
-                    <Send size={20} />
-                    Publish Your Van - FREE
-                  </>
-                )}
-              </button>
+              {/* Description Section with AI Assistant */}
+              <div className="mt-8 p-6 bg-white border-2 border-gray-100 rounded-3xl shadow-sm">
+                <div className="flex items-center mb-4">
+                  <label className="text-base font-bold text-gray-800 flex items-center gap-2">
+                    <span className="text-xl">{"📝"}</span> Detailed Description *
+                  </label>
+                </div>
+
+                <div className="relative group">
+                  <textarea
+                    required
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={8}
+                    placeholder="Tell buyers about your van... (maintenance, recent trips, why you love it)"
+                    className="w-full px-5 py-5 border-2 border-gray-100 rounded-2xl focus:border-purple-400 focus:ring-4 focus:ring-purple-50 outline-none transition-all resize-none text-gray-700 leading-relaxed bg-gray-50/50"
+                  />
+                  <div className="absolute bottom-4 right-5 text-[10px] text-gray-400 font-bold bg-white px-2 py-1 rounded-full shadow-sm">
+                    {formData.description?.length || 0} characters
+                  </div>
+                </div>
+                <p className="text-[11px] text-gray-500 mt-3 flex items-center gap-2 px-1">
+                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full"></span>
+                  Tip: Expert sellers include service history and recent mechanical work to build trust.
+                </p>
+              </div>
+
+              {/* Submit Button */}
+              <div className="sticky bottom-4 z-10">
+                <button
+                  type="submit"
+                  disabled={loading || images.length === 0 || !formData.title || !formData.price}
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Publishing...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={20} />
+                      Publish Your Van - FREE
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </form>
         </div>

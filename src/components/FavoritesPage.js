@@ -57,9 +57,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
 
   const handleRemoveFavorite = async (e, vanId) => {
     e.stopPropagation();
-    if (window.confirm('Remove from favorites?')) {
-      await toggleFavorite(vanId);
-    }
+    await toggleFavorite(vanId);
   };
 
   return (

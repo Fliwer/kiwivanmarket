@@ -45,10 +45,25 @@ const VanSEO = ({ van }) => {
   const featuresText = features.length > 0 ? ` Features: ${features.join(', ')}.` : '';
   const metaDescription = `${van.year} ${van.title} for sale in ${van.location}, New Zealand. ${van.mileage?.toLocaleString()}km, ${van.capacity || 2} berth.${featuresText} Perfect campervan for backpackers and travellers.`.slice(0, 160);
 
-  // Schema.org JSON-LD pour Google Rich Snippets
+  // Schema.org JSON-LD pour Google Rich Snippets — type Car (more precise than Vehicle)
+  const additionalProperties = [];
+  if (van.buyBack) additionalProperties.push({ "@type": "PropertyValue", "name": "Buy-Back Guarantee", "value": `Yes${van.buyBackPrice ? ` — NZ$${van.buyBackPrice.toLocaleString()}` : ''}` });
+  if (van.selfContained) additionalProperties.push({ "@type": "PropertyValue", "name": "Self-Contained (NZS 5465)", "value": van.selfContainedType === 'blue' ? 'Blue (porta-potty)' : 'Green (fixed toilet)' });
+  if (van.wofExpiry && safeDate(van.wofExpiry) > new Date()) additionalProperties.push({ "@type": "PropertyValue", "name": "WOF Valid Until", "value": safeDate(van.wofExpiry).toLocaleDateString('en-NZ') });
+  if (van.regoExpiry && safeDate(van.regoExpiry) > new Date()) additionalProperties.push({ "@type": "PropertyValue", "name": "REGO Valid Until", "value": safeDate(van.regoExpiry).toLocaleDateString('en-NZ') });
+  if (van.equipment?.doubleBed) additionalProperties.push({ "@type": "PropertyValue", "name": "Double Bed", "value": "Yes" });
+  if (van.equipment?.solarPanel) additionalProperties.push({ "@type": "PropertyValue", "name": "Solar Panel", "value": "Yes" });
+  if (van.equipment?.fridge) additionalProperties.push({ "@type": "PropertyValue", "name": "Fridge", "value": "Yes" });
+  if (van.equipment?.shower || van.equipment?.outdoorShower) additionalProperties.push({ "@type": "PropertyValue", "name": "Shower", "value": "Yes" });
+
+  // Try to parse brand from title (first word)
+  const titleParts = (van.title || '').split(' ');
+  const brandName = titleParts[0] || 'Campervan';
+  const modelName = titleParts.slice(1).join(' ') || van.title;
+
   const schemaData = {
     "@context": "https://schema.org",
-    "@type": "Vehicle",
+    "@type": "Car",
     "name": van.title,
     "description": van.description,
     "image": van.images || [image],
@@ -57,10 +72,15 @@ const VanSEO = ({ van }) => {
       "@type": "Offer",
       "price": van.price,
       "priceCurrency": "NZD",
-      "availability": "https://schema.org/InStock",
+      "availability": van.status === 'sold' ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/UsedCondition",
       "seller": {
         "@type": "Person",
-        "name": van.seller?.name || "Seller"
+        "name": van.seller?.name || "Private Seller"
+      },
+      "areaServed": {
+        "@type": "Country",
+        "name": "New Zealand"
       }
     },
     "vehicleModelDate": van.year?.toString(),
@@ -70,38 +90,26 @@ const VanSEO = ({ van }) => {
       "unitCode": "KMT"
     },
     "vehicleConfiguration": van.type || "Van",
-    "numberOfDoors": 3,
+    "bodyType": van.type || "Campervan",
     "vehicleSeatingCapacity": van.capacity || 2,
     "itemCondition": "https://schema.org/UsedCondition",
     "brand": {
       "@type": "Brand",
-      "name": van.title?.split(' ')[0] || "Campervan"
-    }
+      "name": brandName
+    },
+    "model": modelName,
+    "vehicleIdentificationNumber": van.id,
+    "additionalProperty": additionalProperties.length > 0 ? additionalProperties : undefined
   };
 
-  // BreadcrumbList pour navigation
+  // BreadcrumbList — 3 niveaux avec localisation
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://kiwivanmarket.com"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "Campervans",
-        "item": "https://kiwivanmarket.com/#listings"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": van.title,
-        "item": url
-      }
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://kiwivanmarket.com" },
+      { "@type": "ListItem", "position": 2, "name": van.location ? `${van.location} Campervans` : "Campervans", "item": van.location ? `https://kiwivanmarket.com/location/${encodeURIComponent(van.location)}` : "https://kiwivanmarket.com" },
+      { "@type": "ListItem", "position": 3, "name": van.title, "item": url }
     ]
   };
 
@@ -532,11 +540,17 @@ ${shareUrl}
         {/* Spacer for fixed header */}
         <div className="h-24 md:h-28" />
 
-        {/* Breadcrumb SEO - Aéré */}
+        {/* Breadcrumb SEO - Aéré avec location */}
         <nav className="max-w-7xl mx-auto px-6 py-4" aria-label="Breadcrumb">
-          <ol className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest text-slate-400">
-            <li><Link to="/" className="hover:text-emerald-600 transition-colors uppercase">Marketplace</Link></li>
+          <ol className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 flex-wrap">
+            <li><Link to="/" className="hover:text-emerald-600 transition-colors">Marketplace</Link></li>
             <li><ChevronRight size={12} className="text-slate-300" /></li>
+            {van.location && (
+              <>
+                <li><Link to={`/location/${encodeURIComponent(van.location)}`} className="hover:text-emerald-600 transition-colors">{van.location}</Link></li>
+                <li><ChevronRight size={12} className="text-slate-300" /></li>
+              </>
+            )}
             <li className="text-slate-900 truncate max-w-[200px]">{van.title}</li>
           </ol>
         </nav>

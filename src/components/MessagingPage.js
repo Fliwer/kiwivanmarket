@@ -18,6 +18,7 @@ import { sanitizeText } from '../securityUtils';
 import SeoHead from './SeoHead';
 import { useTranslation } from 'react-i18next';
 import { useHideLoader } from '../hooks/useHideLoader';
+import { useToast } from '../components/ToastProvider';
 
 // ============================================
 // MESSAGING PAGE - Full Page 3 Columns
@@ -189,6 +190,7 @@ export default function MessagingPage({ onBack }) {
   const { currentUser } = useAuth();
   const { checkAndRecord } = useRateLimit(currentUser?.uid);
   const navigate = useNavigate();
+  const toast = useToast();
 
   // Handle browser back button
   useEffect(() => {
@@ -420,7 +422,7 @@ export default function MessagingPage({ onBack }) {
     // 🛡️ RATE LIMIT: Max 30 messages par heure
     const rateCheck = checkAndRecord('sendMessage');
     if (!rateCheck.allowed) {
-      alert(rateCheck.error);
+      toast.error(rateCheck.error);
       return;
     }
 

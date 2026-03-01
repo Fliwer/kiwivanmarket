@@ -20,6 +20,9 @@ const { Resend } = require('resend');
 
 // ✅ Define secrets for Firebase Functions v2
 const resendApiKey = defineSecret('RESEND_API_KEY');
+const geminiApiKey = defineSecret('GEMINI_API_KEY');
+
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // Initialiser Firebase Admin
 admin.initializeApp();
@@ -48,86 +51,86 @@ exports.onNewConversation = onDocumentCreated(
     secrets: [resendApiKey], // ✅ Declare secret dependency
   },
   async (event) => {
-  const conversation = event.data.data();
-  const conversationId = event.params.conversationId;
+    const conversation = event.data.data();
+    const conversationId = event.params.conversationId;
 
-  console.log(`📧 New conversation created: ${conversationId}`);
-  console.log('📝 Conversation data:', JSON.stringify(conversation, null, 2));
+    console.log(`📧 New conversation created: ${conversationId}`);
+    console.log('📝 Conversation data:', JSON.stringify(conversation, null, 2));
 
-  // ✅ Support multiple ways to get sellerId (backward compatibility)
-  const sellerId = conversation.sellerId ||
-                   conversation.participants?.find(p => p !== conversation.buyerId) ||
-                   null;
+    // ✅ Support multiple ways to get sellerId (backward compatibility)
+    const sellerId = conversation.sellerId ||
+      conversation.participants?.find(p => p !== conversation.buyerId) ||
+      null;
 
-  if (!sellerId || !conversation.vanId) {
-    console.log('❌ Missing sellerId or vanId', { sellerId, vanId: conversation.vanId });
-    return null;
-  }
-
-  try {
-    // Initialiser Resend avec le secret Firebase
-    const apiKey = resendApiKey.value();
-    if (!apiKey) {
-      console.error('❌ RESEND_API_KEY not configured');
-      return null;
-    }
-    const resend = new Resend(apiKey);
-
-    // ✅ D'abord essayer de récupérer l'email depuis participantEmails (plus fiable)
-    let sellerEmail = conversation.participantEmails?.[sellerId];
-    let sellerName = conversation.participantNames?.[sellerId] || 'there';
-
-    // Si pas d'email dans la conversation, chercher dans users
-    if (!sellerEmail) {
-      const sellerDoc = await db.collection('users').doc(sellerId).get();
-      if (!sellerDoc.exists) {
-        console.log('❌ Seller not found in users collection');
-        return null;
-      }
-      const seller = sellerDoc.data();
-      sellerEmail = seller.email;
-      sellerName = seller.displayName || seller.name || 'there';
-    }
-
-    // ✅ Utiliser les infos du van de la conversation (plus rapide) ou récupérer depuis DB
-    let van = conversation.van;
-    if (!van || !van.title) {
-      const vanDoc = await db.collection('vans').doc(conversation.vanId).get();
-      if (!vanDoc.exists) {
-        console.log('❌ Van not found');
-        return null;
-      }
-      van = vanDoc.data();
-    }
-
-    // Récupérer le nom de l'acheteur
-    const buyerName = conversation.buyerName ||
-                      conversation.participantNames?.[conversation.buyerId] ||
-                      'Someone';
-
-    // Premier message (preview)
-    const firstMessage = conversation.lastMessage || conversation.firstMessage || '';
-    const messagePreview = firstMessage.length > 100
-      ? firstMessage.substring(0, 100) + '...'
-      : firstMessage;
-
-    if (!sellerEmail) {
-      console.log('❌ Seller has no email');
+    if (!sellerId || !conversation.vanId) {
+      console.log('❌ Missing sellerId or vanId', { sellerId, vanId: conversation.vanId });
       return null;
     }
 
-    // Escape user-provided values for safe HTML injection
-    const safeSellerName = escapeHtml(sellerName);
-    const safeBuyerName = escapeHtml(buyerName);
-    const safeVanTitle = escapeHtml(van.title);
-    const safeMessagePreview = escapeHtml(messagePreview);
+    try {
+      // Initialiser Resend avec le secret Firebase
+      const apiKey = resendApiKey.value();
+      if (!apiKey) {
+        console.error('❌ RESEND_API_KEY not configured');
+        return null;
+      }
+      const resend = new Resend(apiKey);
 
-    // Envoyer l'email
-    const { data, error } = await resend.emails.send({
-      from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
-      to: sellerEmail,
-      subject: `💬 New inquiry about your ${safeVanTitle}`,
-      html: `
+      // ✅ D'abord essayer de récupérer l'email depuis participantEmails (plus fiable)
+      let sellerEmail = conversation.participantEmails?.[sellerId];
+      let sellerName = conversation.participantNames?.[sellerId] || 'there';
+
+      // Si pas d'email dans la conversation, chercher dans users
+      if (!sellerEmail) {
+        const sellerDoc = await db.collection('users').doc(sellerId).get();
+        if (!sellerDoc.exists) {
+          console.log('❌ Seller not found in users collection');
+          return null;
+        }
+        const seller = sellerDoc.data();
+        sellerEmail = seller.email;
+        sellerName = seller.displayName || seller.name || 'there';
+      }
+
+      // ✅ Utiliser les infos du van de la conversation (plus rapide) ou récupérer depuis DB
+      let van = conversation.van;
+      if (!van || !van.title) {
+        const vanDoc = await db.collection('vans').doc(conversation.vanId).get();
+        if (!vanDoc.exists) {
+          console.log('❌ Van not found');
+          return null;
+        }
+        van = vanDoc.data();
+      }
+
+      // Récupérer le nom de l'acheteur
+      const buyerName = conversation.buyerName ||
+        conversation.participantNames?.[conversation.buyerId] ||
+        'Someone';
+
+      // Premier message (preview)
+      const firstMessage = conversation.lastMessage || conversation.firstMessage || '';
+      const messagePreview = firstMessage.length > 100
+        ? firstMessage.substring(0, 100) + '...'
+        : firstMessage;
+
+      if (!sellerEmail) {
+        console.log('❌ Seller has no email');
+        return null;
+      }
+
+      // Escape user-provided values for safe HTML injection
+      const safeSellerName = escapeHtml(sellerName);
+      const safeBuyerName = escapeHtml(buyerName);
+      const safeVanTitle = escapeHtml(van.title);
+      const safeMessagePreview = escapeHtml(messagePreview);
+
+      // Envoyer l'email
+      const { data, error } = await resend.emails.send({
+        from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+        to: sellerEmail,
+        subject: `💬 New inquiry about your ${safeVanTitle}`,
+        html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 24px;">🚐 New Message!</h1>
@@ -164,28 +167,28 @@ exports.onNewConversation = onDocumentCreated(
           </p>
         </div>
       `,
-    });
+      });
 
-    if (error) {
-      console.error('❌ Resend error:', error);
+      if (error) {
+        console.error('❌ Resend error:', error);
+        return null;
+      }
+
+      console.log(`✅ Email sent to ${sellerEmail} - ID: ${data?.id}`);
+
+      // Marquer que l'email a été envoyé (pour éviter les doublons)
+      await event.data.ref.update({
+        emailNotificationSent: true,
+        emailNotificationSentAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return { success: true, emailId: data?.id };
+
+    } catch (error) {
+      console.error('❌ Error sending email notification:', error);
       return null;
     }
-
-    console.log(`✅ Email sent to ${sellerEmail} - ID: ${data?.id}`);
-
-    // Marquer que l'email a été envoyé (pour éviter les doublons)
-    await event.data.ref.update({
-      emailNotificationSent: true,
-      emailNotificationSentAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    return { success: true, emailId: data?.id };
-
-  } catch (error) {
-    console.error('❌ Error sending email notification:', error);
-    return null;
-  }
-});
+  });
 
 
 // ============================================
@@ -500,6 +503,82 @@ exports.deleteUser = onCall(async (request) => {
     throw new HttpsError('internal', 'Failed to delete user: ' + error.message);
   }
 });
+
+// ============================================
+// ✨ AI LISTING ASSISTANT - Generate Description
+// ============================================
+
+exports.generateVanDescription = onCall(
+  {
+    secrets: [geminiApiKey],
+    // Increase timeout for AI generation
+    timeoutSeconds: 60,
+  },
+  async (request) => {
+    // 1. Basic Auth Check
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'You must be logged in to use AI Assistant.');
+    }
+
+    const vanData = request.data;
+    if (!vanData || !vanData.title) {
+      throw new HttpsError('invalid-argument', 'Van title and basic info are required.');
+    }
+
+    try {
+      const apiKey = geminiApiKey.value();
+      if (!apiKey) {
+        throw new HttpsError('failed-precondition', 'AI Service not configured.');
+      }
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      // Build a detailed prompt based on van data
+      const equipmentList = Object.entries(vanData.equipment || {})
+        .filter(([_, value]) => value === true)
+        .map(([key, _]) => key)
+        .join(', ');
+
+      const prompt = `
+        You are an expert van life copywriter for "Kiwi Van Market", the #1 platform in New Zealand.
+        Generate a professional, compelling, and honest van listing description for a ${vanData.year || '[YEAR]'} ${vanData.title}.
+        
+        Details provided:
+        - Price: ${vanData.price ? `NZ$${vanData.price}` : '[PRICE]'}
+        - Mileage: ${vanData.mileage ? `${vanData.mileage} km` : '[MILEAGE]'}
+        - Location: ${vanData.location || '[LOCATION]'}, ${vanData.region || 'New Zealand'}
+        - Type: ${vanData.type || 'Van'}
+        - Capacity: ${vanData.capacity || '[CAPACITY]'} people
+        - Self-Contained: ${vanData.selfContained ? `Yes (${vanData.selfContainedType})` : 'No'}
+        - Equipment: ${equipmentList || 'Basic setup'}
+        - Extra features: ${vanData.customFeatures || 'None'}
+        
+        Guidelines:
+        - If some details above are marked with brackets like [PRICE], please use your best judgement to write a general description or use those placeholders so the user can fill them in later.
+        - Start with a catchy opening.
+        - Highlight key selling points (reliability, specific features, NZ travel readiness).
+        - Use a friendly but professional tone.
+        - Structure with bullet points for readability.
+        - Language: Generate the response in the language most appropriate for the title/location (mainly English, but French or Spanish if the input suggests it).
+        - Length: Around 150-250 words.
+        - DO NOT mention seller contact details (phone/email).
+        - End with a call to action.
+      `;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+
+      return {
+        description: text.trim()
+      };
+    } catch (error) {
+      console.error('❌ AI Generation error:', error);
+      throw new HttpsError('internal', 'Failed to generate description: ' + error.message);
+    }
+  }
+);
 
 /* ============================================
 // 🔒 STRIPE FUNCTIONS - COMMENTED OUT

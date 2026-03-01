@@ -1,4 +1,4 @@
-import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Search, BookOpen, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -15,8 +15,37 @@ export default function Listings({
 }) {
     const { t } = useTranslation();
 
+    // ItemList Schema for SEO Rich Snippets
+    const itemListSchema = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": searchTerm ? `Search results for ${searchTerm}` : "Latest Campervans for Sale in New Zealand",
+        "numberOfItems": filteredVans.length,
+        "itemListElement": filteredVans.slice(0, 15).map((van, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+                "@type": "Car",
+                "name": van.title,
+                "url": `https://kiwivanmarket.com/van/${van.id}`,
+                "image": van.images?.[0] || van.imageUrl,
+                "offers": {
+                    "@type": "Offer",
+                    "price": van.price,
+                    "priceCurrency": "NZD",
+                    "availability": van.status === 'sold' ? "https://schema.org/SoldOut" : "https://schema.org/InStock"
+                }
+            }
+        }))
+    };
+
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
+            <Helmet>
+                <script type="application/ld+json">
+                    {JSON.stringify(itemListSchema)}
+                </script>
+            </Helmet>
 
             {!loading && (
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 animate-fade-in-up">

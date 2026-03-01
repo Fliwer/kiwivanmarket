@@ -2,17 +2,16 @@ import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { collection, doc, setDoc, deleteDoc, query, where, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '../AuthContext';
+import { useToast } from '../components/ToastProvider';
 
 /**
  * Hook custom pour gérer les favoris avec Firebase
- * - Sauvegarde automatique dans Firebase
- * - Synchronisation en temps réel
- * - Persistant entre sessions
  */
 export const useFavorites = () => {
   const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const { currentUser, loading: authLoading } = useAuth();
+  const toast = useToast();
 
   // 📡 Charger les favoris depuis Firebase au montage
   useEffect(() => {
@@ -50,7 +49,7 @@ export const useFavorites = () => {
    */
   const toggleFavorite = async (vanId) => {
     if (!currentUser) {
-      alert('Please sign in to save favorites');
+      toast.info('Please sign in to save favorites');
       return;
     }
 
@@ -59,24 +58,19 @@ export const useFavorites = () => {
       const favoriteRef = doc(db, 'favorites', favoriteId);
 
       if (favorites.includes(vanId)) {
-        // Retirer des favoris
         await deleteDoc(favoriteRef);
-        console.log('💔 Retiré des favoris:', vanId);
+        toast.success('Removed from favorites');
       } else {
-        // ✅ CORRIGÉ : Utiliser 'createdAt' au lieu de 'addedAt'
-        // Les règles Firestore exigent exactement ces 3 champs: userId, vanId, createdAt
         await setDoc(favoriteRef, {
           userId: currentUser.uid,
           vanId: vanId,
-          createdAt: new Date()  // ← CORRIGÉ ! (était 'addedAt')
+          createdAt: new Date()
         });
-        console.log('❤️ Ajouté aux favoris:', vanId);
+        toast.success('Added to favorites');
       }
     } catch (error) {
       console.error('❌ Erreur lors de la modification des favoris:', error);
-      console.error('Code erreur:', error.code);
-      console.error('Message:', error.message);
-      alert('Error updating favorites. Please try again.');
+      toast.error('Error updating favorites. Please try again.');
     }
   };
 

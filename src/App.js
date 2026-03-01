@@ -324,6 +324,13 @@ function MainApp({
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <SeoHead
+        isHomepage
+        title="Kiwi Van Market | Buy & Sell Campervans New Zealand"
+        description="NZ's #1 backpacker van marketplace. Buy or sell Toyota Hiace, Nissan Caravan and self-contained sleeper vans. Free listings, no commission."
+      />
+
+      {/* Hero Section */}
       <section className="relative pt-12 pb-24 lg:pt-20 lg:pb-32 overflow-hidden bg-white">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -402,16 +409,6 @@ function MainApp({
                 </div>
               </div>
 
-              {/* Floating Element */}
-              <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-2xl border border-slate-50 flex items-center gap-4 animate-bounce-slow">
-                <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600">
-                  <CheckCircle size={24} fill="currentColor" className="text-emerald-100" />
-                </div>
-                <div>
-                  <div className="text-sm font-black text-slate-900">Verified Listings</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Secure Marketplace</div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -485,7 +482,6 @@ export default function KiwiVanMarket() {
           <div className="min-h-screen bg-slate-50">
             <ScrollToTop />
             <Header {...headerProps} />
-            <SeoHead isHomepage title="Kiwi Van Market | Buy & Sell Campervans NZ" description="NZ's #1 backpacker van marketplace." />
             <Routes>
               <Route path="/" element={<MainApp {...sharedProps} />} />
               <Route path="/van/:id" element={<Suspense fallback={<PageLoader />}><VanPage /></Suspense>} />

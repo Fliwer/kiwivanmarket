@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, doc, updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { X, Upload, Trash2, CheckCircle } from 'lucide-react';
+import { X, Upload, Trash2, CheckCircle, Sparkles, Loader2 } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import { sanitizeString, sanitizeText } from '../securityUtils';
 import { useToast } from './ToastProvider';
@@ -162,6 +163,33 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
   const [showRegoTooltip, setShowRegoTooltip] = useState(false);
   const [showSelfContainedTooltip, setShowSelfContainedTooltip] = useState(false);
   const [showAdvancedEquipment, setShowAdvancedEquipment] = useState(false);
+  const [generatingAI, setGeneratingAI] = useState(false);
+
+  // ✨ IA Generation
+  const handleGenerateAI = async () => {
+    if (!formData.title || formData.title.length < 5) {
+      toast.info('Please enter at least a title (min 5 chars). More details (price, mileage, features) lead to a much better AI description! ✨');
+      return;
+    }
+
+    setGeneratingAI(true);
+    try {
+      const generateDescription = httpsCallable(functions, 'generateVanDescription');
+      const result = await generateDescription(formData);
+
+      if (result.data && result.data.description) {
+        setFormData(prev => ({ ...prev, description: result.data.description }));
+        toast.success('Description generated with AI! ✨');
+      }
+    } catch (error) {
+      console.error('AI error details:', error);
+      console.error('Error code:', error.code);
+      console.error('Error message:', error.message);
+      toast.error('Failed to generate description. Please check your connection.');
+    } finally {
+      setGeneratingAI(false);
+    }
+  };
 
   // Upload image
   const handleImageUpload = async (file) => {
@@ -1223,6 +1251,33 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* DESCRIPTION SECTION - With AI Assistant */}
+            <div className="mb-8 p-6 bg-white border-2 border-gray-100 rounded-3xl shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <label className="text-base font-bold text-gray-800 flex items-center gap-2">
+                  <span className="text-xl">{"📝"}</span> Detailed Description *
+                </label>
+              </div>
+
+              <div className="relative group">
+                <textarea
+                  required
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={8}
+                  placeholder="Tell buyers about your van... (maintenance, recent trips, why you love it)"
+                  className="w-full px-5 py-5 border-2 border-gray-100 rounded-2xl focus:border-purple-400 focus:ring-4 focus:ring-purple-50 outline-none transition-all resize-none text-gray-700 leading-relaxed bg-gray-50/50"
+                />
+                <div className="absolute bottom-4 right-5 text-[10px] text-gray-400 font-bold bg-white px-2 py-1 rounded-full shadow-sm">
+                  {formData.description?.length || 0} characters
+                </div>
+              </div>
+              <p className="text-[11px] text-gray-500 mt-3 flex items-center gap-2 px-1">
+                <span className="w-1.5 h-1.5 bg-purple-400 rounded-full"></span>
+                Tip: Expert sellers include service history and recent mechanical work to build trust.
+              </p>
             </div>
 
             {/* BUTTONS moved to footer */}

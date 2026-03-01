@@ -7,6 +7,8 @@ import AddVanForm from './AddVanForm';
 import { isAdmin, AdminBadge } from '../utils/adminHelper';
 import safeStorage from '../utils/safeStorage';
 import { useTranslation } from 'react-i18next';
+import { useToast } from './ToastProvider';
+import ConfirmModal from './ConfirmModal';
 
 export default function MyVans({ onClose }) {
   const { t } = useTranslation();
@@ -14,11 +16,12 @@ export default function MyVans({ onClose }) {
   const [myVans, setMyVans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingVan, setEditingVan] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [stats, setStats] = useState({ totalVans: 0, totalViews: 0, avgPrice: 0 });
   const [viewMode, setViewMode] = useState('my'); // 'my' ou 'all'
-
   const userIsAdmin = isAdmin(currentUser);
+  const toast = useToast();
+  const [confirmConfig, setConfirmConfig] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Charger les vans
   useEffect(() => {
@@ -73,27 +76,28 @@ export default function MyVans({ onClose }) {
 
   // Supprimer un van
   const handleDelete = async (van) => {
-    try {
-      console.log('🗑️ Deleting van:', van.id);
-
-      // 1. Supprimer le document Firestore
-      await deleteDoc(doc(db, 'vans', van.id));
-      console.log('✅ Van deleted from Firestore');
-
-      // 2. Mettre à jour l'état local
-      setMyVans(prev => prev.filter(v => v.id !== van.id));
-      setShowDeleteConfirm(null);
-
-      // 3. ✨ INVALIDER LE CACHE AUTOMATIQUEMENT ✨
-      safeStorage.removeItem('kiwiVanMarket_vans');
-      safeStorage.removeItem('kiwiVanMarket_timestamp');
-      console.log('🧹 Cache invalidated automatically');
-
-      alert(t('my_listings.delete_success'));
-    } catch (error) {
-      console.error('❌ Error deleting:', error);
-      alert('❌ Error during deletion.');
-    }
+    setConfirmConfig({
+      title: 'Delete Listing',
+      message: `Are you sure you want to delete "${van.title}"? This action cannot be undone.`,
+      confirmText: 'Delete Permanently',
+      type: 'danger',
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          await deleteDoc(doc(db, 'vans', van.id));
+          setMyVans(prev => prev.filter(v => v.id !== van.id));
+          safeStorage.removeItem('kiwiVanMarket_vans');
+          safeStorage.removeItem('kiwiVanMarket_timestamp');
+          toast.success(t('my_listings.delete_success'));
+        } catch (error) {
+          console.error('❌ Error deleting:', error);
+          toast.error('❌ Error during deletion.');
+        } finally {
+          setDeleting(false);
+          setConfirmConfig(null);
+        }
+      }
+    });
   };
 
   // Toggle sold status
@@ -103,7 +107,6 @@ export default function MyVans({ onClose }) {
       await updateDoc(doc(db, 'vans', van.id), { status: newStatus });
       setMyVans(prev => prev.map(v => v.id === van.id ? { ...v, status: newStatus } : v));
 
-      // Update all conversations linked to this van
       const convsSnapshot = await getDocs(
         query(collection(db, 'conversations'), where('vanId', '==', van.id))
       );
@@ -112,13 +115,12 @@ export default function MyVans({ onClose }) {
       );
       await Promise.all(updatePromises);
 
-      // Invalider le cache
       safeStorage.removeItem('kiwiVanMarket_vans');
       safeStorage.removeItem('kiwiVanMarket_timestamp');
-      alert(t('my_listings.status_updated'));
+      toast.success(t('my_listings.status_updated'));
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Error updating status.');
+      toast.error('Error updating status.');
     }
   };
 
@@ -137,11 +139,11 @@ export default function MyVans({ onClose }) {
   // ✅ Fermeture avec touche Escape
   useEffect(() => {
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && !editingVan && !showDeleteConfirm) onClose();
+      if (e.key === 'Escape' && !editingVan && !confirmConfig) onClose();
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [onClose, editingVan, showDeleteConfirm]);
+  }, [onClose, editingVan, confirmConfig]);
 
   if (editingVan) {
     return (
@@ -356,7 +358,7 @@ export default function MyVans({ onClose }) {
                           </>
                         )}
                         <button
-                          onClick={() => setShowDeleteConfirm(van)}
+                          onClick={() => handleDelete(van)}
                           className={`${(isOwner || userIsAdmin) ? 'w-12 h-10' : 'w-full'} bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center`}>
                           <Trash2 size={18} />
                         </button>
@@ -372,41 +374,16 @@ export default function MyVans({ onClose }) {
         </div>
         {/* ✅ FIN CONTENU SCROLLABLE */}
 
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6">
-              <h3 className="text-2xl font-bold mb-4 text-red-600">⚠️ Confirm Deletion</h3>
-              {userIsAdmin && showDeleteConfirm.seller?.uid !== currentUser.uid && (
-                <div className="bg-orange-100 border-2 border-orange-500 rounded-lg p-3 mb-4">
-                  <p className="text-orange-800 font-bold text-sm flex items-center gap-2">
-                    <Crown size={16} />
-                    ADMIN MODE: Deleting another user's van
-                  </p>
-                </div>
-              )}
-              <p className="text-gray-700 mb-2">
-                Are you sure you want to delete this van?
-              </p>
-              <p className="font-bold mb-4">{showDeleteConfirm.title}</p>
-              <p className="text-sm text-gray-500 mb-6">
-                This action is irreversible. Images and all data will be permanently deleted.
-              </p>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowDeleteConfirm(null)}
-                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition">
-                  {t('filters.clear')}
-                </button>
-                <button
-                  onClick={() => handleDelete(showDeleteConfirm)}
-                  className="flex-1 bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition">
-                  {t('my_listings.delete')}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <ConfirmModal
+          isOpen={!!confirmConfig}
+          onClose={() => !deleting && setConfirmConfig(null)}
+          onConfirm={confirmConfig?.onConfirm}
+          title={confirmConfig?.title}
+          message={confirmConfig?.message}
+          confirmText={confirmConfig?.confirmText}
+          type={confirmConfig?.type}
+          isLoading={deleting}
+        />
       </div>
     </div>
   );

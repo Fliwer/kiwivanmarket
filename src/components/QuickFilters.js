@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Search,
@@ -6,7 +6,8 @@ import {
     CheckCircle,
     X,
     Filter,
-    ChevronDown
+    ChevronDown,
+    SlidersHorizontal,
 } from 'lucide-react';
 
 export default function QuickFilters({
@@ -26,6 +27,12 @@ export default function QuickFilters({
     setShowWofInfo
 }) {
     const { t } = useTranslation();
+    const [showMobileDrawer, setShowMobileDrawer] = useState(false);
+
+    const activeFilterCount = [
+        filters.buyBack, filters.regoValid, filters.selfContained, filters.wofValid,
+        ...Object.values(filters.equipment || {})
+    ].filter(Boolean).length + (filters.priceMin > 0 || filters.priceMax < 500000 ? 1 : 0) + (filters.yearMin > 1990 ? 1 : 0) + (filters.location !== 'all' ? 1 : 0) + (filters.type !== 'all' ? 1 : 0);
 
     return (
         <div className="bg-transparent">
@@ -33,20 +40,153 @@ export default function QuickFilters({
 
                 {/* Search Mobile */}
                 <div className="lg:hidden mb-4">
-                    <div className="relative">
-                        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
-                        <input
-                            type="text"
-                            placeholder="Search campervans..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:border-emerald-500 focus:bg-white outline-none transition-all"
-                            aria-label="Search campervans"
-                        />
+                    <div className="flex gap-2">
+                        <div className="relative flex-1">
+                            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
+                            <input
+                                type="text"
+                                placeholder="Search campervans..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-11 pr-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:border-emerald-500 focus:bg-white outline-none transition-all"
+                                aria-label="Search campervans"
+                            />
+                            {searchTerm && (
+                                <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                    <X size={16} />
+                                </button>
+                            )}
+                        </div>
+                        {/* Mobile Filters Button */}
+                        <button
+                            onClick={() => setShowMobileDrawer(true)}
+                            className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 ${activeFilterCount > 0 ? 'bg-emerald-600 text-white' : 'bg-white border-2 border-gray-200 text-gray-700'}`}
+                        >
+                            <SlidersHorizontal size={18} />
+                            <span>Filters</span>
+                            {activeFilterCount > 0 && (
+                                <span className="w-5 h-5 bg-white text-emerald-700 text-[11px] font-black rounded-full flex items-center justify-center">{activeFilterCount}</span>
+                            )}
+                        </button>
                     </div>
                 </div>
 
-                {/* Quick Filters */}
+                {/* Mobile Slide-Up Filter Drawer */}
+                {showMobileDrawer && (
+                    <div className="md:hidden fixed inset-0 z-[200] flex flex-col justify-end">
+                        {/* Backdrop */}
+                        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowMobileDrawer(false)} />
+                        {/* Drawer */}
+                        <div className="relative bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-300">
+                            {/* Handle */}
+                            <div className="flex justify-center pt-3 pb-1">
+                                <div className="w-10 h-1 rounded-full bg-gray-300" />
+                            </div>
+                            {/* Header */}
+                            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100">
+                                <div className="flex items-center gap-2">
+                                    <h2 className="text-lg font-black text-gray-900">Filters</h2>
+                                    {activeFilterCount > 0 && (
+                                        <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-black rounded-full">{activeFilterCount} active</span>
+                                    )}
+                                </div>
+                                <button onClick={() => setShowMobileDrawer(false)} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500">
+                                    <X size={22} />
+                                </button>
+                            </div>
+
+                            <div className="px-6 pb-32 pt-4 space-y-6">
+
+                                {/* Quick Chips Mobile */}
+                                <div>
+                                    <p className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">Quick Filters</p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[{ key: 'buyBack', label: t('filters.buyback'), color: 'green', icon: '🛡️' }, { key: 'regoValid', label: t('filters.rego'), color: 'purple', icon: '📋' }, { key: 'selfContained', label: t('filters.self_contained'), color: 'blue', icon: '🏕️' }, { key: 'wofValid', label: t('filters.wof'), color: 'emerald', icon: '🔧' }].map(f => (
+                                            <button key={f.key} onClick={() => setFilters({ ...filters, [f.key]: !filters[f.key] })}
+                                                className={`flex items-center gap-2 px-4 py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-95 ${filters[f.key] ? 'bg-emerald-600 text-white shadow-md' : 'bg-gray-100 text-gray-700'}`}>
+                                                <span>{f.icon}</span>
+                                                {f.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Price Range */}
+                                <div>
+                                    <p className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">{t('filters.price_range')}</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative flex-1">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                            <input type="number" min="0" max={filters.priceMax} step="1000" value={filters.priceMin}
+                                                onChange={(e) => { const val = parseInt(e.target.value) || 0; if (val <= filters.priceMax) setFilters({ ...filters, priceMin: val }); }}
+                                                placeholder="Min" className="w-full pl-7 pr-3 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-medium"
+                                            />
+                                        </div>
+                                        <span className="text-gray-400 font-medium">—</span>
+                                        <div className="relative flex-1">
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
+                                            <input type="number" min={filters.priceMin} max="500000" step="1000" value={filters.priceMax}
+                                                onChange={(e) => { const val = parseInt(e.target.value) || 50000; if (val >= filters.priceMin) setFilters({ ...filters, priceMax: val }); }}
+                                                placeholder="Max" className="w-full pl-7 pr-3 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-medium"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Year */}
+                                <div>
+                                    <p className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">{t('filters.year')}: <span className="text-emerald-600">{filters.yearMin}+</span></p>
+                                    <input type="range" min="1990" max="2024" step="1" value={filters.yearMin}
+                                        onChange={(e) => setFilters({ ...filters, yearMin: parseInt(e.target.value) })}
+                                        className="w-full accent-emerald-500 h-2 rounded-lg" />
+                                    <div className="flex justify-between text-xs text-gray-400 mt-1"><span>1990</span><span>2024</span></div>
+                                </div>
+
+                                {/* Location */}
+                                <div>
+                                    <p className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">{t('filters.location')}</p>
+                                    <select value={filters.location} onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                                        className="w-full px-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-medium">
+                                        <option value="all">All New Zealand</option>
+                                        <optgroup label="North Island"><option value="Auckland">Auckland</option><option value="Wellington">Wellington</option><option value="Hamilton">Hamilton</option><option value="Tauranga">Tauranga</option><option value="Rotorua">Rotorua</option></optgroup>
+                                        <optgroup label="South Island"><option value="Christchurch">Christchurch</option><option value="Queenstown">Queenstown</option><option value="Dunedin">Dunedin</option></optgroup>
+                                    </select>
+                                </div>
+
+                                {/* Equipment */}
+                                <div>
+                                    <p className="text-xs font-black text-gray-500 uppercase tracking-wider mb-3">🔧 {t('filters.equipment')}</p>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[{ key: 'doubleBed', emoji: '🛏️', label: 'Bed' }, { key: 'fridge', emoji: '🧊', label: 'Fridge' }, { key: 'gasStove', emoji: '🔥', label: 'Stove' }, { key: 'sink', emoji: '🚰', label: 'Sink' }, { key: 'toilet', emoji: '🚽', label: 'Toilet' }, { key: 'shower', emoji: '🚿', label: 'Shower' }, { key: 'solarPanel', emoji: '☀️', label: 'Solar' }, { key: 'leisureBattery', emoji: '🔋', label: 'Battery' }, { key: 'heater', emoji: '🌡️', label: 'Heater' }, { key: 'dieselHeater', emoji: '🔥', label: 'Diesel' }, { key: 'insulation', emoji: '🧥', label: 'Insulated' }, { key: 'surfRack', emoji: '🏄', label: 'Rack' }].map(item => (
+                                            <button key={item.key} onClick={() => setFilters({ ...filters, equipment: { ...filters.equipment, [item.key]: !filters.equipment[item.key] } })}
+                                                className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl text-xs font-bold transition-all active:scale-95 ${filters.equipment[item.key] ? 'bg-emerald-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'}`}>
+                                                <span className="text-xl">{item.emoji}</span>
+                                                {item.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* Footer: Apply + Reset */}
+                            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-gray-100 flex gap-3">
+                                {activeFilterCount > 0 && (
+                                    <button onClick={() => setFilters({ priceMin: 0, priceMax: 500000, yearMin: 1990, location: 'all', type: 'all', buyBack: false, regoValid: false, selfContained: false, wofValid: false, equipment: { doubleBed: false, fridge: false, gasStove: false, sink: false, toilet: false, solarPanel: false, leisureBattery: false, heater: false, dieselHeater: false, shower: false, insulation: false, surfRack: false } })}
+                                        className="flex-1 py-4 rounded-2xl font-bold text-red-600 bg-red-50 text-sm active:scale-95 transition-all">
+                                        Reset All
+                                    </button>
+                                )}
+                                <button onClick={() => setShowMobileDrawer(false)}
+                                    className="flex-1 py-4 rounded-2xl font-bold text-white bg-emerald-600 text-sm active:scale-95 transition-all shadow-lg shadow-emerald-600/30">
+                                    {activeFilterCount > 0 ? `Show Results (${activeFilterCount} filter${activeFilterCount > 1 ? 's' : ''})` : 'Show Results'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Desktop Quick Filters - unchanged */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 
                     <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:gap-3 md:overflow-visible md:pb-0 md:flex-wrap">

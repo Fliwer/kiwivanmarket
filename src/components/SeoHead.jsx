@@ -16,11 +16,11 @@ function OrganizationSchema() {
         "url": ORIGIN,
         "logo": {
             "@type": "ImageObject",
-            "url": `${ORIGIN}/kiwi-van-logo-48.webp`,
-            "width": 48,
-            "height": 48
+            "url": `${ORIGIN}/kiwi-van-logo-128.webp`,
+            "width": 128,
+            "height": 128
         },
-        "description": "The #1 campervan marketplace in New Zealand for backpackers and travellers. Buy or sell campervans, motorhomes, and vans peer-to-peer.",
+        "description": "The #1 campervan marketplace in New Zealand. Buy or sell campervans, motorhomes, and vans peer-to-peer with zero commission.",
         "contactPoint": {
             "@type": "ContactPoint",
             "email": "kiwivanmarket.contact@gmail.com",
@@ -29,6 +29,25 @@ function OrganizationSchema() {
         },
         "areaServed": { "@type": "Country", "name": "New Zealand" },
         "sameAs": ["https://www.facebook.com/kiwivanmarket"]
+    };
+    return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
+}
+
+function AutoDealerSchema() {
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "AutoDealer",
+        "@id": `${ORIGIN}/#dealer`,
+        "name": "Kiwi Van Market",
+        "url": ORIGIN,
+        "image": `${ORIGIN}/og-image.jpg`,
+        "priceRange": "$$",
+        "telephone": "",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Auckland",
+            "addressCountry": "NZ"
+        }
     };
     return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
 }
@@ -182,6 +201,7 @@ export default function SeoHead({
 
             {/* ── Schema.org structured data ───────────────────────── */}
             {isHomepage && <OrganizationSchema />}
+            {isHomepage && <AutoDealerSchema />}
             {isHomepage && <WebSiteSchema />}
             {faqs && faqs.length > 0 && <FAQSchema faqs={faqs} />}
             {breadcrumbs && breadcrumbs.length > 0 && <BreadcrumbSchema breadcrumbs={breadcrumbs} />}

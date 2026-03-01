@@ -54,7 +54,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
 
       <img
         src={getThumbnail(allImages[currentIndex]) || '/placeholder-van.jpg'}
-        alt={`${title} - ${currentIndex + 1}`}
+        alt={`Campervan for sale NZ - ${title} ${currentIndex + 1} - Kiwi Van Market`}
         className={`relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${vanStatus === 'sold' ? 'grayscale-[0.5] contrast-[0.8]' : 'opacity-100'}`}
         loading={priority ? "eager" : "lazy"}
       />

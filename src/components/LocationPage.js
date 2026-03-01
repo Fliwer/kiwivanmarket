@@ -94,6 +94,23 @@ const LocationSchema = ({ location, vans, url }) => {
       }
     },
     "numberOfItems": vans.length,
+    "itemListElement": vans.slice(0, 12).map((van, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Car",
+        "name": van.title,
+        "url": `https://kiwivanmarket.com/van/${van.id}`,
+        "image": van.images?.[0] || van.imageUrl,
+        "offers": {
+          "@type": "Offer",
+          "price": van.price,
+          "priceCurrency": "NZD",
+          "availability": van.status === 'sold' ? "https://schema.org/SoldOut" : "https://schema.org/InStock"
+        },
+        "itemCondition": "https://schema.org/UsedCondition"
+      }
+    }))
   };
 
   return (

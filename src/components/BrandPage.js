@@ -63,19 +63,25 @@ const BrandSchema = ({ brand, vans, url }) => {
     "description": brand.description,
     "url": url,
     "numberOfItems": vans.length,
-    "itemListElement": vans.slice(0, 10).map((van, index) => ({
+    "itemListElement": vans.slice(0, 12).map((van, index) => ({
       "@type": "ListItem",
       "position": index + 1,
       "item": {
-        "@type": "Vehicle",
+        "@type": "Car",
         "name": van.title,
         "url": `https://kiwivanmarket.com/van/${van.id}`,
         "image": van.images?.[0] || van.imageUrl,
         "offers": {
           "@type": "Offer",
           "price": van.price,
-          "priceCurrency": "NZD"
-        }
+          "priceCurrency": "NZD",
+          "availability": van.status === 'sold' ? "https://schema.org/SoldOut" : "https://schema.org/InStock"
+        },
+        "brand": {
+          "@type": "Brand",
+          "name": brand.name
+        },
+        "itemCondition": "https://schema.org/UsedCondition"
       }
     }))
   };

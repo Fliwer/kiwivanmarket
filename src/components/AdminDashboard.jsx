@@ -10,6 +10,8 @@ import {
   MapPin, Calendar, DollarSign, MessageCircle, Settings,
   ExternalLink, Mail, Phone, Clock, CheckCircle, XCircle
 } from 'lucide-react';
+import { useToast } from './ToastProvider';
+import ConfirmModal from './ConfirmModal';
 
 // 🔧 Helper pour normaliser les types de véhicules
 const normalizeVehicleType = (type) => {
@@ -35,9 +37,9 @@ export default function AdminDashboard({ onClose, onEditVan }) {
   const [selectedVan, setSelectedVan] = useState(null);
   const [stats, setStats] = useState({});
   const [refreshing, setRefreshing] = useState(false);
-  const [showBanConfirm, setShowBanConfirm] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState(null);
+  const toast = useToast();
 
   // 🔐 Vérifier si l'utilisateur est admin (via custom claim Firebase)
   const isAdmin = currentUser?.isAdmin === true;
@@ -141,11 +143,11 @@ export default function AdminDashboard({ onClose, onEditVan }) {
         featured: !currentStatus
       });
       setVans(vans.map(v => v.id === vanId ? { ...v, featured: !currentStatus } : v));
-      // Invalider le cache
       localStorage.removeItem('kiwiVanMarket_vans');
+      toast.success(currentStatus ? 'Van removed from featured' : 'Van set as featured');
     } catch (error) {
       console.error('Error toggling featured:', error);
-      alert('Error updating van');
+      toast.error('Error updating van');
     }
   };
 
@@ -159,23 +161,33 @@ export default function AdminDashboard({ onClose, onEditVan }) {
       localStorage.removeItem('kiwiVanMarket_vans');
     } catch (error) {
       console.error('Error toggling visibility:', error);
-      alert('Error updating van');
+      toast.error('Error updating van');
     }
   };
 
   const handleDeleteVan = async (vanId, vanTitle) => {
-    if (!window.confirm(`⚠️ Delete "${vanTitle}" permanently?\n\nThis action cannot be undone.`)) return;
-
-    try {
-      await deleteDoc(doc(db, 'vans', vanId));
-      setVans(vans.filter(v => v.id !== vanId));
-      setSelectedVan(null);
-      localStorage.removeItem('kiwiVanMarket_vans');
-      alert('✅ Listing deleted successfully');
-    } catch (error) {
-      console.error('Error deleting:', error);
-      alert('Error deleting listing');
-    }
+    setConfirmConfig({
+      title: 'Delete Listing',
+      message: `Are you sure you want to delete "${vanTitle}" permanently? This action cannot be undone.`,
+      confirmText: 'Delete Permanently',
+      type: 'danger',
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          await deleteDoc(doc(db, 'vans', vanId));
+          setVans(vans.filter(v => v.id !== vanId));
+          setSelectedVan(null);
+          localStorage.removeItem('kiwiVanMarket_vans');
+          toast.success('Listing deleted successfully');
+        } catch (error) {
+          console.error('Error deleting:', error);
+          toast.error('Error deleting listing');
+        } finally {
+          setDeleting(false);
+          setConfirmConfig(null);
+        }
+      }
+    });
   };
 
   // ✏️ Edit van - ouvre le formulaire d'édition
@@ -184,51 +196,65 @@ export default function AdminDashboard({ onClose, onEditVan }) {
       onEditVan(van);
       onClose();
     } else {
-      alert('Edit function not available. Please use "My Vans" section to edit.');
+      toast.info('Edit mode: Use "My Vans" to edit.');
     }
   };
 
   // 👤 Ban/Unban user
   const handleBanUser = async (userId, userEmail, currentBanned) => {
-    try {
-      await updateDoc(doc(db, 'users', userId), {
-        banned: !currentBanned,
-        bannedAt: !currentBanned ? new Date() : null,
-        bannedBy: !currentBanned ? currentUser.email : null
-      });
+    const action = currentBanned ? 'Unban' : 'Ban';
+    setConfirmConfig({
+      title: `${action} User`,
+      message: `Are you sure you want to ${action.toLowerCase()} the user ${userEmail}?`,
+      confirmText: action,
+      type: currentBanned ? 'info' : 'danger',
+      onConfirm: async () => {
+        try {
+          await updateDoc(doc(db, 'users', userId), {
+            banned: !currentBanned,
+            bannedAt: !currentBanned ? new Date() : null,
+            bannedBy: !currentBanned ? currentUser.email : null
+          });
 
-      setUsers(users.map(u => u.id === userId ? { ...u, banned: !currentBanned } : u));
-      setShowBanConfirm(null);
-
-      alert(currentBanned
-        ? `✅ ${userEmail} has been unbanned`
-        : `🚫 ${userEmail} has been banned`
-      );
-    } catch (error) {
-      console.error('Error banning user:', error);
-      alert('Error updating user');
-    }
+          setUsers(users.map(u => u.id === userId ? { ...u, banned: !currentBanned } : u));
+          toast.success(`${userEmail} ${currentBanned ? 'unbanned' : 'banned'} successfully`);
+        } catch (error) {
+          console.error('Error banning user:', error);
+          toast.error('Error updating user');
+        } finally {
+          setConfirmConfig(null);
+        }
+      }
+    });
   };
 
   // 🗑️ Delete user account
   const handleDeleteUser = async (userId, userEmail) => {
-    setDeleting(true);
-    try {
-      const deleteUserFn = httpsCallable(functions, 'deleteUser');
-      const result = await deleteUserFn({ userId });
+    setConfirmConfig({
+      title: 'Delete Account',
+      message: `Are you sure you want to delete the account ${userEmail}? This will also remove all their listings.`,
+      confirmText: 'Delete Everything',
+      type: 'danger',
+      onConfirm: async () => {
+        setDeleting(true);
+        try {
+          const deleteUserFn = httpsCallable(functions, 'deleteUser');
+          const result = await deleteUserFn({ userId });
 
-      setUsers(users.filter(u => u.id !== userId));
-      setVans(vans.filter(v => v.seller?.uid !== userId));
-      setShowDeleteConfirm(null);
-      localStorage.removeItem('kiwiVanMarket_vans');
+          setUsers(users.filter(u => u.id !== userId));
+          setVans(vans.filter(v => v.seller?.uid !== userId));
+          localStorage.removeItem('kiwiVanMarket_vans');
 
-      alert(`Account ${userEmail} deleted (${result.data.vansDeleted} listing(s) removed).`);
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('Error deleting user: ' + (error.message || 'Unknown error'));
-    } finally {
-      setDeleting(false);
-    }
+          toast.success(`Account deleted (${result.data.vansDeleted} listings removed).`);
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          toast.error('Error deleting user: ' + (error.message || 'Unknown error'));
+        } finally {
+          setDeleting(false);
+          setConfirmConfig(null);
+        }
+      }
+    });
   };
 
   // 📥 Export CSV
@@ -829,7 +855,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                               <td className="px-4 py-3 text-right">
                                 <div className="flex items-center justify-end gap-2">
                                   <button
-                                    onClick={() => setShowBanConfirm(user)}
+                                    onClick={() => handleBanUser(user.id, user.email, user.banned)}
                                     className={`px-3 py-1 rounded-lg text-sm font-medium transition ${user.banned
                                       ? 'bg-green-100 text-green-700 hover:bg-green-200'
                                       : 'bg-red-100 text-red-700 hover:bg-red-200'
@@ -838,7 +864,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                     {user.banned ? 'Unban' : 'Ban'}
                                   </button>
                                   <button
-                                    onClick={() => setShowDeleteConfirm(user)}
+                                    onClick={() => handleDeleteUser(user.id, user.email)}
                                     className="p-2 bg-gray-100 text-red-500 hover:bg-red-100 rounded-lg transition"
                                     title="Delete account"
                                   >
@@ -1006,86 +1032,17 @@ export default function AdminDashboard({ onClose, onEditVan }) {
         </main>
       </div>
 
-      {/* Ban Confirmation Modal */}
-      {showBanConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <div className="text-center mb-6">
-              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 ${showBanConfirm.banned ? 'bg-green-100' : 'bg-red-100'
-                }`}>
-                {showBanConfirm.banned ? (
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                ) : (
-                  <Ban className="w-8 h-8 text-red-600" />
-                )}
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">
-                {showBanConfirm.banned ? 'Unban User?' : 'Ban User?'}
-              </h3>
-              <p className="text-gray-600">
-                {showBanConfirm.banned
-                  ? `Allow ${showBanConfirm.email} to use the platform again?`
-                  : `This will prevent ${showBanConfirm.email} from posting new listings.`
-                }
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowBanConfirm(null)}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleBanUser(showBanConfirm.id, showBanConfirm.email, showBanConfirm.banned)}
-                className={`flex-1 px-4 py-3 rounded-xl font-semibold transition ${showBanConfirm.banned
-                  ? 'bg-green-600 text-white hover:bg-green-700'
-                  : 'bg-red-600 text-white hover:bg-red-700'
-                  }`}
-              >
-                {showBanConfirm.banned ? 'Unban' : 'Ban User'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete User Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[110] p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 bg-red-100">
-                <Trash2 className="w-8 h-8 text-red-600" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Account?</h3>
-              <p className="text-gray-600 mb-3">
-                Delete <strong>{showDeleteConfirm.email}</strong> permanently?
-              </p>
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
-                <AlertTriangle className="w-4 h-4 inline mr-1" />
-                This will permanently delete the account, all their listings, and cannot be undone.
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(null)}
-                disabled={deleting}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDeleteUser(showDeleteConfirm.id, showDeleteConfirm.email)}
-                disabled={deleting}
-                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition disabled:opacity-50"
-              >
-                {deleting ? 'Deleting...' : 'Delete Account'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modern Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!confirmConfig}
+        onClose={() => !deleting && setConfirmConfig(null)}
+        onConfirm={confirmConfig?.onConfirm}
+        title={confirmConfig?.title}
+        message={confirmConfig?.message}
+        confirmText={confirmConfig?.confirmText}
+        type={confirmConfig?.type}
+        isLoading={deleting}
+      />
     </div>
   );
 }
