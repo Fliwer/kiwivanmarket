@@ -47,9 +47,10 @@ export const useFavorites = () => {
    * Ajouter/Retirer un van des favoris
    * @param {string} vanId - ID du van
    */
-  const toggleFavorite = async (vanId) => {
+  const toggleFavorite = async (vanId, showAuth = null) => {
     if (!currentUser) {
       toast.info('Please sign in to save favorites');
+      if (showAuth) showAuth(true);
       return;
     }
 

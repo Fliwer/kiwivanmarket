@@ -105,7 +105,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
 };
 
 // Composant VanCard complet
-export default function VanCard({ van, formatPrice, priority = false }) {
+export default function VanCard({ van, formatPrice, priority = false, setShowAuthModal }) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { t } = useTranslation();
   const { translatedText: translatedTitle } = useAutoTranslate(van.title);
@@ -124,7 +124,7 @@ export default function VanCard({ van, formatPrice, priority = false }) {
 
         {/* Favorite button */}
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(van.id); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(van.id, setShowAuthModal); }}
           className="absolute top-4 right-4 bg-white/90 backdrop-blur-md p-2.5 rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all z-20 group/fav"
         >
           <Heart

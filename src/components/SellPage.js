@@ -356,7 +356,7 @@ export default function SellPage() {
 
         {/* Auth Modal */}
         {showAuthModal && (
-          <AuthModal onClose={() => setShowAuthModal(false)} />
+          <AuthModal isOpen={true} onClose={() => setShowAuthModal(false)} />
         )}
       </>
     );

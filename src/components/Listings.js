@@ -11,7 +11,8 @@ export default function Listings({
     setSearchTerm,
     sortBy,
     setSortBy,
-    formatPrice
+    formatPrice,
+    setShowAuthModal
 }) {
     const { t } = useTranslation();
 
@@ -104,6 +105,7 @@ export default function Listings({
                                     van={van}
                                     formatPrice={formatPrice}
                                     priority={index < 3}
+                                    setShowAuthModal={setShowAuthModal}
                                 />
                             </div>
                         ))}

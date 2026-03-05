@@ -499,7 +499,7 @@ export default function KiwiVanMarket() {
             </Routes>
             <Footer onOpenFAQ={() => setShowFAQ(true)} onOpenTerms={() => setShowTerms(true)} />
           </div>
-          {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} onSuccess={() => { setShowAuthModal(false); window.location.reload(); }} />}
+          {showAuthModal && <AuthModal isOpen={true} onClose={() => setShowAuthModal(false)} />}
           {showFavorites && <Suspense fallback={<LoadingSpinner />}><FavoritesPage onClose={() => setShowFavorites(false)} /></Suspense>}
           {showUserProfile && <Suspense fallback={<LoadingSpinner />}><UserProfile onClose={() => setShowUserProfile(false)} /></Suspense>}
           {showAdminDashboard && <Suspense fallback={<PageLoader />}><AdminDashboard onClose={() => setShowAdminDashboard(false)} /></Suspense>}
