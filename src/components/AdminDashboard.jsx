@@ -31,6 +31,9 @@ export default function AdminDashboard({ onClose, onEditVan }) {
   const [activeTab, setActiveTab] = useState('overview');
   const [vans, setVans] = useState([]);
   const [users, setUsers] = useState([]);
+  const [conversations, setConversations] = useState([]);
+  const [reservations, setReservations] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -65,9 +68,10 @@ export default function AdminDashboard({ onClose, onEditVan }) {
       setVans(vansData);
 
       // Charger les utilisateurs
+      let usersData = [];
       try {
         const usersSnapshot = await getDocs(collection(db, 'users'));
-        const usersData = usersSnapshot.docs.map(doc => ({
+        usersData = usersSnapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
@@ -77,8 +81,26 @@ export default function AdminDashboard({ onClose, onEditVan }) {
         setUsers([]);
       }
 
+      // Charger les conversations
+      try {
+        const convosSnapshot = await getDocs(collection(db, 'conversations'));
+        setConversations(convosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } catch (e) { console.log('Conversations not found'); }
+
+      // Charger les réservations
+      try {
+        const resSnapshot = await getDocs(collection(db, 'reservations'));
+        setReservations(resSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } catch (e) { console.log('Reservations not found'); }
+
+      // Charger les avis
+      try {
+        const reviewsSnapshot = await getDocs(collection(db, 'reviews'));
+        setReviews(reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } catch (e) { console.log('Reviews not found'); }
+
       // Calculer les stats
-      calculateStats(vansData);
+      calculateStats(vansData, usersData);
 
     } catch (error) {
       console.error('Error loading admin data:', error);
@@ -87,10 +109,13 @@ export default function AdminDashboard({ onClose, onEditVan }) {
     }
   };
 
-  const calculateStats = (vansData) => {
+  const calculateStats = (vansData, usersData) => {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const sellerIds = new Set(vansData.map(v => v.seller?.uid).filter(Boolean));
+    const pureBuyers = (usersData || []).filter(u => !sellerIds.has(u.id));
 
     setStats({
       totalVans: vansData.length,
@@ -98,7 +123,16 @@ export default function AdminDashboard({ onClose, onEditVan }) {
       soldVans: vansData.filter(v => v.status === 'sold').length,
       hiddenVans: vansData.filter(v => v.status === 'hidden').length,
       totalViews: vansData.reduce((sum, v) => sum + (v.views || 0), 0),
-      // ... previous stats
+      totalUsers: usersData?.length || 0,
+      pureBuyers: pureBuyers.length,
+      totalConversations: conversations.length,
+      activeConversations: conversations.filter(c => {
+        const lastActivity = c.lastMessageAt?.toDate?.() || new Date(c.lastMessageAt);
+        return lastActivity > thirtyDaysAgo;
+      }).length,
+      totalReservations: reservations.length,
+      pendingReservations: reservations.filter(r => r.status === 'pending').length,
+      totalReviews: reviews.length,
       vansWithBuyBack: vansData.filter(v => v.buyBack).length,
       selfContainedVans: vansData.filter(v => v.selfContained).length,
       featuredVans: vansData.filter(v => v.featured).length,
@@ -379,6 +413,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
               { id: 'overview', icon: BarChart3, label: 'Overview' },
               { id: 'vans', icon: Car, label: 'Listings', count: vans.length },
               { id: 'users', icon: Users, label: 'Users', count: users.length },
+              { id: 'communication', icon: MessageCircle, label: 'Engagement', count: stats.totalConversations },
               { id: 'stats', icon: TrendingUp, label: 'Statistics' },
             ].map(item => (
               <button
@@ -498,11 +533,35 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                     <div className="bg-white rounded-2xl p-5 border border-gray-200 hover:shadow-lg transition">
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                          <DollarSign className="w-5 h-5 text-purple-600" />
+                          <MessageCircle className="w-5 h-5 text-purple-600" />
                         </div>
-                        <span className="text-gray-600 text-sm">Average Price</span>
+                        <span className="text-gray-600 text-sm">Conversations</span>
                       </div>
-                      <p className="text-3xl font-bold text-gray-900">${stats.averagePrice?.toLocaleString()}</p>
+                      <p className="text-3xl font-bold text-gray-900">{stats.totalConversations || 0}</p>
+                      <p className="text-xs text-gray-500 mt-1">{stats.activeConversations || 0} active (last 30d)</p>
+                    </div>
+                  </div>
+
+                  {/* Secondary Stats */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-2xl p-4 border border-gray-200">
+                      <p className="text-gray-500 text-xs uppercase font-bold mb-1">Users</p>
+                      <p className="text-xl font-bold">{stats.totalUsers}</p>
+                      <p className="text-xs text-gray-400">{stats.pureBuyers} buyers (no listings)</p>
+                    </div>
+                    <div className="bg-white rounded-2xl p-4 border border-gray-200">
+                      <p className="text-gray-500 text-xs uppercase font-bold mb-1">Reservations</p>
+                      <p className="text-xl font-bold">{stats.totalReservations}</p>
+                      <p className="text-xs text-amber-500">{stats.pendingReservations} pending</p>
+                    </div>
+                    <div className="bg-white rounded-2xl p-4 border border-gray-200">
+                      <p className="text-gray-500 text-xs uppercase font-bold mb-1">Reviews</p>
+                      <p className="text-xl font-bold">{stats.totalReviews}</p>
+                      <p className="text-xs text-gray-400">Total feedback</p>
+                    </div>
+                    <div className="bg-white rounded-2xl p-4 border border-gray-200">
+                      <p className="text-gray-500 text-xs uppercase font-bold mb-1">Average Price</p>
+                      <p className="text-xl font-bold">${stats.averagePrice?.toLocaleString()}</p>
                     </div>
                   </div>
 
@@ -796,6 +855,108 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                   {/* Summary */}
                   <div className="flex items-center justify-between text-sm text-gray-500">
                     <p>Showing {filteredVans.length} of {vans.length} listings</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Communication Tab */}
+              {activeTab === 'communication' && (
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-gray-900">Engagement & Communication</h2>
+
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
+                      <MessageCircle className="w-10 h-10 mb-4 opacity-50" />
+                      <h3 className="text-lg font-medium opacity-90">Conversations</h3>
+                      <p className="text-4xl font-bold">{stats.totalConversations}</p>
+                      <p className="text-sm mt-2 opacity-80">{stats.activeConversations} active in the last 30 days</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg">
+                      <Calendar className="w-10 h-10 mb-4 opacity-50" />
+                      <h3 className="text-lg font-medium opacity-90">Reservations</h3>
+                      <p className="text-4xl font-bold">{stats.totalReservations}</p>
+                      <p className="text-sm mt-2 opacity-80">{stats.pendingReservations || 0} pending payment/approval</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg">
+                      <Star className="w-10 h-10 mb-4 opacity-50" />
+                      <h3 className="text-lg font-medium opacity-90">User Reviews</h3>
+                      <p className="text-4xl font-bold">{stats.totalReviews}</p>
+                      <p className="text-sm mt-2 opacity-80">Feedback left by users</p>
+                    </div>
+                  </div>
+
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    {/* Recent Conversations */}
+                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                      <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+                        <h3 className="font-bold text-gray-900">Recent Conversations</h3>
+                        <span className="text-xs text-gray-500">Last 5 active</span>
+                      </div>
+                      <div className="divide-y divide-gray-100">
+                        {conversations
+                          .sort((a, b) => {
+                            const dateA = a.lastMessageAt?.toDate?.() || new Date(a.lastMessageAt || 0);
+                            const dateB = b.lastMessageAt?.toDate?.() || new Date(b.lastMessageAt || 0);
+                            return dateB - dateA;
+                          })
+                          .slice(0, 5)
+                          .map((conv) => (
+                            <div key={conv.id} className="p-4 hover:bg-gray-50 transition">
+                              <div className="flex justify-between items-start mb-1">
+                                <p className="font-semibold text-gray-900 line-clamp-1">{conv.van?.title || 'Unknown Van'}</p>
+                                <span className="text-[10px] text-gray-400 whitespace-nowrap">{formatDate(conv.lastMessageAt)}</span>
+                              </div>
+                              <p className="text-sm text-gray-600 line-clamp-1 mb-2 italic">"{conv.lastMessage || 'No messages'}"</p>
+                              <div className="flex gap-2">
+                                {conv.participants?.map(pid => (
+                                  <span key={pid} className="px-2 py-0.5 bg-gray-100 rounded text-[10px] text-gray-500">
+                                    {conv.participantNames?.[pid] || pid.substring(0, 5)}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        {conversations.length === 0 && (
+                          <div className="p-8 text-center text-gray-400">No conversations found</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Recent Reservations */}
+                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+                      <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
+                        <h3 className="font-bold text-gray-900">Recent Reservations</h3>
+                        <span className="text-xs text-gray-500">Last 5</span>
+                      </div>
+                      <div className="divide-y divide-gray-100">
+                        {reservations
+                          .sort((a, b) => {
+                            const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
+                            const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
+                            return dateB - dateA;
+                          })
+                          .slice(0, 5)
+                          .map((res) => (
+                            <div key={res.id} className="p-4 hover:bg-gray-50 transition flex justify-between items-center">
+                              <div>
+                                <p className="font-semibold text-gray-900">{res.vanTitle || 'Booking'}</p>
+                                <p className="text-xs text-gray-500">{res.buyerName || 'Buyer'} • ${res.totalPrice?.toLocaleString()}</p>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${res.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                                res.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                                  'bg-gray-100 text-gray-600'
+                                }`}>
+                                {res.status?.toUpperCase()}
+                              </span>
+                            </div>
+                          ))}
+                        {reservations.length === 0 && (
+                          <div className="p-8 text-center text-gray-400">No reservations found</div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
