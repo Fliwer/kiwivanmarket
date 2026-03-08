@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, doc, updateDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -103,59 +103,72 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
 
   // Charger les données du van en mode édition
   useEffect(() => {
-    if (isEditMode && van) {
-      // Default equipment object - Simplified for backpackers
-      const defaultEquipment = {
-        // Sleeping
-        doubleBed: false, singleBeds: false, roofBed: false, bedding: false, curtains: false,
-        // Kitchen
-        fridge: false, gasStove: false, sink: false, cookware: false,
-        // Water & Bathroom
-        freshWaterTank: false, greyWaterTank: false,
-        outdoorShower: false, indoorShower: false, toilet: false, portaPotti: false,
-        // Power
-        solarPanel: false, leisureBattery: false, splitCharger: false, inverter: false,
-        usb: false, ledLights: false,
-        // Comfort
-        heater: false, dieselHeater: false, roofFan: false, insulation: false, awning: false,
-        // Vehicle
-        reverseCamera: false, bluetooth: false, swivelSeats: false, bikeRack: false, surfRack: false
-      };
+    const loadData = async () => {
+      if (isEditMode && van) {
+        // Default equipment object - Simplified for backpackers
+        const defaultEquipment = {
+          // Sleeping
+          doubleBed: false, singleBeds: false, roofBed: false, bedding: false, curtains: false,
+          // Kitchen
+          fridge: false, gasStove: false, sink: false, cookware: false,
+          // Water & Bathroom
+          freshWaterTank: false, greyWaterTank: false,
+          outdoorShower: false, indoorShower: false, toilet: false, portaPotti: false,
+          // Power
+          solarPanel: false, leisureBattery: false, splitCharger: false, inverter: false,
+          usb: false, ledLights: false,
+          // Comfort
+          heater: false, dieselHeater: false, roofFan: false, insulation: false, awning: false,
+          // Vehicle
+          reverseCamera: false, bluetooth: false, swivelSeats: false, bikeRack: false, surfRack: false
+        };
 
-      setFormData({
-        title: van.title || '',
-        price: van.price?.toString() || '',
-        location: van.location || '',
-        region: van.region || 'North Island',
-        year: van.year || new Date().getFullYear(),
-        mileage: van.mileage?.toString() || '',
-        type: van.type || 'Van',
-        description: van.description || '',
-        capacity: van.capacity || 2,
-        selfContained: van.selfContained || false,
-        selfContainedType: van.selfContainedType || 'green',
-        featured: van.featured || false,
-        buyBack: van.buyBack || false,
-        buyBackPrice: van.buyBackPrice?.toString() || '',
-        buyBackDuration: van.buyBackDuration?.toString() || '3',
-        buyBackMaxKm: van.buyBackMaxKm?.toString() || '',
-        buyBackConditions: van.buyBackConditions || '',
-        equipment: { ...defaultEquipment, ...(van.equipment || {}) },
-        wofExpiry: formatDateForInput(van.wofExpiry),
-        regoExpiry: formatDateForInput(van.regoExpiry),
-        customFeatures: van.customFeatures || '',
-        sellerPhone: van.seller?.phone || '',
-        sellerFacebook: van.seller?.facebook || ''
-      });
+        setFormData({
+          title: van.title || '',
+          price: van.price?.toString() || '',
+          location: van.location || '',
+          region: van.region || 'North Island',
+          year: van.year || new Date().getFullYear(),
+          mileage: van.mileage?.toString() || '',
+          type: van.type || 'Van',
+          description: van.description || '',
+          capacity: van.capacity || 2,
+          selfContained: van.selfContained || false,
+          selfContainedType: van.selfContainedType || 'green',
+          featured: van.featured || false,
+          buyBack: van.buyBack || false,
+          buyBackPrice: van.buyBackPrice?.toString() || '',
+          buyBackDuration: van.buyBackDuration?.toString() || '3',
+          buyBackMaxKm: van.buyBackMaxKm?.toString() || '',
+          buyBackConditions: van.buyBackConditions || '',
+          equipment: { ...defaultEquipment, ...(van.equipment || {}) },
+          wofExpiry: formatDateForInput(van.wofExpiry),
+          regoExpiry: formatDateForInput(van.regoExpiry),
+          customFeatures: van.customFeatures || '',
+          sellerPhone: van.seller?.phone || '',
+          sellerFacebook: van.seller?.facebook || ''
+        });
 
-      // Charger les images existantes
-      if (van.images && van.images.length > 0) {
-        setImages(van.images.map(url => ({ url, uploading: false })));
-      } else if (van.imageUrl) {
-        setImages([{ url: van.imageUrl, uploading: false }]);
+        // Charger les images existantes
+        if (van.images && van.images.length > 0) {
+          setImages(van.images.map(url => ({ url, uploading: false })));
+        } else if (van.imageUrl) {
+          setImages([{ url: van.imageUrl, uploading: false }]);
+        }
+      } else if (!isEditMode && currentUser) {
+        // Mode création - Essayer de pré-remplir le téléphone depuis le profil
+        try {
+          const userSnap = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userSnap.exists() && userSnap.data().phone) {
+            setFormData(prev => ({ ...prev, sellerPhone: userSnap.data().phone }));
+          }
+        } catch (error) {
+          console.error('Error fetching user profile for phone:', error);
+        }
       }
-    }
-  }, [isEditMode, van]);
+    };
+    loadData();
+  }, [isEditMode, van, currentUser]);
 
   // tats pour les tooltips
   const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
@@ -191,48 +204,55 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     }
   };
 
-  // Upload image
-  const handleImageUpload = async (file) => {
-    if (images.length >= 5) {
-      toast.warning('Maximum 5 photos!');
+  // Upload images
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    if (images.length + files.length > 10) {
+      toast.warning('Maximum 10 photos!');
       return;
     }
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Invalid file type!');
-      return;
+    const validFiles = files.filter(file => {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`Invalid file type: ${file.name}`);
+        return false;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`Image too large (max 10MB): ${file.name}`);
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length === 0) return;
+
+    setLoading(true);
+
+    // Process each file
+    for (const file of validFiles) {
+      const tempId = Math.random().toString(36).substr(2, 9);
+
+      // Local preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImages(prev => [...prev, { id: tempId, url: e.target.result, uploading: true }]);
+      };
+      reader.readAsDataURL(file);
+
+      try {
+        const result = await uploadToCloudinary(file);
+        setImages(prev => prev.map(img =>
+          img.id === tempId ? { url: result.url, uploading: false } : img
+        ));
+      } catch (error) {
+        console.error('Upload error:', error);
+        setImages(prev => prev.filter(img => img.id !== tempId));
+        toast.error(`Error uploading ${file.name}`);
+      }
     }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image too large (max 10MB)');
-      return;
-    }
-
-    const newIndex = images.length;
-    setUploadingIndex(newIndex);
-
-    // Instant local preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImages(prev => [...prev, { url: e.target.result, uploading: true }]);
-    };
-    reader.readAsDataURL(file);
-
-    try {
-      const result = await uploadToCloudinary(file);
-
-      setImages(prev => {
-        const updated = [...prev];
-        updated[newIndex] = { url: result.url, uploading: false };
-        return updated;
-      });
-    } catch (error) {
-      console.error('Upload error:', error);
-      setImages(prev => prev.filter((_, i) => i !== newIndex));
-      toast.error('Upload error. Please try again.');
-    } finally {
-      setUploadingIndex(null);
-    }
+    setLoading(false);
   };
 
   const removeImage = (index) => {
@@ -369,8 +389,11 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           customFeatures: sanitizeText(formData.customFeatures || ''),
           imageUrl: imageUrls[0],
           images: imageUrls,
-          'seller.phone': sanitizeString(formData.sellerPhone || ''),
-          'seller.facebook': sanitizeString(formData.sellerFacebook || ''),
+          seller: {
+            ...van.seller,
+            phone: sanitizeString(formData.sellerPhone || ''),
+            facebook: sanitizeString(formData.sellerFacebook || '')
+          },
           updatedAt: new Date()
         };
 
@@ -549,9 +572,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => e.target.files[0] && handleImageUpload(e.target.files[0])}
+                      onChange={handleImageUpload}
+                      multiple
                       className="hidden"
-                      disabled={uploadingIndex !== null}
+                      disabled={loading}
                     />
                     {uploadingIndex === images.length ? (
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
