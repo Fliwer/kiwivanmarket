@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { X, Upload, Trash2, CheckCircle, Sparkles, Loader2 } from 'lucide-react';
+import { X, Upload, Trash2, CheckCircle, Sparkles, Loader2, Music, ExternalLink, Video } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import { sanitizeString, sanitizeText } from '../securityUtils';
 import { useToast } from './ToastProvider';
@@ -22,11 +23,13 @@ const formatDateForInput = (date) => {
 
 
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode = false, van = null }) {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [uploadingIndex, setUploadingIndex] = useState(null);
+  const [repositioningIndex, setRepositioningIndex] = useState(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -89,7 +92,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     regoExpiry: '',
     customFeatures: '',
     sellerPhone: '',
-    sellerFacebook: ''
+    sellerFacebook: '',
+    // Personalization
+    vanName: '',
+    vanStory: '',
+    vanMusic: '',
+    vanMusicLink: '',
+    vanVideoLink: ''
   });
 
   //  Fermeture avec touche Escape
@@ -100,6 +109,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose]);
+
+  useEffect(() => {
+    if (!currentUser) onClose();
+  }, [currentUser, onClose]);
 
   // Charger les données du van en mode édition
   useEffect(() => {
@@ -146,19 +159,30 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           regoExpiry: formatDateForInput(van.regoExpiry),
           customFeatures: van.customFeatures || '',
           sellerPhone: van.seller?.phone || '',
-          sellerFacebook: van.seller?.facebook || ''
+          sellerFacebook: van.seller?.facebook || '',
+          vanName: van.vanName || '',
+          vanStory: van.vanStory || '',
+          vanMusic: van.vanMusic || '',
+          vanMusicLink: van.vanMusicLink || '',
+          vanVideoLink: van.vanVideoLink || ''
         });
 
-        // Charger les images existantes
+        // Charger les images existantes avec leurs offsets
         if (van.images && van.images.length > 0) {
-          setImages(van.images.map(url => ({ url, uploading: false })));
+          const offsets = van.imageOffsets || [];
+          setImages(van.images.map((url, idx) => ({
+            url,
+            uploading: false,
+            offsetY: offsets[idx] !== undefined ? offsets[idx] : 50
+          })));
         } else if (van.imageUrl) {
-          setImages([{ url: van.imageUrl, uploading: false }]);
+          setImages([{ url: van.imageUrl, uploading: false, offsetY: van.imageOffsets?.[0] || 50 }]);
         }
       } else if (!isEditMode && currentUser) {
         // Mode création - Essayer de pré-remplir le téléphone depuis le profil
         try {
-          const userSnap = await getDoc(doc(db, 'users', currentUser.uid));
+          const userRef = doc(db, 'users', currentUser.uid);
+          const userSnap = await getDoc(userRef);
           if (userSnap.exists() && userSnap.data().phone) {
             setFormData(prev => ({ ...prev, sellerPhone: userSnap.data().phone }));
           }
@@ -237,14 +261,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
       // Local preview
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImages(prev => [...prev, { id: tempId, url: e.target.result, uploading: true }]);
+        setImages(prev => [...prev, { id: tempId, url: e.target.result, uploading: true, offsetY: 50 }]);
       };
       reader.readAsDataURL(file);
 
       try {
         const result = await uploadToCloudinary(file);
         setImages(prev => prev.map(img =>
-          img.id === tempId ? { url: result.url, uploading: false } : img
+          img.id === tempId ? { ...img, url: result.url, uploading: false } : img
         ));
       } catch (error) {
         console.error('Upload error:', error);
@@ -321,11 +345,12 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
       errors.push(' City is required');
     }
 
-    // Anne
+    // Année
+    const currentYear = new Date().getFullYear();
     if (!formData.year) {
       errors.push(' Year is required');
-    } else if (parseInt(formData.year) < 1950 || parseInt(formData.year) > 2026) {
-      errors.push(' Year must be between 1950 and 2026');
+    } else if (parseInt(formData.year) < 1950 || parseInt(formData.year) > currentYear + 1) {
+      errors.push(` Year must be between 1950 and ${currentYear + 1}`);
     }
 
     // Kilomtrage
@@ -394,7 +419,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             phone: sanitizeString(formData.sellerPhone || ''),
             facebook: sanitizeString(formData.sellerFacebook || '')
           },
-          updatedAt: new Date()
+          vanName: sanitizeString(formData.vanName || ''),
+          vanStory: sanitizeText(formData.vanStory || ''),
+          vanMusic: sanitizeString(formData.vanMusic || ''),
+          vanMusicLink: sanitizeString(formData.vanMusicLink || ''),
+          vanVideoLink: sanitizeString(formData.vanVideoLink || ''),
+          updatedAt: new Date(),
+          imageOffsets: images.map(img => img.offsetY || 50)
         };
 
         await updateDoc(doc(db, 'vans', van.id), updateData);
@@ -438,6 +469,11 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             phone: sanitizeString(formData.sellerPhone || ''),
             facebook: sanitizeString(formData.sellerFacebook || '')
           },
+          vanName: sanitizeString(formData.vanName || ''),
+          vanStory: sanitizeText(formData.vanStory || ''),
+          vanMusic: sanitizeString(formData.vanMusic || ''),
+          vanMusicLink: sanitizeString(formData.vanMusicLink || ''),
+          vanVideoLink: sanitizeString(formData.vanVideoLink || ''),
           views: 0,
           status: 'active',
           createdAt: serverTimestamp(),
@@ -493,6 +529,68 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     </div>
   );
 
+  // Modal de repositionnement
+  const RepositionModal = () => {
+    if (repositioningIndex === null) return null;
+    const img = images[repositioningIndex];
+    if (!img) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center p-4 backdrop-blur-md">
+        <div className="max-w-4xl w-full text-center mb-8">
+          <h3 className="text-2xl font-black text-white mb-2">Adjust Image Center</h3>
+          <p className="text-gray-400">Drag the image up or down to center it perfectly for search results.</p>
+        </div>
+
+        <div className="w-full max-w-2xl aspect-[4/3] bg-gray-800 rounded-3xl overflow-hidden relative cursor-ns-resize shadow-2xl border-4 border-white/10 group">
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+            <img
+              src={img.url}
+              alt="Reposition"
+              className="w-full h-full object-cover select-none pointer-events-none transition-all duration-300"
+              style={{ objectPosition: `center ${img.offsetY || 50}%` }}
+            />
+            {/* Overlay d'aide visuelle - Lignes de centrage */}
+            <div className="absolute inset-x-0 h-[1px] bg-emerald-500/50 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 w-[1px] bg-emerald-500/50 left-1/2 -translate-x-1/2 z-10 pointer-events-none" />
+          </div>
+
+          {/* Grille de centrage (type Facebook/Instagram) */}
+          <div className="absolute inset-0 pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity">
+            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
+              {[...Array(9)].map((_, i) => <div key={i} className="border-[0.5px] border-white/30" />)}
+            </div>
+          </div>
+
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value={img.offsetY || 50}
+            onChange={(e) => {
+              const val = parseInt(e.target.value);
+              setImages(prev => prev.map((item, idx) =>
+                idx === repositioningIndex ? { ...item, offsetY: val } : item
+              ));
+            }}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-ns-resize z-20"
+          />
+        </div>
+
+        <div className="mt-8 flex gap-4">
+          <button
+            type="button"
+            onClick={() => setRepositioningIndex(null)}
+            className="px-8 py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-xl active:scale-95"
+          >
+            Done
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4"
@@ -528,46 +626,60 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             {/* PHOTOS SECTION */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
-                Photos ({images.length}/5)
+                Photos ({images.length}/10)
               </h3>
 
               {/* Photo grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
-                    <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg">
+                    <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg relative">
                       <img
                         src={image.url}
                         alt={`Photo ${index + 1}`}
                         className="w-full h-full object-cover"
+                        style={{ objectPosition: `center ${image.offsetY || 50}%` }}
                       />
                       {image.uploading && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                         </div>
                       )}
+
+                      {/* Overlay boutons - Apparat au hover */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setRepositioningIndex(index)}
+                          className="bg-white text-gray-900 px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-100 hover:text-emerald-700 transition-all flex items-center gap-1.5"
+                        >
+                          Centrer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="bg-red-500 text-white p-2 rounded-xl hover:bg-red-600 transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
                       {!image.uploading && (
-                        <div className="absolute top-2 left-2 bg-emerald-500 text-white rounded-full p-1 shadow-lg">
+                        <div className="absolute top-2 left-2 bg-emerald-500 text-white rounded-full p-1 shadow-lg pointer-events-none">
                           <CheckCircle size={16} />
                         </div>
                       )}
                     </div>
                     {index === 0 && (
-                      <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                      <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg pointer-events-none">
                         Primary
                       </div>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg">
-                      <Trash2 size={16} />
-                    </button>
                   </div>
                 ))}
 
                 {/* Add button */}
-                {images.length < 5 && (
+                {images.length < 10 && (
                   <label className="aspect-video bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-dashed border-emerald-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-100 transition-all group">
                     <input
                       type="file"
@@ -577,7 +689,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                       className="hidden"
                       disabled={loading}
                     />
-                    {uploadingIndex === images.length ? (
+                    {uploadingIndex !== null ? (
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
                     ) : (
                       <>
@@ -760,6 +872,90 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                   required
                 />
+              </div>
+            </div>
+
+            {/* VAN PERSONALITY SECTION */}
+            <div className="mb-8 p-6 bg-emerald-50/50 rounded-[2rem] border border-emerald-100 animate-scale-in">
+              <div className="flex items-center gap-2 mb-6">
+                <Sparkles className="text-emerald-500" size={20} />
+                <h3 className="text-xl font-bold text-gray-900 leading-none">
+                  {t('common.van_soul_section')}
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('common.van_name')} <span className="font-normal text-gray-400 italic">{t('common.van_name_opt')}</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.vanName}
+                    onChange={(e) => setFormData({ ...formData, vanName: e.target.value })}
+                    placeholder="e.g. 'The Rolling Kiwi', 'Sunny'"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors bg-white shadow-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('common.van_music')}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.vanMusic}
+                    onChange={(e) => setFormData({ ...formData, vanMusic: e.target.value })}
+                    placeholder="e.g. 'Bob Marley', 'Odesza', 'Classic Rock'"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors bg-white shadow-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('common.van_music_link')}
+                  </label>
+                  <div className="relative">
+                    <Music className="absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-500" size={18} />
+                    <input
+                      type="url"
+                      value={formData.vanMusicLink}
+                      onChange={(e) => setFormData({ ...formData, vanMusicLink: e.target.value })}
+                      placeholder="https://open.spotify.com/..."
+                      className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors bg-white shadow-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 italic">
+                    <Video size={16} className="inline mr-1 text-emerald-500" />
+                    {t('common.van_video')}
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.vanVideoLink}
+                    onChange={(e) => setFormData({ ...formData, vanVideoLink: e.target.value })}
+                    placeholder="Link to your van tour video..."
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors bg-white shadow-sm"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1 italic">{t('common.van_video_tip')}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    {t('common.van_story')}
+                  </label>
+                  <textarea
+                    value={formData.vanStory}
+                    onChange={(e) => setFormData({ ...formData, vanStory: e.target.value })}
+                    placeholder="Tell us about your best memories... Why is this van special?"
+                    rows="3"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors bg-white shadow-sm"
+                  ></textarea>
+                </div>
               </div>
             </div>
 
@@ -1330,6 +1526,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             </button>
           </div>
         </div>
+        {/* Modal de repositionnement */}
+        <RepositionModal />
       </div>
     </div>
   );

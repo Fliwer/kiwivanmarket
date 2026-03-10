@@ -485,6 +485,7 @@ export default function KiwiVanMarket() {
             <Routes>
               <Route path="/" element={<MainApp {...sharedProps} />} />
               <Route path="/van/:id" element={<Suspense fallback={<PageLoader />}><VanPage /></Suspense>} />
+              <Route path="/test-reposition" element={<Suspense fallback={<PageLoader />}><AddVanForm isEditMode={true} van={{ id: 'test', title: 'Test Van', images: ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'], imageUrl: 'https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800' }} onClose={() => { }} /></Suspense>} />
               <Route path="/brand/:brand" element={<Suspense fallback={<PageLoader />}><BrandPage /></Suspense>} />
               <Route path="/location/:location" element={<Suspense fallback={<PageLoader />}><LocationPage /></Suspense>} />
               <Route path="/guides" element={<Suspense fallback={<PageLoader />}><GuidesHubPage /></Suspense>} />

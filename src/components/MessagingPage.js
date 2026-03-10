@@ -732,7 +732,12 @@ export default function MessagingPage({ onBack }) {
                     <div className="relative flex-shrink-0">
                       <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-200">
                         {conv.van?.imageUrl ? (
-                          <img src={conv.van.imageUrl} alt="" className={`w-full h-full object-cover ${conv.van?.status === 'sold' ? 'opacity-50 grayscale' : ''}`} />
+                          <img
+                            src={conv.van.imageUrl}
+                            alt=""
+                            className={`w-full h-full object-cover ${conv.van?.status === 'sold' ? 'opacity-50 grayscale' : ''}`}
+                            style={{ objectPosition: `center ${conv.van?.imageOffsets?.[0] !== undefined ? conv.van.imageOffsets[0] : 50}%` }}
+                          />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-500">
                             <span className="text-white text-xl">🚐</span>
@@ -1066,7 +1071,12 @@ export default function MessagingPage({ onBack }) {
                       className="aspect-video rounded-xl overflow-hidden mb-4 shadow-lg cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => navigate(`/van/${selectedConversation.van.id}`)}
                     >
-                      <img src={selectedConversation.van.imageUrl} alt="" className={`w-full h-full object-cover ${selectedConversation.van.status === 'sold' ? 'opacity-50 grayscale' : ''}`} />
+                      <img
+                        src={selectedConversation.van.imageUrl}
+                        alt=""
+                        className={`w-full h-full object-cover ${selectedConversation.van.status === 'sold' ? 'opacity-50 grayscale' : ''}`}
+                        style={{ objectPosition: `center ${selectedConversation.van.imageOffsets?.[0] !== undefined ? selectedConversation.van.imageOffsets[0] : 50}%` }}
+                      />
                     </div>
                     {selectedConversation.van.status === 'sold' && (
                       <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">

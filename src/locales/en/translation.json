@@ -136,7 +136,12 @@
         "unit_people": "people",
         "sticker_blue": "Blue Sticker",
         "sticker_green": "Green Sticker",
-        "not_specified": "Not specified"
+        "not_specified": "Not specified",
+        "soul_title": "The Soul of the Journey",
+        "meet": "Meet",
+        "enjoys": "Enjoys",
+        "listen_now": "Listen Now",
+        "video_tour": "Van Tour Video"
     },
     "my_listings": {
         "title": "My Vans",
@@ -214,5 +219,22 @@
         "stat_rating": "Average Rating",
         "destination_title": "Mount Cook, NZ",
         "destination_subtitle": "Your next destination awaits."
+    },
+    "common": {
+        "change_currency": "Change Currency",
+        "currency": "Currency",
+        "loading": "Loading...",
+        "cancel": "Cancel",
+        "error": "An error occurred",
+        "save": "Save Changes",
+        "back": "Back",
+        "van_name": "Van's Name",
+        "van_name_opt": "(Optional)",
+        "van_music": "Favorite Road-Trip Music",
+        "van_music_link": "Music Link (Spotify, YouTube)",
+        "van_story": "The Story of the Van",
+        "van_video": "YouTube / Video Tour",
+        "van_video_tip": "Vans with video tours sell 3x faster! 🎥",
+        "van_soul_section": "The Soul of the Van"
     }
 }

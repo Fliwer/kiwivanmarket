@@ -7,8 +7,8 @@ import {
   X, Search, Filter, Trash2, Edit, Eye, EyeOff, Check, Ban,
   Users, Car, TrendingUp, AlertTriangle, Shield, Star,
   ChevronDown, ChevronUp, RefreshCw, Download, BarChart3,
-  MapPin, Calendar, DollarSign, MessageCircle, Settings,
-  ExternalLink, Mail, Phone, Clock, CheckCircle, XCircle
+  MapPin, Calendar, DollarSign, MessageCircle, MessageSquare, Settings,
+  ExternalLink, Mail, Phone, AlertCircle, Clock, CheckCircle, XCircle
 } from 'lucide-react';
 import { useToast } from './ToastProvider';
 import ConfirmModal from './ConfirmModal';
@@ -42,10 +42,15 @@ export default function AdminDashboard({ onClose, onEditVan }) {
   const [refreshing, setRefreshing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState(null);
+
+  // 💬 Messaging states
+  const [selectedConv, setSelectedConv] = useState(null);
+  const [convMessages, setConvMessages] = useState([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
   const toast = useToast();
 
-  // 🔐 Vérifier si l'utilisateur est admin (via custom claim Firebase)
-  const isAdmin = currentUser?.isAdmin === true;
+  // 🔐 Vérifier si l'utilisateur est admin (Strictement réservé à l'adresse officielle)
+  const isAdmin = currentUser?.email === 'kiwivanmarket.contact@gmail.com';
 
   // 📊 Charger les données
   useEffect(() => {
@@ -182,6 +187,23 @@ export default function AdminDashboard({ onClose, onEditVan }) {
     } catch (error) {
       console.error('Error toggling featured:', error);
       toast.error('Error updating van');
+    }
+  };
+
+  const handleOpenConversation = async (conv) => {
+    setSelectedConv(conv);
+    setLoadingMessages(true);
+    try {
+      const messagesRef = collection(db, 'conversations', conv.id, 'messages');
+      const q = query(messagesRef, orderBy('createdAt', 'asc'));
+      const querySnapshot = await getDocs(q);
+      const msgs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setConvMessages(msgs);
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+      toast.error('Failed to load messages');
+    } finally {
+      setLoadingMessages(false);
     }
   };
 
@@ -661,6 +683,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                     src={van.imageUrl || van.images?.[0] || 'https://via.placeholder.com/48'}
                                     alt={van.title}
                                     className="w-12 h-12 rounded-lg object-cover"
+                                    style={{ objectPosition: `center ${van.imageOffsets?.[0] !== undefined ? van.imageOffsets[0] : 50}%` }}
                                   />
                                   <div>
                                     <p className="font-medium text-gray-900 line-clamp-1">{van.title}</p>
@@ -756,6 +779,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                     src={van.imageUrl || van.images?.[0] || 'https://via.placeholder.com/56'}
                                     alt={van.title}
                                     className="w-14 h-14 rounded-xl object-cover"
+                                    style={{ objectPosition: `center ${van.imageOffsets?.[0] !== undefined ? van.imageOffsets[0] : 50}%` }}
                                   />
                                   <div>
                                     <p className="font-medium text-gray-900 line-clamp-1 max-w-[200px]">{van.title}</p>
@@ -901,21 +925,30 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                             const dateB = b.lastMessageAt?.toDate?.() || new Date(b.lastMessageAt || 0);
                             return dateB - dateA;
                           })
-                          .slice(0, 5)
+                          .slice(0, 10)
                           .map((conv) => (
-                            <div key={conv.id} className="p-4 hover:bg-gray-50 transition">
-                              <div className="flex justify-between items-start mb-1">
-                                <p className="font-semibold text-gray-900 line-clamp-1">{conv.van?.title || 'Unknown Van'}</p>
-                                <span className="text-[10px] text-gray-400 whitespace-nowrap">{formatDate(conv.lastMessageAt)}</span>
+                            <div key={conv.id} className="p-4 hover:bg-gray-50 transition flex justify-between items-center group">
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start mb-1">
+                                  <p className="font-semibold text-gray-900 line-clamp-1">{conv.van?.title || 'Unknown Van'}</p>
+                                  <span className="text-[10px] text-gray-400 whitespace-nowrap">{formatDate(conv.lastMessageAt)}</span>
+                                </div>
+                                <p className="text-sm text-gray-600 line-clamp-1 mb-2 italic">"{conv.lastMessage || 'No messages'}"</p>
+                                <div className="flex gap-2">
+                                  {conv.participants?.map(pid => (
+                                    <span key={pid} className="px-2 py-0.5 bg-gray-100 rounded text-[10px] text-gray-500">
+                                      {conv.participantNames?.[pid] || pid.substring(0, 5)}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
-                              <p className="text-sm text-gray-600 line-clamp-1 mb-2 italic">"{conv.lastMessage || 'No messages'}"</p>
-                              <div className="flex gap-2">
-                                {conv.participants?.map(pid => (
-                                  <span key={pid} className="px-2 py-0.5 bg-gray-100 rounded text-[10px] text-gray-500">
-                                    {conv.participantNames?.[pid] || pid.substring(0, 5)}
-                                  </span>
-                                ))}
-                              </div>
+                              <button
+                                onClick={() => handleOpenConversation(conv)}
+                                className="ml-4 p-2 bg-emerald-50 text-emerald-600 rounded-lg opacity-0 group-hover:opacity-100 transition"
+                                title="View Chat"
+                              >
+                                <MessageSquare className="w-4 h-4" />
+                              </button>
                             </div>
                           ))}
                         {conversations.length === 0 && (
@@ -982,8 +1015,8 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                           <tr className="text-left text-sm text-gray-500">
                             <th className="px-4 py-3 font-medium">User</th>
                             <th className="px-4 py-3 font-medium">Email</th>
+                            <th className="px-4 py-3 font-medium">Verification</th>
                             <th className="px-4 py-3 font-medium">Listings</th>
-                            <th className="px-4 py-3 font-medium">Status</th>
                             <th className="px-4 py-3 font-medium text-right">Actions</th>
                           </tr>
                         </thead>
@@ -1000,18 +1033,29 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                               </td>
                               <td className="px-4 py-3 text-gray-600">{user.email}</td>
                               <td className="px-4 py-3">
-                                <span className="font-semibold">{vans.filter(v => v.seller?.uid === user.id).length}</span>
+                                <div className="flex flex-col">
+                                  {user.emailVerified ? (
+                                    <span className="text-emerald-600 flex items-center gap-1 text-xs font-bold">
+                                      <CheckCircle className="w-3 h-3" /> Verified
+                                    </span>
+                                  ) : user.verificationEmailSent ? (
+                                    <span className="text-amber-600 flex items-center gap-1 text-xs font-bold">
+                                      <Clock className="w-3 h-3" /> Sent
+                                    </span>
+                                  ) : (
+                                    <span className="text-gray-400 flex items-center gap-1 text-xs font-bold">
+                                      <AlertCircle className="w-3 h-3" /> Not Sent
+                                    </span>
+                                  )}
+                                  {user.verificationEmailSentAt && (
+                                    <span className="text-[10px] text-gray-400">
+                                      {formatDate(user.verificationEmailSentAt)}
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-4 py-3">
-                                {user.banned ? (
-                                  <span className="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-medium">
-                                    🚫 Banned
-                                  </span>
-                                ) : (
-                                  <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
-                                    ✓ Active
-                                  </span>
-                                )}
+                                <span className="font-semibold">{vans.filter(v => v.seller?.uid === user.id).length}</span>
                               </td>
                               <td className="px-4 py-3 text-right">
                                 <div className="flex items-center justify-end gap-2">
@@ -1192,6 +1236,82 @@ export default function AdminDashboard({ onClose, onEditVan }) {
           )}
         </main>
       </div>
+      {/* 💬 Message Viewer Modal */}
+      {selectedConv && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="p-6 border-b bg-gray-50 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                  <MessageCircle className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 line-clamp-1">{selectedConv.van?.title || 'Conversation'}</h3>
+                  <div className="flex gap-2 mt-0.5">
+                    {selectedConv.participants?.map(pid => (
+                      <span key={pid} className="text-[10px] bg-white border border-gray-200 px-1.5 py-0.5 rounded text-gray-500">
+                        {selectedConv.participantNames?.[pid] || pid.substring(0, 5)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedConv(null)}
+                className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Chat Body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+              {loadingMessages ? (
+                <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+                  <RefreshCw className="w-8 h-8 animate-spin mb-4" />
+                  <p>Loading messages...</p>
+                </div>
+              ) : convMessages.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                  <p>No messages yet in this conversation</p>
+                </div>
+              ) : (
+                convMessages.map((msg, idx) => {
+                  const isSystem = msg.type === 'system' || !msg.senderId;
+                  const senderName = selectedConv.participantNames?.[msg.senderId] || 'User';
+
+                  return (
+                    <div key={msg.id || idx} className={`flex flex-col ${isSystem ? 'items-center' : 'items-start'}`}>
+                      <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm ${isSystem
+                        ? 'bg-gray-100 text-gray-500 text-xs italic'
+                        : 'bg-white text-gray-800'
+                        }`}>
+                        {!isSystem && (
+                          <p className="text-[10px] font-bold text-emerald-600 mb-1 uppercase tracking-wider">
+                            {senderName}
+                          </p>
+                        )}
+                        <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+                      </div>
+                      <span className="text-[10px] text-gray-400 mt-1 px-2">
+                        {formatDate(msg.createdAt)}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-gray-50 border-t text-center text-[10px] text-gray-400">
+              <Shield className="w-3 h-3 inline mr-1" />
+              Administrative View - Safeguarding our community.
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modern Confirmation Modal */}
       <ConfirmModal
