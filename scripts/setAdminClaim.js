@@ -12,7 +12,7 @@
  *     ./serviceAccountKey.json
  *
  * Example:
- *   GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json node scripts/setAdminClaim.js kiwivanmarket.contact@gmail.com
+ *   GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json node scripts/setAdminClaim.js p.morthier@gmail.com
  */
 
 const admin = require('../functions/node_modules/firebase-admin');

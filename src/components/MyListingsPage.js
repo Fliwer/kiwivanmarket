@@ -296,7 +296,6 @@ export default function MyListingsPage() {
                       src={van.images?.[0] || van.imageUrl || '/placeholder-van.jpg'}
                       alt={van.title}
                       className="w-full h-full object-cover"
-                      style={{ objectPosition: `center ${van.imageOffsets?.[0] !== undefined ? van.imageOffsets[0] : 50}%` }}
                     />
                     {van.status === 'sold' && (
                       <div className="absolute inset-0 bg-black/60 flex items-center justify-center">

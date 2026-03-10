@@ -136,12 +136,7 @@
         "unit_people": "pers.",
         "sticker_blue": "Sticker Bleu",
         "sticker_green": "Sticker Vert",
-        "not_specified": "Non spécifié",
-        "soul_title": "L'Âme du Voyage",
-        "meet": "Rencontre",
-        "enjoys": "Style musical",
-        "listen_now": "Écouter maintenant",
-        "video_tour": "Présentation Vidéo"
+        "not_specified": "Non spécifié"
     },
     "my_listings": {
         "title": "Mes Vans",
@@ -219,22 +214,5 @@
         "stat_rating": "Évaluation moyenne",
         "destination_title": "Mount Cook, NZ",
         "destination_subtitle": "Votre prochaine destination vous attend."
-    },
-    "common": {
-        "change_currency": "Changer la Devise",
-        "currency": "Devise",
-        "loading": "Chargement...",
-        "cancel": "Annuler",
-        "error": "Une erreur est survenue",
-        "save": "Enregistrer",
-        "back": "Retour",
-        "van_name": "Nom du Van",
-        "van_name_opt": "(Optionnel)",
-        "van_music": "Musique de voyage préférée",
-        "van_music_link": "Lien Musique (Spotify, YouTube)",
-        "van_story": "L'Histoire du Van",
-        "van_video": "YouTube / Présentation Vidéo",
-        "van_video_tip": "Les vans avec vidéo se vendent 3x plus vite ! 🎥",
-        "van_soul_section": "L'Âme du Van"
     }
 }

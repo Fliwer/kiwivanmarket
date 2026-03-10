@@ -9,11 +9,10 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useHideLoader } from '../hooks/useHideLoader';
 import { safeDate } from '../utils/dateHelper';
 import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
-import { getEmbedUrl, getSoundCloudEmbedUrl } from '../utils/videoUtils';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
   Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen, User, LogOut,
-  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle, Music, Sparkles
+  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastProvider';
@@ -220,7 +219,6 @@ export default function VanPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showLightbox, setShowLightbox] = useState(false);
 
   // Management functions for owner
   const handleToggleSold = async () => {
@@ -425,63 +423,6 @@ ${shareUrl}
       {/* SEO Meta Tags */}
       <VanSEO van={van} />
 
-      {/* Lightbox Modal */}
-      <AnimatePresence>
-        {showLightbox && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center"
-            onClick={() => setShowLightbox(false)}
-          >
-            <button
-              className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all"
-              onClick={() => setShowLightbox(false)}
-            >
-              <X size={32} />
-            </button>
-
-            <div className="w-full max-w-7xl h-full flex items-center justify-center p-4 relative" onClick={(e) => e.stopPropagation()}>
-              <motion.img
-                key={currentImageIndex}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                src={images[currentImageIndex]}
-                alt={van.title}
-                className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
-              />
-
-              {images.length > 1 && (
-                <>
-                  <button
-                    onClick={prevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white text-white hover:text-black rounded-full p-4 transition-all shadow-xl"
-                  >
-                    <ChevronLeft size={32} />
-                  </button>
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white text-white hover:text-black rounded-full p-4 transition-all shadow-xl"
-                  >
-                    <ChevronRight size={32} />
-                  </button>
-                </>
-              )}
-            </div>
-
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
-              {images.map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentImageIndex ? 'w-8 bg-emerald-500' : 'w-2 bg-white/30'}`}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="min-h-screen bg-slate-50">
         {/* Header - Floating Glass Design */}
         <header className="fixed top-0 left-0 right-0 z-50 p-4 transition-all duration-300">
@@ -622,11 +563,11 @@ ${shareUrl}
             <div className="lg:sticky lg:top-20 space-y-3 relative z-10">
               {/* Main Image */}
               <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl overflow-hidden shadow-2xl group z-20">
-                <div className="aspect-[4/3] flex items-center justify-center p-2 cursor-zoom-in" onClick={() => setShowLightbox(true)}>
+                <div className="aspect-[4/3] flex items-center justify-center p-2">
                   <img
                     src={getLargeImage(images[currentImageIndex])}
                     alt={`${van.title} - ${currentImageIndex + 1}`}
-                    className="max-w-full max-h-full object-contain rounded-2xl transition-transform duration-500 group-hover:scale-[1.02]"
+                    className="max-w-full max-h-full object-contain rounded-2xl"
                   />
                 </div>
 
@@ -688,12 +629,7 @@ ${shareUrl}
                         : 'opacity-60 hover:opacity-100'
                         }`}
                     >
-                      <img
-                        src={getThumbnail(img)}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: `center ${van.imageOffsets?.[idx] !== undefined ? van.imageOffsets[idx] : 50}%` }}
-                      />
+                      <img src={getThumbnail(img)} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -829,79 +765,10 @@ ${shareUrl}
                   <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
                     <Clock size={24} />
                   </div>
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{t('van_page.views')}</p>
+                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Views</p>
                   <p className="text-2xl font-black text-slate-900 leading-tight">{van.views || 0}</p>
                 </div>
               </div>
-
-              {/* Soul of the Van - Emotional Hook */}
-              {(van.vanName || van.vanStory || van.vanMusic) && (
-                <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group">
-                  {/* Decorative elements */}
-                  <div className="absolute top-[-10%] right-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-                  <div className="absolute bottom-[-10%] left-[-10%] w-32 h-32 bg-emerald-400/20 rounded-full blur-2xl" />
-
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <Sparkles className="text-emerald-300 animate-pulse" size={24} />
-                      <span className="text-xs font-black uppercase tracking-[0.3em] text-emerald-100">{t('van_page.soul_title')}</span>
-                    </div>
-
-                    <div className="flex flex-col md:flex-row md:items-center gap-8">
-                      {van.vanName && (
-                        <div className="flex-1">
-                          <h2 className="text-4xl md:text-5xl font-black mb-2 tracking-tighter">
-                            {t('van_page.meet')} <span className="text-emerald-300">"{van.vanName}"</span>
-                          </h2>
-                          {van.vanMusic && (
-                            <div className="flex flex-wrap items-center gap-3">
-                              <div className="flex items-center gap-2 text-emerald-100/80 font-bold bg-white/10 w-fit px-4 py-2 rounded-2xl backdrop-blur-sm border border-white/10">
-                                <Music size={16} />
-                                <span className="text-sm">{t('van_page.enjoys')}: {van.vanMusic}</span>
-                              </div>
-                              {van.vanMusicLink && (
-                                <div className="mt-4 w-full">
-                                  <iframe
-                                    width="100%"
-                                    height="166"
-                                    scrolling="no"
-                                    frameBorder="no"
-                                    allow="autoplay"
-                                    className="rounded-2xl shadow-xl overflow-hidden"
-                                    src={getSoundCloudEmbedUrl(van.vanMusicLink)}
-                                  ></iframe>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="flex-[1.5] flex flex-col gap-4">
-                        {van.vanStory && (
-                          <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/10 shadow-inner">
-                            <p className="text-lg font-medium leading-relaxed italic">
-                              "{van.vanStory}"
-                            </p>
-                          </div>
-                        )}
-
-                        {van.vanVideoLink && getEmbedUrl(van.vanVideoLink) && (
-                          <div className="aspect-video w-full rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
-                            <iframe
-                              src={getEmbedUrl(van.vanVideoLink)}
-                              className="w-full h-full"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                              title="Van Tour Video"
-                            ></iframe>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Vehicle Compliance - Premium Layout */}
               <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">

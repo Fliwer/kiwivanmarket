@@ -1,17 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Heart, Shield, ChevronLeft, ChevronRight, CheckCircle, Calendar, Sparkles, Video, Music, X } from 'lucide-react';
+import { MapPin, Heart, Shield, ChevronLeft, ChevronRight, CheckCircle, Calendar } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
 import { getThumbnail } from '../utils/imageOptimizer';
 import { safeDate } from '../utils/dateHelper';
-import { getSoundCloudEmbedUrl } from '../utils/videoUtils';
 import { useTranslation } from 'react-i18next';
 import { useAutoTranslate } from '../hooks/useAutoTranslate';
 
 // Carousel de photos pour la card
-const ImageCarousel = ({ images, imageOffsets = [], title, vanStatus, priority = false, soundCloudUrl = null }) => {
+const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [showMusicPlayer, setShowMusicPlayer] = useState(false);
   const touchStart = useRef(null);
 
   const allImages = images?.length > 0
@@ -58,7 +56,6 @@ const ImageCarousel = ({ images, imageOffsets = [], title, vanStatus, priority =
         src={getThumbnail(allImages[currentIndex]) || '/placeholder-van.jpg'}
         alt={`Campervan for sale NZ - ${title} ${currentIndex + 1} - Kiwi Van Market`}
         className={`relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${vanStatus === 'sold' ? 'grayscale-[0.5] contrast-[0.8]' : 'opacity-100'}`}
-        style={{ objectPosition: `center ${imageOffsets[currentIndex] !== undefined ? imageOffsets[currentIndex] : 50}%` }}
         loading={priority ? "eager" : "lazy"}
       />
 
@@ -103,38 +100,6 @@ const ImageCarousel = ({ images, imageOffsets = [], title, vanStatus, priority =
           </div>
         </>
       )}
-
-      {/* --- SOUNDCLOUD OVERLAY (SEXY) --- */}
-      {currentIndex === 0 && soundCloudUrl && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 animate-fade-in">
-          {!showMusicPlayer ? (
-            <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowMusicPlayer(true); }}
-              className="bg-white/10 backdrop-blur-xl border border-white/30 text-white px-4 py-2 rounded-2xl flex items-center gap-2 hover:bg-emerald-600/80 transition-all shadow-2xl group/play"
-            >
-              <Music size={16} className="group-hover/play:animate-bounce" />
-              <span className="text-[10px] font-black uppercase tracking-widest">Atmosphere</span>
-            </button>
-          ) : (
-            <div className="w-56 h-20 rounded-xl overflow-hidden shadow-2xl animate-scale-in border border-white/20 bg-black/40 backdrop-blur-md">
-              <iframe
-                width="100%"
-                height="100%"
-                scrolling="no"
-                frameBorder="no"
-                allow="autoplay"
-                src={getSoundCloudEmbedUrl(soundCloudUrl).replace('auto_play=false', 'auto_play=true')}
-              ></iframe>
-              <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowMusicPlayer(false); }}
-                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 shadow-lg hover:scale-110 transition-transform"
-              >
-                <X size={12} />
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
@@ -155,14 +120,7 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
       className="premium-card group block overflow-hidden"
     >
       <div className="relative">
-        <ImageCarousel
-          images={images}
-          imageOffsets={van.imageOffsets}
-          title={translatedTitle}
-          vanStatus={van.status}
-          priority={priority}
-          soundCloudUrl={van.vanMusicLink}
-        />
+        <ImageCarousel images={images} title={translatedTitle} vanStatus={van.status} priority={priority} />
 
         {/* Favorite button */}
         <button
@@ -194,32 +152,6 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
             {van.selfContainedType === 'blue' ? t('van_page.sticker_blue') : t('van_page.sticker_green')}
           </div>
         )}
-
-        {/* --- STORYTELLING BADGES (SEXY UI) --- */}
-
-        {/* Van Name Badge (Top Left, after Buyback) */}
-        {van.vanName && (
-          <div className={`absolute ${van.buyBack ? 'top-14' : 'top-4'} left-4 z-10 animate-fade-in`}>
-            <div className="bg-white/80 backdrop-blur-md text-emerald-800 px-3 py-1.5 rounded-2xl text-[11px] font-black tracking-tight shadow-xl border border-white/50 flex items-center gap-1.5 group-hover:scale-105 transition-transform">
-              <Sparkles size={12} className="text-emerald-500" />
-              "{van.vanName}"
-            </div>
-          </div>
-        )}
-
-        {/* Video & Music Indicators (Bottom Right) */}
-        <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
-          {van.vanVideoLink && (
-            <div className="bg-red-600/90 backdrop-blur-md text-white p-2 rounded-xl shadow-2xl border border-white/20 animate-pulse-slow">
-              <Video size={16} fill="currentColor" />
-            </div>
-          )}
-          {van.vanMusic && (
-            <div className="bg-white/90 backdrop-blur-md text-slate-800 p-2 rounded-xl shadow-2xl border border-white/20">
-              <Music size={16} fill="currentColor" />
-            </div>
-          )}
-        </div>
       </div>
 
       <div className="p-6">
@@ -293,6 +225,6 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           </div>
         </div>
       </div>
-    </Link >
+    </Link>
   );
 }

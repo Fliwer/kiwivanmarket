@@ -1,8 +1,8 @@
 // Import des fonctions Firebase necessaires
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
+import { 
+  GoogleAuthProvider, 
+  signInWithPopup, 
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -33,14 +33,24 @@ export const AuthProvider = ({ children }) => {
   // Connexion avec Google (email automatiquement vérifié par Google)
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-
+    
+    // Forcer Google a TOUJOURS afficher le selecteur de compte
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+    
     try {
+      // Deconnecter l'utilisateur actuel AVANT de connecter le nouveau
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
+      
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-
+      
       // Sauvegarder le profil en arriere-plan (ne pas attendre)
       saveUserProfile(user).catch(err => console.error('Erreur sauvegarde profil:', err));
-
+      
       return user;
     } catch (error) {
       console.error('Erreur connexion Google:', error);
@@ -56,10 +66,10 @@ export const AuthProvider = ({ children }) => {
       if (auth.currentUser) {
         await signOut(auth);
       }
-
+      
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
-
+      
       // ✅ VÉRIFIER SI L'EMAIL EST CONFIRMÉ
       if (!user.emailVerified) {
         // Renvoyer un email de vérification
@@ -67,17 +77,17 @@ export const AuthProvider = ({ children }) => {
           url: window.location.origin,
           handleCodeInApp: false
         });
-
+        
         // Déconnecter l'utilisateur
         await signOut(auth);
-
+        
         // Retourner une erreur spéciale
         const error = new Error('Please verify your email before signing in. We sent you a new verification link.');
         error.code = 'auth/email-not-verified';
         error.email = email;
         throw error;
       }
-
+      
       return user;
     } catch (error) {
       console.error('Erreur connexion email:', error);
@@ -93,38 +103,30 @@ export const AuthProvider = ({ children }) => {
       if (auth.currentUser) {
         await signOut(auth);
       }
-
+      
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const user = result.user;
-
+      
       // Mettre à jour le displayName
       if (displayName) {
         await updateProfile(user, { displayName });
       }
-
+      
       // ✅ ENVOYER L'EMAIL DE VÉRIFICATION
       await sendEmailVerification(user, {
         url: window.location.origin, // URL de retour après vérification
         handleCodeInApp: false
       });
-
+      
       console.log('✅ Email de vérification envoyé à:', email);
-
+      
       // Sauvegarder le profil avec le nom
       await saveUserProfile(user, displayName);
-
+      
       // ✅ DÉCONNECTER L'UTILISATEUR - Il doit vérifier son email d'abord
       await signOut(auth);
       console.log('✅ Utilisateur déconnecté - doit vérifier son email');
-
-      // ✅ ENREGISTRER L'ENVOI DANS FIRESTORE
-      const userRef = doc(db, 'users', user.uid);
-      await setDoc(userRef, {
-        verificationEmailSent: true,
-        verificationEmailSentAt: new Date(),
-        emailVerified: false
-      }, { merge: true });
-
+      
       return { email, needsVerification: true };
     } catch (error) {
       console.error('Erreur inscription:', error);
@@ -137,25 +139,17 @@ export const AuthProvider = ({ children }) => {
     if (!auth.currentUser) {
       throw new Error('No user logged in');
     }
-
+    
     if (auth.currentUser.emailVerified) {
       throw new Error('Email already verified');
     }
-
+    
     try {
       await sendEmailVerification(auth.currentUser, {
         url: window.location.origin,
         handleCodeInApp: false
       });
       console.log('✅ Email de vérification renvoyé');
-
-      // ✅ RE-UPDATE FIRESTORE
-      const userRef = doc(db, 'users', auth.currentUser.uid);
-      await setDoc(userRef, {
-        verificationEmailSent: true,
-        verificationEmailSentAt: new Date()
-      }, { merge: true });
-
       return true;
     } catch (error) {
       console.error('Erreur envoi email:', error);
@@ -170,23 +164,23 @@ export const AuthProvider = ({ children }) => {
   // ✅ RAFRAÎCHIR LE STATUT DE VÉRIFICATION (après clic sur le lien)
   const refreshEmailVerification = async () => {
     if (!auth.currentUser) return false;
-
+    
     try {
       await auth.currentUser.reload();
       const isVerified = auth.currentUser.emailVerified;
-
+      
       // Mettre à jour le state
       setCurrentUser(prev => ({
         ...prev,
         emailVerified: isVerified
       }));
-
+      
       // Mettre à jour Firestore si vérifié
       if (isVerified) {
         const userRef = doc(db, 'users', auth.currentUser.uid);
         await setDoc(userRef, { emailVerified: true }, { merge: true });
       }
-
+      
       return isVerified;
     } catch (error) {
       console.error('Erreur refresh verification:', error);
@@ -214,10 +208,10 @@ export const AuthProvider = ({ children }) => {
   // Sauvegarder le profil utilisateur dans Firestore
   const saveUserProfile = async (user, displayName = null) => {
     const userRef = doc(db, 'users', user.uid);
-
+    
     // Verifier si le profil existe deja
     const userSnap = await getDoc(userRef);
-
+    
     if (!userSnap.exists()) {
       // Creer un nouveau profil
       await setDoc(userRef, {
@@ -242,25 +236,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // 🔒 SÉCURITÉ CRITIQUE : Bloquer explicitement les adresses indésirables
-        if (user.email === 'p.morthier@gmail.com') {
-          console.error('🚫 ACCÈS REFUSÉ : Utilisateur non autorisé.');
-          await signOut(auth);
-          setCurrentUser(null);
-          setLoading(false);
-          return;
-        }
-
-        const isEmailPassword = user.providerData.some(p => p.providerId === 'password');
-
-        if (isEmailPassword && !user.emailVerified) {
-          console.log('🔒 Accès bloqué : Email non vérifié');
-          setCurrentUser(null);
-          setLoading(false);
-          return;
-        }
-
-        // ✅ Connecter l'utilisateur immediatement
+        // ✅ OPTIMISATION: Connecter l'utilisateur IMMEDIATEMENT avec les infos Firebase Auth
         setCurrentUser(user);
         setLoading(false);
 
@@ -268,7 +244,7 @@ export const AuthProvider = ({ children }) => {
         try {
           // Lire le custom claim admin depuis le token
           const tokenResult = await user.getIdTokenResult();
-          const isAdmin = user.email === 'kiwivanmarket.contact@gmail.com';
+          const isAdmin = tokenResult.claims.admin === true;
 
           const userRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userRef);

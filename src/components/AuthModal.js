@@ -4,7 +4,7 @@ import { useAuth } from '../AuthContext';
 
 export default function AuthModal({ isOpen, onClose }) {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
-  const [mode, setMode] = useState('signin'); // 'signin', 'signup', or 'verification-sent'
+  const [mode, setMode] = useState('signin'); // 'signin' ou 'signup'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -78,7 +78,7 @@ export default function AuthModal({ isOpen, onClose }) {
 
     try {
       await signUpWithEmail(email, password, displayName);
-      setMode('verification-sent');
+      onClose();
     } catch (err) {
       console.error('Email Sign Up Error:', err);
       if (err.code === 'auth/email-already-in-use') {
@@ -130,254 +130,220 @@ export default function AuthModal({ isOpen, onClose }) {
               <User size={32} className="text-white" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              {mode === 'signin' ? 'Welcome Back!' : mode === 'signup' ? 'Create Account' : 'Check your inbox'}
+              {mode === 'signin' ? 'Welcome Back!' : 'Create Account'}
             </h2>
             <p className="text-gray-600">
               {mode === 'signin'
                 ? 'Sign in to access your account'
-                : mode === 'signup'
-                  ? 'Join Kiwi Van Market today'
-                  : 'We sent you a verification link'}
+                : 'Join Kiwi Van Market today'}
             </p>
           </div>
 
-          {mode === 'verification-sent' ? (
-            <div className="space-y-6 text-center">
-              <div className="p-6 bg-emerald-50 border border-emerald-100 rounded-2xl flex flex-col items-center">
-                <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-                  <Mail size={32} className="text-emerald-600" />
-                </div>
-                <h3 className="text-xl font-bold text-emerald-900 mb-2">Almost there!</h3>
-                <p className="text-emerald-700 text-sm mb-4">
-                  We've sent a verification link to <strong>{email}</strong>.
-                  Please click the link in that email to confirm your account before signing in.
-                </p>
-                <div className="flex flex-col gap-2 w-full">
-                  <button
-                    onClick={() => setMode('signin')}
-                    className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition shadow-lg"
-                  >
-                    Back to Sign In
-                  </button>
-                  <button
-                    onClick={onClose}
-                    className="w-full text-emerald-600 font-medium py-2 hover:underline text-sm"
-                  >
-                    Close
-                  </button>
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+              <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {mode === 'signin' ? (
+            <form onSubmit={handleEmailSignIn} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    placeholder="your@email.com"
+                    required
+                  />
                 </div>
               </div>
-              <p className="text-xs text-gray-400 italic">
-                Don't see it? Check your spam folder or wait a few minutes.
-              </p>
-            </div>
-          ) : (
-            <>
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                  <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              )}
 
-              {mode === 'signin' ? (
-                <form onSubmit={handleEmailSignIn} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Email
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                        placeholder="your@email.com"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                        placeholder="••••••••"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 size={20} className="animate-spin" />
-                        Signing in...
-                      </>
-                    ) : (
-                      'Sign In'
-                    )}
-                  </button>
-                </form>
-              ) : (
-                <form onSubmit={handleEmailSignUp} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Full Name
-                    </label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                      <input
-                        type="text"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                        placeholder="John Doe"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Email
-                    </label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                        placeholder="your@email.com"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Password
-                    </label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
-                        placeholder="••••••••"
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">At least 6 characters</p>
-                  </div>
-
-                  <div className="flex items-start gap-3 mb-6">
-                    <div className="relative flex-shrink-0 mt-0.5">
-                      <input
-                        id="terms-checkbox"
-                        type="checkbox"
-                        checked={acceptedTerms}
-                        onChange={(e) => setAcceptedTerms(e.target.checked)}
-                        className="w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
-                        required
-                      />
-                      <label
-                        htmlFor="terms-checkbox"
-                        className="absolute -inset-3 cursor-pointer"
-                        aria-label="Accept terms"
-                      />
-                    </div>
-
-                    <label htmlFor="terms-checkbox" className="text-sm text-gray-600 cursor-pointer flex-1">
-                      I accept the{' '}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setShowTerms(true);
-                        }}
-                        className="text-emerald-600 hover:underline font-medium"
-                      >
-                        Terms of Service
-                      </button>
-                    </label>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 size={20} className="animate-spin" />
-                        Creating account...
-                      </>
-                    ) : (
-                      'Create Account'
-                    )}
-                  </button>
-                </form>
-              )}
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-4 bg-white text-gray-500">Or continue with</span>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    placeholder="••••••••"
+                    required
+                  />
                 </div>
               </div>
 
               <button
-                onClick={handleGoogleSignIn}
+                type="submit"
                 disabled={loading}
-                className="w-full bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                {loading ? 'Please wait...' : 'Google'}
+                {loading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
               </button>
-
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => switchMode(mode === 'signin' ? 'signup' : 'signin')}
-                  className="text-sm text-gray-600 hover:text-emerald-600 transition-colors"
-                  type="button"
-                >
-                  {mode === 'signin' ? (
-                    <>
-                      Don't have an account? <span className="font-semibold">Sign up</span>
-                    </>
-                  ) : (
-                    <>
-                      Already have an account? <span className="font-semibold">Sign in</span>
-                    </>
-                  )}
-                </button>
+            </form>
+          ) : (
+            <form onSubmit={handleEmailSignUp} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    placeholder="John Doe"
+                    required
+                  />
+                </div>
               </div>
-            </>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">At least 6 characters</p>
+              </div>
+
+              {/* ✅ CORRECTION MOBILE - Accept Terms */}
+              <div className="flex items-start gap-3 mb-6">
+                {/* Wrapper cliquable pour mobile */}
+                <div className="relative flex-shrink-0 mt-0.5">
+                  <input
+                    id="terms-checkbox"
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
+                    required
+                  />
+                  {/* Zone tactile élargie pour mobile (invisible) */}
+                  <label
+                    htmlFor="terms-checkbox"
+                    className="absolute -inset-3 cursor-pointer"
+                    aria-label="Accept terms"
+                  />
+                </div>
+
+                <label htmlFor="terms-checkbox" className="text-sm text-gray-600 cursor-pointer flex-1">
+                  I accept the{' '}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation(); // Important : évite de déclencher la checkbox
+                      setShowTerms(true);
+                    }}
+                    className="text-emerald-600 hover:underline font-medium"
+                  >
+                    Terms of Service
+                  </button>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  'Create Account'
+                )}
+              </button>
+            </form>
           )}
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className="w-full bg-white border-2 border-gray-200 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            {loading ? 'Please wait...' : 'Google'}
+          </button>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => switchMode(mode === 'signin' ? 'signup' : 'signin')}
+              className="text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+            >
+              {mode === 'signin' ? (
+                <>
+                  Don't have an account? <span className="font-semibold">Sign up</span>
+                </>
+              ) : (
+                <>
+                  Already have an account? <span className="font-semibold">Sign in</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -394,7 +360,6 @@ export default function AuthModal({ isOpen, onClose }) {
             <button
               onClick={() => setShowTerms(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-              type="button"
             >
               <X size={24} />
             </button>
@@ -437,7 +402,6 @@ export default function AuthModal({ isOpen, onClose }) {
             <button
               onClick={() => setShowTerms(false)}
               className="mt-6 w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-all"
-              type="button"
             >
               Close
             </button>

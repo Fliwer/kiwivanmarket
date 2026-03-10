@@ -27,7 +27,7 @@ service cloud.firestore {
     
     function isAdmin() {
       return isAuthenticated() &&
-             request.auth.token.email == "kiwivanmarket.contact@gmail.com";
+             request.auth.token.admin == true;
     }
     
     function hasVerifiedEmail() {
@@ -66,7 +66,7 @@ service cloud.firestore {
     }
     
     function isValidYear(year) {
-      return year is number && year >= 1950 && year <= 2030;
+      return year is number && year >= 1950 && year <= 2026;
     }
     
     function isValidMileage(mileage) {
@@ -150,7 +150,7 @@ service cloud.firestore {
                       request.resource.data.get('banned', false) == false;
       
       allow update: if isOwner(userId) &&
-                      onlyUpdating(['displayName', 'photoURL', 'phone', 'city', 'region', 'bio', 'lastLogin', 'lastActive', 'updatedAt']) &&
+                      onlyUpdating(['displayName', 'photoURL', 'phone', 'location', 'bio', 'lastLogin', 'updatedAt']) &&
                       (fieldUnchanged('displayName') || isValidString(request.resource.data.displayName, 1, 100)) &&
                       (fieldUnchanged('phone') || request.resource.data.phone == null || isValidNZPhone(request.resource.data.phone)) &&
                       (fieldUnchanged('bio') || request.resource.data.bio == null || isValidString(request.resource.data.bio, 0, 500));
@@ -193,8 +193,7 @@ service cloud.firestore {
                       hasValidImages(request.resource.data.images) &&
                       request.resource.data.views == 0 &&
                       request.resource.data.status == 'active' &&
-                      request.resource.data.createdAt == request.time &&
-                      (request.resource.data.get('imageOffsets', null) == null || request.resource.data.imageOffsets is list);
+                      request.resource.data.createdAt == request.time;
       
       allow update: if isAuthenticated() && 
                       currentUserId() == resource.data.seller.uid &&
@@ -206,8 +205,7 @@ service cloud.firestore {
                       (fieldUnchanged('price') || isValidPrice(request.resource.data.price)) &&
                       (fieldUnchanged('title') || isValidString(request.resource.data.title, 5, 200)) &&
                       (fieldUnchanged('description') || isValidString(request.resource.data.description, 20, 5000)) &&
-                      (fieldUnchanged('status') || request.resource.data.status in ['active', 'sold', 'paused', 'deleted']) &&
-                      (fieldUnchanged('imageOffsets') || request.resource.data.imageOffsets is list);
+                      (fieldUnchanged('status') || request.resource.data.status in ['active', 'sold', 'paused', 'deleted']);
       
       allow update: if isAdmin();
       
@@ -242,7 +240,7 @@ service cloud.firestore {
     // ═══════════════════════════════════════════════════════════════════
     
     match /conversations/{conversationId} {
-      allow read: if isAuthenticated() && (currentUserId() in resource.data.participants || isAdmin());
+      allow read: if isAuthenticated() && currentUserId() in resource.data.participants;
       
       allow create: if isAuthenticated() && 
                       currentUserId() in request.resource.data.participants &&
@@ -258,7 +256,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
       
       match /messages/{messageId} {
-        allow read: if isConversationParticipant(conversationId) || isAdmin();
+        allow read: if isConversationParticipant(conversationId);
         
         allow create: if hasVerifiedEmail() &&
                         isConversationParticipant(conversationId) &&
