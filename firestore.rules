@@ -66,7 +66,7 @@ service cloud.firestore {
     }
     
     function isValidYear(year) {
-      return year is number && year >= 1950 && year <= 2026;
+      return year is number && year >= 1950 && year <= 2030;
     }
     
     function isValidMileage(mileage) {
@@ -184,16 +184,15 @@ service cloud.firestore {
                         'year', 'mileage', 'images', 'seller', 
                         'views', 'createdAt', 'status'
                       ]) &&
-                      isValidString(request.resource.data.title, 5, 200) &&
+                      isValidString(request.resource.data.title, 3, 200) &&
                       isValidPrice(request.resource.data.price) &&
-                      isValidString(request.resource.data.description, 20, 5000) &&
+                      isValidString(request.resource.data.description, 10, 5000) &&
                       isValidString(request.resource.data.location, 2, 100) &&
                       isValidYear(request.resource.data.year) &&
                       isValidMileage(request.resource.data.mileage) &&
                       hasValidImages(request.resource.data.images) &&
                       request.resource.data.views == 0 &&
-                      request.resource.data.status == 'active' &&
-                      request.resource.data.createdAt == request.time;
+                      request.resource.data.status == 'active';
       
       allow update: if isAuthenticated() && 
                       currentUserId() == resource.data.seller.uid &&
@@ -203,8 +202,8 @@ service cloud.firestore {
                         request.resource.data.seller.diff(resource.data.seller).affectedKeys().hasOnly(['phone', 'facebook'])
                       )) &&
                       (fieldUnchanged('price') || isValidPrice(request.resource.data.price)) &&
-                      (fieldUnchanged('title') || isValidString(request.resource.data.title, 5, 200)) &&
-                      (fieldUnchanged('description') || isValidString(request.resource.data.description, 20, 5000)) &&
+                      (fieldUnchanged('title') || isValidString(request.resource.data.title, 3, 200)) &&
+                      (fieldUnchanged('description') || isValidString(request.resource.data.description, 10, 5000)) &&
                       (fieldUnchanged('status') || request.resource.data.status in ['active', 'sold', 'paused', 'deleted']);
       
       allow update: if isAdmin();
