@@ -455,7 +455,7 @@ exports.sendReminderEmails = onSchedule(
 // ============================================
 // 🗑️ DELETE USER - Admin only
 // ============================================
-const { onCall, HttpsError } = require('firebase-functions/v2/https');
+const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
 
 exports.deleteUser = onCall(async (request) => {
   // Verify caller is admin
@@ -501,6 +501,158 @@ exports.deleteUser = onCall(async (request) => {
   } catch (error) {
     console.error('❌ Error deleting user:', error);
     throw new HttpsError('internal', 'Failed to delete user: ' + error.message);
+  }
+});
+
+// ============================================
+// 🗺️ DYNAMIC SITEMAP GENERATOR for SEO
+// ============================================
+
+exports.sitemap = onRequest({
+  region: 'us-central1',
+  memory: '256MiB',
+  timeoutSeconds: 30
+}, async (req, res) => {
+  try {
+    const baseUrl = 'https://kiwivanmarket.com';
+    const date = new Date().toISOString().split('T')[0];
+    
+    // Fetch all active/sold vans
+    const vansSnapshot = await db.collection('vans')
+      .where('status', 'in', ['active', 'sold'])
+      .orderBy('updatedAt', 'desc')
+      .get();
+    
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Static Core Pages -->
+  <url>
+    <loc>${baseUrl}/</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>always</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/sell</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/guides</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/faq</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/buyback-calculator</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/contact</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+`;
+
+    // 1. Guides - Using the slugs from GUIDES.en
+    const guideSlugs = [
+      'buying-campervan-nz',
+      'selling-campervan-nz',
+      'how-to-inspect-campervan-nz',
+      'freedom-camping-nz',
+      'winter-camping-nz',
+      'south-island-road-trip',
+      'best-vanlife-apps-nz'
+    ];
+    guideSlugs.forEach(slug => {
+      xml += `  <url>
+    <loc>${baseUrl}/guide/${slug}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>\n`;
+    });
+
+    // 2. Brands - Popular ones for SEO
+    const brands = [
+      'toyota-hiace', 
+      'nissan-caravan', 
+      'mazda-bongo', 
+      'mitsubishi-delica', 
+      'ford-transit', 
+      'mercedes-sprinter',
+      'volkswagen-transporter'
+    ];
+    brands.forEach(brand => {
+      xml += `  <url>
+    <loc>${baseUrl}/brand/${brand}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>\n`;
+    });
+
+    // 3. Locations - Major backpacker hubs
+    const locations = [
+      'auckland',
+      'christchurch',
+      'queenstown',
+      'wellington',
+      'nelson',
+      'tauranga',
+      'rotorua',
+      'dunedin',
+      'hamilton'
+    ];
+    locations.forEach(location => {
+      xml += `  <url>
+    <loc>${baseUrl}/location/${location}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>\n`;
+    });
+
+    // 4. Dynamic Vans
+    vansSnapshot.forEach(doc => {
+      const van = doc.data();
+      let lastModDate = new Date();
+      
+      if (van.updatedAt) {
+        lastModDate = van.updatedAt.toDate ? van.updatedAt.toDate() : new Date(van.updatedAt);
+      } else if (van.createdAt) {
+        lastModDate = van.createdAt.toDate ? van.createdAt.toDate() : new Date(van.createdAt);
+      }
+      
+      const lastMod = lastModDate.toISOString().split('T')[0];
+      
+      xml += `  <url>
+    <loc>${baseUrl}/van/${doc.id}</loc>
+    <lastmod>${lastMod}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>\n`;
+    });
+
+    xml += '</urlset>';
+
+    res.set('Content-Type', 'text/xml');
+    res.set('Cache-Control', 'public, max-age=3600, s-maxage=14400');
+    res.status(200).send(xml);
+
+  } catch (error) {
+    console.error('❌ Error generating dynamic sitemap:', error);
+    res.status(500).send('Error generating sitemap');
   }
 });
 

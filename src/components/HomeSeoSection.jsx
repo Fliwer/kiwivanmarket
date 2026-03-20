@@ -1,5 +1,6 @@
 import { MapPin, Shield, CheckCircle, Car, Calendar, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 /**
  * HomeSeoSection - Contenu SEO optimisé pour le référencement
@@ -7,8 +8,44 @@ import { Link } from 'react-router-dom';
  * tout en restant utile et lisible pour les utilisateurs.
  */
 export default function HomeSeoSection() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How to buy a campervan in New Zealand?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Buying a campervan in New Zealand requires checking the WOF (Warrant of Fitness), REGO (vehicle registration), and ensuring the vehicle is mechanically sound. Kiwi Van Market is the #1 marketplace to find reliable backpacker campervans, connecting buyers and sellers securely."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does a Self-Contained campervan mean in NZ?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A self-contained campervan in New Zealand is certified to hold its own fresh water, grey water, and toilet facilities. This certification allows you to freedom camp legally in many beautiful spots across the country."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is a Buy-Back guarantee on a campervan?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A buy-back guarantee is a deal where the seller agrees to repurchase the campervan from you at the end of your trip at a pre-agreed price, offering peace of mind to backpackers visiting New Zealand."
+        }
+      }
+    ]
+  };
+
   return (
     <section className="bg-gradient-to-b from-gray-50 to-white py-16">
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(faqSchema)}
+        </script>
+      </Helmet>
       <div className="max-w-7xl mx-auto px-4">
 
         {/* Section principale SEO */}

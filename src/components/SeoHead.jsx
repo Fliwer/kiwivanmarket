@@ -153,7 +153,7 @@ export default function SeoHead({
                 <title>{fullTitle}</title>
                 <meta name="description" content={metaDesc} />
                 <meta name="author" content="Kiwi Van Market" />
-                <meta name="keywords" content="campervan New Zealand, buy van NZ, sell campervan NZ, backpacker van NZ, motorhome New Zealand, Toyota Hiace NZ, WOF REGO NZ, van life NZ, freedom camping New Zealand, campervan Auckland Wellington Christchurch Queenstown" />
+                <meta name="keywords" content="buy campervan New Zealand, campervans for sale NZ, backpacker van NZ, acheter un van nouvelle zelande, campervan a vendre NZ, motorhome for sale New Zealand, Toyota Hiace for sale NZ, self contained van for sale NZ, buy van Auckland" />
 
                 {/* ── Indexing / canonical ────────────────────────────── */}
                 {noindex ? (

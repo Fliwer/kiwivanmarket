@@ -17,6 +17,7 @@ const LOCATIONS_CONFIG = {
     title: 'Campervans for Sale in Auckland, New Zealand',
     description: 'Find campervans for sale in Auckland, NZ. Browse self-contained vans, Toyota Hiace, Nissan Caravan and more. Auckland is the best place to start your New Zealand road trip adventure.',
     searchTerms: ['auckland'],
+    keywords: ['Campervans Auckland', 'Buy van Auckland', 'Self contained van Auckland NZ'],
     highlights: ['Largest selection in NZ', 'Easy airport access', 'Start point for North Island trips'],
   },
   'wellington': {
@@ -25,6 +26,7 @@ const LOCATIONS_CONFIG = {
     title: 'Campervans for Sale in Wellington, New Zealand',
     description: 'Browse campervans for sale in Wellington. Perfect starting point for South Island adventures via the Interislander ferry. Find reliable vans with valid WOF and self-containment.',
     searchTerms: ['wellington'],
+    keywords: ['Campervans Wellington', 'Buy van Wellington', 'Wellington campervan sales NZ'],
     highlights: ['Ferry to South Island', 'Capital city', 'Great café culture'],
   },
   'christchurch': {
@@ -33,6 +35,7 @@ const LOCATIONS_CONFIG = {
     title: 'Campervans for Sale in Christchurch, New Zealand',
     description: 'Discover campervans for sale in Christchurch. Gateway to the South Island\'s stunning landscapes. Find self-contained vans perfect for exploring Queenstown, Milford Sound, and more.',
     searchTerms: ['christchurch'],
+    keywords: ['Campervans Christchurch', 'Buy van Christchurch', 'Self contained van Christchurch'],
     highlights: ['South Island gateway', 'Close to ski fields', 'Garden city'],
   },
   'queenstown': {
@@ -41,6 +44,7 @@ const LOCATIONS_CONFIG = {
     title: 'Campervans for Sale in Queenstown, New Zealand',
     description: 'Shop campervans in Queenstown, adventure capital of NZ. Find vans ready for exploring Milford Sound, Wanaka, and the stunning Otago region. Self-contained options available.',
     searchTerms: ['queenstown'],
+    keywords: ['Campervans Queenstown', 'Buy van Queenstown', 'Queenstown campervan NZ'],
     highlights: ['Adventure capital', 'Stunning scenery', 'Year-round destination'],
   },
   'hamilton': {
@@ -49,6 +53,7 @@ const LOCATIONS_CONFIG = {
     title: 'Campervans for Sale in Hamilton, New Zealand',
     description: 'Find campervans for sale in Hamilton. Central North Island location, perfect base for exploring Waitomo Caves, Hobbiton, and Rotorua. Affordable vans with buy-back options.',
     searchTerms: ['hamilton'],
+    keywords: ['Campervans Hamilton', 'Buy van Hamilton', 'Hamilton van sales NZ'],
     highlights: ['Central location', 'Near Hobbiton', 'Affordable options'],
   },
   'tauranga': {
@@ -57,6 +62,7 @@ const LOCATIONS_CONFIG = {
     title: 'Campervans for Sale in Tauranga, New Zealand',
     description: 'Browse campervans in Tauranga and the Bay of Plenty. Beautiful beaches, Mount Maunganui, and great weather. Find your perfect road trip van.',
     searchTerms: ['tauranga', 'bay of plenty'],
+    keywords: ['Campervans Tauranga', 'Buy van Tauranga', 'Tauranga camper sales'],
     highlights: ['Beach lifestyle', 'Great weather', 'Mount Maunganui'],
   },
   'dunedin': {
@@ -65,6 +71,7 @@ const LOCATIONS_CONFIG = {
     title: 'Campervans for Sale in Dunedin, New Zealand',
     description: 'Discover campervans for sale in Dunedin. Scottish heritage, wildlife, and gateway to the Catlins. Find reliable vans for your South Island adventure.',
     searchTerms: ['dunedin'],
+    keywords: ['Campervans Dunedin', 'Buy van Dunedin', 'Dunedin backpacker van'],
     highlights: ['Wildlife spotting', 'University town', 'Catlins gateway'],
   },
   'rotorua': {
@@ -73,6 +80,7 @@ const LOCATIONS_CONFIG = {
     title: 'Campervans for Sale in Rotorua, New Zealand',
     description: 'Find campervans in Rotorua, heart of Maori culture and geothermal wonders. Perfect base for exploring the North Island\'s thermal attractions.',
     searchTerms: ['rotorua'],
+    keywords: ['Campervans Rotorua', 'Buy van Rotorua', 'Rotorua campervan sales'],
     highlights: ['Geothermal wonders', 'Maori culture', 'Mountain biking'],
   },
 };
@@ -193,6 +201,7 @@ export default function LocationPage() {
       <SeoHead
         title={locationConfig?.title}
         description={locationConfig?.description}
+        keywords={locationConfig?.keywords}
         canonicalUrl={url}
       />
 

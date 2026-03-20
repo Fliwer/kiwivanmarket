@@ -9,10 +9,11 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useHideLoader } from '../hooks/useHideLoader';
 import { safeDate } from '../utils/dateHelper';
 import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
+import { formatMileage } from '../utils/formatHelper';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
   Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen, User, LogOut,
-  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle
+  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle, Phone
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastProvider';
@@ -32,7 +33,7 @@ const VanSEO = ({ van }) => {
   const url = `https://kiwivanmarket.com/van/${van.id}`;
   const image = van.images?.[0] || van.imageUrl || 'https://kiwivanmarket.com/og-image.jpg';
   const title = `${van.title} - ${van.price ? `NZ$${van.price.toLocaleString()}` : ''}`;
-  const description = `${van.year} ${van.title} in ${van.location}. ${van.mileage?.toLocaleString()}km. ${t('hero.subtitle')}`;
+  const description = `${van.year} ${van.title} in ${van.location}. ${formatMileage(van.mileage)} km. ${t('hero.subtitle')}`;
 
   // Description SEO enrichie avec équipements
   const features = [];
@@ -43,7 +44,7 @@ const VanSEO = ({ van }) => {
   if (van.equipment?.fridge) features.push('fridge');
 
   const featuresText = features.length > 0 ? ` Features: ${features.join(', ')}.` : '';
-  const metaDescription = `${van.year} ${van.title} for sale in ${van.location}, New Zealand. ${van.mileage?.toLocaleString()}km, ${van.capacity || 2} berth.${featuresText} Perfect campervan for backpackers and travellers.`.slice(0, 160);
+  const metaDescription = `${van.year} ${van.title} for sale in ${van.location}, New Zealand. ${formatMileage(van.mileage)} km, ${van.capacity || 2} berth.${featuresText} Perfect campervan for backpackers and travellers.`.slice(0, 160);
 
   // Schema.org JSON-LD pour Google Rich Snippets — type Car (more precise than Vehicle)
   const additionalProperties = [];
@@ -219,6 +220,26 @@ export default function VanPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showLightbox, setShowLightbox] = useState(false);
+  const [liveViewers, setLiveViewers] = useState(0);
+
+  // Growth Hack: Simulate live viewers to create urgency
+  useEffect(() => {
+    // Random between 2 and 6
+    const initialViewers = Math.floor(Math.random() * 5) + 2;
+    setLiveViewers(initialViewers);
+
+    // Fluctuate randomly every 15-30 seconds
+    const interval = setInterval(() => {
+      setLiveViewers(prev => {
+        const change = Math.random() > 0.5 ? 1 : -1;
+        const newTotal = prev + change;
+        return newTotal >= 2 && newTotal <= 9 ? newTotal : prev;
+      });
+    }, Math.floor(Math.random() * 15000) + 15000);
+
+    return () => clearInterval(interval);
+  }, [id]);
 
   // Management functions for owner
   const handleToggleSold = async () => {
@@ -324,6 +345,24 @@ export default function VanPage() {
   const shareUrl = `https://kiwivanmarket.com/van/${id}`;
   const shareText = van ? t('header.subtitle') + ': ' + van.title : '';
 
+  const handleMainShareClick = async () => {
+    // Si sur mobile => Share natif (le plus puissant pour la viralité sur WhatsApp/Insta/SMS)
+    if (navigator.share && /Mobi|Android/i.test(navigator.userAgent)) {
+      try {
+        await navigator.share({
+          title: shareText,
+          text: van ? `Check out this ${van.year} ${van.title} in ${van.location}!` : 'Check out this van!',
+          url: shareUrl,
+        });
+      } catch (err) {
+        if (err.name !== 'AbortError') console.error('Share failed:', err);
+      }
+    } else {
+      // Sinon on affiche le menu dropdown Custom
+      setShowShareMenu(!showShareMenu);
+    }
+  };
+
   const handleShare = async (platform) => {
     const urls = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
@@ -334,9 +373,8 @@ export default function VanPage() {
 
     if (platform === 'copy') {
       await navigator.clipboard.writeText(shareUrl);
-      // We could use t() for this alert if needed, but keeping it simple for now
       toast.success('Link copied to clipboard!');
-    } else {
+    } else if (urls[platform]) {
       window.open(urls[platform], '_blank', 'width=600,height=400');
     }
     setShowShareMenu(false);
@@ -358,7 +396,7 @@ export default function VanPage() {
 
 ✨ Key Details:
 • Year: ${van.year}
-• Mileage: ${(van.mileage || 0).toLocaleString()} km
+• Mileage: ${formatMileage(van.mileage)} km
 • WOF: ${formatDate(van.wofExpiry)}
 • REGO: ${formatDate(van.regoExpiry)}
 ${features.length > 0 ? '\n🌟 Features:\n' + features.map(f => `• ${f}`).join('\n') : ''}
@@ -377,6 +415,20 @@ ${shareUrl}
 
   // Format prix
   const formatPrice = (price) => `NZ$${(price || 0).toLocaleString()}`;
+
+  // Lightbox keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!showLightbox) return;
+      
+      if (e.key === 'Escape') setShowLightbox(false);
+      if (e.key === 'ArrowLeft') prevImage();
+      if (e.key === 'ArrowRight') nextImage();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showLightbox, currentImageIndex]);
 
   // Format date
   const formatDate = (dateStr) => {
@@ -417,6 +469,7 @@ ${shareUrl}
 
   const seller = van.seller || { name: 'Unknown' };
   const hasRating = seller.rating !== undefined && seller.rating !== null && seller.reviewCount > 0;
+  const isOwner = currentUser && (currentUser.uid === seller.uid || currentUser.uid === van.userId);
 
   return (
     <>
@@ -513,8 +566,9 @@ ${shareUrl}
 
               <div className="relative">
                 <button
-                  onClick={() => setShowShareMenu(!showShareMenu)}
+                  onClick={handleMainShareClick}
                   className="p-2.5 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-500 rounded-2xl transition-all"
+                  title="Share this van"
                 >
                   <Share2 size={20} />
                 </button>
@@ -523,6 +577,9 @@ ${shareUrl}
                   <>
                     <div className="fixed inset-0 z-[100]" onClick={() => setShowShareMenu(false)} />
                     <div className="absolute right-0 top-full mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
+                      <button onClick={() => handleShare('whatsapp')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
+                        <MessageCircle size={18} className="text-green-500" /> Share on WhatsApp
+                      </button>
                       <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
                         <Facebook size={18} className="text-blue-600" /> Share on Facebook
                       </button>
@@ -557,6 +614,19 @@ ${shareUrl}
 
         {/* Contenu principal */}
         <main className="max-w-7xl mx-auto px-4 pb-12">
+          {/* Growth Hack: Urgency Notification banner */}
+          {liveViewers > 0 && van?.status !== 'sold' && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.5 }}
+              className="bg-red-50 border border-red-100 text-red-600 px-5 py-3 rounded-2xl mb-8 text-xs font-black tracking-widest uppercase flex items-center justify-center sm:justify-start gap-3 w-full shadow-sm"
+            >
+              <span className="text-base animate-pulse">🔥</span> 
+              {i18n.language.startsWith('fr') ? `${liveViewers} acheteurs potentiels regardent ce van actuellement` : `${liveViewers} potential buyers are looking at this van right now`}
+            </motion.div>
+          )}
+
           <div className="grid lg:grid-cols-2 gap-8 items-start">
 
             {/* GALERIE PHOTOS - Design premium */}
@@ -564,11 +634,12 @@ ${shareUrl}
               {/* Main Image */}
               <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl overflow-hidden shadow-2xl group z-20">
                 <div className="aspect-[4/3] flex items-center justify-center p-2">
-                  <img
-                    src={getLargeImage(images[currentImageIndex])}
-                    alt={`${van.title} - ${currentImageIndex + 1}`}
-                    className="max-w-full max-h-full object-contain rounded-2xl"
-                  />
+                    <img
+                      src={getLargeImage(images[currentImageIndex])}
+                      alt={`${van.title} - ${currentImageIndex + 1}`}
+                      className="max-w-full max-h-full object-contain rounded-2xl cursor-zoom-in"
+                      onClick={() => setShowLightbox(true)}
+                    />
                 </div>
 
                 {/* Navigation images */}
@@ -752,7 +823,7 @@ ${shareUrl}
                     <Gauge size={24} />
                   </div>
                   <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{t('van_page.mileage')}</p>
-                  <p className="text-2xl font-black text-slate-900 leading-tight">{(van.mileage || 0).toLocaleString()}<span className="text-sm font-bold ml-1 text-slate-400 uppercase tracking-tighter">km</span></p>
+                  <p className="text-2xl font-black text-slate-900 leading-tight">{formatMileage(van.mileage)}<span className="text-sm font-bold ml-1 text-slate-400 uppercase tracking-tighter">km</span></p>
                 </div>
                 <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
                   <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
@@ -979,6 +1050,42 @@ ${shareUrl}
                   </div>
                 </div>
 
+                {/* Premium Contact Actions */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                  {seller.phone && (
+                    <a 
+                      href={`https://wa.me/${seller.phone.replace(/\D/g,'')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
+                    >
+                      <Phone size={20} />
+                      WhatsApp Seller
+                    </a>
+                  )}
+                  {seller.facebook && (
+                    <a 
+                      href={seller.facebook.startsWith('http') ? seller.facebook : `https://facebook.com/${seller.facebook}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166fe5] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-500/10 active:scale-95"
+                    >
+                      <Facebook size={20} />
+                      Facebook Profile
+                    </a>
+                  )}
+                  {/* Additional sharing option for buyers to boost virality */}
+                  {!isOwner && (
+                    <button
+                      onClick={() => handleShare('facebook')}
+                      className="flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-[#1877F2] border-2 border-[#1877F2]/20 hover:border-[#1877F2] py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all col-span-1 sm:col-span-full active:scale-95"
+                    >
+                      <Share2 size={20} />
+                      {i18n.language.startsWith('fr') ? 'Partager à un ami' : 'Share with a friend'}
+                    </button>
+                  )}
+                </div>
+
                 {/* Quick Message Box */}
                 <Suspense fallback={<div className="h-40 animate-pulse bg-slate-50 rounded-3xl" />}>
                   <QuickMessageBox
@@ -1181,6 +1288,82 @@ ${shareUrl}
                   </button>
                 </div>
               </motion.div>
+            </div>
+          )}
+
+          {/* LIGHTBOX / FULL SCREEN IMAGES */}
+          {showLightbox && (
+            <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/95 backdrop-blur-md overflow-hidden">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0"
+                onClick={() => setShowLightbox(false)}
+              />
+
+              {/* Header Controls */}
+              <div className="absolute top-0 inset-x-0 p-6 flex items-center justify-between z-10">
+                <div className="bg-black/50 backdrop-blur-md px-4 py-2 rounded-2xl text-white text-sm font-black tracking-widest border border-white/10 uppercase">
+                  {currentImageIndex + 1} / {images.length}
+                </div>
+                <button
+                  onClick={() => setShowLightbox(false)}
+                  className="bg-white/10 hover:bg-white text-white hover:text-black p-3 rounded-2xl backdrop-blur-md transition-all border border-white/10 shadow-2xl"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              {/* Main Image in Lightbox */}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative max-w-7xl max-h-[85vh] w-full px-4 flex items-center justify-center z-10"
+              >
+                <img
+                  src={getLargeImage(images[currentImageIndex])}
+                  alt={`${van.title} - Large view`}
+                  className="max-w-full max-h-full object-contain rounded-3xl shadow-2xl pointer-events-none select-none"
+                />
+
+                {/* Navigation in Modal */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                      className="absolute left-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white text-white hover:text-black p-4 rounded-3xl backdrop-blur-md transition-all border border-white/10 shadow-2xl"
+                    >
+                      <ChevronLeft size={32} />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                      className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white text-white hover:text-black p-4 rounded-3xl backdrop-blur-md transition-all border border-white/10 shadow-2xl"
+                    >
+                      <ChevronRight size={32} />
+                    </button>
+                  </>
+                )}
+              </motion.div>
+
+              {/* Thumbnails row at bottom of lightbox */}
+              {images.length > 1 && (
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 px-6 py-4 bg-black/40 backdrop-blur-xl rounded-[2.5rem] border border-white/10 max-w-[90vw] overflow-x-auto scrollbar-hide z-10">
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
+                      className={`flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden transition-all duration-300 ${idx === currentImageIndex 
+                        ? 'ring-4 ring-emerald-500 ring-offset-4 ring-offset-black scale-110' 
+                        : 'opacity-40 hover:opacity-100 hover:scale-105'
+                      }`}
+                    >
+                      <img src={getThumbnail(img)} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </AnimatePresence>

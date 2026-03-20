@@ -239,7 +239,7 @@ service cloud.firestore {
     // ═══════════════════════════════════════════════════════════════════
     
     match /conversations/{conversationId} {
-      allow read: if isAuthenticated() && currentUserId() in resource.data.participants;
+      allow read: if (isAuthenticated() && currentUserId() in resource.data.participants) || isAdmin();
       
       allow create: if isAuthenticated() && 
                       currentUserId() in request.resource.data.participants &&
@@ -255,7 +255,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
       
       match /messages/{messageId} {
-        allow read: if isConversationParticipant(conversationId);
+        allow read: if isConversationParticipant(conversationId) || isAdmin();
         
         allow create: if hasVerifiedEmail() &&
                         isConversationParticipant(conversationId) &&

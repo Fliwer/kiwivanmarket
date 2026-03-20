@@ -4,6 +4,7 @@ import { db } from '../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useFavorites } from '../hooks/useFavorites';
 import { safeDate } from '../utils/dateHelper';
+import { formatMileage } from '../utils/formatHelper';
 
 export default function FavoritesPage({ onClose, onVanClick }) {
   const { favorites, toggleFavorite, loading: favoritesLoading } = useFavorites();
@@ -164,7 +165,7 @@ export default function FavoritesPage({ onClose, onVanClick }) {
                     <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
                       <span>{van.year}</span>
                       <span>â€¢</span>
-                      <span>{van.mileage?.toLocaleString()} km</span>
+                      <span>{formatMileage(van.mileage)} km</span>
                       <span>â€¢</span>
                       <span className="flex items-center gap-1">
                         <MapPin size={12} />

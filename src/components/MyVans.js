@@ -9,6 +9,7 @@ import safeStorage from '../utils/safeStorage';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastProvider';
 import ConfirmModal from './ConfirmModal';
+import { formatMileage } from '../utils/formatHelper';
 
 export default function MyVans({ onClose }) {
   const { t } = useTranslation();
@@ -315,7 +316,7 @@ export default function MyVans({ onClose }) {
                           {formatPrice(van.price)}
                         </div>
                         <div className="text-sm text-gray-600">
-                          {van.year} • {van.mileage?.toLocaleString()} km
+                          {van.year} • {formatMileage(van.mileage)} km
                         </div>
                       </div>
 

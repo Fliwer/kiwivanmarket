@@ -262,9 +262,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    //  SCURIT: Vrifier que l'utilisateur est connect
+    //  SÉCURITÉ: Vérifier que l'utilisateur est connecté et VÉRIFIÉ
     if (!currentUser) {
-      toast.error('Please sign in to add a van!');
+      toast.error('Please sign in to add a van! 🚐');
+      return;
+    }
+
+    if (!currentUser.emailVerified) {
+      toast.error('Please verify your email to list a van! ✨ Check your inbox at ' + currentUser.email);
       return;
     }
 

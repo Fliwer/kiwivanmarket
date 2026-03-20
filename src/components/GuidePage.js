@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft, CheckCircle, AlertTriangle, MapPin, Shield,
   Car, DollarSign, Share2, Copy, Check, Clock, BookOpen,
@@ -179,7 +180,7 @@ export default function GuidePage() {
             <div className="max-w-4xl">
               <div className="flex items-center gap-3 mb-8 animate-in fade-in slide-in-from-left duration-700">
                 <span className="h-px w-12 bg-emerald-500" />
-                <span className="text-xs font-black uppercase tracking-[0.3em] text-emerald-400">The Travel Journal</span>
+                <span className="text-xs font-black uppercase tracking-[0.3em] text-emerald-400">{currentLang === 'fr' ? 'Le Journal de Bord' : 'The Travel Journal'}</span>
               </div>
 
               <h1 className="text-5xl md:text-7xl lg:text-9xl font-black text-white leading-[0.85] mb-12 tracking-tighter animate-in fade-in slide-in-from-bottom duration-1000">
@@ -201,7 +202,7 @@ export default function GuidePage() {
                 <div className="h-4 w-px bg-white/20" />
                 <div className="flex items-center gap-2 text-emerald-400 text-xs font-black uppercase tracking-widest">
                   <Clock size={16} />
-                  <span>{readingTime} min read</span>
+                  <span>{t('guides.hub.min_read', { count: readingTime })}</span>
                 </div>
               </div>
             </div>
@@ -238,8 +239,8 @@ export default function GuidePage() {
                 <div className="p-10 bg-slate-900 rounded-[3rem] text-white shadow-2xl relative overflow-hidden group/cta">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
                   <div className="relative z-10 text-center">
-                    <h4 className="font-black text-2xl mb-4 tracking-tight">Verified Content</h4>
-                    <p className="text-sm text-slate-400 mb-0 font-medium leading-relaxed">This guide is updated for 2025 compliance and NZ laws.</p>
+                    <h4 className="font-black text-2xl mb-4 tracking-tight">{currentLang === 'fr' ? 'Contenu Vérifié' : 'Verified Content'}</h4>
+                    <p className="text-sm text-slate-400 mb-0 font-medium leading-relaxed">{currentLang === 'fr' ? 'Ce guide est à jour avec les lois NZ 2025.' : 'This guide is updated for 2025 compliance and NZ laws.'}</p>
                   </div>
                 </div>
               </div>
@@ -261,8 +262,12 @@ export default function GuidePage() {
                   const Icon = IconMap[section.icon] || CheckCircle;
                   return (
                     <React.Fragment key={idx}>
-                      <section
+                      <motion.section
                         ref={el => sectionRefs.current[idx] = el}
+                        initial={{ opacity: 0, y: 50 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-100px" }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
                         className="scroll-mt-32"
                       >
                         <div className="inline-flex items-center gap-4 mb-12">
@@ -344,23 +349,23 @@ export default function GuidePage() {
                             );
                           })}
                         </div>
-                      </section>
+                      </motion.section>
 
                       {/* Injection du calculateur après la section de prix */}
                       {((slug === 'buying-campervan-nz' && idx === 3) ||
                         (slug === 'selling-campervan-nz' && idx === 2)) && (
                           <div
                             ref={calculatorRef}
-                            className="my-24 scroll-mt-32"
+                            className="my-16 md:my-24 scroll-mt-32"
                           >
-                            <div className="p-12 md:p-16 bg-slate-900 rounded-[4rem] text-white shadow-3xl relative overflow-hidden">
+                            <div className="p-4 sm:p-8 md:p-16 bg-slate-900 rounded-3xl md:rounded-[4rem] text-white shadow-3xl relative overflow-hidden">
                               <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px]" />
                               <div className="relative z-10 max-w-2xl mx-auto text-center mb-12">
                                 <div className="inline-flex items-center gap-3 bg-emerald-500/20 text-emerald-400 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
-                                  <Calculator size={14} /> TOOL: BUYBACK ESTIMATOR
+                                  <Calculator size={14} /> {currentLang === 'fr' ? 'OUTIL : ESTIMATEUR DE PRIX' : 'TOOL: BUYBACK ESTIMATOR'}
                                 </div>
-                                <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">Estimate your resale value.</h2>
-                                <p className="text-slate-400 text-lg font-medium">Simulate your rachat garanti price based on real-time market seasonality.</p>
+                                <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">{currentLang === 'fr' ? 'Estimez votre valeur de revente.' : 'Estimate your resale value.'}</h2>
+                                <p className="text-slate-400 text-lg font-medium">{currentLang === 'fr' ? 'Simulez votre prix de rachat garanti basé sur la saisonnalité du marché.' : 'Simulate your rachat garanti price based on real-time market seasonality.'}</p>
                               </div>
                               <BuybackCalculator isEmbedded={true} />
                             </div>
@@ -369,6 +374,29 @@ export default function GuidePage() {
                     </React.Fragment>
                   );
                 })}
+
+                {/* Warnings Section - Premium Box */}
+                {guide.content.warnings && (
+                  <section className="bg-red-50 rounded-[3rem] p-12 lg:p-16 border border-red-100 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-12 opacity-[0.03] text-red-600 rotate-12">
+                      <AlertTriangle size={200} />
+                    </div>
+                    <div className="relative z-10">
+                      <h2 className="text-3xl font-black text-red-900 mb-8 flex items-center gap-3">
+                        <AlertTriangle className="text-red-500" size={32} />
+                        {currentLang === 'fr' ? "Points de Vigilance" : "Crucial Warnings"}
+                      </h2>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {guide.content.warnings.map((warning, idx) => (
+                          <div key={idx} className="flex gap-4 bg-white/60 backdrop-blur p-6 rounded-2xl border border-red-100 shadow-sm">
+                            <span className="flex-shrink-0 w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center font-black text-xs">!</span>
+                            <p className="text-red-800 font-bold leading-relaxed">{warning}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                )}
 
                 {/* CTA */}
                 {content.cta && (
@@ -418,7 +446,7 @@ export default function GuidePage() {
                       className="group flex items-center gap-4 bg-slate-900 text-white px-10 py-5 rounded-3xl font-black text-lg hover:shadow-2xl transition-all active:scale-95"
                     >
                       <Share2 size={24} className="group-hover:scale-110 transition-transform" />
-                      Share Story
+                      {t('guides.page.share_btn')}
                     </button>
                     <button
                       onClick={handleCopy}
@@ -435,6 +463,14 @@ export default function GuidePage() {
             </div>
           </div>
         </div>
+
+        {/* Floating Back to Top */}
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className={`fixed bottom-8 right-8 w-16 h-16 bg-white border border-slate-100 text-slate-900 rounded-3xl shadow-2xl flex items-center justify-center transition-all duration-500 z-[90] active:scale-95 group ${scrollProgress > 20 ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}
+        >
+          <ArrowLeft size={24} className="rotate-90 group-hover:-translate-y-1 transition-transform" />
+        </button>
       </div>
     </>
   );

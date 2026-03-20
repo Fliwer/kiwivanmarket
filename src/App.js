@@ -311,6 +311,33 @@ function MainApp({
                     <div className="text-sm text-gray-500">Private Seller</div>
                   </div>
                 </div>
+
+                {/* Premium Contact Actions */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                  {seller.phone && (
+                    <a 
+                      href={`https://wa.me/${seller.phone.replace(/\D/g,'')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                    >
+                      <Phone size={18} />
+                      WhatsApp
+                    </a>
+                  )}
+                  {seller.facebook && (
+                    <a 
+                      href={seller.facebook.startsWith('http') ? seller.facebook : `https://facebook.com/${seller.facebook}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166fe5] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                    >
+                      <Facebook size={18} />
+                      Facebook
+                    </a>
+                  )}
+                </div>
+
                 <Suspense fallback={<LoadingSpinner />}>
                   <QuickMessageBox van={van} seller={seller} onOpenFullChat={() => { setSelectedVan(null); setShowMessagingPage(true); }} />
                 </Suspense>
@@ -326,8 +353,8 @@ function MainApp({
     <div className="min-h-screen bg-slate-50">
       <SeoHead
         isHomepage
-        title="Kiwi Van Market | Buy & Sell Campervans New Zealand"
-        description="NZ's #1 backpacker van marketplace. Buy or sell Toyota Hiace, Nissan Caravan and self-contained sleeper vans. Free listings, no commission."
+        title="Buy Campervans & Backpacker Vans in New Zealand | Kiwi Van Market"
+        description="The easiest way to buy self-contained campervans in New Zealand. Browse Toyota Hiace, Nissan Caravan & more in Auckland, Christchurch without commission."
       />
 
       {/* Hero Section */}
@@ -341,11 +368,11 @@ function MainApp({
                 {t('home.badge')}
               </div>
 
-              <h2 className="text-6xl lg:text-8xl font-black text-slate-900 mb-8 leading-[1] tracking-tight">
+              <h1 className="text-6xl lg:text-8xl font-black text-slate-900 mb-8 leading-[1] tracking-tight">
                 {t('home.title_part1')} <br />
                 <span className="text-emerald-500">{t('home.title_highlight')}</span> <br />
                 {t('home.title_part2')}
-              </h2>
+              </h1>
 
               <p className="text-xl text-slate-500 font-medium mb-12 max-w-xl leading-relaxed opacity-90">
                 {t('home.subtitle')}
@@ -404,6 +431,8 @@ function MainApp({
                   <img
                     src="/hiace-camper.png"
                     alt="NZ Road Adventure"
+                    fetchPriority="high"
+                    loading="eager"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
                   />
                 </div>

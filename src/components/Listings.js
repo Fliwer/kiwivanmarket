@@ -2,6 +2,7 @@ import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Search, BookOpen, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
 import VanCard from './VanCard';
 
 export default function Listings({
@@ -15,6 +16,7 @@ export default function Listings({
     setShowAuthModal
 }) {
     const { t } = useTranslation();
+    const { currentUser } = useAuth();
 
     // ItemList Schema for SEO Rich Snippets
     const itemListSchema = {
@@ -123,6 +125,34 @@ export default function Listings({
                                 className="mt-8 text-emerald-600 font-bold hover:underline"
                             >
                                 Reset all filters
+                            </button>
+                        </div>
+                    )}
+
+                    {/* ===== ACCOUNT CREATION BANNER (Growth Hack) ===== */}
+                    {filteredVans.length > 0 && !currentUser && (
+                        <div className="mt-16 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-[2.5rem] p-8 md:p-12 shadow-2xl flex flex-col md:flex-row items-center gap-8 relative overflow-hidden group">
+                            {/* Decorative background elements */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 group-hover:scale-110 transition-transform duration-700"></div>
+                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-400/20 rounded-full blur-2xl translate-y-1/3 -translate-x-1/4"></div>
+                            
+                            <div className="relative z-10 flex-1 text-center md:text-left">
+                                <span className="inline-block bg-white/20 text-emerald-50 px-3 py-1 rounded-full text-[10px] font-black tracking-[0.2em] uppercase mb-4 backdrop-blur-sm border border-white/20 shadow-sm animate-pulse">
+                                    Free Account
+                                </span>
+                                <h3 className="text-3xl md:text-4xl font-black text-white mb-3 tracking-tight leading-tight">
+                                    Never miss a good deal
+                                </h3>
+                                <p className="text-emerald-100 text-lg max-w-xl mx-auto md:mx-0 font-medium">
+                                    Create a free account to contact sellers instantly, save your favorite vans, and secure the best campervan for your road trip.
+                                </p>
+                            </div>
+                            
+                            <button 
+                                onClick={() => setShowAuthModal(true)}
+                                className="relative z-10 flex-shrink-0 bg-white text-emerald-600 font-black text-lg px-8 py-4 rounded-2xl shadow-xl hover:shadow-white/20 hover:scale-105 active:scale-95 transition-all outline-none border-2 border-transparent hover:border-emerald-200"
+                            >
+                                Create Free Account
                             </button>
                         </div>
                     )}

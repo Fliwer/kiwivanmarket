@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { formatMileage } from '../utils/formatHelper';
 
 /**
  * VanSeo - Composant SEO pour les pages de détail des vans
@@ -35,7 +36,7 @@ export default function VanSeo({ van }) {
     
     // Année et kilométrage
     if (van.year) parts.push(`${van.year}`);
-    if (van.mileage) parts.push(`${van.mileage.toLocaleString()} km`);
+    if (van.mileage) parts.push(`${formatMileage(van.mileage)} km`);
     
     // Features clés
     if (van.selfContained) parts.push('Self-contained');

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useToast } from './ToastProvider';
 import ConfirmModal from './ConfirmModal';
+import { formatMileage } from '../utils/formatHelper';
 
 // 🔧 Helper pour normaliser les types de véhicules
 const normalizeVehicleType = (type) => {
@@ -43,6 +44,29 @@ export default function AdminDashboard({ onClose, onEditVan }) {
   const [deleting, setDeleting] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState(null);
   const toast = useToast();
+
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [conversationMessages, setConversationMessages] = useState([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+
+  const handleViewConversation = async (conv) => {
+    setSelectedConversation(conv);
+    setLoadingMessages(true);
+    setConversationMessages([]);
+    try {
+      const q = query(
+        collection(db, 'conversations', conv.id, 'messages'),
+        orderBy('createdAt', 'asc')
+      );
+      const snapshot = await getDocs(q);
+      setConversationMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+      toast.error('Could not load messages. Check Firestore rules.');
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
 
   // 🔐 Vérifier si l'utilisateur est admin (via custom claim Firebase)
   const isAdmin = currentUser?.isAdmin === true;
@@ -759,7 +783,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                                   />
                                   <div>
                                     <p className="font-medium text-gray-900 line-clamp-1 max-w-[200px]">{van.title}</p>
-                                    <p className="text-xs text-gray-500">{van.year} • {van.mileage?.toLocaleString()} km • {van.type}</p>
+                                    <p className="text-xs text-gray-500">{van.year} • {formatMileage(van.mileage)} km • {van.type}</p>
                                   </div>
                                 </div>
                               </td>
@@ -859,104 +883,121 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                 </div>
               )}
 
-              {/* Communication Tab */}
+              {/* Inbox / Messaging Hub Tab */}
               {activeTab === 'communication' && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-900">Engagement & Communication</h2>
-
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
-                      <MessageCircle className="w-10 h-10 mb-4 opacity-50" />
-                      <h3 className="text-lg font-medium opacity-90">Conversations</h3>
-                      <p className="text-4xl font-bold">{stats.totalConversations}</p>
-                      <p className="text-sm mt-2 opacity-80">{stats.activeConversations} active in the last 30 days</p>
+                <div className="h-[calc(100vh-140px)] flex flex-col md:flex-row gap-6 bg-gray-50 -m-6 p-6">
+                  {/* Left Column: Conversations List */}
+                  <div className="w-full md:w-1/3 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col shadow-sm">
+                    <div className="p-4 border-b bg-gray-50 flex justify-between items-center shrink-0">
+                      <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                        <MessageCircle className="w-5 h-5 text-emerald-600" />
+                        All Conversations
+                      </h3>
+                      <span className="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
+                        {conversations.length} total
+                      </span>
                     </div>
-
-                    <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-lg">
-                      <Calendar className="w-10 h-10 mb-4 opacity-50" />
-                      <h3 className="text-lg font-medium opacity-90">Reservations</h3>
-                      <p className="text-4xl font-bold">{stats.totalReservations}</p>
-                      <p className="text-sm mt-2 opacity-80">{stats.pendingReservations || 0} pending payment/approval</p>
-                    </div>
-
-                    <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg">
-                      <Star className="w-10 h-10 mb-4 opacity-50" />
-                      <h3 className="text-lg font-medium opacity-90">User Reviews</h3>
-                      <p className="text-4xl font-bold">{stats.totalReviews}</p>
-                      <p className="text-sm mt-2 opacity-80">Feedback left by users</p>
+                    <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                      {conversations
+                        .sort((a, b) => {
+                          const dateA = a.lastMessageAt?.toDate?.() || new Date(a.lastMessageAt || 0);
+                          const dateB = b.lastMessageAt?.toDate?.() || new Date(b.lastMessageAt || 0);
+                          return dateB - dateA;
+                        })
+                        .map((conv) => (
+                          <div 
+                            key={conv.id} 
+                            className={`p-4 hover:bg-emerald-50 transition cursor-pointer border-l-4 ${selectedConversation?.id === conv.id ? 'border-emerald-500 bg-emerald-50' : 'border-transparent'}`}
+                            onClick={() => handleViewConversation(conv)}
+                          >
+                            <div className="flex justify-between items-start mb-1">
+                              <p className="font-semibold text-gray-900 line-clamp-1">{conv.van?.title || 'Unknown Listing'}</p>
+                              <span className="text-[10px] text-gray-400 whitespace-nowrap">{formatDate(conv.lastMessageAt)}</span>
+                            </div>
+                            <p className="text-sm text-gray-600 line-clamp-1 mb-2 italic">"{conv.lastMessage || 'No recent message'}"</p>
+                            <div className="flex gap-2 flex-wrap">
+                              {conv.participants?.map(pid => (
+                                <span key={pid} className="px-2 py-0.5 bg-white rounded-md text-[10px] font-medium text-gray-600 border border-gray-200 shadow-sm">
+                                  {conv.participantNames?.[pid] || pid.substring(0, 5)}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                      ))}
+                      {conversations.length === 0 && (
+                        <div className="p-8 text-center text-gray-400">No conversations found.</div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="grid lg:grid-cols-2 gap-6">
-                    {/* Recent Conversations */}
-                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                      <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-900">Recent Conversations</h3>
-                        <span className="text-xs text-gray-500">Last 5 active</span>
-                      </div>
-                      <div className="divide-y divide-gray-100">
-                        {conversations
-                          .sort((a, b) => {
-                            const dateA = a.lastMessageAt?.toDate?.() || new Date(a.lastMessageAt || 0);
-                            const dateB = b.lastMessageAt?.toDate?.() || new Date(b.lastMessageAt || 0);
-                            return dateB - dateA;
-                          })
-                          .slice(0, 5)
-                          .map((conv) => (
-                            <div key={conv.id} className="p-4 hover:bg-gray-50 transition">
-                              <div className="flex justify-between items-start mb-1">
-                                <p className="font-semibold text-gray-900 line-clamp-1">{conv.van?.title || 'Unknown Van'}</p>
-                                <span className="text-[10px] text-gray-400 whitespace-nowrap">{formatDate(conv.lastMessageAt)}</span>
-                              </div>
-                              <p className="text-sm text-gray-600 line-clamp-1 mb-2 italic">"{conv.lastMessage || 'No messages'}"</p>
-                              <div className="flex gap-2">
-                                {conv.participants?.map(pid => (
-                                  <span key={pid} className="px-2 py-0.5 bg-gray-100 rounded text-[10px] text-gray-500">
-                                    {conv.participantNames?.[pid] || pid.substring(0, 5)}
-                                  </span>
-                                ))}
-                              </div>
+                  {/* Right Column: Active Conversation Viewer */}
+                  <div className="w-full md:w-2/3 bg-white rounded-2xl border border-gray-200 flex flex-col shadow-sm overflow-hidden">
+                    {selectedConversation ? (
+                      <>
+                        {/* Chat Header */}
+                        <div className="p-5 border-b bg-white flex justify-between items-center shrink-0 shadow-sm z-10">
+                          <div>
+                            <h3 className="font-bold text-gray-900 text-lg flex items-center gap-2">
+                              {selectedConversation.van?.title || 'Unknown Listing'}
+                              <a href={`/van/${selectedConversation.vanId}`} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 p-1 bg-emerald-50 rounded-lg transition">
+                                <ExternalLink className="w-4 h-4" />
+                              </a>
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-1 flex items-center gap-2 font-medium">
+                              <Users className="w-4 h-4 text-gray-400" />
+                              {Object.values(selectedConversation.participantNames || {}).join(' ↔ ')}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              setSelectedConversation(null);
+                              setConversationMessages([]);
+                            }} 
+                            className="p-2 bg-gray-100 hover:bg-red-100 hover:text-red-600 rounded-full transition text-gray-500"
+                            title="Close Chat"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                        
+                        {/* Chat Messages */}
+                        <div className="p-6 flex-1 overflow-y-auto bg-slate-50 space-y-4">
+                          {loadingMessages ? (
+                            <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4 shadow-inner">
+                              <RefreshCw className="w-8 h-8 animate-spin text-emerald-500" />
+                              <p className="font-medium text-gray-500">Intercepting secure messages...</p>
                             </div>
-                          ))}
-                        {conversations.length === 0 && (
-                          <div className="p-8 text-center text-gray-400">No conversations found</div>
-                        )}
+                          ) : conversationMessages.length === 0 ? (
+                            <div className="h-full flex items-center justify-center text-gray-400 font-medium">No messages found in this thread.</div>
+                          ) : (
+                            conversationMessages.map((msg, index) => {
+                              // Deterministic coloring based on senderId to distinguish users
+                              const participantIds = selectedConversation.participants || [];
+                              const isFirstUser = msg.senderId === participantIds[0];
+                              const senderName = selectedConversation.participantNames?.[msg.senderId] || 'User';
+                              
+                              return (
+                                <div key={msg.id} className={`flex ${isFirstUser ? 'justify-end' : 'justify-start'}`}>
+                                  <div className={`rounded-2xl p-4 shadow-sm max-w-[85%] ${isFirstUser ? 'bg-emerald-600 text-white rounded-tr-none' : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none'}`}>
+                                    <div className="flex justify-between items-baseline mb-2 gap-4 border-b border-black/10 pb-1">
+                                      <span className={`font-bold text-xs ${isFirstUser ? 'text-emerald-100' : 'text-emerald-700'}`}>{senderName}</span>
+                                      <span className={`text-[10px] ${isFirstUser ? 'text-emerald-200' : 'text-gray-400 font-medium'}`}>{formatDate(msg.createdAt)}</span>
+                                    </div>
+                                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{msg.text}</p>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-slate-50/50">
+                        <MessageCircle className="w-16 h-16 mb-4 text-gray-300" />
+                        <p className="text-xl font-bold text-gray-400 mb-2">No conversation selected</p>
+                        <p className="text-sm font-medium">Select a conversation from the left pane to view messages securely.</p>
                       </div>
-                    </div>
-
-                    {/* Recent Reservations */}
-                    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-                      <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
-                        <h3 className="font-bold text-gray-900">Recent Reservations</h3>
-                        <span className="text-xs text-gray-500">Last 5</span>
-                      </div>
-                      <div className="divide-y divide-gray-100">
-                        {reservations
-                          .sort((a, b) => {
-                            const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt || 0);
-                            const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt || 0);
-                            return dateB - dateA;
-                          })
-                          .slice(0, 5)
-                          .map((res) => (
-                            <div key={res.id} className="p-4 hover:bg-gray-50 transition flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-gray-900">{res.vanTitle || 'Booking'}</p>
-                                <p className="text-xs text-gray-500">{res.buyerName || 'Buyer'} • ${res.totalPrice?.toLocaleString()}</p>
-                              </div>
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${res.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                                res.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                                  'bg-gray-100 text-gray-600'
-                                }`}>
-                                {res.status?.toUpperCase()}
-                              </span>
-                            </div>
-                          ))}
-                        {reservations.length === 0 && (
-                          <div className="p-8 text-center text-gray-400">No reservations found</div>
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1193,7 +1234,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
         </main>
       </div>
 
-      {/* Modern Confirmation Modal */}
+      {/* Modal deleted, as the Viewer is now embedded */}
       <ConfirmModal
         isOpen={!!confirmConfig}
         onClose={() => !deleting && setConfirmConfig(null)}

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastProvider';
+import { formatMileage } from '../utils/formatHelper';
 
 export default function MyListingsPage() {
   const { t } = useTranslation();
@@ -332,7 +333,7 @@ export default function MyListingsPage() {
                         <span>{van.year}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <span>{van.mileage?.toLocaleString()} km</span>
+                        <span>{formatMileage(van.mileage)} km</span>
                       </div>
                     </div>
 

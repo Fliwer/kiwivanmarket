@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Heart, Shield, ChevronLeft, ChevronRight, CheckCircle, Calendar } from 'lucide-react';
+import { MapPin, Heart, Shield, ChevronLeft, ChevronRight, CheckCircle, Calendar, Star } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
 import { getThumbnail } from '../utils/imageOptimizer';
 import { safeDate } from '../utils/dateHelper';
+import { formatMileage } from '../utils/formatHelper';
 import { useTranslation } from 'react-i18next';
 import { useAutoTranslate } from '../hooks/useAutoTranslate';
 
@@ -134,15 +135,27 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
         </button>
 
 
-        {/* Overlay — Buyback badge only on image */}
-        {van.buyBack && (
-          <div className="absolute top-4 left-4 z-10">
+        {/* Badges container */}
+        <div className="absolute top-4 left-4 z-10 flex flex-col items-start gap-2">
+          {van.featured && (
+            <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-[0_4px_15px_rgba(251,191,36,0.5)] border border-white/40 flex items-center gap-1.5 animate-pulse">
+              <Star size={12} fill="currentColor" />
+              Promoted
+            </div>
+          )}
+          {van.views > 50 && (
+            <div className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-[0_4px_15px_rgba(225,29,72,0.5)] border border-white/40 flex items-center gap-1.5 animate-pulse">
+              <span className="text-base leading-none">🔥</span>
+              Hot
+            </div>
+          )}
+          {van.buyBack && (
             <div className="bg-emerald-600/90 backdrop-blur-md text-white px-2.5 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/20 flex items-center gap-1.5">
               <Shield size={12} fill="currentColor" />
               Buyback
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Self-contained marker */}
         {van.selfContained && (
@@ -175,7 +188,7 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           <div className="w-[1px] h-6 bg-slate-200" />
           <div className="flex flex-col flex-1">
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Km</span>
-            <span className="text-slate-900 font-bold">{(van.mileage || 0).toLocaleString()}</span>
+            <span className="text-slate-900 font-bold">{formatMileage(van.mileage)}</span>
           </div>
         </div>
 

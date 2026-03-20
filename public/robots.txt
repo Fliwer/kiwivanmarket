@@ -32,10 +32,6 @@ Disallow: /*?filter=
 Disallow: /admin/
 
 Sitemap: https://kiwivanmarket.com/sitemap.xml
-Sitemap: https://kiwivanmarket.com/sitemap-main.xml
-Sitemap: https://kiwivanmarket.com/sitemap-brands.xml
-Sitemap: https://kiwivanmarket.com/sitemap-locations.xml
-Sitemap: https://kiwivanmarket.com/sitemap-guides.xml
 
 # AI-readable content summary
 # https://kiwivanmarket.com/llms.txt
