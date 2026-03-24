@@ -221,25 +221,6 @@ export default function VanPage() {
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
-  const [liveViewers, setLiveViewers] = useState(0);
-
-  // Growth Hack: Simulate live viewers to create urgency
-  useEffect(() => {
-    // Random between 2 and 6
-    const initialViewers = Math.floor(Math.random() * 5) + 2;
-    setLiveViewers(initialViewers);
-
-    // Fluctuate randomly every 15-30 seconds
-    const interval = setInterval(() => {
-      setLiveViewers(prev => {
-        const change = Math.random() > 0.5 ? 1 : -1;
-        const newTotal = prev + change;
-        return newTotal >= 2 && newTotal <= 9 ? newTotal : prev;
-      });
-    }, Math.floor(Math.random() * 15000) + 15000);
-
-    return () => clearInterval(interval);
-  }, [id]);
 
   // Management functions for owner
   const handleToggleSold = async () => {
@@ -309,7 +290,33 @@ export default function VanPage() {
         const vanSnap = await getDoc(vanRef);
 
         if (vanSnap.exists()) {
-          const vanData = { id: vanSnap.id, ...vanSnap.data() };
+          const rawVanData = vanSnap.data();
+          let vanData = { id: vanSnap.id, ...rawVanData };
+
+          // ✅ Fetch latest seller info from 'users' collection for up-to-date WhatsApp/Bio
+          const sellerId = rawVanData.seller?.uid || rawVanData.userId;
+          if (sellerId) {
+            try {
+              const userSnap = await getDoc(doc(db, 'users', sellerId));
+              if (userSnap.exists()) {
+                const userData = userSnap.data();
+                // Combine: van.seller info preferred for van-specific overrides, 
+                // but user doc data used as fallback for latest contact info
+                vanData.seller = {
+                  ...userData, // Start with latest user data (photo, bio, phone)
+                  ...rawVanData.seller, // Override with van-specific data if any
+                };
+                
+                // Ensure phone from profile is used if van-specific phone is missing
+                if (!vanData.seller.phone && userData.phone) {
+                  vanData.seller.phone = userData.phone;
+                }
+              }
+            } catch (userErr) {
+              console.warn('Could not fetch latest seller profile:', userErr);
+            }
+          }
+
           setVan(vanData);
 
           // Incrémenter le compteur de vues (une seule fois par session par van)
@@ -614,18 +621,6 @@ ${shareUrl}
 
         {/* Contenu principal */}
         <main className="max-w-7xl mx-auto px-4 pb-12">
-          {/* Growth Hack: Urgency Notification banner */}
-          {liveViewers > 0 && van?.status !== 'sold' && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.5 }}
-              className="bg-red-50 border border-red-100 text-red-600 px-5 py-3 rounded-2xl mb-8 text-xs font-black tracking-widest uppercase flex items-center justify-center sm:justify-start gap-3 w-full shadow-sm"
-            >
-              <span className="text-base animate-pulse">🔥</span> 
-              {i18n.language.startsWith('fr') ? `${liveViewers} acheteurs potentiels regardent ce van actuellement` : `${liveViewers} potential buyers are looking at this van right now`}
-            </motion.div>
-          )}
 
           <div className="grid lg:grid-cols-2 gap-8 items-start">
 
@@ -897,6 +892,17 @@ ${shareUrl}
                       </p>
                     </div>
                   </div>
+                  
+                  {/* CarJam Placeholder */}
+                  <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                       <Shield size={18} className="text-blue-500" />
+                       <span className="text-sm font-bold text-slate-700">CarJam Background Check</span>
+                    </div>
+                    <button className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl uppercase tracking-widest hover:bg-blue-100 transition-colors pointer-events-none opacity-80">
+                      {i18n.language.startsWith('fr') ? 'Prochainement' : 'Coming Soon'}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1087,13 +1093,16 @@ ${shareUrl}
                 </div>
 
                 {/* Quick Message Box */}
-                <Suspense fallback={<div className="h-40 animate-pulse bg-slate-50 rounded-3xl" />}>
-                  <QuickMessageBox
-                    van={van}
-                    seller={seller}
-                    onOpenFullChat={() => navigate('/messages')}
-                  />
-                </Suspense>
+                <div id="quick-message-box" className="transition-all duration-500 rounded-3xl">
+                  <Suspense fallback={<div className="h-40 animate-pulse bg-slate-50 rounded-3xl" />}>
+                    <QuickMessageBox
+                      van={van}
+                      seller={seller}
+                      onOpenFullChat={() => navigate('/messages')}
+                      onAuthRequired={() => setShowAuthModal(true)}
+                    />
+                  </Suspense>
+                </div>
               </div>
 
               {/* Facebook Ad Generator - GROWTH TOOL */}
@@ -1367,6 +1376,56 @@ ${shareUrl}
             </div>
           )}
         </AnimatePresence>
+
+        {/* Sticky Mobile Action Bar - HIGH CONVERSION TOOL */}
+        {!isOwner && van.status !== 'sold' && (
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[150] p-4 safe-bottom pointer-events-none">
+            <motion.div 
+              initial={{ y: 100 }}
+              animate={{ y: 0 }}
+              className="bg-white/95 backdrop-blur-xl border border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-[2.5rem] p-3 flex items-center gap-3 pointer-events-auto max-w-md mx-auto"
+            >
+              <div className="flex-1 min-w-0 pl-3">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                  Asking Price
+                </p>
+                <p className="text-xl font-black text-slate-900 truncate">
+                  {formatPrice(van.price)}
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                {seller.phone && (
+                  <a 
+                    href={`https://wa.me/${seller.phone.replace(/\D/g,'')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+                    title="WhatsApp"
+                  >
+                    <Phone size={24} fill="currentColor" />
+                  </a>
+                )}
+                
+                <button
+                  onClick={() => {
+                    const messageBox = document.getElementById('quick-message-box');
+                    if (messageBox) {
+                      messageBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      // Give it a subtle highlight effect
+                      messageBox.classList.add('ring-4', 'ring-emerald-500/20');
+                      setTimeout(() => messageBox.classList.remove('ring-4', 'ring-emerald-500/20'), 2000);
+                    }
+                  }}
+                  className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+                >
+                  <MessageCircle size={20} />
+                  {i18n.language.startsWith('fr') ? 'Contacter' : 'Message'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
 
         <AuthModal
           isOpen={showAuthModal}

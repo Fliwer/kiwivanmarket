@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Send, Check, MessageCircle, AlertCircle, Mail, RefreshCw } from 'lucide-react';
+import { Send, Check, MessageCircle, AlertCircle, Mail, RefreshCw, Zap } from 'lucide-react';
 import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useRateLimit } from '../hooks/useRateLimit';
 import { sanitizeText } from '../securityUtils';
+import { useTranslation } from 'react-i18next';
 
 // ============================================
 // QUICK MESSAGE BOX
@@ -12,8 +13,9 @@ import { sanitizeText } from '../securityUtils';
 // ✅ Avec vérification email + textarea multi-lignes
 // ============================================
 
-export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFullChat }) {
+export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFullChat, onAuthRequired }) {
   const { currentUser, resendVerificationEmail, refreshEmailVerification } = useAuth();
+  const { t, i18n } = useTranslation();
   const { checkAndRecord, getRemainingActions } = useRateLimit(currentUser?.uid);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -29,11 +31,12 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
   const messageLimit = getRemainingActions('sendMessage');
 
   const quickReplies = [
-    { text: "Hi! Is this still available?", icon: "👋" },
-    { text: "What's your best price?", icon: "💰" },
-    { text: "Can I come see it today?", icon: "📍" },
-    { text: "Can you send more photos?", icon: "📸" },
+    { text: t('van_page.reply_available') || "Hi! Is this still available?", icon: "👋" },
+    { text: t('van_page.reply_price') || "What's your best price?", icon: "💰" },
+    { text: t('van_page.reply_visit') || "Can I come see it today?", icon: "📍" },
+    { text: t('van_page.reply_photos') || "Can you send more photos?", icon: "📸" },
   ];
+
 
   // ✅ Récupère l'UID du vendeur (plusieurs sources possibles)
   const getSellerUid = () => {
@@ -91,7 +94,8 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     }
 
     if (!currentUser) {
-      setError('Please sign in to send messages');
+      if (onAuthRequired) onAuthRequired();
+      else setError('Please sign in to send messages');
       return;
     }
 
@@ -221,19 +225,11 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     }
   };
 
-  // ✅ Si pas connecté
-  if (!currentUser) {
-    return (
-      <div className="bg-gray-50 rounded-xl p-4 text-center">
-        <p className="text-gray-600 text-sm">Sign in to message the seller</p>
-      </div>
-    );
-  }
 
   const sellerUid = getSellerUid();
 
   // Don't show if user is the seller
-  if (sellerUid && currentUser.uid === sellerUid) {
+  if (sellerUid && currentUser?.uid === sellerUid) {
     return null;
   }
 
@@ -253,7 +249,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
   }
 
   // ✅ NOUVEAU: Bloquer si email non vérifié
-  if (!currentUser.emailVerified) {
+  if (currentUser && !currentUser.emailVerified) {
     return (
       <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200">
         <div className="flex items-start gap-3">
@@ -325,27 +321,31 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
   return (
     <div className="bg-gradient-to-br from-gray-50 to-emerald-50 rounded-2xl p-4 border border-emerald-100">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-          <MessageCircle size={18} className="text-emerald-600" />
-          Contact Seller
-        </h4>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h4 className="font-black text-slate-900 uppercase tracking-tight flex items-center gap-2 text-sm md:text-base">
+            <MessageCircle size={18} className="text-emerald-600" />
+            {t('van_page.contact_title') || 'Contact Seller'}
+          </h4>
+          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] flex items-center gap-1 mt-1">
+            <Zap size={10} fill="currentColor" />
+            {t('van_page.contact_subtitle') || 'Fast response'}
+          </p>
+        </div>
 
         {/* ✅ Indicateur de messages restants (visible si < 10) */}
-        {messageLimit.remaining <= 10 && (
-          <div className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${messageLimit.remaining === 0
-              ? 'bg-red-100 text-red-700'
-              : messageLimit.remaining <= 5
-                ? 'bg-amber-100 text-amber-700'
-                : 'bg-gray-100 text-gray-600'
+        {currentUser && messageLimit?.remaining !== undefined && messageLimit.remaining <= 10 && (
+          <div className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full flex items-center gap-1 ${messageLimit.remaining === 0
+              ? 'bg-red-50 text-red-600 border border-red-100'
+              : 'bg-slate-100 text-slate-500 border border-slate-200'
             }`}>
             {messageLimit.remaining === 0 ? (
               <>
                 <AlertCircle size={12} />
-                Limit reached
+                Limit
               </>
             ) : (
-              <>{messageLimit.remaining} msg left/h</>
+              <>{messageLimit.remaining} left</>
             )}
           </div>
         )}

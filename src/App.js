@@ -363,25 +363,44 @@ function MainApp({
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left Column: Content */}
             <div className="flex flex-col items-start text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-xs font-black uppercase tracking-wider mb-8 border border-emerald-100 shadow-sm transition-transform hover:scale-105">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-xs font-black uppercase tracking-wider mb-6 border border-emerald-100 shadow-sm transition-transform hover:scale-105">
                 <Zap size={14} fill="currentColor" />
                 {t('home.badge')}
               </div>
 
-              <h1 className="text-6xl lg:text-8xl font-black text-slate-900 mb-8 leading-[1] tracking-tight">
+              <h1 className="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-[1.1] tracking-tight">
                 {t('home.title_part1')} <br />
                 <span className="text-emerald-500">{t('home.title_highlight')}</span> <br />
                 {t('home.title_part2')}
               </h1>
 
-              <p className="text-xl text-slate-500 font-medium mb-12 max-w-xl leading-relaxed opacity-90">
+              <p className="text-lg lg:text-xl text-slate-500 font-medium mb-10 max-w-xl leading-relaxed opacity-90">
                 {t('home.subtitle')}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 mb-20 w-full">
+              {/* 3 Pillars */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 w-full">
+                <div className="space-y-2">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 mb-2"><Filter size={20} /></div>
+                  <h3 className="font-bold text-slate-900 text-sm">{t('home.pillar1_title')}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">{t('home.pillar1_desc')}</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-2"><MessageCircle size={20} /></div>
+                  <h3 className="font-bold text-slate-900 text-sm">{t('home.pillar2_title')}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">{t('home.pillar2_desc')}</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 mb-2"><Shield size={20} /></div>
+                  <h3 className="font-bold text-slate-900 text-sm">{t('home.pillar3_title')}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">{t('home.pillar3_desc')}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 mb-16 w-full">
                 <button
                   onClick={() => document.getElementById('listings-start')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="inline-flex items-center gap-3 bg-emerald-600 text-white px-8 py-5 rounded-2xl font-black hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-900/10 active:scale-95 text-lg"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-emerald-600 text-white px-10 py-5 rounded-2xl font-black hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-900/20 active:scale-95 text-lg"
                 >
                   {t('home.cta_browse_listings')}
                   <ChevronDown size={20} />
@@ -389,17 +408,17 @@ function MainApp({
 
                 <Link
                   to="/sell"
-                  className="inline-flex items-center gap-3 bg-white text-slate-900 border-2 border-slate-100 px-8 py-5 rounded-2xl font-black hover:border-emerald-200 transition-all shadow-lg shadow-slate-200/50 active:scale-95 text-lg"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-transparent text-slate-500 border-2 border-slate-200 border-dashed px-8 py-5 rounded-2xl font-bold hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50 transition-all active:scale-95 text-base"
                 >
-                  <Plus size={20} className="text-emerald-500" />
+                  <Plus size={18} />
                   {t('home.cta_sell_van')}
                 </Link>
 
                 <Link
                   to="/guides"
-                  className="flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold transition-colors ml-2 border-b-2 border-dotted border-slate-200 hover:border-emerald-200"
+                  className="hidden sm:flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold transition-colors ml-2 border-b-2 border-dotted border-slate-200 hover:border-emerald-200 text-sm"
                 >
-                  <BookOpen size={18} />
+                  <BookOpen size={16} />
                   <span>Buying Guides</span>
                 </Link>
               </div>

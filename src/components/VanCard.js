@@ -173,9 +173,16 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
             <h3 className="font-bold text-slate-900 text-lg leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2 min-h-[3.5rem]">
               {translatedTitle}
             </h3>
-            <div className="flex items-center gap-1.5 text-slate-400 text-sm mt-1">
-              <MapPin size={14} className="text-emerald-500" />
-              <span className="font-medium">{van.location}</span>
+            <div className="flex items-center gap-3 mt-2">
+              <div className="flex items-center gap-1.5 text-slate-400 text-sm">
+                <MapPin size={14} className="text-emerald-500" />
+                <span className="font-medium">{van.location}</span>
+              </div>
+              
+              <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] uppercase font-black tracking-widest border border-emerald-100">
+                <Shield size={10} fill="currentColor" />
+                Verified
+              </div>
             </div>
           </div>
         </div>
