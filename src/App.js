@@ -405,23 +405,7 @@ function MainApp({
                 </Link>
               </div>
 
-              {/* Stats Section */}
-              <div className="flex flex-wrap items-center gap-12 pt-8 border-t border-slate-100 w-full lg:w-auto">
-                <div>
-                  <div className="text-3xl font-black text-slate-900">50+</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('home.stat_active_vans')}</div>
-                </div>
-                <div className="w-px h-10 bg-slate-100 hidden sm:block" />
-                <div>
-                  <div className="text-3xl font-black text-slate-900">150+</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('home.stat_travelers')}</div>
-                </div>
-                <div className="w-px h-10 bg-slate-100 hidden sm:block" />
-                <div>
-                  <div className="text-3xl font-black text-slate-900">4.8/5</div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">{t('home.stat_rating')}</div>
-                </div>
-              </div>
+
             </div>
 
             {/* Right Column: Hero Image Card */}
