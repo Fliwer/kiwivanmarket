@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../firebase';
@@ -22,6 +23,7 @@ const formatDateForInput = (date) => {
 
 
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode = false, van = null }) {
+  const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
@@ -800,22 +802,22 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             {/* LICENSE PLATE */}
             <div className="mb-6">
               <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
-                License Plate (Optional)
+                {t('sell.plate_label')}
                 <InfoTooltip
-                  show={showRegoTooltip} // Re-using state for simplicity or you can add new
+                  show={showRegoTooltip}
                   onMouseEnter={() => setShowRegoTooltip(true)}
                   onMouseLeave={() => setShowRegoTooltip(false)}
-                  title="Why add a plate?"
+                  title={t('sell.plate_tooltip_title')}
                   emoji="🇳🇿"
                 >
-                  Adding your plate allows buyers to check your van's history on <span className="text-white font-semibold">CarJam</span> (WOF, REGO, mileage). This significantly increases trust and interest!
+                  {t('sell.plate_tooltip_desc')}
                 </InfoTooltip>
               </label>
               <input
                 type="text"
                 value={formData.plateNumber}
                 onChange={(e) => setFormData({ ...formData, plateNumber: e.target.value.toUpperCase() })}
-                placeholder="ABC123"
+                placeholder={t('sell.plate_placeholder')}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors uppercase"
               />
             </div>

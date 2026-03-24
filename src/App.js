@@ -354,7 +354,7 @@ function MainApp({
       <SeoHead
         isHomepage
         title="Buy Campervans & Backpacker Vans in New Zealand | Kiwi Van Market"
-        description="The easiest way to buy self-contained campervans in New Zealand. Compare Toyota Hiace, Nissan Caravan & more."
+        description="The road is calling. Find your ideal campervan and start your New Zealand adventure with Kiwi Van Market."
       />
 
       {/* Hero Section */}
@@ -427,6 +427,87 @@ function MainApp({
           </div>
         </div>
       </section>
+
+      {/* Popular Vans Models Section */}
+      <section className="bg-slate-50 py-24 pb-12 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-4 text-emerald-600 font-black uppercase tracking-[0.2em] text-[10px]">
+                <span className="w-8 h-px bg-emerald-600" />
+                {t('home.popular_vans_badge')}
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-[1.1] mb-6 tracking-tight">
+                {t('home.popular_vans_title')}<br />
+                <span className="text-emerald-600 italic">NZ Roadtrips</span>
+              </h2>
+              <p className="text-lg text-slate-500 font-medium leading-relaxed">
+                {t('home.popular_vans_subtitle')}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* Toyota Hiace */}
+            <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
+              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">🚐</div>
+              <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">
+                {t('van_models.hiace.title')}
+              </h3>
+              <p className="text-slate-500 text-sm leading-relaxed mb-6">
+                {t('van_models.hiace.desc')}
+              </p>
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">
+                  {t('van_models.hiace.tag1')}
+                </span>
+                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-xl">
+                  {t('van_models.hiace.tag2')}
+                </span>
+              </div>
+            </div>
+
+            {/* Nissan Caravan */}
+            <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
+              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">🏠</div>
+              <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-300 transition-colors">
+                {t('van_models.caravan.title')}
+              </h3>
+              <p className="text-slate-500 text-sm leading-relaxed mb-6">
+                {t('van_models.caravan.desc')}
+              </p>
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">
+                  {t('van_models.caravan.tag1')}
+                </span>
+                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl">
+                  {t('van_models.caravan.tag2')}
+                </span>
+              </div>
+            </div>
+
+            {/* Mitsubishi Delica / Mazda Bongo */}
+            <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
+              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">🎒</div>
+              <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-amber-500 transition-colors">
+                {t('van_models.delica.title')}
+              </h3>
+              <p className="text-slate-500 text-sm leading-relaxed mb-6">
+                {t('van_models.delica.desc')}
+              </p>
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">
+                  {t('van_models.delica.tag1')}
+                </span>
+                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 px-3 py-1.5 rounded-xl">
+                  {t('van_models.delica.tag2')}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <main id="main-content">
         <div id="listings-start" className="scroll-mt-24" />
         <QuickFilters

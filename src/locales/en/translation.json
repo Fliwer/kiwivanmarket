@@ -145,7 +145,9 @@
         "reply_photos": "Can you send more photos?",
         "contact_title": "Ask for Info / Viewing",
         "contact_subtitle": "Fast response guaranteed",
-        "verify_email_msg": "Please verify your email to contact sellers"
+        "verify_email_msg": "Please verify your email to contact sellers",
+        "carjam_check": "Check on CarJam",
+        "carjam_not_provided": "Not Provided"
     },
     "my_listings": {
         "title": "My Vans",
@@ -215,13 +217,42 @@
         "title_part1": "Buy Your Perfect",
         "title_highlight": "Campervan",
         "title_part2": "in New Zealand.",
-        "subtitle": "Find the perfect campervan for your adventure in New Zealand. Compare Toyota Hiace, Nissan Caravan, and more.",
+        "subtitle": "The road is calling. Find your ideal van and start your New Zealand adventure.",
         "cta_browse_listings": "Browse Vans",
         "cta_sell_van": "Sell Your Van",
         "stat_active_vans": "Active Vans",
         "stat_travelers": "Happy Travelers",
         "stat_rating": "Average Rating",
         "destination_title": "Mount Cook, NZ",
-        "destination_subtitle": "Your next destination awaits."
+        "destination_subtitle": "Your next destination awaits.",
+        "popular_vans_badge": "Backpacker Classics",
+        "popular_vans_title": "Top 3 Pick for NZ Roadtrips",
+        "popular_vans_subtitle": "If you're unsure where to start, these three models are the absolute favorites for backpackers in New Zealand. Reliable, spacious, and easy to maintain."
+    },
+    "sell": {
+        "plate_label": "License Plate (Optional)",
+        "plate_placeholder": "ABC123",
+        "plate_tooltip_title": "Why add a plate?",
+        "plate_tooltip_desc": "Adding your plate allows buyers to check your van's history on CarJam (WOF, REGO, mileage). This significantly increases trust and interest!"
+    },
+    "van_models": {
+        "hiace": {
+            "title": "Toyota Hiace",
+            "desc": "The gold standard in NZ. Known for being indestructible. Plenty of parts available and amazing resale value. Perfect for long-term travel.",
+            "tag1": "Indestructible",
+            "tag2": "Best Resale"
+        },
+        "caravan": {
+            "title": "Nissan Caravan",
+            "desc": "The best alternative to the Hiace. Often slightly more affordable and offering similar interior space. A solid and reliable workhorse for your adventure.",
+            "tag1": "Affordable",
+            "tag2": "Spacious"
+        },
+        "delica": {
+            "title": "Mitsubishi Delica",
+            "desc": "A bit more compact and practical if you're traveling solo or as a duo on a budget. Easy to park, easier on fuel, and still fits everything you need.",
+            "tag1": "Compact",
+            "tag2": "Eco Friendly"
+        }
     }
 }

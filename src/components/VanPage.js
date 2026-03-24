@@ -907,11 +907,11 @@ ${shareUrl}
                         className="text-[10px] font-black text-white bg-blue-600 px-3 py-1.5 rounded-xl uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
                       >
                         <ExternalLink size={12} />
-                        {i18n.language.startsWith('fr') ? 'Vérifier sur CarJam' : 'Check on CarJam'}
+                        {t('van_page.carjam_check')}
                       </a>
                     ) : (
                       <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl uppercase tracking-widest italic opacity-60">
-                         {i18n.language.startsWith('fr') ? 'Non renseigné' : 'Not Provided'}
+                         {t('van_page.carjam_not_provided')}
                       </span>
                     )}
                   </div>

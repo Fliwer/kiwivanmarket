@@ -145,7 +145,9 @@
         "reply_photos": "Pouvez-vous m'envoyer plus de photos ?",
         "contact_title": "Demander une info / visite",
         "contact_subtitle": "Réponse rapide garantie",
-        "verify_email_msg": "Veuillez vérifier votre email pour contacter les vendeurs"
+        "verify_email_msg": "Veuillez vérifier votre email pour contacter les vendeurs",
+        "carjam_check": "Vérifier sur CarJam",
+        "carjam_not_provided": "Non Renseigné"
     },
     "my_listings": {
         "title": "Mes Vans",
@@ -215,13 +217,42 @@
         "title_part1": "Achetez votre",
         "title_highlight": "Campervan",
         "title_part2": "en Nouvelle-Zélande.",
-        "subtitle": "Trouvez le van aménagé parfait pour votre aventure. Comparez les Toyota Hiace, les Nissan Caravan, et plus encore.",
+        "subtitle": "La route vous appelle. Trouvez votre van idéal et partez à l'aventure en Nouvelle-Zélande.",
         "cta_browse_listings": "Voir les annonces",
         "cta_sell_van": "Vendre mon van",
         "stat_active_vans": "Vans actifs",
         "stat_travelers": "Voyageurs satisfaits",
         "stat_rating": "Évaluation moyenne",
         "destination_title": "Mount Cook, NZ",
-        "destination_subtitle": "Votre prochaine destination vous attend."
+        "destination_subtitle": "Votre prochaine destination vous attend.",
+        "popular_vans_badge": "Classiques des Backpackers",
+        "popular_vans_title": "Top 3 des modèles pour la NZ",
+        "popular_vans_subtitle": "Si vous ne savez pas par où commencer, ces trois modèles sont les favoris absolus des backpackers en Nouvelle-Zélande. Fiables, spacieux et faciles à entretenir."
+    },
+    "sell": {
+        "plate_label": "Plaque d'immatriculation (Optionnel)",
+        "plate_placeholder": "ABC123",
+        "plate_tooltip_title": "Pourquoi ajouter la plaque ?",
+        "plate_tooltip_desc": "Ajouter votre plaque permet aux acheteurs de vérifier l'historique de votre van sur CarJam (WOF, REGO, kilométrage). Cela augmente considérablement la confiance et l'intérêt !"
+    },
+    "van_models": {
+        "hiace": {
+            "title": "Toyota Hiace",
+            "desc": "La référence absolue en Nouvelle-Zélande. Réputée indestructible. Pièces disponibles partout et excellente valeur de revente. Parfaite pour un long voyage.",
+            "tag1": "Indestructible",
+            "tag2": "Meilleure Revente"
+        },
+        "caravan": {
+            "title": "Nissan Caravan",
+            "desc": "La meilleure alternative au Hiace. Souvent un peu plus abordable tout en offrant un espace intérieur similaire. Un compagnon solide et fiable pour votre aventure.",
+            "tag1": "Abordable",
+            "tag2": "Spacieux"
+        },
+        "delica": {
+            "title": "Mitsubishi Delica",
+            "desc": "Un peu plus compacte et pratique si vous voyagez seul ou à deux avec un budget serré. Facile à garer, plus économique en carburant, tout en offrant tout le nécessaire.",
+            "tag1": "Compact",
+            "tag2": "Éco-responsable"
+        }
     }
 }

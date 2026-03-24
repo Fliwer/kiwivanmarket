@@ -12,7 +12,7 @@
     },
     "hero": {
         "title": "Encuentra tu campervan ideal en Nueva Zelanda",
-        "subtitle": "La forma más fácil de comprar y vender vans para mochileros.",
+        "subtitle": "La carretera te llama. Encuentra tu van ideal y lánzate a la aventura en Nueva Zelanda.",
         "cta_browse": "Ver Vans",
         "cta_sell": "Vender Gratis"
     },
@@ -136,7 +136,9 @@
         "unit_people": "pers.",
         "sticker_blue": "Etiqueta Azul",
         "sticker_green": "Etiqueta Verde",
-        "not_specified": "No especificado"
+        "not_specified": "No especificado",
+        "carjam_check": "Verificar en CarJam",
+        "carjam_not_provided": "No proporcionado"
     },
     "guides": {
         "hub": {
@@ -192,6 +194,35 @@
         "stat_travelers": "Viajeros felices",
         "stat_rating": "Calificación promedio",
         "destination_title": "Mount Cook, NZ",
-        "destination_subtitle": "Tu próximo destino te espera."
+        "destination_subtitle": "Tu próximo destino te espera.",
+        "popular_vans_badge": "Clásicos para Mochileros",
+        "popular_vans_title": "Top 3 de modelos para NZ",
+        "popular_vans_subtitle": "Si no sabes por dónde empezar, estos tres modelos son los favoritos absolutos de los mochileros en Nueva Zelanda. Fiables, amplios y fáciles de mantener."
+    },
+    "sell": {
+        "plate_label": "Matrícula (Opcional)",
+        "plate_placeholder": "ABC123",
+        "plate_tooltip_title": "¿Por qué añadir la matrícula?",
+        "plate_tooltip_desc": "Añadir tu matrícula permite a los compradores verificar el historial de tu van en CarJam (WOF, REGO, kilometraje). ¡Esto aumenta significativamente la confianza y el interés!"
+    },
+    "van_models": {
+        "hiace": {
+            "title": "Toyota Hiace",
+            "desc": "El estándar de oro en NZ. Conocida por ser indestructible. Repuestos disponibles en todas partes y excelente valor de reventa. Perfecta para viajes largos.",
+            "tag1": "Indestructible",
+            "tag2": "Mejor Reventa"
+        },
+        "caravan": {
+            "title": "Nissan Caravan",
+            "desc": "La mejor alternativa a la Hiace. A menudo un poco más asequible e igual de espaciosa por dentro. Un compañero sólido y fiable para tu aventura.",
+            "tag1": "Asequible",
+            "tag2": "Espaciosa"
+        },
+        "delica": {
+            "title": "Mitsubishi Delica",
+            "desc": "Un poco más compacta y práctica si viajas solo o en pareja con presupuesto ajustado. Fácil de aparcar, más económica en combustible y con todo lo necesario.",
+            "tag1": "Compacta",
+            "tag2": "Ecológica"
+        }
     }
 }
