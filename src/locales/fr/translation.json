@@ -217,7 +217,7 @@
         "title_part1": "Achetez votre",
         "title_highlight": "Campervan",
         "title_part2": "en Nouvelle-Zélande.",
-        "subtitle": "Trouvez le van aménagé parfait pour votre aventure. Comparez les Toyota Hiace, les Nissan Caravan, et bien d'autres.",
+        "subtitle": "Trouvez le van aménagé parfait pour votre aventure. Comparez les Toyota Hiace, les Nissan Caravan, Nissan Elgrand, et bien d'autres.",
         "cta_browse_listings": "Voir les annonces",
         "cta_sell_van": "Vendre mon van",
         "stat_active_vans": "Vans actifs",
@@ -253,6 +253,12 @@
             "desc": "Un peu plus compacte et pratique si vous voyagez seul ou à deux avec un budget serré. Facile à garer, plus économique en carburant, tout en offrant tout le nécessaire.",
             "tag1": "Compact",
             "tag2": "Éco-responsable"
+        },
+        "elgrand": {
+            "title": "Nissan Elgrand",
+            "desc": "Connu comme le 'Roi des Vans'. Un choix plus luxueux pour ceux qui recherchent un confort supérieur et une conduite souple. Très populaire pour des conversions haut de gamme.",
+            "tag1": "Luxe & Confort",
+            "tag2": "Moteur Puissant"
         }
     }
 }

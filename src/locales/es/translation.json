@@ -12,7 +12,7 @@
     },
     "hero": {
         "title": "Encuentra tu campervan ideal en Nueva Zelanda",
-        "subtitle": "Encuentra la campervan perfecta para tu aventura en Nueva Zelanda. Compara Toyota Hiace, Nissan Caravan y más.",
+        "subtitle": "Encuentra la campervan perfecta para tu aventura en Nueva Zelanda. Compara Toyota Hiace, Nissan Caravan, Nissan Elgrand y más.",
         "cta_browse": "Ver Vans",
         "cta_sell": "Vender Gratis"
     },
@@ -223,6 +223,12 @@
             "desc": "Un poco más compacta y práctica si viajas solo o en pareja con presupuesto ajustado. Fácil de aparcar, más económica en combustible y con todo lo necesario.",
             "tag1": "Compacta",
             "tag2": "Ecológica"
+        },
+        "elgrand": {
+            "title": "Nissan Elgrand",
+            "desc": "Conocido como el 'Rey de las Vans'. Una opción de lujo para quienes buscan confort superior y una conducción suave. Muy popular para conversiones premium.",
+            "tag1": "Lujo & Confort",
+            "tag2": "Potente"
         }
     }
 }

@@ -447,14 +447,14 @@ function MainApp({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {/* Toyota Hiace */}
             <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
               <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">🚐</div>
-              <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">
+              <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">
                 {t('van_models.hiace.title')}
               </h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-6">
+              <p className="text-slate-500 text-xs leading-relaxed mb-6">
                 {t('van_models.hiace.desc')}
               </p>
               <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
@@ -470,10 +470,10 @@ function MainApp({
             {/* Nissan Caravan */}
             <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
               <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">🏠</div>
-              <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-300 transition-colors">
+              <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-emerald-300 transition-colors">
                 {t('van_models.caravan.title')}
               </h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-6">
+              <p className="text-slate-500 text-xs leading-relaxed mb-6">
                 {t('van_models.caravan.desc')}
               </p>
               <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
@@ -486,13 +486,32 @@ function MainApp({
               </div>
             </div>
 
+            {/* Nissan Elgrand */}
+            <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
+              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">👑</div>
+              <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-blue-500 transition-colors">
+                {t('van_models.elgrand.title')}
+              </h3>
+              <p className="text-slate-500 text-xs leading-relaxed mb-6">
+                {t('van_models.elgrand.desc')}
+              </p>
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">
+                  {t('van_models.elgrand.tag1')}
+                </span>
+                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl">
+                  {t('van_models.elgrand.tag2')}
+                </span>
+              </div>
+            </div>
+
             {/* Mitsubishi Delica / Mazda Bongo */}
             <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
               <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">🎒</div>
-              <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-amber-500 transition-colors">
+              <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-amber-500 transition-colors">
                 {t('van_models.delica.title')}
               </h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-6">
+              <p className="text-slate-500 text-xs leading-relaxed mb-6">
                 {t('van_models.delica.desc')}
               </p>
               <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">

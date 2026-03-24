@@ -217,7 +217,7 @@
         "title_part1": "Buy Your Perfect",
         "title_highlight": "Campervan",
         "title_part2": "in New Zealand.",
-        "subtitle": "Find the perfect campervan for your adventure in New Zealand. Compare Toyota Hiace, Nissan Caravan, and more.",
+        "subtitle": "Find the perfect campervan for your adventure. Compare Toyota Hiace, Nissan Caravan, Nissan Elgrand, and more.",
         "cta_browse_listings": "Browse Vans",
         "cta_sell_van": "Sell Your Van",
         "stat_active_vans": "Active Vans",
@@ -253,6 +253,12 @@
             "desc": "A bit more compact and practical if you're traveling solo or as a duo on a budget. Easy to park, easier on fuel, and still fits everything you need.",
             "tag1": "Compact",
             "tag2": "Eco Friendly"
+        },
+        "elgrand": {
+            "title": "Nissan Elgrand",
+            "desc": "Known as the 'King of Vans'. A more luxury choice for those seeking superior interior comfort and a smooth ride. Very popular for high-end conversions.",
+            "tag1": "Luxury",
+            "tag2": "Powerful"
         }
     }
 }
