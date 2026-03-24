@@ -195,13 +195,13 @@ export default function GuidesHubPage() {
                             <p className="text-slate-400 text-lg mb-10 leading-relaxed max-w-md">
                                 {t('guides.hub.cta_subtitle')}
                             </p>
-                            <a
-                                href="mailto:kiwivanmarket.contact@gmail.com"
+                            <Link
+                                to="/contact"
                                 className="inline-flex items-center gap-4 bg-emerald-500 text-white px-10 py-5 rounded-2xl font-black hover:bg-emerald-400 transition-all shadow-2xl shadow-emerald-900/20 active:scale-95 text-lg"
                             >
                                 {t('guides.hub.cta_btn')}
                                 <ArrowRight size={20} />
-                            </a>
+                            </Link>
                         </div>
 
                         <div className="hidden lg:grid grid-cols-2 gap-4 rotate-3 opacity-40">
