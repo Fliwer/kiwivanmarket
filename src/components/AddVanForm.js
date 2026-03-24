@@ -89,7 +89,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     regoExpiry: '',
     customFeatures: '',
     sellerPhone: '',
-    sellerFacebook: ''
+    sellerFacebook: '',
+    plateNumber: ''
   });
 
   //  Fermeture avec touche Escape
@@ -146,7 +147,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           regoExpiry: formatDateForInput(van.regoExpiry),
           customFeatures: van.customFeatures || '',
           sellerPhone: van.seller?.phone || '',
-          sellerFacebook: van.seller?.facebook || ''
+          sellerFacebook: van.seller?.facebook || '',
+          plateNumber: van.plateNumber || ''
         });
 
         // Charger les images existantes
@@ -399,6 +401,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             phone: sanitizeString(formData.sellerPhone || ''),
             facebook: sanitizeString(formData.sellerFacebook || '')
           },
+          plateNumber: sanitizeString(formData.plateNumber || ''),
           updatedAt: new Date()
         };
 
@@ -443,6 +446,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             phone: sanitizeString(formData.sellerPhone || ''),
             facebook: sanitizeString(formData.sellerFacebook || '')
           },
+          plateNumber: sanitizeString(formData.plateNumber || ''),
           views: 0,
           status: 'active',
           createdAt: serverTimestamp(),
@@ -791,6 +795,29 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                   <p className="text-xs text-gray-400">{formData.description.length || 0} characters</p>
                 )}
               </div>
+            </div>
+
+            {/* LICENSE PLATE */}
+            <div className="mb-6">
+              <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
+                License Plate (Optional)
+                <InfoTooltip
+                  show={showRegoTooltip} // Re-using state for simplicity or you can add new
+                  onMouseEnter={() => setShowRegoTooltip(true)}
+                  onMouseLeave={() => setShowRegoTooltip(false)}
+                  title="Why add a plate?"
+                  emoji="🇳🇿"
+                >
+                  Adding your plate allows buyers to check your van's history on <span className="text-white font-semibold">CarJam</span> (WOF, REGO, mileage). This significantly increases trust and interest!
+                </InfoTooltip>
+              </label>
+              <input
+                type="text"
+                value={formData.plateNumber}
+                onChange={(e) => setFormData({ ...formData, plateNumber: e.target.value.toUpperCase() })}
+                placeholder="ABC123"
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors uppercase"
+              />
             </div>
 
             {/* PHONE NUMBER */}

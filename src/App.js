@@ -354,7 +354,7 @@ function MainApp({
       <SeoHead
         isHomepage
         title="Buy Campervans & Backpacker Vans in New Zealand | Kiwi Van Market"
-        description="The easiest way to buy self-contained campervans in New Zealand. Browse Toyota Hiace, Nissan Caravan & more in Auckland, Christchurch."
+        description="The easiest way to buy self-contained campervans in New Zealand. Compare Toyota Hiace, Nissan Caravan & more."
       />
 
       {/* Hero Section */}

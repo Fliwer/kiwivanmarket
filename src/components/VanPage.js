@@ -893,15 +893,27 @@ ${shareUrl}
                     </div>
                   </div>
                   
-                  {/* CarJam Placeholder */}
+                  {/* CarJam Background Check Link */}
                   <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                        <Shield size={18} className="text-blue-500" />
                        <span className="text-sm font-bold text-slate-700">CarJam Background Check</span>
                     </div>
-                    <button className="text-[10px] font-black text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl uppercase tracking-widest hover:bg-blue-100 transition-colors pointer-events-none opacity-80">
-                      {i18n.language.startsWith('fr') ? 'Prochainement' : 'Coming Soon'}
-                    </button>
+                    {van.plateNumber ? (
+                      <a 
+                        href={`https://www.carjam.co.nz/car/?plate=${van.plateNumber.toUpperCase()}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-black text-white bg-blue-600 px-3 py-1.5 rounded-xl uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
+                      >
+                        <ExternalLink size={12} />
+                        {i18n.language.startsWith('fr') ? 'Vérifier sur CarJam' : 'Check on CarJam'}
+                      </a>
+                    ) : (
+                      <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl uppercase tracking-widest italic opacity-60">
+                         {i18n.language.startsWith('fr') ? 'Non renseigné' : 'Not Provided'}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
