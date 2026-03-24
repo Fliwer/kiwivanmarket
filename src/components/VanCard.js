@@ -178,11 +178,6 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
                 <MapPin size={14} className="text-emerald-500" />
                 <span className="font-medium">{van.location}</span>
               </div>
-              
-              <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full text-[10px] uppercase font-black tracking-widest border border-emerald-100">
-                <Shield size={10} fill="currentColor" />
-                Verified
-              </div>
             </div>
           </div>
         </div>

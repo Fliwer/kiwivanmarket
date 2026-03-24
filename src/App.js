@@ -378,24 +378,6 @@ function MainApp({
                 {t('home.subtitle')}
               </p>
 
-              {/* 3 Pillars */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 w-full">
-                <div className="space-y-2">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 mb-2"><Filter size={20} /></div>
-                  <h3 className="font-bold text-slate-900 text-sm">{t('home.pillar1_title')}</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">{t('home.pillar1_desc')}</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mb-2"><MessageCircle size={20} /></div>
-                  <h3 className="font-bold text-slate-900 text-sm">{t('home.pillar2_title')}</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">{t('home.pillar2_desc')}</p>
-                </div>
-                <div className="space-y-2">
-                  <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 mb-2"><Shield size={20} /></div>
-                  <h3 className="font-bold text-slate-900 text-sm">{t('home.pillar3_title')}</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">{t('home.pillar3_desc')}</p>
-                </div>
-              </div>
 
               <div className="flex flex-wrap items-center gap-4 mb-16 w-full">
                 <button

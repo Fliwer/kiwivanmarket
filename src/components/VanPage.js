@@ -1025,16 +1025,14 @@ ${shareUrl}
 
               {/* Seller Info - Premium Section */}
               <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100 p-8">
-                <h3 className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-6">Verified Seller</h3>
+                <h3 className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-6">{t('van_page.about_seller') || 'Seller Information'}</h3>
 
                 <div className="flex items-center gap-6 mb-8">
                   <div className="relative">
                     <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-3xl font-black shadow-2xl transform rotate-3 hover:rotate-0 transition-transform">
                       {seller.name?.[0]?.toUpperCase() || 'U'}
                     </div>
-                    <div className="absolute -bottom-2 -right-2 bg-white p-1.5 rounded-xl shadow-lg">
-                      <CheckCircle size={20} className="text-emerald-500 fill-emerald-50" />
-                    </div>
+
                   </div>
 
                   <div>
@@ -1047,7 +1045,7 @@ ${shareUrl}
                               <Star key={i} size={14} className={i < seller.rating ? "fill-amber-400 text-amber-400" : "text-slate-200"} />
                             ))}
                           </div>
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">({seller.rating.toFixed(1)}) Trust Index</span>
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">({seller.rating.toFixed(1)})</span>
                         </div>
                       ) : (
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{t('van_page.new_seller')}</span>
