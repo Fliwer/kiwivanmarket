@@ -438,8 +438,8 @@ function MainApp({
                 {t('home.popular_vans_badge')}
               </div>
               <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-[1.1] mb-6 tracking-tight">
-                {t('home.popular_vans_title')}<br />
-                <span className="text-emerald-600 italic">NZ Roadtrips</span>
+                {t('home.popular_vans_title_part1')}<br />
+                <span className="text-emerald-600 italic">{t('home.popular_vans_title_highlight')}</span>
               </h2>
               <p className="text-lg text-slate-500 font-medium leading-relaxed">
                 {t('home.popular_vans_subtitle')}

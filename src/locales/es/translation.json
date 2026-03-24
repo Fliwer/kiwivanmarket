@@ -196,7 +196,8 @@
         "destination_title": "Mount Cook, NZ",
         "destination_subtitle": "Tu próximo destino te espera.",
         "popular_vans_badge": "Clásicos para Mochileros",
-        "popular_vans_title": "Top 4 de modelos para NZ",
+        "popular_vans_title_part1": "Top 4 de modelos para",
+        "popular_vans_title_highlight": "Roadtrips en NZ",
         "popular_vans_subtitle": "Si no sabes por dónde empezar, estos cuatro modelos son los favoritos absolutos de los mochileros en Nueva Zelanda. Fiables, amplios y fáciles de mantener."
     },
     "sell": {

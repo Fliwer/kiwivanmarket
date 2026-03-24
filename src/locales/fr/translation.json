@@ -226,7 +226,8 @@
         "destination_title": "Mount Cook, NZ",
         "destination_subtitle": "Votre prochaine destination vous attend.",
         "popular_vans_badge": "Classiques des Backpackers",
-        "popular_vans_title": "Top 4 des modèles pour la NZ",
+        "popular_vans_title_part1": "Top 4 des modèles pour vos",
+        "popular_vans_title_highlight": "Roadtrips en NZ",
         "popular_vans_subtitle": "Si vous ne savez pas par où commencer, ces quatre modèles sont les favoris absolus des backpackers en Nouvelle-Zélande. Fiables, spacieux et faciles à entretenir."
     },
     "sell": {
