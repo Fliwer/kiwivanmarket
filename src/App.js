@@ -190,6 +190,7 @@ function MainApp({
 
         if (currentVans.length === 0) setLoading(true);
 
+        const cacheTimestamp = safeStorage.getItem('kiwiVanMarket_timestamp');
         const now = Date.now();
         const cacheAge = cacheTimestamp ? now - parseInt(cacheTimestamp) : Infinity;
         if (currentVans.length > 0 && cacheAge < 30000) { setLoading(false); return; }
