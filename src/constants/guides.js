@@ -395,7 +395,7 @@ export const GUIDES = {
         'top-10-best-vans-nz': {
             title: 'Top 10 Best Campervans to Buy in New Zealand (2025 Ranking)',
             description: 'The definitive ranking of the 10 best campervans for backpackers in New Zealand. Prices, reliability, resale value and expert tips for each model.',
-            heroImage: 'https://images.unsplash.com/photo-1533591380348-14193f1de18f?w=1200',
+            heroImage: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=1200',
             content: {
                 intro: `Choosing the right campervan is the single most important decision of your New Zealand trip. The wrong van means breakdowns on remote roads, failed WOFs, and a stressful sale at the end. This ranking is based on real market data, mechanic feedback, and thousands of backpacker experiences.`,
                 sections: [
@@ -846,7 +846,7 @@ export const GUIDES = {
         'top-10-best-vans-nz': {
             title: 'Top 10 des Meilleurs Campervans à Acheter en Nouvelle-Zélande (2025)',
             description: 'Le classement définitif des 10 meilleurs campervans pour backpackers en Nouvelle-Zélande. Prix, fiabilité, valeur de revente et conseils d\'expert.',
-            heroImage: 'https://images.unsplash.com/photo-1533591380348-14193f1de18f?w=1200',
+            heroImage: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=1200',
             content: {
                 intro: `Choisir le bon campervan est LA décision la plus importante de votre voyage en Nouvelle-Zélande. Le mauvais van = pannes sur des routes isolées, WOF raté et revente stressante. Ce classement est basé sur des données réelles du marché, des retours de mécaniciens et des milliers d'expériences de backpackers.`,
                 sections: [
@@ -1297,7 +1297,7 @@ export const GUIDES = {
         'top-10-best-vans-nz': {
             title: 'Top 10 Mejores Campervans para Comprar en Nueva Zelanda (2025)',
             description: 'El ranking definitivo de las 10 mejores campervans para mochileros en Nueva Zelanda. Precios, fiabilidad, valor de reventa y consejos de experto.',
-            heroImage: 'https://images.unsplash.com/photo-1533591380348-14193f1de18f?w=1200',
+            heroImage: 'https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=1200',
             content: {
                 intro: `Elegir la campervan correcta es la decisión más importante de tu viaje por Nueva Zelanda. La furgoneta equivocada significa averías en carreteras remotas, WOF fallidos y una venta estresante al final. Este ranking se basa en datos reales del mercado, opiniones de mecánicos y miles de experiencias de mochileros.`,
                 sections: [

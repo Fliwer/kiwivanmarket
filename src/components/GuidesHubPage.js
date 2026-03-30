@@ -71,9 +71,13 @@ export default function GuidesHubPage() {
                         <div className="flex flex-col gap-4">
                             <div className="flex items-center gap-4 px-2">
                                 <div className="flex -space-x-2">
-                                    {[1, 2, 3].map(i => (
+                                    {[
+                                        'https://randomuser.me/api/portraits/women/44.jpg',
+                                        'https://randomuser.me/api/portraits/men/32.jpg',
+                                        'https://randomuser.me/api/portraits/women/68.jpg'
+                                    ].map((img, i) => (
                                         <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200 overflow-hidden">
-                                            <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="Expert" />
+                                            <img src={img} alt="Expert" className="w-full h-full object-cover" />
                                         </div>
                                     ))}
                                 </div>
