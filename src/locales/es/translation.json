@@ -1,6 +1,6 @@
 {
     "header": {
-        "subtitle": "Compra y Venta devans 🇳🇿",
+        "subtitle": "Compra y Venta de vans 🇳🇿",
         "guides": "Guías",
         "calculator": "Calculadora",
         "sell": "Vender mi van",
@@ -8,13 +8,26 @@
         "favorites": "Favoritos",
         "messages": "Mensajes",
         "signin": "Iniciar sesión",
-        "profile": "Perfil"
+        "profile": "Perfil",
+        "why_us": "¿Por qué nosotros?"
     },
     "hero": {
         "title": "Encuentra tu campervan ideal en Nueva Zelanda",
         "subtitle": "Encuentra la campervan perfecta para tu aventura en Nueva Zelanda. Compara Toyota Hiace, Nissan Caravan, Nissan Elgrand y más.",
         "cta_browse": "Ver Vans",
-        "cta_sell": "Vender Gratis"
+        "cta_sell": "Vender Gratis",
+        "badge": "El n.º 1 del mercado de vans en NZ",
+        "h1_sell": "Vende",
+        "h1_sell_end": "tu van más rápido.",
+        "h1_buy": "Compra",
+        "h1_buy_end": "sin que te estafen.",
+        "subtitle_new": "El marketplace más seguro para mochileros en Nueva Zelanda. Vans verificadas, vendedores reales y todo lo que necesitas para la carretera.",
+        "cta_browse_new": "Ver vans",
+        "cta_sell_new": "Vender mi van (gratis)",
+        "trust_no_scams": "Sin estafas",
+        "trust_backpacker": "100% mochileros",
+        "trust_transparent": "Información transparente",
+        "why_link": "¿Por qué KiwiVanMarket?"
     },
     "filters": {
         "buyback": "Buy-Back",
@@ -205,6 +218,57 @@
         "plate_placeholder": "ABC123",
         "plate_tooltip_title": "¿Por qué añadir la matrícula?",
         "plate_tooltip_desc": "Añadir tu matrícula permite a los compradores verificar el historial de tu van en CarJam (WOF, REGO, kilometraje). ¡Esto aumenta significativamente la confianza y el interés!"
+    },
+    "listings": {
+        "recently_added": "Anuncios recientes",
+        "recently_added_highlight": "de vans",
+        "fresh_listings": "Nuevos anuncios publicados por mochileros en Nueva Zelanda"
+    },
+    "trust_bar": {
+        "verified": "Información verificada",
+        "trusted": "Solo vendedores de confianza",
+        "backpackers": "Creado para mochileros"
+    },
+    "why_page": {
+        "seo_title": "¿Por qué KiwiVanMarket? + Top 10 Campervans en NZ | KiwiVanMarket",
+        "seo_desc": "Descubre por qué KiwiVanMarket es la plataforma más segura para comprar o vender una campervan en Nueva Zelanda — y nuestra selección del Top 10 para mochileros.",
+        "hero_badge": "Por qué KiwiVanMarket",
+        "hero_h1": "Compra tu van de forma segura.",
+        "hero_h1_highlight": "Sin adivinar.",
+        "hero_subtitle": "Creamos KiwiVanMarket porque comprar una van en Facebook parecía una apuesta. Así lo hacemos diferente — y qué van deberías comprar.",
+        "cta_browse": "Ver vans disponibles",
+        "cta_anchor": "Ver el Top 10 ↓",
+        "pillars_badge": "Por qué KiwiVanMarket",
+        "pillars_title": "Todo lo que necesitas para comprar seguro",
+        "pillars_subtitle": "Nos especializamos en los 3 puntos esenciales para cada mochilero.",
+        "p1_title": "Información Transparente",
+        "p1_desc": "Sabe exactamente qué compras antes de contactar al vendedor. WOF, REGO, kilometraje — todo claramente mostrado.",
+        "p1_li1": "Fecha de vencimiento del WOF mostrada",
+        "p1_li2": "Validez del REGO claramente indicada",
+        "p1_li3": "Kilometraje verificable vía CarJam",
+        "p1_li4": "Insignia Self-Contained si está certificada",
+        "p2_title": "Vans Listas para la Aventura",
+        "p2_desc": "Cada anuncio muestra exactamente qué equipamiento incluye para saber si está lista desde el primer día.",
+        "p2_li1": "Lista de equipamiento en cada anuncio",
+        "p2_li2": "Fotos del interior obligatorias",
+        "p2_li3": "Filtro por Self-Contained",
+        "p2_li4": "Filtro por garantía Buy-Back",
+        "p3_title": "Directo y Sin Spam",
+        "p3_desc": "Sin intermediarios, sin algoritmos que entierren tu anuncio. Contacta vendedores directamente. Vende rápido.",
+        "p3_li1": "Mensajería directa con vendedores",
+        "p3_li2": "100% gratis para publicar",
+        "p3_li3": "Cero spam",
+        "p3_li4": "Opción Boost para vender más rápido",
+        "top10_badge": "Selección de Expertos",
+        "top10_title": "Top 10 Campervans",
+        "top10_highlight": "para Mochileros en NZ",
+        "top10_subtitle": "Clasificado por fiabilidad, precio, disponibilidad y opiniones de viajeros reales en Nueva Zelanda.",
+        "top10_editor": "⭐ Elección del Editor",
+        "top10_best_for": "Ideal para:",
+        "cta_title": "¿Listo para encontrar tu van?",
+        "cta_subtitle": "Explora los anuncios y filtra por modelo, ubicación, precio o equipamiento. Todos los anuncios son de mochileros reales.",
+        "cta_explore": "🔍 Explorar vans disponibles",
+        "cta_list": "🚐 Publicar mi van gratis"
     },
     "van_models": {
         "hiace": {

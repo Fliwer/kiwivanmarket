@@ -18,7 +18,8 @@ import {
     Clock,
     LogOut,
     User,
-    Mail
+    Mail,
+    Shield
 } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 import NotificationBell from './NotificationBell';
@@ -77,7 +78,7 @@ export default function Header({
                             className="px-4 py-2 bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 rounded-xl transition-all flex items-center gap-2 text-sm border border-emerald-200/50 hover:border-emerald-300"
                         >
                             <BookOpen size={15} className="text-emerald-600" />
-                            <span>Expert Guides</span>
+                            <span>{t('header.guides')}</span>
                         </Link>
 
                         <Link
@@ -85,7 +86,7 @@ export default function Header({
                             className="px-4 py-2 text-slate-600 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2 text-sm"
                         >
                             <Calculator size={16} />
-                            <span>Calculator</span>
+                            <span>{t('header.calculator')}</span>
                         </Link>
                     </nav>
 
@@ -219,28 +220,10 @@ export default function Header({
                         )}
                     </div>
 
-                    {/* Mobile Controls */}
-                    <div className="md:hidden flex items-center gap-2">
-                        <button
-                            onClick={() => navigate('/sell')}
-                            className="w-10 h-10 flex items-center justify-center bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
-                            title="Add Van"
-                        >
-                            <Plus size={20} />
-                        </button>
-                        <button
-                            onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
-                            className="p-2 text-slate-600 relative"
-                        >
-                            <MessageCircle size={22} />
-                            <MessageBadge />
-                        </button>
-                        <button
-                            onClick={() => setShowMobileMenu(!showMobileMenu)}
-                            className="w-10 h-10 flex items-center justify-center bg-slate-900 text-white rounded-2xl shadow-lg transition-transform active:scale-90"
-                        >
-                            {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
-                        </button>
+                    {/* Mobile Controls (Minimal) */}
+                    <div className="md:hidden flex items-center gap-3">
+                        <CurrencySelector />
+                        <LanguageSelector />
                     </div>
                 </div>
 

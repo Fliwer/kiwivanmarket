@@ -54,7 +54,7 @@ export default function Listings({
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 animate-fade-in-up">
                     <div>
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                            Explore <span className="text-emerald-600">Marketplace</span>
+                            {t('listings.recently_added')} <span className="text-emerald-600">{t('listings.recently_added_highlight')}</span>
                         </h2>
                         <p className="text-slate-500 font-medium mt-1">
                             {filteredVans.length} {filteredVans.length === 1 ? 'exceptional van' : 'exceptional vans'} found

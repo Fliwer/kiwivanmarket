@@ -514,13 +514,15 @@ ${shareUrl}
                 Guides
               </Link>
 
-              <button
-                onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
-                className="p-2.5 bg-slate-100 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 rounded-2xl transition-all relative"
-                title="Messages"
-              >
-                <MessageCircle size={20} />
-              </button>
+              <div className="hidden sm:block">
+                <button
+                  onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
+                  className="p-2.5 bg-slate-100 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 rounded-2xl transition-all relative"
+                  title="Messages"
+                >
+                  <MessageCircle size={20} />
+                </button>
+              </div>
 
               <button
                 onClick={() => toggleFavorite(van.id)}
@@ -537,39 +539,41 @@ ${shareUrl}
 
               <div className="h-8 w-[1px] bg-slate-200 mx-1 hidden sm:block" />
 
-              {!currentUser ? (
-                <button
-                  onClick={() => setShowAuthModal(true)}
-                  className="px-5 py-2.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
-                >
-                  {t('header.signin')}
-                </button>
-              ) : (
-                <div className="relative">
+              <div className="hidden sm:block">
+                {!currentUser ? (
                   <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-white shadow-xl flex items-center justify-center text-white font-black text-sm hover:scale-105 transition-transform"
+                    onClick={() => setShowAuthModal(true)}
+                    className="px-5 py-2.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
                   >
-                    {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
+                    {t('header.signin')}
                   </button>
-                  {showUserMenu && (
-                    <>
-                      <div className="fixed inset-0 z-[100]" onClick={() => setShowUserMenu(false)} />
-                      <div className="absolute right-0 top-full mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
-                        <Link to="/profile" className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
-                          <User size={18} className="text-slate-400" /> {t('header.profile')}
-                        </Link>
-                        <Link to="/my-listings" className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
-                          <MapPin size={18} className="text-slate-400" /> {t('header.my_listings') || 'My Listings'}
-                        </Link>
-                        <button onClick={logout} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-red-50 text-slate-700 hover:text-red-700 font-bold transition-all">
-                          <LogOut size={18} className="text-slate-400" /> {t('header.logout')}
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
+                ) : (
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-white shadow-xl flex items-center justify-center text-white font-black text-sm hover:scale-105 transition-transform"
+                    >
+                      {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
+                    </button>
+                    {showUserMenu && (
+                      <>
+                        <div className="fixed inset-0 z-[100]" onClick={() => setShowUserMenu(false)} />
+                        <div className="absolute right-0 top-full mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
+                          <Link to="/profile" className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
+                            <User size={18} className="text-slate-400" /> {t('header.profile')}
+                          </Link>
+                          <Link to="/my-listings" className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
+                            <MapPin size={18} className="text-slate-400" /> {t('header.my_listings') || 'My Listings'}
+                          </Link>
+                          <button onClick={logout} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-red-50 text-slate-700 hover:text-red-700 font-bold transition-all">
+                            <LogOut size={18} className="text-slate-400" /> {t('header.logout')}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
 
               <div className="relative">
                 <button

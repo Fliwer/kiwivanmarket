@@ -8,13 +8,26 @@
         "favorites": "Favoris",
         "messages": "Messages",
         "signin": "Connexion",
-        "profile": "Profil"
+        "profile": "Profil",
+        "why_us": "Pourquoi nous ?"
     },
     "hero": {
         "title": "Trouvez votre van de rêve en Nouvelle-Zélande",
         "subtitle": "Le meilleur endroit pour acheter et vendre des vans aménagés pour backpackers et voyageurs.",
         "cta_browse": "Voir les Vans",
-        "cta_sell": "Vendre Gratuitement"
+        "cta_sell": "Vendre Gratuitement",
+        "badge": "Le N°1 des vans en Nouvelle-Zélande",
+        "h1_sell": "Vendez",
+        "h1_sell_end": "votre van plus vite.",
+        "h1_buy": "Achetez",
+        "h1_buy_end": "sans vous faire arnaquer.",
+        "subtitle_new": "La marketplace la plus sécurisée pour les backpackers en Nouvelle-Zélande. Vans vérifiés, vrais vendeurs, tout ce qu'il vous faut pour la route.",
+        "cta_browse_new": "Voir les vans",
+        "cta_sell_new": "Vendre mon van (gratuit)",
+        "trust_no_scams": "Zéro arnaque",
+        "trust_backpacker": "100% backpackers",
+        "trust_transparent": "Infos véhicule transparentes",
+        "why_link": "Pourquoi KiwiVanMarket ?"
     },
     "filters": {
         "buyback": "Buy-Back",
@@ -235,6 +248,57 @@
         "plate_placeholder": "ABC123",
         "plate_tooltip_title": "Pourquoi ajouter la plaque ?",
         "plate_tooltip_desc": "Ajouter votre plaque permet aux acheteurs de vérifier l'historique de votre van sur CarJam (WOF, REGO, kilométrage). Cela augmente considérablement la confiance et l'intérêt !"
+    },
+    "listings": {
+        "recently_added": "Annonces récentes",
+        "recently_added_highlight": "de vans",
+        "fresh_listings": "Nouvelles annonces publiées par des backpackers en Nouvelle-Zélande"
+    },
+    "trust_bar": {
+        "verified": "Infos véhicule vérifiées",
+        "trusted": "Vendeurs de confiance uniquement",
+        "backpackers": "Conçu pour les backpackers"
+    },
+    "why_page": {
+        "seo_title": "Pourquoi KiwiVanMarket ? + Top 10 Vans en NZ | KiwiVanMarket",
+        "seo_desc": "Découvrez pourquoi KiwiVanMarket est la plateforme la plus sûre pour acheter ou vendre un van en Nouvelle-Zélande — et notre sélection des 10 meilleurs vans pour backpackers.",
+        "hero_badge": "Pourquoi KiwiVanMarket",
+        "hero_h1": "Achetez votre van en toute sécurité.",
+        "hero_h1_highlight": "Sans deviner.",
+        "hero_subtitle": "Nous avons créé KiwiVanMarket parce qu'acheter un van sur Facebook ressemblait à un jeu de hasard. Voici comment nous faisons les choses différemment — et quel van acheter.",
+        "cta_browse": "Voir les vans disponibles",
+        "cta_anchor": "Voir le Top 10 ↓",
+        "pillars_badge": "Pourquoi KiwiVanMarket",
+        "pillars_title": "Tout ce qu'il vous faut pour acheter en sécurité",
+        "pillars_subtitle": "Nous nous concentrons sur les 3 points essentiels pour chaque backpacker.",
+        "p1_title": "Infos Véhicule Transparentes",
+        "p1_desc": "Sachez exactement ce que vous achetez avant de contacter le vendeur. WOF, REGO, kilométrage — tout est clairement affiché.",
+        "p1_li1": "Date d'expiration du WOF affichée",
+        "p1_li2": "Validité du REGO clairement indiquée",
+        "p1_li3": "Kilométrage vérifiable via CarJam",
+        "p1_li4": "Badge Self-Contained si certifié",
+        "p2_title": "Vans Prêts pour l'Aventure",
+        "p2_desc": "Chaque annonce montre exactement les équipements inclus pour savoir si le van est vraiment prêt dès le premier jour.",
+        "p2_li1": "Liste d'équipements sur chaque annonce",
+        "p2_li2": "Photos de l'intérieur obligatoires",
+        "p2_li3": "Filtre par Self-Contained",
+        "p2_li4": "Filtre par garantie Buy-Back",
+        "p3_title": "Direct & Sans Spam",
+        "p3_desc": "Pas d'intermédiaire, pas d'algorithme qui noie votre annonce. Contactez les vendeurs directement. Vendez à de vrais acheteurs. Vite.",
+        "p3_li1": "Messagerie directe avec les vendeurs",
+        "p3_li2": "100% gratuit pour publier",
+        "p3_li3": "Zéro spam",
+        "p3_li4": "Option Boost pour vendre plus vite",
+        "top10_badge": "Sélection d'Experts",
+        "top10_title": "Top 10 des Vans",
+        "top10_highlight": "pour les Backpackers en NZ",
+        "top10_subtitle": "Classé par fiabilité, prix, disponibilité et retours de vrais voyageurs en Nouvelle-Zélande.",
+        "top10_editor": "⭐ Coup de cœur",
+        "top10_best_for": "Idéal pour :",
+        "cta_title": "Prêt à trouver votre van ?",
+        "cta_subtitle": "Parcourez les annonces et filtrez par modèle, lieu, prix ou équipement. Toutes les annonces sont publiées par de vrais backpackers.",
+        "cta_explore": "🔍 Explorer les vans disponibles",
+        "cta_list": "🚐 Publier mon van gratuitement"
     },
     "van_models": {
         "hiace": {

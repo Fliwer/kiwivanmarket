@@ -28,6 +28,7 @@ import { safeDate } from './utils/dateHelper';
 import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
 import GuidePreviewSection from './components/GuidePreviewSection';
+import BottomNavigation from './components/BottomNavigation';
 
 // ✅ LAZY LOADING
 const SellPage = lazy(() => import('./components/SellPage'));
@@ -50,6 +51,8 @@ const ProfilePage = lazy(() => import('./components/ProfilePage'));
 const MyListingsPage = lazy(() => import('./components/MyListingsPage'));
 const GuidesHubPage = lazy(() => import('./components/GuidesHubPage'));
 const FaqPage = lazy(() => import('./components/FaqPage'));
+const WhyPage = lazy(() => import('./components/WhyPage'));
+
 
 // ✅ LOADING COMPONENTS
 const LoadingSpinner = ({ text }) => {
@@ -132,12 +135,21 @@ function MainApp({
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  
+  // Synchronous initial loading from session/local storage for instant scroll restoration!
+  const getInitialVans = () => {
+    try {
+      const cached = safeStorage.getItem('kiwiVanMarket_vans');
+      return cached ? JSON.parse(cached) : [];
+    } catch { return []; }
+  };
+  const initializedVans = getInitialVans();
 
-  const [vans, setVans] = useState([]);
-  const [filteredVans, setFilteredVans] = useState([]);
+  const [vans, setVans] = useState(initializedVans);
+  const [filteredVans, setFilteredVans] = useState(initializedVans);
   const [selectedVan, setSelectedVan] = useState(null);
   const [currency, setCurrency] = useState('NZD');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initializedVans.length === 0);
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -174,32 +186,19 @@ function MainApp({
   useEffect(() => {
     const fetchVans = async () => {
       try {
-        const cachedData = safeStorage.getItem('kiwiVanMarket_vans');
-        const cacheTimestamp = safeStorage.getItem('kiwiVanMarket_timestamp');
-        let initialVans = [];
+        let currentVans = getInitialVans();
 
-        if (cachedData) {
-          try {
-            initialVans = JSON.parse(cachedData);
-            if (initialVans.length > 0) {
-              setVans(initialVans);
-              setFilteredVans(initialVans);
-              setLoading(false);
-            }
-          } catch (e) { console.error('Cache error:', e); }
-        }
-
-        if (initialVans.length === 0) setLoading(true);
+        if (currentVans.length === 0) setLoading(true);
 
         const now = Date.now();
         const cacheAge = cacheTimestamp ? now - parseInt(cacheTimestamp) : Infinity;
-        if (initialVans.length > 0 && cacheAge < 30000) return;
+        if (currentVans.length > 0 && cacheAge < 30000) { setLoading(false); return; }
 
         const querySnapshot = await getDocs(collection(db, 'vans'));
         const vansData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         const sortedVans = [...vansData].sort((a, b) => (safeDate(b.createdAt)?.getTime() || 0) - (safeDate(a.createdAt)?.getTime() || 0));
 
-        if (initialVans.length === 0 || JSON.stringify(sortedVans) !== cachedData) {
+        if (currentVans.length === 0 || JSON.stringify(sortedVans) !== JSON.stringify(currentVans)) {
           safeStorage.setItem('kiwiVanMarket_vans', JSON.stringify(sortedVans));
           safeStorage.setItem('kiwiVanMarket_timestamp', now.toString());
           setVans(sortedVans);
@@ -350,7 +349,7 @@ function MainApp({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pb-20 md:pb-0">
       <SeoHead
         isHomepage
         title="Buy Campervans & Backpacker Vans in New Zealand | Kiwi Van Market"
@@ -369,43 +368,39 @@ function MainApp({
               </div>
 
               <h1 className="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-[1.1] tracking-tight">
-                {t('home.title_part1')} <br />
-                <span className="text-emerald-500">{t('home.title_highlight')}</span> <br />
-                {t('home.title_part2')}
+                {t('home.title_part1')} <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('home.title_highlight')}</span> {t('home.title_part2')}
               </h1>
 
               <p className="text-lg lg:text-xl text-slate-500 font-medium mb-10 max-w-xl leading-relaxed opacity-90">
                 {t('home.subtitle')}
               </p>
 
-
-              <div className="flex flex-wrap items-center gap-4 mb-16 w-full">
+              <div className="flex flex-wrap items-center gap-4 mb-8 w-full">
                 <button
                   onClick={() => document.getElementById('listings-start')?.scrollIntoView({ behavior: 'smooth' })}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-emerald-600 text-white px-10 py-5 rounded-2xl font-black hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-900/20 active:scale-95 text-lg"
                 >
+                  <Search size={20} />
                   {t('home.cta_browse_listings')}
-                  <ChevronDown size={20} />
                 </button>
 
                 <Link
                   to="/sell"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-transparent text-slate-500 border-2 border-slate-200 border-dashed px-8 py-5 rounded-2xl font-bold hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50 transition-all active:scale-95 text-base"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-white text-slate-700 border-2 border-dashed border-slate-300 px-8 py-5 rounded-2xl font-bold hover:border-emerald-400 hover:text-emerald-700 transition-all active:scale-95 text-base"
                 >
                   <Plus size={18} />
                   {t('home.cta_sell_van')}
                 </Link>
-
-                <Link
-                  to="/guides"
-                  className="hidden sm:flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold transition-colors ml-2 border-b-2 border-dotted border-slate-200 hover:border-emerald-200 text-sm"
-                >
-                  <BookOpen size={16} />
-                  <span>Buying Guides</span>
-                </Link>
               </div>
 
-
+              {/* Buying Guides Link */}
+              <Link
+                to="/guides"
+                className="flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold transition-colors border-b-2 border-dotted border-slate-200 hover:border-emerald-200 pb-0.5 text-sm"
+              >
+                <BookOpen size={15} />
+                <span>Buying Guides</span>
+              </Link>
             </div>
 
             {/* Right Column: Hero Image Card */}
@@ -422,110 +417,11 @@ function MainApp({
                   />
                 </div>
               </div>
-
             </div>
           </div>
         </div>
       </section>
 
-      {/* Popular Vans Models Section */}
-      <section className="bg-slate-50 py-24 pb-12 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
-            <div className="max-w-2xl">
-              <div className="flex items-center gap-3 mb-4 text-emerald-600 font-black uppercase tracking-[0.2em] text-[10px]">
-                <span className="w-8 h-px bg-emerald-600" />
-                {t('home.popular_vans_badge')}
-              </div>
-              <h2 className="text-4xl md:text-5xl font-black text-slate-900 leading-[1.1] mb-6 tracking-tight">
-                {t('home.popular_vans_title_part1')}<br />
-                <span className="text-emerald-600 italic">{t('home.popular_vans_title_highlight')}</span>
-              </h2>
-              <p className="text-lg text-slate-500 font-medium leading-relaxed">
-                {t('home.popular_vans_subtitle')}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Toyota Hiace */}
-            <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
-              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">🚐</div>
-              <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">
-                {t('van_models.hiace.title')}
-              </h3>
-              <p className="text-slate-500 text-xs leading-relaxed mb-6">
-                {t('van_models.hiace.desc')}
-              </p>
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">
-                  {t('van_models.hiace.tag1')}
-                </span>
-                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 px-3 py-1.5 rounded-xl">
-                  {t('van_models.hiace.tag2')}
-                </span>
-              </div>
-            </div>
-
-            {/* Nissan Caravan */}
-            <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
-              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">🏠</div>
-              <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-emerald-300 transition-colors">
-                {t('van_models.caravan.title')}
-              </h3>
-              <p className="text-slate-500 text-xs leading-relaxed mb-6">
-                {t('van_models.caravan.desc')}
-              </p>
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">
-                  {t('van_models.caravan.tag1')}
-                </span>
-                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl">
-                  {t('van_models.caravan.tag2')}
-                </span>
-              </div>
-            </div>
-
-            {/* Nissan Elgrand */}
-            <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
-              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">👑</div>
-              <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-blue-500 transition-colors">
-                {t('van_models.elgrand.title')}
-              </h3>
-              <p className="text-slate-500 text-xs leading-relaxed mb-6">
-                {t('van_models.elgrand.desc')}
-              </p>
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">
-                  {t('van_models.elgrand.tag1')}
-                </span>
-                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1.5 rounded-xl">
-                  {t('van_models.elgrand.tag2')}
-                </span>
-              </div>
-            </div>
-
-            {/* Mitsubishi Delica / Mazda Bongo */}
-            <div className="group bg-white rounded-[2.5rem] p-8 shadow-xl shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 transition-all duration-500">
-              <div className="text-4xl mb-6 group-hover:scale-110 transition-transform duration-500 inline-block">🎒</div>
-              <h3 className="text-xl font-black text-slate-900 mb-4 group-hover:text-amber-500 transition-colors">
-                {t('van_models.delica.title')}
-              </h3>
-              <p className="text-slate-500 text-xs leading-relaxed mb-6">
-                {t('van_models.delica.desc')}
-              </p>
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-slate-50">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-xl">
-                  {t('van_models.delica.tag1')}
-                </span>
-                <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 px-3 py-1.5 rounded-xl">
-                  {t('van_models.delica.tag2')}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <main id="main-content">
         <div id="listings-start" className="scroll-mt-24" />
@@ -603,6 +499,7 @@ export default function KiwiVanMarket() {
               <Route path="/location/:location" element={<Suspense fallback={<PageLoader />}><LocationPage /></Suspense>} />
               <Route path="/guides" element={<Suspense fallback={<PageLoader />}><GuidesHubPage /></Suspense>} />
               <Route path="/faq" element={<Suspense fallback={<PageLoader />}><FaqPage /></Suspense>} />
+              <Route path="/why" element={<Suspense fallback={<PageLoader />}><WhyPage /></Suspense>} />
               <Route path="/guide/:slug" element={<Suspense fallback={<PageLoader />}><GuidePage /></Suspense>} />
               <Route path="/sell" element={<Suspense fallback={<PageLoader />}><SellPage /></Suspense>} />
               <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
@@ -619,6 +516,14 @@ export default function KiwiVanMarket() {
           {showAdminDashboard && <Suspense fallback={<PageLoader />}><AdminDashboard onClose={() => setShowAdminDashboard(false)} /></Suspense>}
           <FAQModal isOpen={showFAQ} onClose={() => setShowFAQ(false)} />
           {showTerms && <Suspense fallback={<PageLoader />}><TermsOfServiceModal isOpen={showTerms} onClose={() => setShowTerms(false)} /></Suspense>}
+          <BottomNavigation 
+             currentUser={currentUser}
+             favoritesCount={favoritesCount || 0}
+             setShowAuthModal={setShowAuthModal}
+             setShowFavorites={setShowFavorites}
+             showMobileMenu={showMobileMenu}
+             setShowMobileMenu={setShowMobileMenu}
+          />
         </NotificationProvider>
       </ToastProvider>
     </BrowserRouter>
