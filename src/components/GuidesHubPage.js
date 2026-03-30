@@ -178,42 +178,6 @@ export default function GuidesHubPage() {
                     ))}
                 </div>
 
-                {/* Top 4 Popular Vans */}
-                <section className="mt-32 mb-0">
-                    <div className="text-center mb-16">
-                        <div className="flex items-center justify-center gap-3 mb-4 text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">
-                            <span className="w-8 h-px bg-slate-300" />
-                            {t('home.popular_vans_badge')}
-                            <span className="w-8 h-px bg-slate-300" />
-                        </div>
-                        <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-                            {t('home.popular_vans_title_part1')} <span className="text-emerald-600">{t('home.popular_vans_title_highlight')}</span>
-                        </h2>
-                        <p className="text-slate-500 text-lg mt-4 max-w-2xl mx-auto font-medium">
-                            {t('home.popular_vans_subtitle')}
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[
-                            { key: 'hiace', emoji: '🏆' },
-                            { key: 'caravan', emoji: '🚐' },
-                            { key: 'delica', emoji: '🌿' },
-                            { key: 'elgrand', emoji: '👑' },
-                        ].map(({ key, emoji }) => (
-                            <div key={key} className="group relative bg-slate-50 hover:bg-white rounded-[2.5rem] p-8 border border-slate-100 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-900/5 transition-all duration-500">
-                                <div className="text-5xl mb-5 group-hover:scale-110 transition-transform duration-300 inline-block">{emoji}</div>
-                                <h3 className="text-xl font-black text-slate-900 mb-2">{t(`van_models.${key}.title`)}</h3>
-                                <p className="text-slate-500 text-sm leading-relaxed mb-5">{t(`van_models.${key}.desc`)}</p>
-                                <div className="flex flex-wrap gap-2">
-                                    <span className="text-[11px] font-black px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full uppercase tracking-wider">{t(`van_models.${key}.tag1`)}</span>
-                                    <span className="text-[11px] font-black px-3 py-1.5 bg-slate-100 text-slate-600 rounded-full uppercase tracking-wider">{t(`van_models.${key}.tag2`)}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-
                 {/* Suggest a guide CTA - Premium Version */}
                 <section className="mt-32 relative bg-slate-900 rounded-[4rem] p-12 lg:p-20 overflow-hidden">
                     <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-emerald-600/20 to-transparent pointer-events-none" />

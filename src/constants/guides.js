@@ -1,4 +1,4 @@
-import { CheckCircle, AlertTriangle, MapPin, Shield, Car, DollarSign } from 'lucide-react';
+import { CheckCircle, AlertTriangle, MapPin, Shield, Car, DollarSign, Star } from 'lucide-react';
 
 export const GUIDES = {
     en: {
@@ -388,6 +388,65 @@ export const GUIDES = {
                     title: 'Ready for the Tech?',
                     text: 'Set up your van with a 12V charger to keep your phone alive throughout the journey.',
                     buttonText: 'See Van Specs',
+                    buttonLink: '/',
+                }
+            }
+        },
+        'top-10-best-vans-nz': {
+            title: 'Top 10 Best Campervans to Buy in New Zealand (2025 Ranking)',
+            description: 'The definitive ranking of the 10 best campervans for backpackers in New Zealand. Prices, reliability, resale value and expert tips for each model.',
+            heroImage: 'https://images.unsplash.com/photo-1533591380348-14193f1de18f?w=1200',
+            content: {
+                intro: `Choosing the right campervan is the single most important decision of your New Zealand trip. The wrong van means breakdowns on remote roads, failed WOFs, and a stressful sale at the end. This ranking is based on real market data, mechanic feedback, and thousands of backpacker experiences.`,
+                sections: [
+                    {
+                        title: 'The Legends (Tier 1)',
+                        icon: 'Star',
+                        items: [
+                            { title: '1. Toyota Hiace (1990–2005)', text: 'The undisputed king. 70% of NZ rental fleets use the Hiace for a reason: it is near-indestructible. Parts are available everywhere, even in tiny West Coast towns. The 2.8L diesel (3L) is the sweet spot between power and economy. Expect to pay NZ$8,000–$18,000 depending on conversion quality.', expertTip: 'The 1KZ-TE engine is legendary but watch for head gasket issues on high-mileage units. The later 1TR petrol engine is bulletproof but thirstier.' },
+                            { title: '2. Toyota HiAce (2005–2018 "200 Series")', text: 'The modern evolution. More comfortable, better fuel economy, and a smoother ride. Harder to find as campervans but worth the premium. Budget NZ$15,000–$30,000.', expertTip: 'The 2KD-FTV diesel engine is one of the most reliable engines ever made. If you find one with under 250,000km, buy it.' },
+                            { title: '3. Nissan Caravan (E25)', text: 'The budget king. Offers nearly the same space as a Hiace but typically $2,000–$4,000 cheaper. The ZD30 diesel engine is solid. Great option for couples on a tight budget. NZ$6,000–$14,000.', expertTip: 'Check for timing chain rattle on cold start. A noisy chain is a $1,500 repair but not terminal.' },
+                        ]
+                    },
+                    {
+                        title: 'The Smart Choices (Tier 2)',
+                        icon: 'CheckCircle',
+                        items: [
+                            { title: '4. Nissan Elgrand (E51)', text: 'Known as the "King of Vans" — and for good reason. Superior comfort, powerful V6, and a luxury interior. Popular for premium conversions. Not the most fuel-efficient but the driving experience is unmatched. NZ$8,000–$16,000.' },
+                            { title: '5. Mitsubishi Delica (L400/D5)', text: 'The only true 4WD van on this list. If you want to explore gravel roads, ski fields, and remote DOC tracks, the Delica is your only option. Compact but incredibly capable. NZ$7,000–$15,000.', expertTip: 'The L400 with the 2.8L diesel is a workhorse. The newer D5 is more refined but rarer and pricier.' },
+                            { title: '6. Toyota Estima (Previa)', text: 'A hidden gem for solo travellers or couples. Mid-engine layout means a flat floor for sleeping. Surprisingly spacious. Very fuel-efficient. The best "stealth" camper. NZ$4,000–$10,000.' },
+                            { title: '7. Mazda Bongo Friendee', text: 'Compact, quirky, and loveable. The pop-top roof models are perfect for standing up inside. Great fuel economy and easy to park in cities. NZ$5,000–$12,000.' },
+                        ]
+                    },
+                    {
+                        title: 'The Budget Warriors (Tier 3)',
+                        icon: 'DollarSign',
+                        items: [
+                            { title: '8. Ford Transit (2000–2012)', text: 'European reliability in a big body. Lots of interior space for tall conversions. Cheaper to buy but parts can be slightly harder to source than Japanese vans. NZ$5,000–$12,000.' },
+                            { title: '9. Toyota TownAce / LiteAce', text: 'The perfect "mini campervan" for solo backpackers. Tiny, fuel-sipping, and surprisingly comfortable for one person. Easy to drive and park anywhere. NZ$3,000–$8,000.' },
+                            { title: '10. Mitsubishi L300 Express', text: 'Raw, basic, and cheap. A no-frills option that gets the job done for short 2-3 month trips. Don\'t expect luxury but it won\'t break the bank. NZ$2,500–$6,000.', expertTip: 'Great for the "buy cheap, sell cheap" strategy. Perfect if you\'re only in NZ for a few months.' },
+                        ]
+                    },
+                    {
+                        title: 'Buying Strategy Tips',
+                        icon: 'Shield',
+                        items: [
+                            { title: 'Seasonality Matters', text: 'Buy in March-April (end of season) for the best prices. Sell in October-November for maximum return. The difference can be $2,000–$4,000 on the same van.' },
+                            { title: 'Always Get a Pre-Purchase Inspection', text: 'For $150, a mechanic will find issues worth thousands. Never skip this step, especially on diesel engines.' },
+                            { title: 'Check CarJam', text: 'Enter the license plate on CarJam.co.nz to check for money owing, stolen status, odometer rollback, and import history. It\'s free for basic checks.' },
+                        ]
+                    }
+                ],
+                warnings: [
+                    'Avoid any van where the seller refuses a mechanical inspection',
+                    'Japanese imports with under 100,000km on the clock can be suspicious — odometer fraud exists',
+                    'A "beautiful" interior conversion means nothing if the engine is dying',
+                    'Budget $1,000–$2,000 on top of purchase price for WOF repairs, registration, and insurance',
+                ],
+                cta: {
+                    title: 'Find Your Perfect Van',
+                    text: 'Browse verified campervans with transparent vehicle history on Kiwi Van Market.',
+                    buttonText: 'Browse All Vans',
                     buttonLink: '/',
                 }
             }
@@ -783,6 +842,65 @@ export const GUIDES = {
                     buttonLink: '/',
                 }
             }
+        },
+        'top-10-best-vans-nz': {
+            title: 'Top 10 des Meilleurs Campervans à Acheter en Nouvelle-Zélande (2025)',
+            description: 'Le classement définitif des 10 meilleurs campervans pour backpackers en Nouvelle-Zélande. Prix, fiabilité, valeur de revente et conseils d\'expert.',
+            heroImage: 'https://images.unsplash.com/photo-1533591380348-14193f1de18f?w=1200',
+            content: {
+                intro: `Choisir le bon campervan est LA décision la plus importante de votre voyage en Nouvelle-Zélande. Le mauvais van = pannes sur des routes isolées, WOF raté et revente stressante. Ce classement est basé sur des données réelles du marché, des retours de mécaniciens et des milliers d'expériences de backpackers.`,
+                sections: [
+                    {
+                        title: 'Les Légendes (Tier 1)',
+                        icon: 'Star',
+                        items: [
+                            { title: '1. Toyota Hiace (1990–2005)', text: 'Le roi incontesté. 70% des flottes de location en NZ utilisent le Hiace car il est quasi indestructible. Les pièces se trouvent partout, même dans les plus petites villes de la West Coast. Le diesel 2.8L (3L) est le compromis idéal puissance/économie. Comptez NZ$8 000–$18 000 selon la qualité de conversion.', expertTip: 'Le moteur 1KZ-TE est légendaire mais attention au joint de culasse sur les gros kilométrages. Le 1TR essence est increvable mais plus gourmand.' },
+                            { title: '2. Toyota HiAce (2005–2018 "Série 200")', text: 'L\'évolution moderne. Plus confortable, meilleure consommation et conduite plus douce. Plus rare en campervan mais vaut le supplément. Budget NZ$15 000–$30 000.', expertTip: 'Le diesel 2KD-FTV est l\'un des moteurs les plus fiables jamais construits. Si vous en trouvez un sous 250 000 km, foncez.' },
+                            { title: '3. Nissan Caravan (E25)', text: 'Le roi du budget. Offre presque le même espace qu\'un Hiace mais typiquement $2 000–$4 000 moins cher. Le diesel ZD30 est solide. Top pour les couples avec un budget serré. NZ$6 000–$14 000.', expertTip: 'Vérifiez le bruit de chaîne de distribution au démarrage à froid. Une chaîne bruyante coûte $1 500 à réparer mais ce n\'est pas mortel.' },
+                        ]
+                    },
+                    {
+                        title: 'Les Choix Malins (Tier 2)',
+                        icon: 'CheckCircle',
+                        items: [
+                            { title: '4. Nissan Elgrand (E51)', text: 'Surnommé le "Roi des Vans" — à juste titre. Confort supérieur, V6 puissant, et intérieur luxueux. Populaire pour les conversions haut de gamme. Pas le plus économe mais le plaisir de conduite est incomparable. NZ$8 000–$16 000.' },
+                            { title: '5. Mitsubishi Delica (L400/D5)', text: 'Le seul vrai 4x4 de cette liste. Si vous voulez explorer les pistes de gravier, les stations de ski et les tracks DOC reculés, le Delica est votre unique option. Compact mais incroyablement capable. NZ$7 000–$15 000.', expertTip: 'Le L400 avec le diesel 2.8L est un cheval de labour. Le D5 plus récent est plus raffiné mais plus rare et plus cher.' },
+                            { title: '6. Toyota Estima (Previa)', text: 'La pépite cachée pour les solos ou les couples. Le moteur central offre un plancher plat pour dormir. Étonnamment spacieux. Très économe en carburant. Le meilleur "stealth camper". NZ$4 000–$10 000.' },
+                            { title: '7. Mazda Bongo Friendee', text: 'Compact, original et attachant. Les modèles avec toit relevable permettent de se tenir debout. Super économe et facile à garer en ville. NZ$5 000–$12 000.' },
+                        ]
+                    },
+                    {
+                        title: 'Les Guerriers du Budget (Tier 3)',
+                        icon: 'DollarSign',
+                        items: [
+                            { title: '8. Ford Transit (2000–2012)', text: 'Fiabilité européenne dans un grand gabarit. Beaucoup d\'espace intérieur pour les conversions hautes. Moins cher à l\'achat mais les pièces peuvent être un peu plus dures à trouver que sur les vans japonais. NZ$5 000–$12 000.' },
+                            { title: '9. Toyota TownAce / LiteAce', text: 'Le "mini campervan" parfait pour les solos. Petit, économe et étonnamment confortable pour une personne. Facile à conduire et à garer partout. NZ$3 000–$8 000.' },
+                            { title: '10. Mitsubishi L300 Express', text: 'Brut, basique et pas cher. Une option sans fioritures qui fait le travail pour les trips de 2-3 mois. N\'attendez pas du luxe mais ça ne cassera pas la banque. NZ$2 500–$6 000.', expertTip: 'Parfait pour la stratégie "acheter pas cher, revendre pas cher". Idéal si vous ne restez que quelques mois.' },
+                        ]
+                    },
+                    {
+                        title: 'Conseils Stratégiques d\'Achat',
+                        icon: 'Shield',
+                        items: [
+                            { title: 'La Saisonnalité Compte', text: 'Achetez en mars-avril (fin de saison) pour les meilleurs prix. Revendez en octobre-novembre pour le maximum. La différence peut être de $2 000–$4 000 sur le même van.' },
+                            { title: 'Toujours Faire une Inspection Mécanique', text: 'Pour $150, un mécanicien trouvera des problèmes valant des milliers. Ne sautez jamais cette étape, surtout sur les moteurs diesel.' },
+                            { title: 'Vérifiez sur CarJam', text: 'Entrez la plaque sur CarJam.co.nz pour vérifier les dettes, le statut volé, le retour d\'odomètre et l\'historique d\'import. C\'est gratuit pour les checks de base.' },
+                        ]
+                    }
+                ],
+                warnings: [
+                    'Fuyez tout vendeur qui refuse une inspection mécanique',
+                    'Les imports japonais avec moins de 100 000 km au compteur peuvent être suspects — la fraude à l\'odomètre existe',
+                    'Un bel aménagement intérieur ne veut rien dire si le moteur est en train de mourir',
+                    'Prévoyez $1 000–$2 000 en plus du prix d\'achat pour les réparations WOF, l\'immatriculation et l\'assurance',
+                ],
+                cta: {
+                    title: 'Trouvez Votre Van Idéal',
+                    text: 'Parcourez des campervans vérifiés avec un historique transparent sur Kiwi Van Market.',
+                    buttonText: 'Voir Tous les Vans',
+                    buttonLink: '/',
+                }
+            }
         }
     },
     es: {
@@ -1175,6 +1293,65 @@ export const GUIDES = {
                     buttonLink: '/',
                 }
             }
+        },
+        'top-10-best-vans-nz': {
+            title: 'Top 10 Mejores Campervans para Comprar en Nueva Zelanda (2025)',
+            description: 'El ranking definitivo de las 10 mejores campervans para mochileros en Nueva Zelanda. Precios, fiabilidad, valor de reventa y consejos de experto.',
+            heroImage: 'https://images.unsplash.com/photo-1533591380348-14193f1de18f?w=1200',
+            content: {
+                intro: `Elegir la campervan correcta es la decisión más importante de tu viaje por Nueva Zelanda. La furgoneta equivocada significa averías en carreteras remotas, WOF fallidos y una venta estresante al final. Este ranking se basa en datos reales del mercado, opiniones de mecánicos y miles de experiencias de mochileros.`,
+                sections: [
+                    {
+                        title: 'Las Leyendas (Tier 1)',
+                        icon: 'Star',
+                        items: [
+                            { title: '1. Toyota Hiace (1990–2005)', text: 'La reina indiscutible. El 70% de las flotas de alquiler en NZ usan la Hiace por algo: es casi indestructible. Las piezas se encuentran en cualquier pueblo. El diésel 2.8L (3L) es el equilibrio perfecto entre potencia y economía. Espera pagar NZ$8.000–$18.000 según la conversión.', expertTip: 'El motor 1KZ-TE es legendario pero cuidado con la junta de culata en unidades de alto kilometraje. El 1TR gasolina es infalible pero consume más.' },
+                            { title: '2. Toyota HiAce (2005–2018 "Serie 200")', text: 'La evolución moderna. Más cómoda, mejor consumo y conducción más suave. Más difícil de encontrar como campervan pero merece el extra. Presupuesto NZ$15.000–$30.000.', expertTip: 'El diésel 2KD-FTV es uno de los motores más fiables jamás construidos. Si encuentras uno con menos de 250.000 km, cómpralo.' },
+                            { title: '3. Nissan Caravan (E25)', text: 'La reina del presupuesto. Ofrece casi el mismo espacio que una Hiace pero normalmente $2.000–$4.000 más barata. El diésel ZD30 es sólido. Ideal para parejas con presupuesto ajustado. NZ$6.000–$14.000.', expertTip: 'Revisa el ruido de cadena de distribución en arranque frío. Una cadena ruidosa cuesta $1.500 pero no es mortal.' },
+                        ]
+                    },
+                    {
+                        title: 'Las Elecciones Inteligentes (Tier 2)',
+                        icon: 'CheckCircle',
+                        items: [
+                            { title: '4. Nissan Elgrand (E51)', text: 'Conocida como el "Rey de las Vans". Confort superior, V6 potente e interior de lujo. Popular para conversiones premium. No la más eficiente pero la experiencia de conducción es incomparable. NZ$8.000–$16.000.' },
+                            { title: '5. Mitsubishi Delica (L400/D5)', text: 'La única van 4x4 real de esta lista. Si quieres explorar caminos de grava, estaciones de esquí y pistas DOC remotas, la Delica es tu única opción. Compacta pero increíblemente capaz. NZ$7.000–$15.000.', expertTip: 'La L400 con el diésel 2.8L es una máquina de trabajo. La D5 más nueva es más refinada pero más rara y cara.' },
+                            { title: '6. Toyota Estima (Previa)', text: 'Una joya oculta para solitarios o parejas. El motor central ofrece un suelo plano para dormir. Sorprendentemente espaciosa. Muy eficiente. La mejor "stealth camper". NZ$4.000–$10.000.' },
+                            { title: '7. Mazda Bongo Friendee', text: 'Compacta, peculiar y adorable. Los modelos con techo elevable permiten estar de pie. Gran eficiencia y fácil de aparcar. NZ$5.000–$12.000.' },
+                        ]
+                    },
+                    {
+                        title: 'Los Guerreros del Presupuesto (Tier 3)',
+                        icon: 'DollarSign',
+                        items: [
+                            { title: '8. Ford Transit (2000–2012)', text: 'Fiabilidad europea en un cuerpo grande. Mucho espacio interior para conversiones altas. Más barata de comprar pero las piezas pueden ser algo más difíciles de encontrar que las japonesas. NZ$5.000–$12.000.' },
+                            { title: '9. Toyota TownAce / LiteAce', text: 'La "mini campervan" perfecta para mochileros solitarios. Pequeña, económica y sorprendentemente cómoda para una persona. Fácil de conducir y aparcar. NZ$3.000–$8.000.' },
+                            { title: '10. Mitsubishi L300 Express', text: 'Cruda, básica y barata. Sin lujos pero hace su trabajo para viajes de 2-3 meses. No esperes lujo pero tampoco te arruinará. NZ$2.500–$6.000.', expertTip: 'Perfecta para la estrategia "comprar barato, vender barato". Ideal si solo vas a estar unos meses.' },
+                        ]
+                    },
+                    {
+                        title: 'Consejos de Compra',
+                        icon: 'Shield',
+                        items: [
+                            { title: 'La Estacionalidad Importa', text: 'Compra en marzo-abril (fin de temporada) para los mejores precios. Vende en octubre-noviembre para máximo retorno. La diferencia puede ser de $2.000–$4.000 por la misma van.' },
+                            { title: 'Siempre Haz una Inspección Mecánica', text: 'Por $150 un mecánico encontrará problemas que valen miles. Nunca te saltes este paso, especialmente en motores diésel.' },
+                            { title: 'Revisa CarJam', text: 'Introduce la matrícula en CarJam.co.nz para verificar deudas, estado robado, manipulación de odómetro e historial de importación. Es gratis para verificaciones básicas.' },
+                        ]
+                    }
+                ],
+                warnings: [
+                    'Evita cualquier van donde el vendedor rechace una inspección mecánica',
+                    'Los imports japoneses con menos de 100.000 km pueden ser sospechosos — el fraude de odómetro existe',
+                    'Un interior bonito no significa nada si el motor se está muriendo',
+                    'Presupuesta $1.000–$2.000 extra para reparaciones de WOF, registro y seguro',
+                ],
+                cta: {
+                    title: 'Encuentra tu Van Perfecta',
+                    text: 'Explora campervans verificadas con historial transparente en Kiwi Van Market.',
+                    buttonText: 'Ver Todas las Vans',
+                    buttonLink: '/',
+                }
+            }
         }
     }
 };
@@ -1190,4 +1367,5 @@ export const IconMap = {
     Shield,
     Car,
     DollarSign,
+    Star,
 };
