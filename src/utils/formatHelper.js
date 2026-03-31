@@ -4,15 +4,13 @@
  */
 
 /**
- * Formats mileage with the 'XXX' suffix requested by the user.
- * Example: 254800 -> 254 XXX km
+ * Formats mileage to display the exact value.
+ * Example: 254800 -> 254,800
  */
 export const formatMileage = (mileage) => {
-  if (!mileage && mileage !== 0) return '0 XXX';
+  if (!mileage && mileage !== 0) return '0';
   
-  // Only the thousands are shown, replaced the rest by 'XXX'
-  const thousands = Math.floor(mileage / 1000);
-  return `${thousands.toLocaleString()} XXX`;
+  return mileage.toLocaleString();
 };
 
 /**
