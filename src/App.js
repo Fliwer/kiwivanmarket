@@ -11,6 +11,7 @@ import { useFavorites } from './hooks/useFavorites';
 import { useHideLoader } from './hooks/useHideLoader';
 import { useAutoTranslate } from './hooks/useAutoTranslate';
 import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
+import { formatWhatsAppNumber } from './utils/formatHelper';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
 import NotificationBell from './components/NotificationBell';
 import SeoHead from './components/SeoHead';
@@ -316,7 +317,7 @@ function MainApp({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                   {seller.phone && (
                     <a 
-                      href={`https://wa.me/${seller.phone.replace(/\D/g,'')}`}
+                      href={`https://wa.me/${formatWhatsAppNumber(seller.phone)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"

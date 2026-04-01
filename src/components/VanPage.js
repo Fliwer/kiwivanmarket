@@ -9,7 +9,7 @@ import { useFavorites } from '../hooks/useFavorites';
 import { useHideLoader } from '../hooks/useHideLoader';
 import { safeDate } from '../utils/dateHelper';
 import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
-import { formatMileage } from '../utils/formatHelper';
+import { formatMileage, formatWhatsAppNumber } from '../utils/formatHelper';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
   Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen, User, LogOut,
@@ -1074,7 +1074,7 @@ ${shareUrl}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                   {seller.phone && (
                     <a 
-                      href={`https://wa.me/${seller.phone.replace(/\D/g,'')}`}
+                      href={`https://wa.me/${formatWhatsAppNumber(seller.phone)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
@@ -1411,7 +1411,7 @@ ${shareUrl}
               <div className="flex gap-2">
                 {seller.phone && (
                   <a 
-                    href={`https://wa.me/${seller.phone.replace(/\D/g,'')}`}
+                    href={`https://wa.me/${formatWhatsAppNumber(seller.phone)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
