@@ -1073,26 +1073,35 @@ ${shareUrl}
                 {/* Premium Contact Actions */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                   {seller.phone && (
-                    <a 
-                      href={`https://wa.me/${formatWhatsAppNumber(seller.phone)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button 
+                      onClick={() => {
+                        if (!currentUser) {
+                          setShowAuthModal(true);
+                        } else {
+                          window.open(`https://wa.me/${formatWhatsAppNumber(seller.phone)}`, '_blank');
+                        }
+                      }}
                       className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
                     >
                       <Phone size={20} />
-                      WhatsApp Seller
-                    </a>
+                      {currentUser ? 'WhatsApp Seller' : 'Show WhatsApp'}
+                    </button>
                   )}
                   {seller.facebook && (
-                    <a 
-                      href={seller.facebook.startsWith('http') ? seller.facebook : `https://facebook.com/${seller.facebook}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button 
+                      onClick={() => {
+                        if (!currentUser) {
+                          setShowAuthModal(true);
+                        } else {
+                          const fbUrl = seller.facebook.startsWith('http') ? seller.facebook : `https://facebook.com/${seller.facebook}`;
+                          window.open(fbUrl, '_blank');
+                        }
+                      }}
                       className="flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166fe5] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-500/10 active:scale-95"
                     >
                       <Facebook size={20} />
-                      Facebook Profile
-                    </a>
+                      {currentUser ? 'Facebook Profile' : 'Show Facebook'}
+                    </button>
                   )}
                   {/* Additional sharing option for buyers to boost virality */}
                   {!isOwner && (
@@ -1410,15 +1419,19 @@ ${shareUrl}
 
               <div className="flex gap-2">
                 {seller.phone && (
-                  <a 
-                    href={`https://wa.me/${formatWhatsAppNumber(seller.phone)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button 
+                    onClick={() => {
+                      if (!currentUser) {
+                        setShowAuthModal(true);
+                      } else {
+                        window.open(`https://wa.me/${formatWhatsAppNumber(seller.phone)}`, '_blank');
+                      }
+                    }}
                     className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-                    title="WhatsApp"
+                    title={currentUser ? "WhatsApp" : "Login to see WhatsApp"}
                   >
                     <Phone size={24} fill="currentColor" />
-                  </a>
+                  </button>
                 )}
                 
                 <button

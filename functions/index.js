@@ -657,6 +657,71 @@ exports.sitemap = onRequest({
 });
 
 // ============================================
+// 🚗 CARJAM API - Vehicle details autofill
+// ============================================
+
+const carjamApiKey = defineSecret('CARJAM_API_KEY');
+
+exports.fetchCarJamData = onCall(
+  {
+    secrets: [carjamApiKey],
+    timeoutSeconds: 15,
+  },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'You must be logged in to fetch vehicle data.');
+    }
+
+    const { plate } = request.data;
+    if (!plate || plate.trim() === '') {
+      throw new HttpsError('invalid-argument', 'License plate is required.');
+    }
+
+    try {
+      let apiKey;
+      try {
+        apiKey = carjamApiKey.value();
+      } catch (e) {
+        // Secret not available in local or not set
+        apiKey = null;
+      }
+      
+      // If no API key is configured, return mock data to keep the UI working
+      if (!apiKey) {
+         console.warn("CARJAM_API_KEY is not set. Returning mock data.");
+         return {
+           year: 2008,
+           make: "TOYOTA",
+           model: "HIACE",
+           mocked: true
+         };
+      }
+
+      // Real fetch logic
+      const response = await fetch(`https://carjam.co.nz/api/car/?plate=${encodeURIComponent(plate)}&key=${apiKey}&format=json`);
+      
+      if (!response.ok) {
+        console.error("Carjam error:", response.status);
+        throw new HttpsError('internal', 'CarJam API returned an error.');
+      }
+      
+      const data = await response.json();
+      
+      return {
+        year: data.year_of_manufacture || data.year,
+        make: data.make,
+        model: data.model,
+        mocked: false
+      };
+      
+    } catch (error) {
+      console.error('❌ CarJam Fetch error:', error);
+      throw new HttpsError('internal', 'Failed to fetch vehicle data.');
+    }
+  }
+);
+
+// ============================================
 // ✨ AI LISTING ASSISTANT - Generate Description
 // ============================================
 
