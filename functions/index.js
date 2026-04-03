@@ -39,6 +39,10 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // ============================================
 // 📧 EMAIL NOTIFICATION - New Conversation
 // ============================================
@@ -505,6 +509,175 @@ exports.deleteUser = onCall(async (request) => {
 });
 
 // ============================================
+// 📣 EMAIL CAMPAIGN - CarJam Feature Broadcast
+// ============================================
+// Admin-only callable function to email users about
+// the new CarJam plate feature for higher buyer trust.
+//
+// Example payload:
+// {
+//   "dryRun": true,
+//   "limit": 80,
+//   "onlySellers": true
+// }
+exports.sendCarJamCampaign = onCall(
+  {
+    secrets: [resendApiKey],
+    timeoutSeconds: 540,
+  },
+  async (request) => {
+    if (!request.auth || request.auth.token.admin !== true) {
+      throw new HttpsError('permission-denied', 'Only admins can send campaigns.');
+    }
+
+    const dryRun = request.data?.dryRun !== false; // default true for safety
+    const onlySellers = request.data?.onlySellers !== false; // default true
+    const limit = Math.min(Math.max(parseInt(request.data?.limit || 80, 10), 1), 200);
+
+    const usersSnap = await db.collection('users').get();
+    if (usersSnap.empty) {
+      return { success: true, dryRun, totalCandidates: 0, message: 'No users found.' };
+    }
+
+    // Build seller set from listed vans so campaign can focus on relevant users.
+    const sellerIds = new Set();
+    const sellerEmailFromVans = new Map();
+    const vansBySeller = new Map();
+
+    const vansSnap = await db.collection('vans')
+      .where('status', 'in', ['active', 'sold'])
+      .get();
+
+    vansSnap.forEach((doc) => {
+      const van = doc.data();
+      const uid = van?.seller?.uid;
+      const email = (van?.seller?.email || '').trim().toLowerCase();
+      if (!uid) return;
+      sellerIds.add(uid);
+      if (email) sellerEmailFromVans.set(uid, email);
+      vansBySeller.set(uid, (vansBySeller.get(uid) || 0) + 1);
+    });
+
+    const recipients = [];
+    const seenEmails = new Set();
+
+    usersSnap.forEach((doc) => {
+      const user = doc.data() || {};
+      const uid = doc.id;
+
+      if (onlySellers && !sellerIds.has(uid)) return;
+      if (user.banned === true) return;
+
+      const email = (user.email || sellerEmailFromVans.get(uid) || '').trim().toLowerCase();
+      if (!email || !email.includes('@')) return;
+      if (seenEmails.has(email)) return;
+
+      seenEmails.add(email);
+      recipients.push({
+        uid,
+        email,
+        name: user.displayName || user.name || 'there',
+        vansCount: vansBySeller.get(uid) || 0,
+      });
+    });
+
+    recipients.sort((a, b) => b.vansCount - a.vansCount);
+
+    if (dryRun) {
+      return {
+        success: true,
+        dryRun: true,
+        totalUsers: usersSnap.size,
+        totalCandidates: recipients.length,
+        wouldSend: Math.min(limit, recipients.length),
+        onlySellers,
+        sample: recipients.slice(0, 10),
+      };
+    }
+
+    const apiKey = resendApiKey.value();
+    if (!apiKey) {
+      throw new HttpsError('failed-precondition', 'RESEND_API_KEY is not configured.');
+    }
+
+    const resend = new Resend(apiKey);
+    const toSend = recipients.slice(0, limit);
+    const sent = [];
+    const failed = [];
+
+    for (const recipient of toSend) {
+      const safeName = escapeHtml(recipient.name);
+      const { data, error } = await resend.emails.send({
+        from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+        to: recipient.email,
+        subject: 'Nouvelle fonctionnalite CarJam / New CarJam trust feature',
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 620px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); padding: 28px; border-radius: 16px 16px 0 0; text-align: center;">
+              <h1 style="color: #fff; margin: 0; font-size: 24px;">Nouvelle fonctionnalite CarJam</h1>
+            </div>
+            <div style="background: #f8fafc; padding: 28px; border-radius: 0 0 16px 16px;">
+              <p style="font-size: 16px; color: #1f2937;">Hi ${safeName},</p>
+              <p style="font-size: 15px; color: #374151; line-height: 1.6;">
+                <strong>FR :</strong> Nouvelle fonctionnalite sur Kiwi Van Market : les acheteurs peuvent maintenant acceder directement a une verification <strong>CarJam</strong> depuis votre annonce.
+              </p>
+              <p style="font-size: 15px; color: #374151; line-height: 1.6;">
+                Pour l'activer, ajoutez simplement votre <strong>plaque d'immatriculation</strong> dans l'edition de votre annonce.
+                C'est un vrai signal de confiance qui augmente generalement les messages d'acheteurs serieux.
+              </p>
+              <a href="https://kiwivanmarket.com/my-listings" style="display:inline-block; margin: 18px 0; background: #0ea5e9; color: #fff; text-decoration: none; font-weight: 700; padding: 12px 22px; border-radius: 10px;">
+                Mettre a jour mon annonce
+              </a>
+              <hr style="border:none; border-top:1px solid #e5e7eb; margin:22px 0;" />
+              <p style="font-size: 15px; color: #374151; line-height: 1.6;">
+                <strong>EN:</strong> New on Kiwi Van Market: buyers can now access a <strong>CarJam safety check</strong> directly from your listing.
+              </p>
+              <p style="font-size: 15px; color: #374151; line-height: 1.6;">
+                To activate it, simply add your <strong>license plate</strong> in your listing edit form.
+                This boosts trust and usually increases serious buyer messages.
+              </p>
+              <a href="https://kiwivanmarket.com/my-listings" style="display:inline-block; margin: 8px 0 18px; background: #0ea5e9; color: #fff; text-decoration: none; font-weight: 700; padding: 12px 22px; border-radius: 10px;">
+                Update my listing now
+              </a>
+              <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">
+                Besoin d'aide ? Repondez simplement a cet email et on vous aide.
+              </p>
+              <p style="font-size: 14px; color: #111827; margin-top: 20px;">
+                Kiwi Van Market team
+              </p>
+            </div>
+            <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 16px;">
+              You received this email because you have an account on Kiwi Van Market.
+            </p>
+          </div>
+        `,
+      });
+
+      if (error) {
+        failed.push({ email: recipient.email, error: error.message || 'Unknown error' });
+      } else {
+        sent.push({ email: recipient.email, emailId: data?.id || null });
+      }
+
+      // Keep a small gap to stay gentle with provider limits
+      await sleep(250);
+    }
+
+    return {
+      success: true,
+      dryRun: false,
+      requestedLimit: limit,
+      totalCandidates: recipients.length,
+      sentCount: sent.length,
+      failedCount: failed.length,
+      sent,
+      failed: failed.slice(0, 20),
+      hasMoreFailures: failed.length > 20,
+    };
+  }
+);
+
+// ============================================
 // 🗺️ DYNAMIC SITEMAP GENERATOR for SEO
 // ============================================
 
@@ -686,8 +859,8 @@ exports.fetchCarJamData = onCall(
         apiKey = null;
       }
       
-      // If no API key is configured, return mock data to keep the UI working
-      if (!apiKey) {
+      // If no usable API key is configured, return mock data to keep the UI working
+      if (!apiKey || apiKey === 'not-set' || apiKey === 'changeme') {
          console.warn("CARJAM_API_KEY is not set. Returning mock data.");
          return {
            year: 2008,

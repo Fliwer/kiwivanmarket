@@ -41,6 +41,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
   const [selectedVan, setSelectedVan] = useState(null);
   const [stats, setStats] = useState({});
   const [refreshing, setRefreshing] = useState(false);
+  const [sendingCarJamCampaign, setSendingCarJamCampaign] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmConfig, setConfirmConfig] = useState(null);
   const toast = useToast();
@@ -198,6 +199,51 @@ export default function AdminDashboard({ onClose, onEditVan }) {
     localStorage.removeItem('kiwiVanMarket_vans');
     localStorage.removeItem('kiwiVanMarket_timestamp');
     setRefreshing(false);
+  };
+
+  const handleSendCarJamCampaign = async () => {
+    if (sendingCarJamCampaign) return;
+
+    const dryRunConfirm = window.confirm(
+      'Lancer un dry-run de la campagne CarJam pour voir combien d’emails seraient envoyés ?'
+    );
+    if (!dryRunConfirm) return;
+
+    setSendingCarJamCampaign(true);
+    try {
+      const sendCampaign = httpsCallable(functions, 'sendCarJamCampaign');
+      const dryRunResult = await sendCampaign({
+        dryRun: true,
+        onlySellers: true,
+        limit: 80,
+      });
+
+      const summary = dryRunResult?.data || {};
+      const count = summary.wouldSend || 0;
+
+      const finalConfirm = window.confirm(
+        `Dry-run terminé: ${count} email(s) seront envoyés.\n\nEnvoyer maintenant ?`
+      );
+      if (!finalConfirm) {
+        toast.info('Campagne annulée après dry-run.');
+        return;
+      }
+
+      const realRunResult = await sendCampaign({
+        dryRun: false,
+        onlySellers: true,
+        limit: 80,
+      });
+      const sentCount = realRunResult?.data?.sentCount || 0;
+      const failedCount = realRunResult?.data?.failedCount || 0;
+
+      toast.success(`Campagne envoyée: ${sentCount} email(s), ${failedCount} échec(s).`);
+    } catch (error) {
+      console.error('Error sending CarJam campaign:', error);
+      toast.error(error?.message || 'Échec de la campagne email CarJam.');
+    } finally {
+      setSendingCarJamCampaign(false);
+    }
   };
 
   // 🚐 Actions sur les vans
@@ -410,7 +456,16 @@ export default function AdminDashboard({ onClose, onEditVan }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <button
+            onClick={handleSendCarJamCampaign}
+            disabled={sendingCarJamCampaign}
+            className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl transition text-sm font-medium disabled:opacity-60"
+            title="Envoyer campagne email CarJam aux vendeurs"
+          >
+            <Mail className="w-4 h-4" />
+            <span>{sendingCarJamCampaign ? 'Sending...' : 'Email CarJam'}</span>
+          </button>
           <button
             onClick={handleExportCSV}
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-xl transition text-sm font-medium"
