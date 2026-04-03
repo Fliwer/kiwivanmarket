@@ -71,6 +71,20 @@ function WebSiteSchema() {
     return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
 }
 
+function WebPageSchema({ name, description, canonicalUrl }) {
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "@id": `${canonicalUrl}#webpage`,
+        "url": canonicalUrl,
+        "name": name,
+        "description": description,
+        "isPartOf": { "@id": `${ORIGIN}/#website` },
+        "inLanguage": ["en", "fr", "es"]
+    };
+    return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
+}
+
 function FAQSchema({ faqs }) {
     if (!faqs || faqs.length === 0) return null;
     const schema = {
@@ -116,6 +130,8 @@ export default function SeoHead({
     title,
     description,
     image,
+    keywords,
+    canonicalUrl,
     type = 'website',
     noindex = false,
     faqs,
@@ -135,7 +151,7 @@ export default function SeoHead({
     const urlLang = searchParams.get('lang');
     const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
     const canonicalLang = (urlLang && ['fr', 'es'].includes(urlLang)) ? urlLang : null;
-    const canonicalUrl = canonicalLang
+    const computedCanonicalUrl = canonicalLang
         ? `${ORIGIN}${normalizedPath}?lang=${canonicalLang}`
         : `${ORIGIN}${normalizedPath}`;
 
@@ -145,6 +161,10 @@ export default function SeoHead({
         : `${t('header.subtitle')} | Kiwi Van Market`;
     const metaDesc = description || t('hero.subtitle');
     const ogImage = image || `${ORIGIN}/og-default.jpg`;
+    const mergedKeywords = keywords && Array.isArray(keywords)
+        ? keywords.join(', ')
+        : (keywords || "buy campervan New Zealand, campervans for sale NZ, backpacker van NZ, acheter un van nouvelle zelande, campervan a vendre NZ, motorhome for sale New Zealand, Toyota Hiace for sale NZ, self contained van for sale NZ, buy van Auckland");
+    const finalCanonicalUrl = canonicalUrl || computedCanonicalUrl;
 
     return (
         <>
@@ -153,7 +173,7 @@ export default function SeoHead({
                 <title>{fullTitle}</title>
                 <meta name="description" content={metaDesc} />
                 <meta name="author" content="Kiwi Van Market" />
-                <meta name="keywords" content="buy campervan New Zealand, campervans for sale NZ, backpacker van NZ, acheter un van nouvelle zelande, campervan a vendre NZ, motorhome for sale New Zealand, Toyota Hiace for sale NZ, self contained van for sale NZ, buy van Auckland" />
+                <meta name="keywords" content={mergedKeywords} />
 
                 {/* ── Indexing / canonical ────────────────────────────── */}
                 {noindex ? (
@@ -161,7 +181,7 @@ export default function SeoHead({
                 ) : (
                     <>
                         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-                        <link rel="canonical" href={canonicalUrl} />
+                        <link rel="canonical" href={finalCanonicalUrl} />
                     </>
                 )}
 
@@ -182,7 +202,7 @@ export default function SeoHead({
 
                 {/* ── Open Graph ──────────────────────────────────────── */}
                 <meta property="og:type" content={type} />
-                <meta property="og:url" content={canonicalUrl} />
+                <meta property="og:url" content={finalCanonicalUrl} />
                 <meta property="og:title" content={fullTitle} />
                 <meta property="og:description" content={metaDesc} />
                 <meta property="og:locale" content={currentLang === 'fr' ? 'fr_FR' : 'en_NZ'} />
@@ -190,19 +210,22 @@ export default function SeoHead({
                 <meta property="og:image" content={ogImage} />
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
+                <meta property="og:image:alt" content={`${fullTitle} - Kiwi Van Market`} />
 
                 {/* ── Twitter / X ─────────────────────────────────────── */}
                 <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:url" content={canonicalUrl} />
+                <meta name="twitter:url" content={finalCanonicalUrl} />
                 <meta name="twitter:title" content={fullTitle} />
                 <meta name="twitter:description" content={metaDesc} />
                 <meta name="twitter:image" content={ogImage} />
+                <meta name="twitter:image:alt" content={`${fullTitle} - Kiwi Van Market`} />
             </Helmet>
 
             {/* ── Schema.org structured data ───────────────────────── */}
             {isHomepage && <OrganizationSchema />}
             {isHomepage && <AutoDealerSchema />}
             {isHomepage && <WebSiteSchema />}
+            {!noindex && <WebPageSchema name={fullTitle} description={metaDesc} canonicalUrl={finalCanonicalUrl} />}
             {faqs && faqs.length > 0 && <FAQSchema faqs={faqs} />}
             {breadcrumbs && breadcrumbs.length > 0 && <BreadcrumbSchema breadcrumbs={breadcrumbs} />}
         </>

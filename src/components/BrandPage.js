@@ -104,6 +104,16 @@ export default function BrandPage() {
 
   const brandConfig = BRANDS_CONFIG[brand];
   const url = `https://kiwivanmarket.com/brand/${brand}`;
+  const brandFaqs = brandConfig ? [
+    {
+      q: `Is ${brandConfig.name} a good campervan brand in NZ?`,
+      a: `${brandConfig.name} is popular with backpackers for reliability and resale potential. Always verify WOF/REGO and conversion quality before purchase.`,
+    },
+    {
+      q: `What should I check before buying a used ${brandConfig.name}?`,
+      a: `Inspect rust points, engine condition, service history, and electrical/water setup. Prioritize listings with clear trust signals and full photos.`,
+    },
+  ] : [];
 
   useEffect(() => {
     const fetchVans = async () => {
@@ -164,6 +174,12 @@ export default function BrandPage() {
         description={brandConfig?.description}
         keywords={brandConfig?.keywords}
         canonicalUrl={url}
+        faqs={brandFaqs}
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Brands', path: '/guides' },
+          { name: brandConfig?.name || 'Brand', path: `/brand/${brand}` },
+        ]}
       />
 
       {brandConfig && <BrandSchema brand={brandConfig} vans={vans} url={url} />}
@@ -215,6 +231,24 @@ export default function BrandPage() {
                 ))}
               </div>
             )}
+
+            <div className="mt-10 bg-white rounded-2xl border border-slate-100 p-6">
+              <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">Smart internal links</h3>
+              <div className="flex flex-wrap gap-2">
+                <Link to={`/faq/brand/${brand}`} className="px-4 py-2 rounded-xl bg-blue-50 text-blue-700 font-bold text-sm">
+                  {brandConfig?.name} FAQ
+                </Link>
+                <Link to="/guide/buying-campervan-nz" className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm">
+                  Buyer guide
+                </Link>
+                <Link to="/search/buy-campervan-in-auckland-under-15000" className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm">
+                  Budget vans in Auckland
+                </Link>
+                <Link to="/search/self-contained-van-christchurch" className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm">
+                  Self-contained in Christchurch
+                </Link>
+              </div>
+            </div>
 
             {/* Premium Guide Section */}
             <div className="mt-20 bg-emerald-900 rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden shadow-2xl">

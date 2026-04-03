@@ -456,6 +456,17 @@ ${shareUrl}
     return Math.floor((new Date() - created) / (1000 * 60 * 60 * 24));
   };
 
+  const inferBrandSlug = (title = '') => {
+    const t = title.toLowerCase();
+    if (t.includes('toyota') || t.includes('hiace')) return 'toyota-hiace';
+    if (t.includes('nissan') || t.includes('caravan')) return 'nissan-caravan';
+    if (t.includes('mazda') || t.includes('bongo')) return 'mazda-bongo';
+    if (t.includes('mitsubishi') || t.includes('delica')) return 'mitsubishi-delica';
+    if (t.includes('ford') || t.includes('transit')) return 'ford-transit';
+    if (t.includes('mercedes') || t.includes('sprinter')) return 'mercedes-sprinter';
+    return null;
+  };
+
   if (loading) return <VanPageSkeleton />;
 
   if (error || !van) {
@@ -481,6 +492,11 @@ ${shareUrl}
   const seller = van.seller || { name: 'Unknown' };
   const hasRating = seller.rating !== undefined && seller.rating !== null && seller.reviewCount > 0;
   const isOwner = currentUser && (currentUser.uid === seller.uid || currentUser.uid === van.userId);
+  const locationSlug = (van.location || '').toLowerCase().trim().replace(/\s+/g, '-');
+  const inferredBrandSlug = inferBrandSlug(van.title);
+  const longTailSlug = locationSlug === 'auckland'
+    ? 'buy-campervan-in-auckland-under-15000'
+    : (locationSlug === 'christchurch' ? 'self-contained-van-christchurch' : null);
 
   return (
     <>
@@ -1189,6 +1205,40 @@ ${shareUrl}
               <p className="text-slate-400 text-sm font-medium mt-1">{t('van_page.discover')}</p>
             </div>
             <div className="p-8">
+              <div className="mb-8 bg-slate-50 rounded-2xl border border-slate-100 p-5">
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Related SEO paths</h3>
+                <div className="flex flex-wrap gap-2">
+                  {locationSlug && (
+                    <>
+                      <Link to={`/location/${locationSlug}`} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-emerald-200 hover:text-emerald-700 transition-all">
+                        More vans in {van.location}
+                      </Link>
+                      <Link to={`/faq/location/${locationSlug}`} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-blue-200 hover:text-blue-700 transition-all">
+                        {van.location} FAQ
+                      </Link>
+                    </>
+                  )}
+                  {inferredBrandSlug && (
+                    <>
+                      <Link to={`/brand/${inferredBrandSlug}`} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-emerald-200 hover:text-emerald-700 transition-all">
+                        Similar brand listings
+                      </Link>
+                      <Link to={`/faq/brand/${inferredBrandSlug}`} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-blue-200 hover:text-blue-700 transition-all">
+                        Brand FAQ
+                      </Link>
+                    </>
+                  )}
+                  {longTailSlug && (
+                    <Link to={`/search/${longTailSlug}`} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-emerald-200 hover:text-emerald-700 transition-all">
+                      High-intent local page
+                    </Link>
+                  )}
+                  <Link to="/guide/buying-campervan-nz" className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-emerald-200 hover:text-emerald-700 transition-all">
+                    Buyer guide
+                  </Link>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                 {/* By Brand */}
                 <div>

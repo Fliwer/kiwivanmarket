@@ -83,6 +83,15 @@ const LOCATIONS_CONFIG = {
     keywords: ['Campervans Rotorua', 'Buy van Rotorua', 'Rotorua campervan sales'],
     highlights: ['Geothermal wonders', 'Maori culture', 'Mountain biking'],
   },
+  'nelson': {
+    name: 'Nelson',
+    region: 'South Island',
+    title: 'Campervans for Sale in Nelson, New Zealand',
+    description: 'Find campervans for sale in Nelson, gateway to Abel Tasman and the top of the South Island. Compare reliable vans with trust-first listing details.',
+    searchTerms: ['nelson'],
+    keywords: ['Campervans Nelson', 'Buy van Nelson', 'Nelson campervan sales NZ'],
+    highlights: ['Abel Tasman gateway', 'Sunny climate', 'Top of South Island'],
+  },
 };
 
 // Schema.org pour la page de location
@@ -139,6 +148,16 @@ export default function LocationPage() {
 
   const locationConfig = LOCATIONS_CONFIG[location];
   const url = `https://kiwivanmarket.com/location/${location}`;
+  const locationFaqs = locationConfig ? [
+    {
+      q: `How do I buy a campervan safely in ${locationConfig.name}?`,
+      a: `Check WOF, REGO, self-contained status, and ask for service history. Meet the seller in person and test drive before payment.`,
+    },
+    {
+      q: `What budget should I expect in ${locationConfig.name}?`,
+      a: `Prices vary by season, condition, and equipment. Compare multiple listings and prioritize verified trust signals over low price alone.`,
+    },
+  ] : [];
 
   useEffect(() => {
     const fetchVans = async () => {
@@ -203,6 +222,12 @@ export default function LocationPage() {
         description={locationConfig?.description}
         keywords={locationConfig?.keywords}
         canonicalUrl={url}
+        faqs={locationFaqs}
+        breadcrumbs={[
+          { name: 'Home', path: '/' },
+          { name: 'Locations', path: '/guides' },
+          { name: locationConfig?.name || 'Location', path: `/location/${location}` },
+        ]}
       />
 
       {locationConfig && <LocationSchema location={locationConfig} vans={vans} url={url} />}
@@ -269,6 +294,24 @@ export default function LocationPage() {
                 ))}
               </div>
             )}
+
+            <div className="mt-10 bg-white rounded-2xl border border-slate-100 p-6">
+              <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">Smart internal links</h3>
+              <div className="flex flex-wrap gap-2">
+                <Link to={`/faq/location/${location}`} className="px-4 py-2 rounded-xl bg-blue-50 text-blue-700 font-bold text-sm">
+                  {locationConfig?.name} FAQ
+                </Link>
+                <Link to="/guide/buying-campervan-nz" className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm">
+                  Buyer guide
+                </Link>
+                <Link to="/search/buy-campervan-in-auckland-under-15000" className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm">
+                  Budget vans in Auckland
+                </Link>
+                <Link to="/search/self-contained-van-christchurch" className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm">
+                  Self-contained in Christchurch
+                </Link>
+              </div>
+            </div>
 
             {/* Premium Location Footer */}
             <div className="mt-20 bg-slate-900 rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden shadow-2xl">

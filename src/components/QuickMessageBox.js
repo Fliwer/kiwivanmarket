@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Send, Check, MessageCircle, AlertCircle, Mail, RefreshCw, Zap } from 'lucide-react';
-import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { Send, Check, MessageCircle, AlertCircle, Zap } from 'lucide-react';
+import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp, increment } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useRateLimit } from '../hooks/useRateLimit';
@@ -14,18 +14,13 @@ import { useTranslation } from 'react-i18next';
 // ============================================
 
 export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFullChat, onAuthRequired }) {
-  const { currentUser, resendVerificationEmail, refreshEmailVerification } = useAuth();
+  const { currentUser } = useAuth();
   const { t, i18n } = useTranslation();
   const { checkAndRecord, getRemainingActions } = useRateLimit(currentUser?.uid);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
-
-  // ✅ États pour la vérification email
-  const [resendingEmail, setResendingEmail] = useState(false);
-  const [emailResent, setEmailResent] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
 
   // ✅ Récupérer le nombre de messages restants
   const messageLimit = getRemainingActions('sendMessage');
@@ -52,40 +47,6 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     };
   };
 
-  // ✅ Renvoyer l'email de vérification
-  const handleResendEmail = async () => {
-    setResendingEmail(true);
-    setError(null);
-    try {
-      await resendVerificationEmail();
-      setEmailResent(true);
-      setTimeout(() => setEmailResent(false), 5000);
-    } catch (err) {
-      setError(err.message || 'Failed to send verification email');
-    } finally {
-      setResendingEmail(false);
-    }
-  };
-
-  // ✅ Rafraîchir le statut de vérification
-  const handleRefreshVerification = async () => {
-    setRefreshing(true);
-    setError(null);
-    try {
-      const isVerified = await refreshEmailVerification();
-      if (isVerified) {
-        // Force le re-render en rechargeant la page
-        window.location.reload();
-      } else {
-        setError('Email not verified yet. Please check your inbox.');
-      }
-    } catch (err) {
-      setError('Failed to check verification status');
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
   const sendMessage = async (text) => {
     // ✅ Validation améliorée avec messages d'erreur explicites
     if (!text.trim()) {
@@ -96,12 +57,6 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
     if (!currentUser) {
       if (onAuthRequired) onAuthRequired();
       else setError('Please sign in to send messages');
-      return;
-    }
-
-    // ✅ NOUVEAU: Bloquer si email non vérifié
-    if (!currentUser.emailVerified) {
-      setError('Please verify your email before sending messages');
       return;
     }
 
@@ -185,7 +140,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
           createdAt: serverTimestamp(),
           unreadCount: {
             [currentUser.uid]: 0,
-            [sellerInfo.uid]: 1
+            [sellerInfo.uid]: 0
           }
         });
         conversationId = convRef.id;
@@ -206,7 +161,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
         lastMessageAt: serverTimestamp(),
         lastMessageSenderId: currentUser.uid,
         status: 'active',
-        [`unreadCount.${sellerInfo.uid}`]: 1
+        [`unreadCount.${sellerInfo.uid}`]: increment(1)
       });
 
       setSent(true);
@@ -244,76 +199,6 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
         <p className="text-orange-600 text-xs mt-1">
           This listing may be outdated.
         </p>
-      </div>
-    );
-  }
-
-  // ✅ NOUVEAU: Bloquer si email non vérifié
-  if (currentUser && !currentUser.emailVerified) {
-    return (
-      <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200">
-        <div className="flex items-start gap-3">
-          <div className="bg-amber-100 rounded-full p-2 flex-shrink-0">
-            <Mail size={20} className="text-amber-600" />
-          </div>
-          <div className="flex-1">
-            <h4 className="font-semibold text-amber-800 mb-1">
-              📧 Verify your email to contact sellers
-            </h4>
-            <p className="text-amber-700 text-sm mb-3">
-              We sent a verification link to <strong>{currentUser.email}</strong>.
-              Please check your inbox (and spam folder).
-            </p>
-
-            {emailResent ? (
-              <p className="text-emerald-600 text-sm font-medium flex items-center gap-1">
-                <Check size={16} />
-                Verification email sent!
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={handleResendEmail}
-                  disabled={resendingEmail}
-                  className="text-sm bg-amber-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-700 transition disabled:opacity-50 flex items-center gap-2"
-                >
-                  {resendingEmail ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Mail size={16} />
-                      Resend email
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={handleRefreshVerification}
-                  disabled={refreshing}
-                  className="text-sm bg-white text-amber-700 px-4 py-2 rounded-lg font-medium hover:bg-amber-100 transition border border-amber-300 flex items-center gap-2"
-                >
-                  {refreshing ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-amber-400/30 border-t-amber-600 rounded-full animate-spin" />
-                      Checking...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw size={16} />
-                      I've verified
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
-
-            {error && (
-              <p className="text-red-600 text-sm mt-2">{error}</p>
-            )}
-          </div>
-        </div>
       </div>
     );
   }

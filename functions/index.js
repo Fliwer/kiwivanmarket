@@ -543,6 +543,8 @@ exports.sendCarJamCampaign = onCall(
     const sellerIds = new Set();
     const sellerEmailFromVans = new Map();
     const vansBySeller = new Map();
+    const primaryVanIdBySeller = new Map();
+    const hasActivePrimaryBySeller = new Set();
 
     const vansSnap = await db.collection('vans')
       .where('status', 'in', ['active', 'sold'])
@@ -556,6 +558,13 @@ exports.sendCarJamCampaign = onCall(
       sellerIds.add(uid);
       if (email) sellerEmailFromVans.set(uid, email);
       vansBySeller.set(uid, (vansBySeller.get(uid) || 0) + 1);
+      if (!primaryVanIdBySeller.has(uid)) {
+        primaryVanIdBySeller.set(uid, doc.id);
+      }
+      if (van?.status === 'active' && !hasActivePrimaryBySeller.has(uid)) {
+        primaryVanIdBySeller.set(uid, doc.id);
+        hasActivePrimaryBySeller.add(uid);
+      }
     });
 
     const recipients = [];
@@ -578,6 +587,7 @@ exports.sendCarJamCampaign = onCall(
         email,
         name: user.displayName || user.name || 'there',
         vansCount: vansBySeller.get(uid) || 0,
+        primaryVanId: primaryVanIdBySeller.get(uid) || null,
       });
     });
 
@@ -607,6 +617,9 @@ exports.sendCarJamCampaign = onCall(
 
     for (const recipient of toSend) {
       const safeName = escapeHtml(recipient.name);
+      const editUrl = recipient.primaryVanId
+        ? `https://kiwivanmarket.com/my-listings?edit=${encodeURIComponent(recipient.primaryVanId)}&focus=plate`
+        : 'https://kiwivanmarket.com/my-listings?focus=plate';
       const { data, error } = await resend.emails.send({
         from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
         to: recipient.email,
@@ -625,7 +638,7 @@ exports.sendCarJamCampaign = onCall(
                 Pour l'activer, ajoutez simplement votre <strong>plaque d'immatriculation</strong> dans l'edition de votre annonce.
                 C'est un vrai signal de confiance qui augmente generalement les messages d'acheteurs serieux.
               </p>
-              <a href="https://kiwivanmarket.com/my-listings" style="display:inline-block; margin: 18px 0; background: #0ea5e9; color: #fff; text-decoration: none; font-weight: 700; padding: 12px 22px; border-radius: 10px;">
+              <a href="${editUrl}" style="display:inline-block; margin: 18px 0; background: #0ea5e9; color: #fff; text-decoration: none; font-weight: 700; padding: 12px 22px; border-radius: 10px;">
                 Mettre a jour mon annonce
               </a>
               <hr style="border:none; border-top:1px solid #e5e7eb; margin:22px 0;" />
@@ -636,7 +649,7 @@ exports.sendCarJamCampaign = onCall(
                 To activate it, simply add your <strong>license plate</strong> in your listing edit form.
                 This boosts trust and usually increases serious buyer messages.
               </p>
-              <a href="https://kiwivanmarket.com/my-listings" style="display:inline-block; margin: 8px 0 18px; background: #0ea5e9; color: #fff; text-decoration: none; font-weight: 700; padding: 12px 22px; border-radius: 10px;">
+              <a href="${editUrl}" style="display:inline-block; margin: 8px 0 18px; background: #0ea5e9; color: #fff; text-decoration: none; font-weight: 700; padding: 12px 22px; border-radius: 10px;">
                 Update my listing now
               </a>
               <p style="font-size: 14px; color: #6b7280; margin-top: 20px;">
@@ -724,6 +737,12 @@ exports.sitemap = onRequest({
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>${baseUrl}/why</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>${baseUrl}/buyback-calculator</loc>
     <lastmod>${date}</lastmod>
     <changefreq>monthly</changefreq>
@@ -731,6 +750,18 @@ exports.sitemap = onRequest({
   </url>
   <url>
     <loc>${baseUrl}/contact</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/llms.txt</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>${baseUrl}/llms-full.txt</loc>
     <lastmod>${date}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
@@ -796,7 +827,73 @@ exports.sitemap = onRequest({
   </url>\n`;
     });
 
-    // 4. Dynamic Vans
+    // 4. Programmatic long-tail search landing pages (high volume set)
+    const longTailCities = [
+      'auckland',
+      'christchurch',
+      'wellington',
+      'queenstown',
+      'hamilton',
+      'tauranga',
+      'rotorua',
+      'dunedin',
+      'nelson',
+    ];
+    const longTailBudgets = [8000, 12000, 15000, 18000, 22000];
+    const longTailBrands = [
+      'toyota-hiace',
+      'nissan-caravan',
+      'mazda-bongo',
+      'mitsubishi-delica',
+      'ford-transit',
+      'mercedes-sprinter',
+    ];
+    const brandCityFocus = ['auckland', 'christchurch', 'wellington', 'queenstown'];
+    const brandBudgets = [12000, 18000, 22000];
+    const longTailSearchPages = [];
+
+    longTailCities.forEach((city) => {
+      longTailBudgets.forEach((budget) => {
+        longTailSearchPages.push(`buy-campervan-in-${city}-under-${budget}`);
+      });
+      longTailSearchPages.push(`self-contained-van-${city}`);
+    });
+
+    longTailBrands.forEach((brand) => {
+      brandCityFocus.forEach((city) => {
+        brandBudgets.forEach((budget) => {
+          longTailSearchPages.push(`${brand}-${city}-under-${budget}`);
+        });
+      });
+    });
+    longTailSearchPages.forEach((slug) => {
+      xml += `  <url>
+    <loc>${baseUrl}/search/${slug}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>\n`;
+    });
+
+    // 5. Programmatic FAQ pages by location/brand
+    locations.forEach((location) => {
+      xml += `  <url>
+    <loc>${baseUrl}/faq/location/${location}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>\n`;
+    });
+    brands.forEach((brand) => {
+      xml += `  <url>
+    <loc>${baseUrl}/faq/brand/${brand}</loc>
+    <lastmod>${date}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.65</priority>
+  </url>\n`;
+    });
+
+    // 6. Dynamic Vans
     vansSnapshot.forEach(doc => {
       const van = doc.data();
       let lastModDate = new Date();

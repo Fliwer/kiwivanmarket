@@ -32,7 +32,8 @@ export default function ProfilePage() {
   });
   const [stats, setStats] = useState({
     totalListings: 0, activeListings: 0, totalViews: 0,
-    avgRating: 0, totalReviews: 0, favorites: 0
+    avgRating: 0, totalReviews: 0, favorites: 0,
+    totalConversations: 0, unreadMessages: 0, activeThreads: 0
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
@@ -95,9 +96,20 @@ export default function ProfilePage() {
         const favQ = query(collection(db, 'favorites'), where('userId', '==', currentUser.uid));
         const favSnap = await getDocs(favQ);
 
+        const convQ = query(collection(db, 'conversations'), where('participants', 'array-contains', currentUser.uid));
+        const convSnap = await getDocs(convQ);
+        const convos = convSnap.docs.map(d => d.data());
+        const unreadMessages = convos.reduce((sum, c) => sum + (c.unreadCount?.[currentUser.uid] || 0), 0);
+        const activeThreads = convos.filter((c) => {
+          const date = c.lastMessageAt?.toDate ? c.lastMessageAt.toDate() : new Date(c.lastMessageAt || 0);
+          const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
+          return date > thirtyDaysAgo;
+        }).length;
+
         setStats({
           totalListings: vansSnap.size, activeListings,
-          totalViews, avgRating, totalReviews, favorites: favSnap.size
+          totalViews, avgRating, totalReviews, favorites: favSnap.size,
+          totalConversations: convSnap.size, unreadMessages, activeThreads
         });
       } catch (e) {
         console.error(e);
@@ -282,7 +294,7 @@ export default function ProfilePage() {
               {[
                 { label: 'Vans', value: stats.totalListings, icon: Car, color: 'text-emerald-400' },
                 { label: 'Views', value: stats.totalViews, icon: Eye, color: 'text-blue-400' },
-                { label: 'Rating', value: stats.avgRating > 0 ? stats.avgRating : '—', icon: Star, color: 'text-yellow-400' },
+                { label: 'Msgs', value: stats.totalConversations, icon: MessageCircle, color: 'text-cyan-400' },
                 { label: 'Trust', value: `${trustScore}%`, icon: Shield, color: 'text-purple-400' },
               ].map(({ label, value, icon: Icon, color }) => (
                 <div key={label} className="bg-white/5 rounded-2xl p-3 text-center border border-white/10">
@@ -611,6 +623,20 @@ export default function ProfilePage() {
               {activeTab === 'messages' && (
                 <div className="space-y-4">
                   <h2 className="text-lg font-black text-slate-900">Messages</h2>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="bg-white border border-slate-100 rounded-xl p-3">
+                      <p className="text-[10px] uppercase font-black text-slate-400">Conversations</p>
+                      <p className="text-xl font-black text-slate-900">{stats.totalConversations}</p>
+                    </div>
+                    <div className="bg-white border border-slate-100 rounded-xl p-3">
+                      <p className="text-[10px] uppercase font-black text-slate-400">Unread</p>
+                      <p className="text-xl font-black text-red-600">{stats.unreadMessages}</p>
+                    </div>
+                    <div className="bg-white border border-slate-100 rounded-xl p-3">
+                      <p className="text-[10px] uppercase font-black text-slate-400">Active 30d</p>
+                      <p className="text-xl font-black text-emerald-600">{stats.activeThreads}</p>
+                    </div>
+                  </div>
                   <Link
                     to="/messages"
                     className="block group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:border-blue-200 hover:shadow-md transition"

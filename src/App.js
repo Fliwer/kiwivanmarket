@@ -30,6 +30,7 @@ import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
 import GuidePreviewSection from './components/GuidePreviewSection';
 import BottomNavigation from './components/BottomNavigation';
+import { FEATURED_LONG_TAIL_SLUGS, LONG_TAIL_PAGE_MAP } from './constants/seoLongTailPages';
 
 // ✅ LAZY LOADING
 const SellPage = lazy(() => import('./components/SellPage'));
@@ -53,6 +54,8 @@ const MyListingsPage = lazy(() => import('./components/MyListingsPage'));
 const GuidesHubPage = lazy(() => import('./components/GuidesHubPage'));
 const FaqPage = lazy(() => import('./components/FaqPage'));
 const WhyPage = lazy(() => import('./components/WhyPage'));
+const SeoLongTailPage = lazy(() => import('./components/SeoLongTailPage'));
+const SeoTopicFaqPage = lazy(() => import('./components/SeoTopicFaqPage'));
 
 
 // ✅ LOADING COMPONENTS
@@ -175,6 +178,9 @@ function MainApp({
   const [infoModals, setInfoModals] = useState({
     buyBack: false, wof: false, rego: false, selfContained: false
   });
+  const featuredSearchPages = FEATURED_LONG_TAIL_SLUGS
+    .map((slug) => LONG_TAIL_PAGE_MAP[slug])
+    .filter(Boolean);
 
   useEffect(() => {
     const savedCurrency = safeStorage.getItem('kiwivanmarket_currency') || 'NZD';
@@ -443,6 +449,22 @@ function MainApp({
           formatPrice={formatPrice}
           onSelectVan={setSelectedVan}
         />
+        <section className="max-w-7xl mx-auto px-4 pb-10">
+          <div className="bg-white border border-slate-100 rounded-2xl p-5">
+            <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">Popular high-intent searches</h2>
+            <div className="flex flex-wrap gap-2">
+              {featuredSearchPages.map((page) => (
+                <Link
+                  key={page.slug}
+                  to={`/search/${page.slug}`}
+                  className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition"
+                >
+                  {page.heading}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
       {selectedVan && <VanDetailsModal van={selectedVan} />}
     </div>
@@ -501,7 +523,9 @@ export default function KiwiVanMarket() {
               <Route path="/location/:location" element={<Suspense fallback={<PageLoader />}><LocationPage /></Suspense>} />
               <Route path="/guides" element={<Suspense fallback={<PageLoader />}><GuidesHubPage /></Suspense>} />
               <Route path="/faq" element={<Suspense fallback={<PageLoader />}><FaqPage /></Suspense>} />
+              <Route path="/faq/:scope/:slug" element={<Suspense fallback={<PageLoader />}><SeoTopicFaqPage /></Suspense>} />
               <Route path="/why" element={<Suspense fallback={<PageLoader />}><WhyPage /></Suspense>} />
+              <Route path="/search/:slug" element={<Suspense fallback={<PageLoader />}><SeoLongTailPage /></Suspense>} />
               <Route path="/guide/:slug" element={<Suspense fallback={<PageLoader />}><GuidePage /></Suspense>} />
               <Route path="/sell" element={<Suspense fallback={<PageLoader />}><SellPage /></Suspense>} />
               <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />

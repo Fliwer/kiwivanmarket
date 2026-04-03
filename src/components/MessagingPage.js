@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import {
   collection, query, where, orderBy, onSnapshot, addDoc,
-  updateDoc, doc, serverTimestamp, getDocs, setDoc, limit, writeBatch
+  updateDoc, doc, serverTimestamp, getDocs, setDoc, limit, writeBatch, increment
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -476,7 +476,7 @@ export default function MessagingPage({ onBack }) {
         lastMessageAt: serverTimestamp(),
         lastMessageSenderId: currentUser.uid,
         status: 'active',
-        [`unreadCount.${selectedConversation.otherUserId}`]: (selectedConversation.unreadCount || 0) + 1,
+        [`unreadCount.${selectedConversation.otherUserId}`]: increment(1),
         [`typing.${currentUser.uid}`]: false
       });
 

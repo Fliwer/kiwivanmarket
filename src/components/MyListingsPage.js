@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { collection, query, where, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { db } from '../firebase';
+import { functions } from '../firebase';
 import { useAuth } from '../AuthContext';
 import SeoHead from './SeoHead';
 import { isAdmin, AdminBadge } from '../utils/adminHelper';
 import AddVanForm from './AddVanForm';
 import {
   ArrowLeft, Edit2, Trash2, Eye, Plus, Calendar, MapPin,
-  DollarSign, Crown, Loader, Car, AlertTriangle, CheckCircle, RotateCcw
+  DollarSign, Crown, Loader, Car, AlertTriangle, CheckCircle, RotateCcw, Mail
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastProvider';
@@ -18,14 +20,17 @@ import { formatMileage } from '../utils/formatHelper';
 export default function MyListingsPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const [myVans, setMyVans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingVan, setEditingVan] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [focusPlateMode, setFocusPlateMode] = useState(false);
   const [stats, setStats] = useState({ totalVans: 0, totalViews: 0, avgPrice: 0 });
   const [viewMode, setViewMode] = useState('my');
+  const [sendingCarJamCampaign, setSendingCarJamCampaign] = useState(false);
 
   const userIsAdmin = isAdmin(currentUser);
 
@@ -107,6 +112,28 @@ export default function MyListingsPage() {
     fetchVans();
   }, [fetchVans]);
 
+  // Deep-link support from email: /my-listings?edit=<vanId>&focus=plate
+  useEffect(() => {
+    if (loading || editingVan || myVans.length === 0) return;
+
+    const params = new URLSearchParams(location.search);
+    const editVanId = params.get('edit');
+    const focusParam = params.get('focus');
+    const shouldFocusPlate = focusParam === 'plate';
+
+    if (!editVanId && !shouldFocusPlate) return;
+
+    const targetVan = editVanId
+      ? myVans.find(v => v.id === editVanId)
+      : myVans[0];
+
+    if (!targetVan) return;
+
+    setFocusPlateMode(shouldFocusPlate);
+    setEditingVan(targetVan);
+    navigate('/my-listings', { replace: true });
+  }, [loading, editingVan, myVans, location.search, navigate]);
+
   // Delete van
   const handleDelete = async (van) => {
     try {
@@ -158,6 +185,43 @@ export default function MyListingsPage() {
     // Invalidate cache
     localStorage.removeItem('kiwiVanMarket_vans');
     localStorage.removeItem('kiwiVanMarket_timestamp');
+  };
+
+  const handleSendCarJamCampaign = async () => {
+    if (sendingCarJamCampaign) return;
+    const dryRunConfirm = window.confirm(
+      'Lancer un dry-run de la campagne CarJam pour voir combien d’emails seraient envoyés ?'
+    );
+    if (!dryRunConfirm) return;
+
+    setSendingCarJamCampaign(true);
+    try {
+      const sendCampaign = httpsCallable(functions, 'sendCarJamCampaign');
+      const dryRunResult = await sendCampaign({
+        dryRun: true,
+        onlySellers: true,
+        limit: 80,
+      });
+      const count = dryRunResult?.data?.wouldSend || 0;
+      const finalConfirm = window.confirm(
+        `Dry-run terminé: ${count} email(s) seront envoyés.\n\nEnvoyer maintenant ?`
+      );
+      if (!finalConfirm) return;
+
+      const realRunResult = await sendCampaign({
+        dryRun: false,
+        onlySellers: true,
+        limit: 80,
+      });
+      const sentCount = realRunResult?.data?.sentCount || 0;
+      const failedCount = realRunResult?.data?.failedCount || 0;
+      toast.success(`Campagne envoyée: ${sentCount} email(s), ${failedCount} échec(s).`);
+    } catch (error) {
+      console.error('Error sending CarJam campaign:', error);
+      toast.error(error?.message || 'Échec de la campagne email CarJam.');
+    } finally {
+      setSendingCarJamCampaign(false);
+    }
   };
 
   // Format date
@@ -250,6 +314,15 @@ export default function MyListingsPage() {
                   <span className="font-semibold text-yellow-800">Admin Mode</span>
                 </div>
                 <div className="flex gap-2">
+                  <button
+                    onClick={handleSendCarJamCampaign}
+                    disabled={sendingCarJamCampaign}
+                    className="px-3 py-1 rounded-lg text-sm font-medium transition bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 flex items-center gap-1.5"
+                    title="Envoyer campagne email CarJam aux vendeurs"
+                  >
+                    <Mail size={14} />
+                    <span>{sendingCarJamCampaign ? 'Sending...' : 'Email CarJam'}</span>
+                  </button>
                   <button
                     onClick={() => setViewMode('my')}
                     className={`px-3 py-1 rounded-lg text-sm font-medium transition ${viewMode === 'my'
@@ -345,17 +418,17 @@ export default function MyListingsPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 mt-4 pt-4 border-t">
+                    <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
                       <Link
                         to={`/van/${van.id}`}
-                        className="flex items-center gap-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition"
+                        className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition min-w-[120px]"
                       >
                         <Eye size={16} />
                         {t('my_listings.view')}
                       </Link>
                       <button
                         onClick={() => setEditingVan(van)}
-                        className="flex items-center gap-1 px-3 py-2 text-sm bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition"
+                        className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition min-w-[120px]"
                       >
                         <Edit2 size={16} />
                         {t('my_listings.edit')}
@@ -363,7 +436,7 @@ export default function MyListingsPage() {
                       {van.status === 'sold' ? (
                         <button
                           onClick={() => handleToggleSold(van)}
-                          className="flex items-center gap-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition"
+                          className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition min-w-[120px]"
                         >
                           <RotateCcw size={16} />
                           {t('my_listings.reactivate')}
@@ -371,7 +444,7 @@ export default function MyListingsPage() {
                       ) : (
                         <button
                           onClick={() => handleToggleSold(van)}
-                          className="flex items-center gap-1 px-3 py-2 text-sm bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition"
+                          className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition min-w-[120px]"
                         >
                           <CheckCircle size={16} />
                           {t('my_listings.mark_as_sold')}
@@ -379,7 +452,7 @@ export default function MyListingsPage() {
                       )}
                       <button
                         onClick={() => setShowDeleteConfirm(van)}
-                        className="flex items-center gap-1 px-3 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition"
+                        className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition min-w-[120px]"
                       >
                         <Trash2 size={16} />
                         {t('my_listings.delete')}
@@ -426,7 +499,11 @@ export default function MyListingsPage() {
           <AddVanForm
             van={editingVan}
             isEditMode={true}
-            onClose={() => setEditingVan(null)}
+            focusPlate={focusPlateMode}
+            onClose={() => {
+              setEditingVan(null);
+              setFocusPlateMode(false);
+            }}
             onSuccess={handleVanUpdated}
           />
         )}

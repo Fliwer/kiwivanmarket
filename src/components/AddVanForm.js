@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -22,13 +22,14 @@ const formatDateForInput = (date) => {
 };
 
 
-export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode = false, van = null }) {
+export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode = false, van = null, focusPlate = false }) {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [uploadingIndex, setUploadingIndex] = useState(null);
+  const plateInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -177,6 +178,17 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     };
     loadData();
   }, [isEditMode, van, currentUser]);
+
+  // Deep-link support: focus plate field directly from email CTA
+  useEffect(() => {
+    if (!focusPlate) return;
+    const timer = setTimeout(() => {
+      plateInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      plateInputRef.current?.focus();
+      plateInputRef.current?.select();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [focusPlate, isEditMode, van?.id]);
 
   // tats pour les tooltips
   const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
@@ -557,6 +569,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
               <div className="flex-1">
                 <label className="block text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">License Plate</label>
                 <input
+                  ref={plateInputRef}
                   type="text"
                   value={formData.plateNumber || ''}
                   onChange={(e) => setFormData({ ...formData, plateNumber: e.target.value.toUpperCase() })}

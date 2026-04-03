@@ -4,6 +4,7 @@ import { Search, BookOpen, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import VanCard from './VanCard';
+import { getLongTailSlugsForVan, LONG_TAIL_PAGE_MAP } from '../constants/seoLongTailPages';
 
 export default function Listings({
     loading,
@@ -41,6 +42,9 @@ export default function Listings({
             }
         }))
     };
+    const autoLongTailSlugs = Array.from(
+        new Set(filteredVans.slice(0, 24).flatMap((van) => getLongTailSlugsForVan(van)))
+    ).slice(0, 16);
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -112,6 +116,25 @@ export default function Listings({
                             </div>
                         ))}
                     </div>
+
+                    {autoLongTailSlugs.length > 0 && (
+                        <div className="mt-10 bg-white border border-slate-100 rounded-2xl p-5">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">
+                                More precise searches from current listings
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                                {autoLongTailSlugs.map((slug) => (
+                                    <Link
+                                        key={slug}
+                                        to={`/search/${slug}`}
+                                        className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm hover:bg-slate-200 transition"
+                                    >
+                                        {LONG_TAIL_PAGE_MAP[slug]?.heading || slug}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {filteredVans.length === 0 && (
                         <div className="text-center py-32 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200 animate-fade-in-up">

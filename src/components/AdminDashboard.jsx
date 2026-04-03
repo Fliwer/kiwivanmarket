@@ -79,6 +79,15 @@ export default function AdminDashboard({ onClose, onEditVan }) {
 
     const sellerIds = new Set(vansData.map(v => v.seller?.uid).filter(Boolean));
     const pureBuyers = (usersData || []).filter(u => !sellerIds.has(u.id));
+    const totalUnreadMessages = (conversationsData || []).reduce((sum, conv) => {
+      const unreadMap = conv?.unreadCount || {};
+      const convUnread = Object.values(unreadMap).reduce((acc, value) => acc + (Number(value) || 0), 0);
+      return sum + convUnread;
+    }, 0);
+    const conversationsWithUnread = (conversationsData || []).filter((conv) => {
+      const unreadMap = conv?.unreadCount || {};
+      return Object.values(unreadMap).some((value) => (Number(value) || 0) > 0);
+    }).length;
 
     setStats({
       totalVans: vansData.length,
@@ -89,6 +98,8 @@ export default function AdminDashboard({ onClose, onEditVan }) {
       totalUsers: usersData?.length || 0,
       pureBuyers: pureBuyers.length,
       totalConversations: conversationsData.length,
+      totalUnreadMessages,
+      conversationsWithUnread,
       activeConversations: conversationsData.filter(c => {
         const lastActivity = c.lastMessageAt?.toDate?.() || new Date(c.lastMessageAt);
         return lastActivity > thirtyDaysAgo;
@@ -946,9 +957,29 @@ export default function AdminDashboard({ onClose, onEditVan }) {
 
               {/* Inbox / Messaging Hub Tab */}
               {activeTab === 'communication' && (
-                <div className="h-[calc(100vh-140px)] flex flex-col md:flex-row gap-6 bg-gray-50 -m-6 p-6">
+                <div className="h-[calc(100vh-140px)] flex flex-col gap-6 bg-gray-50 -m-6 p-6">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-2xl border border-gray-200 p-4">
+                      <p className="text-xs uppercase font-bold text-gray-500 mb-1">Conversations</p>
+                      <p className="text-2xl font-black text-gray-900">{stats.totalConversations || 0}</p>
+                    </div>
+                    <div className="bg-white rounded-2xl border border-gray-200 p-4">
+                      <p className="text-xs uppercase font-bold text-gray-500 mb-1">Active (30d)</p>
+                      <p className="text-2xl font-black text-emerald-600">{stats.activeConversations || 0}</p>
+                    </div>
+                    <div className="bg-white rounded-2xl border border-gray-200 p-4">
+                      <p className="text-xs uppercase font-bold text-gray-500 mb-1">Unread messages</p>
+                      <p className="text-2xl font-black text-red-600">{stats.totalUnreadMessages || 0}</p>
+                    </div>
+                    <div className="bg-white rounded-2xl border border-gray-200 p-4">
+                      <p className="text-xs uppercase font-bold text-gray-500 mb-1">Threads with unread</p>
+                      <p className="text-2xl font-black text-blue-600">{stats.conversationsWithUnread || 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0">
                   {/* Left Column: Conversations List */}
-                  <div className="w-full md:w-1/3 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col shadow-sm">
+                  <div className="w-full md:w-1/3 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col shadow-sm min-h-0">
                     <div className="p-4 border-b bg-gray-50 flex justify-between items-center shrink-0">
                       <h3 className="font-bold text-gray-900 flex items-center gap-2">
                         <MessageCircle className="w-5 h-5 text-emerald-600" />
@@ -992,7 +1023,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                   </div>
 
                   {/* Right Column: Active Conversation Viewer */}
-                  <div className="w-full md:w-2/3 bg-white rounded-2xl border border-gray-200 flex flex-col shadow-sm overflow-hidden">
+                  <div className="w-full md:w-2/3 bg-white rounded-2xl border border-gray-200 flex flex-col shadow-sm overflow-hidden min-h-0">
                     {selectedConversation ? (
                       <>
                         {/* Chat Header */}
@@ -1059,6 +1090,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
                         <p className="text-sm font-medium">Select a conversation from the left pane to view messages securely.</p>
                       </div>
                     )}
+                  </div>
                   </div>
                 </div>
               )}

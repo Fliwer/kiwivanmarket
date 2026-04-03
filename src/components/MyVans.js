@@ -335,26 +335,26 @@ export default function MyVans({ onClose }) {
                         )}
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {(isOwner || userIsAdmin) && (
                           <>
                             <button
                               onClick={() => setEditingVan(van)}
-                              className="flex-1 bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2">
+                              className="flex-1 min-w-[150px] bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2">
                               <Edit2 size={16} />
                               {t('my_listings.edit')}
                             </button>
                             {van.status === 'sold' ? (
                               <button
                                 onClick={() => handleToggleSold(van)}
-                                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                                className="flex-1 min-w-[150px] bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2">
                                 <RotateCcw size={16} />
                                 {t('my_listings.reactivate')}
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleToggleSold(van)}
-                                className="flex-1 bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center justify-center gap-2">
+                                className="flex-1 min-w-[150px] bg-orange-500 text-white py-2 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center justify-center gap-2">
                                 <CheckCircle size={16} />
                                 {t('my_listings.mark_as_sold')}
                               </button>
@@ -363,7 +363,7 @@ export default function MyVans({ onClose }) {
                         )}
                         <button
                           onClick={() => handleDelete(van)}
-                          className={`${(isOwner || userIsAdmin) ? 'w-12 h-10' : 'w-full'} bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center`}>
+                          className={`${(isOwner || userIsAdmin) ? 'w-12 h-10 min-h-[40px]' : 'w-full py-2'} bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center`}>
                           <Trash2 size={18} />
                         </button>
                       </div>

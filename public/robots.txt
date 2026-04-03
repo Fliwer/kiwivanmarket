@@ -4,6 +4,8 @@ Allow: /
 # Explicitly allow AI crawlers for Generative Engine Optimization (GEO)
 User-agent: GPTBot
 Allow: /
+User-agent: OAI-SearchBot
+Allow: /
 User-agent: ChatGPT-User
 Allow: /
 User-agent: Google-Extended
@@ -16,7 +18,13 @@ User-agent: Claude-Web
 Allow: /
 User-agent: PerplexityBot
 Allow: /
+User-agent: Perplexity-User
+Allow: /
 User-agent: cohere-ai
+Allow: /
+User-agent: GoogleOther
+Allow: /
+User-agent: Applebot-Extended
 Allow: /
 
 Allow: /*.jpg$
@@ -32,6 +40,10 @@ Disallow: /*?filter=
 Disallow: /admin/
 
 Sitemap: https://kiwivanmarket.com/sitemap.xml
+Sitemap: https://kiwivanmarket.com/sitemap-main.xml
+Sitemap: https://kiwivanmarket.com/sitemap-guides.xml
+Sitemap: https://kiwivanmarket.com/sitemap-locations.xml
+Sitemap: https://kiwivanmarket.com/sitemap-brands.xml
 
 # AI-readable content summary
 # https://kiwivanmarket.com/llms.txt
