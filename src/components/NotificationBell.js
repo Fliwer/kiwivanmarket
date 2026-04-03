@@ -14,6 +14,7 @@ const NotificationBell = ({ user, onNotificationClick }) => {
   const [deletingId, setDeletingId] = useState(null);
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
+  const previousCountRef = useRef(0);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -34,11 +35,12 @@ const NotificationBell = ({ user, onNotificationClick }) => {
         ...doc.data()
       }));
 
-      if (notifs.length > notifications.length && notifications.length > 0) {
+      if (notifs.length > previousCountRef.current && previousCountRef.current > 0) {
         setIsAnimating(true);
         setTimeout(() => setIsAnimating(false), 600);
       }
 
+      previousCountRef.current = notifs.length;
       setNotifications(notifs);
     });
 

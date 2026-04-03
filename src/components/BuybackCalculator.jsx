@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, animate } from 'framer-motion';
 import { Shield, TrendingUp, Gauge, Award, PieChart, Landmark, Cpu, Sparkles, Calendar, Zap, Info, ArrowRight, Printer, Download } from 'lucide-react';
@@ -65,12 +65,16 @@ const translations = {
 // Animated Counter Component
 const AnimatedCounter = ({ value, symbol = "", suffix = "" }) => {
   const [current, setCurrent] = useState(0);
+  const currentRef = useRef(0);
 
   useEffect(() => {
-    const controls = animate(current, value, {
+    const controls = animate(currentRef.current, value, {
       duration: 1.2,
       ease: [0.16, 1, 0.3, 1],
-      onUpdate: (v) => setCurrent(v)
+      onUpdate: (v) => {
+        currentRef.current = v;
+        setCurrent(v);
+      }
     });
     return controls.stop;
   }, [value]);
@@ -203,7 +207,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
       scLabel: scData.label,
       equipImpact: Math.round((equipData.multiplier - 1) * 100)
     };
-  }, [purchasePrice, duration, kilometers, year, brand, trend, sc, history, equip, season, currency]);
+  }, [purchasePrice, duration, kilometers, year, brand, trend, sc, history, equip, season, curr.rate]);
 
   return (
     <div className={isEmbedded ? "w-full py-4 md:py-8" : "min-h-screen bg-[#FDFDFD] text-slate-800 py-8 md:py-16 px-4"}>

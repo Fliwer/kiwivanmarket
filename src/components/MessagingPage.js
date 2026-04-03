@@ -350,8 +350,8 @@ export default function MessagingPage({ onBack }) {
         setLoading(false);
 
         // Auto-select first conversation on desktop
-        if (convos.length > 0 && !selectedConversation && window.innerWidth >= 768) {
-          setSelectedConversation(convos[0]);
+        if (window.innerWidth >= 768 && convos.length > 0) {
+          setSelectedConversation((prev) => prev || convos[0]);
         }
       },
       (error) => {
@@ -400,7 +400,39 @@ export default function MessagingPage({ onBack }) {
     );
 
     // Mark as read once when conversation is selected
-    markAsRead();
+    const markSelectedConversationAsRead = async () => {
+      if (!selectedConversation || !currentUser) return;
+      try {
+        await updateDoc(doc(db, 'conversations', selectedConversation.id), {
+          [`unreadCount.${currentUser.uid}`]: 0
+        });
+
+        const messagesRef = collection(db, 'conversations', selectedConversation.id, 'messages');
+        const unreadQuery = query(
+          messagesRef,
+          where('read', '==', false),
+          limit(50)
+        );
+        const snapshot = await getDocs(unreadQuery);
+
+        if (snapshot.empty) return;
+
+        const batch = writeBatch(db);
+        snapshot.docs.forEach((docSnap) => {
+          const msgData = docSnap.data();
+          if (msgData.senderId !== currentUser.uid) {
+            batch.update(docSnap.ref, {
+              read: true,
+              readAt: serverTimestamp()
+            });
+          }
+        });
+        await batch.commit();
+      } catch (error) {
+        console.error('Error marking as read:', error);
+      }
+    };
+    markSelectedConversationAsRead();
 
     // Get typing state from the conversation document (already loaded in conversations list)
     // No need for a separate listener - we can derive it from selectedConversation updates
@@ -408,7 +440,7 @@ export default function MessagingPage({ onBack }) {
     return () => {
       unsubscribe();
     };
-  }, [selectedConversation]);
+  }, [selectedConversation, currentUser]);
 
   // Auto scroll
   useEffect(() => {
@@ -454,44 +486,6 @@ export default function MessagingPage({ onBack }) {
     } finally {
       setSendingMessage(false);
       inputRef.current?.focus();
-    }
-  };
-
-  // Mark as read
-  const markAsRead = async () => {
-    if (!selectedConversation || !currentUser) return;
-    try {
-      // Update conversation unread count
-      await updateDoc(doc(db, 'conversations', selectedConversation.id), {
-        [`unreadCount.${currentUser.uid}`]: 0
-      });
-
-      // Mark only unread messages from other user as read (optimized query)
-      const messagesRef = collection(db, 'conversations', selectedConversation.id, 'messages');
-      const unreadQuery = query(
-        messagesRef,
-        where('read', '==', false),
-        limit(50) // Process max 50 at a time to avoid large batches
-      );
-      const snapshot = await getDocs(unreadQuery);
-
-      if (snapshot.empty) return;
-
-      // Use batch write for efficiency
-      const batch = writeBatch(db);
-      snapshot.docs.forEach((docSnap) => {
-        const msgData = docSnap.data();
-        // Only mark messages from other user as read
-        if (msgData.senderId !== currentUser.uid) {
-          batch.update(docSnap.ref, {
-            read: true,
-            readAt: serverTimestamp()
-          });
-        }
-      });
-      await batch.commit();
-    } catch (error) {
-      console.error('Error marking as read:', error);
     }
   };
 

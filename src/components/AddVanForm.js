@@ -4,7 +4,7 @@ import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, serv
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { X, Upload, Trash2, CheckCircle, Sparkles, Loader2, Shield } from 'lucide-react';
+import { X, Upload, Trash2, CheckCircle, Shield } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import { sanitizeString, sanitizeText } from '../securityUtils';
 import { useToast } from './ToastProvider';
@@ -181,39 +181,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
   const [showSelfContainedTooltip, setShowSelfContainedTooltip] = useState(false);
   const [showAdvancedEquipment, setShowAdvancedEquipment] = useState(false);
   const [generatingAI, setGeneratingAI] = useState(false);
-  const [fetchingCarjam, setFetchingCarjam] = useState(false);
 
-  // 🚗 CarJam Fetch
-  const handleCarJamFetch = async () => {
-    if (!formData.plateNumber || formData.plateNumber.trim() === '') {
-      toast.info('Please enter a plate number first! 🚐');
-      return;
-    }
-    setFetchingCarjam(true);
-    try {
-      const fetchCarJamData = httpsCallable(functions, 'fetchCarJamData');
-      const result = await fetchCarJamData({ plate: formData.plateNumber.trim() });
-      
-      if (result.data) {
-        const d = result.data;
-        setFormData(prev => ({
-          ...prev,
-          year: d.year || prev.year,
-          title: (d.make && d.model) && (!prev.title || prev.title.trim() === '') ? `${d.make} ${d.model} ${d.year || ''}`.trim() : prev.title,
-        }));
-        if (d.mocked) {
-           toast.success('Demonstration logic applied for CarJam! 🚀');
-        } else {
-           toast.success('Vehicle details fetched successfully! 🚗');
-        }
-      }
-    } catch (e) {
-      console.error(e);
-      toast.error('Could not fetch vehicle details. Is the plate correct?');
-    } finally {
-      setFetchingCarjam(false);
-    }
-  };
 
   // ✨ IA Generation
   const handleGenerateAI = async () => {
@@ -569,6 +537,30 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
 
           <form onSubmit={handleSubmit} id="addVanForm">
 
+            {/* CARJAM PLATE NUMBER — Free Link Model */}
+            <div className="mb-6 p-6 sm:p-8 bg-blue-50 border-2 border-blue-200 rounded-3xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400 opacity-10 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl group-hover:opacity-20 transition-opacity"></div>
+              
+              <div className="flex items-center gap-2 mb-4">
+                <Shield size={24} className="text-blue-500" />
+                <h3 className="text-xl font-black text-blue-900">CarJam Verification</h3>
+              </div>
+              
+              <div className="flex-1">
+                <label className="block text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">License Plate</label>
+                <input
+                  type="text"
+                  value={formData.plateNumber || ''}
+                  onChange={(e) => setFormData({ ...formData, plateNumber: e.target.value.toUpperCase() })}
+                  placeholder="e.g. ABC123"
+                  className="w-full px-5 py-4 border-2 border-blue-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all uppercase font-mono text-xl font-bold text-gray-800 bg-white placeholder-gray-300"
+                />
+                <p className="text-[11px] font-bold text-blue-600/70 mt-3 flex items-center gap-1.5">
+                  <CheckCircle size={14} /> Buyers will see a free CarJam check link on your listing!
+                </p>
+              </div>
+            </div>
+
             {/* PHOTOS SECTION */}
             <div className="mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
@@ -582,7 +574,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                     <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg">
                       <img
                         src={image.url}
-                        alt={`Photo ${index + 1}`}
+                        alt={`Listing view ${index + 1}`}
                         className="w-full h-full object-cover"
                       />
                       {image.uploading && (
@@ -639,48 +631,19 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
               </div>
 
               {images.length === 0 && (
-                <p className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-xl p-3 flex items-center gap-2">
-                  <span></span>
+                <p className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-xl p-3 flex items-center gap-2 mt-4">
+                  <span>⚠️</span>
                   <span>At least 1 photo required</span>
                 </p>
               )}
             </div>
 
-            {/* CARJAM AUTO-FILL SECTION */}
-            <div className="mb-6 p-6 sm:p-8 bg-blue-50 border-2 border-blue-200 rounded-3xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400 opacity-10 rounded-full -translate-y-1/2 translate-x-1/3 blur-2xl group-hover:opacity-20 transition-opacity"></div>
-              
-              <h3 className="text-xl font-black text-blue-900 mb-4 flex items-center gap-2">
-                <Shield size={24} className="text-blue-500" />
-                CarJam Verification
-              </h3>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="block text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">License Plate</label>
-                  <input
-                    type="text"
-                    value={formData.plateNumber || ''}
-                    onChange={(e) => setFormData({ ...formData, plateNumber: e.target.value.toUpperCase() })}
-                    placeholder="e.g. ABC123"
-                    className="w-full px-5 py-4 border-2 border-blue-200 rounded-2xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all uppercase font-mono text-xl font-bold text-gray-800 bg-white placeholder-gray-300"
-                  />
-                  <p className="text-[11px] font-bold text-blue-600/70 mt-2 flex items-center gap-1.5">
-                    <CheckCircle size={14} /> Auto-adds the CarJam check link to your listing!
-                  </p>
-                </div>
-                <div className="flex items-end">
-                  <button
-                    type="button"
-                    onClick={handleCarJamFetch}
-                    disabled={fetchingCarjam || !formData.plateNumber}
-                    className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white font-black text-sm uppercase tracking-widest rounded-2xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-600/20 active:scale-95 border border-blue-500 hover:border-blue-400"
-                  >
-                    {fetchingCarjam ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
-                    {fetchingCarjam ? 'Fetching...' : 'Auto-fill Details'}
-                  </button>
-                </div>
-              </div>
+            {/* Basic Info Header */}
+            <div className="mb-6 border-b border-gray-100 pb-2">
+               <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
+                 <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+                 Van Details
+               </h3>
             </div>
 
             {/* BASIC INFO */}
@@ -869,28 +832,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
               </div>
             </div>
 
-            {/* LICENSE PLATE */}
-            <div className="mb-6">
-              <label className="flex items-center text-sm font-semibold text-gray-700 mb-2">
-                {t('sell.plate_label')}
-                <InfoTooltip
-                  show={showRegoTooltip}
-                  onMouseEnter={() => setShowRegoTooltip(true)}
-                  onMouseLeave={() => setShowRegoTooltip(false)}
-                  title={t('sell.plate_tooltip_title')}
-                  emoji="🇳🇿"
-                >
-                  {t('sell.plate_tooltip_desc')}
-                </InfoTooltip>
-              </label>
-              <input
-                type="text"
-                value={formData.plateNumber}
-                onChange={(e) => setFormData({ ...formData, plateNumber: e.target.value.toUpperCase() })}
-                placeholder={t('sell.plate_placeholder')}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors uppercase"
-              />
-            </div>
+
 
             {/* PHONE NUMBER */}
             <div className="mb-6">

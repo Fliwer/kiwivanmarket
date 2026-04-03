@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { collection, query, where, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -45,12 +45,7 @@ export default function MyListingsPage() {
     }
   }, [currentUser, loading, navigate]);
 
-  // Fetch vans
-  useEffect(() => {
-    fetchVans();
-  }, [currentUser, viewMode]);
-
-  const fetchVans = async () => {
+  const fetchVans = useCallback(async () => {
     if (!currentUser) return;
 
     try {
@@ -102,7 +97,12 @@ export default function MyListingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser, viewMode, userIsAdmin]);
+
+  // Fetch vans
+  useEffect(() => {
+    fetchVans();
+  }, [fetchVans]);
 
   // Delete van
   const handleDelete = async (van) => {

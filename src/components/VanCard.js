@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Heart, Shield, ChevronLeft, ChevronRight, CheckCircle, Calendar, Star } from 'lucide-react';
+import { MapPin, Heart, Shield, ChevronLeft, ChevronRight, CheckCircle, Calendar, Star, ExternalLink } from 'lucide-react';
 import { useFavorites } from '../hooks/useFavorites';
 import { getThumbnail } from '../utils/imageOptimizer';
 import { safeDate } from '../utils/dateHelper';
@@ -115,6 +115,14 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
     ? van.images
     : (van.imageUrl ? [van.imageUrl] : null);
 
+  const openCarJam = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!van.plateNumber) return;
+    const plate = String(van.plateNumber).trim().toUpperCase();
+    window.open(`https://www.carjam.co.nz/car/?plate=${plate}`, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <Link
       to={`/van/${van.id}`}
@@ -226,6 +234,33 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
             )}
           </div>
         )}
+
+        {/* CarJam security row — visible on homepage cards */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2">
+              <Shield size={14} className="text-blue-600" />
+              <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">
+                CarJam Safety Check
+              </span>
+            </div>
+            {van.plateNumber ? (
+              <button
+                type="button"
+                onClick={openCarJam}
+                className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-blue-700 transition"
+                aria-label="Open CarJam check"
+              >
+                <ExternalLink size={11} />
+                Check
+              </button>
+            ) : (
+              <span className="text-[10px] font-bold text-slate-400">
+                Plate not provided
+              </span>
+            )}
+          </div>
+        </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-slate-100">
           <div className="flex flex-col">

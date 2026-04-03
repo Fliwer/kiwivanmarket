@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Edit2, Trash2, Eye, Plus, Calendar, MapPin, DollarSign, Crown, CheckCircle, RotateCcw } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 import { db } from '../firebase';
@@ -24,12 +24,7 @@ export default function MyVans({ onClose }) {
   const [confirmConfig, setConfirmConfig] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Charger les vans
-  useEffect(() => {
-    fetchVans();
-  }, [currentUser, viewMode]);
-
-  const fetchVans = async () => {
+  const fetchVans = useCallback(async () => {
     if (!currentUser) return;
 
     try {
@@ -73,7 +68,12 @@ export default function MyVans({ onClose }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser, viewMode, userIsAdmin]);
+
+  // Charger les vans
+  useEffect(() => {
+    fetchVans();
+  }, [fetchVans]);
 
   // Supprimer un van
   const handleDelete = async (van) => {

@@ -107,6 +107,11 @@ export function NotificationProvider({ children, onOpenMessaging }) {
     }
   }, [browserNotifEnabled, onOpenMessaging]);
 
+  // Retirer une notification
+  const removeNotification = useCallback((id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  }, []);
+
   // Ajouter une notification toast
   const addNotification = useCallback((notification) => {
     const id = Date.now() + Math.random();
@@ -132,12 +137,7 @@ export function NotificationProvider({ children, onOpenMessaging }) {
     }, 6000);
 
     return id;
-  }, [playNotificationSound, browserNotifEnabled, sendBrowserNotification]);
-
-  // Retirer une notification
-  const removeNotification = useCallback((id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
+  }, [playNotificationSound, browserNotifEnabled, sendBrowserNotification, removeNotification]);
 
   // Écouter les nouveaux messages en temps réel
   useEffect(() => {

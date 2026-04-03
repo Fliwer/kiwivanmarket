@@ -77,6 +77,7 @@ export default function SellPage() {
     },
     wofExpiry: '',
     regoExpiry: '',
+    plateNumber: '',
     customFeatures: '',
     sellerPhone: '',
     sellerFacebook: ''
@@ -214,6 +215,7 @@ export default function SellPage() {
         buyBackConditions: formData.buyBack ? formData.buyBackConditions : '',
         wofExpiry: formData.wofExpiry,
         regoExpiry: formData.regoExpiry,
+        plateNumber: (formData.plateNumber || '').trim().toUpperCase().replace(/\s+/g, ''),
         customFeatures: formData.customFeatures || '',
         imageUrl: imageUrls[0],
         images: imageUrls,
@@ -431,7 +433,7 @@ export default function SellPage() {
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
                     <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg">
-                      <img src={image.url} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                      <img src={image.url} alt={`Listing view ${index + 1}`} className="w-full h-full object-cover" />
                       {image.uploading && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -493,7 +495,7 @@ export default function SellPage() {
             </div>
 
             {/* STEP 2: Details */}
-            <div className={`bg-white rounded-2xl shadow-lg p-6 mb-6 ${currentStep < 2 ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <FileText className="text-emerald-600" />
                 Van Details
@@ -651,6 +653,26 @@ export default function SellPage() {
                     className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Plaque d'immatriculation / License Plate (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.plateNumber}
+                    onChange={(e) => setFormData({ ...formData, plateNumber: e.target.value.toUpperCase() })}
+                    placeholder="ABC123"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors uppercase"
+                    maxLength={12}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Très important: la plaque permet d'afficher un bouton CarJam visible par tous les acheteurs.
+                  </p>
+                  <p className="text-xs text-emerald-700 font-semibold mt-1">
+                    C'est un vrai signal de securite et de confiance qui augmente les messages serieux.
+                  </p>
                 </div>
               </div>
 

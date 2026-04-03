@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
 import { db, functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -71,14 +71,59 @@ export default function AdminDashboard({ onClose, onEditVan }) {
   // 🔐 Vérifier si l'utilisateur est admin (via custom claim Firebase)
   const isAdmin = currentUser?.isAdmin === true;
 
-  // 📊 Charger les données
-  useEffect(() => {
-    if (isAdmin) {
-      loadAllData();
-    }
-  }, [isAdmin]);
+  const calculateStats = useCallback((vansData, usersData, conversationsData, reservationsData, reviewsData) => {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const loadAllData = async () => {
+    const sellerIds = new Set(vansData.map(v => v.seller?.uid).filter(Boolean));
+    const pureBuyers = (usersData || []).filter(u => !sellerIds.has(u.id));
+
+    setStats({
+      totalVans: vansData.length,
+      activeVans: vansData.filter(v => v.status !== 'hidden' && v.status !== 'rejected').length,
+      soldVans: vansData.filter(v => v.status === 'sold').length,
+      hiddenVans: vansData.filter(v => v.status === 'hidden').length,
+      totalViews: vansData.reduce((sum, v) => sum + (v.views || 0), 0),
+      totalUsers: usersData?.length || 0,
+      pureBuyers: pureBuyers.length,
+      totalConversations: conversationsData.length,
+      activeConversations: conversationsData.filter(c => {
+        const lastActivity = c.lastMessageAt?.toDate?.() || new Date(c.lastMessageAt);
+        return lastActivity > thirtyDaysAgo;
+      }).length,
+      totalReservations: reservationsData.length,
+      pendingReservations: reservationsData.filter(r => r.status === 'pending').length,
+      totalReviews: reviewsData.length,
+      vansWithBuyBack: vansData.filter(v => v.buyBack).length,
+      selfContainedVans: vansData.filter(v => v.selfContained).length,
+      featuredVans: vansData.filter(v => v.featured).length,
+      averagePrice: vansData.length > 0
+        ? Math.round(vansData.reduce((sum, v) => sum + (v.price || 0), 0) / vansData.length)
+        : 0,
+      totalValue: vansData.reduce((sum, v) => sum + (v.price || 0), 0),
+      vansByCity: vansData.reduce((acc, v) => {
+        const city = v.location || 'Unknown';
+        acc[city] = (acc[city] || 0) + 1;
+        return acc;
+      }, {}),
+      vansByType: vansData.reduce((acc, v) => {
+        const type = normalizeVehicleType(v.type);
+        acc[type] = (acc[type] || 0) + 1;
+        return acc;
+      }, {}),
+      recentVans: vansData.filter(v => {
+        const createdAt = v.createdAt?.toDate?.() || new Date(v.createdAt);
+        return createdAt > thirtyDaysAgo;
+      }).length,
+      thisWeekVans: vansData.filter(v => {
+        const createdAt = v.createdAt?.toDate?.() || new Date(v.createdAt);
+        return createdAt > sevenDaysAgo;
+      }).length,
+    });
+  }, []);
+
+  const loadAllData = useCallback(async () => {
     setLoading(true);
     try {
       // Charger les vans
@@ -106,84 +151,45 @@ export default function AdminDashboard({ onClose, onEditVan }) {
       }
 
       // Charger les conversations
+      let conversationsData = [];
       try {
         const convosSnapshot = await getDocs(collection(db, 'conversations'));
-        setConversations(convosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        conversationsData = convosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setConversations(conversationsData);
       } catch (e) { console.log('Conversations not found'); }
 
       // Charger les réservations
+      let reservationsData = [];
       try {
         const resSnapshot = await getDocs(collection(db, 'reservations'));
-        setReservations(resSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        reservationsData = resSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setReservations(reservationsData);
       } catch (e) { console.log('Reservations not found'); }
 
       // Charger les avis
+      let reviewsData = [];
       try {
         const reviewsSnapshot = await getDocs(collection(db, 'reviews'));
-        setReviews(reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        reviewsData = reviewsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setReviews(reviewsData);
       } catch (e) { console.log('Reviews not found'); }
 
       // Calculer les stats
-      calculateStats(vansData, usersData);
+      calculateStats(vansData, usersData, conversationsData, reservationsData, reviewsData);
 
     } catch (error) {
       console.error('Error loading admin data:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [calculateStats]);
 
-  const calculateStats = (vansData, usersData) => {
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    const sellerIds = new Set(vansData.map(v => v.seller?.uid).filter(Boolean));
-    const pureBuyers = (usersData || []).filter(u => !sellerIds.has(u.id));
-
-    setStats({
-      totalVans: vansData.length,
-      activeVans: vansData.filter(v => v.status !== 'hidden' && v.status !== 'rejected').length,
-      soldVans: vansData.filter(v => v.status === 'sold').length,
-      hiddenVans: vansData.filter(v => v.status === 'hidden').length,
-      totalViews: vansData.reduce((sum, v) => sum + (v.views || 0), 0),
-      totalUsers: usersData?.length || 0,
-      pureBuyers: pureBuyers.length,
-      totalConversations: conversations.length,
-      activeConversations: conversations.filter(c => {
-        const lastActivity = c.lastMessageAt?.toDate?.() || new Date(c.lastMessageAt);
-        return lastActivity > thirtyDaysAgo;
-      }).length,
-      totalReservations: reservations.length,
-      pendingReservations: reservations.filter(r => r.status === 'pending').length,
-      totalReviews: reviews.length,
-      vansWithBuyBack: vansData.filter(v => v.buyBack).length,
-      selfContainedVans: vansData.filter(v => v.selfContained).length,
-      featuredVans: vansData.filter(v => v.featured).length,
-      averagePrice: vansData.length > 0
-        ? Math.round(vansData.reduce((sum, v) => sum + (v.price || 0), 0) / vansData.length)
-        : 0,
-      totalValue: vansData.reduce((sum, v) => sum + (v.price || 0), 0),
-      vansByCity: vansData.reduce((acc, v) => {
-        const city = v.location || 'Unknown';
-        acc[city] = (acc[city] || 0) + 1;
-        return acc;
-      }, {}),
-      vansByType: vansData.reduce((acc, v) => {
-        const type = normalizeVehicleType(v.type);
-        acc[type] = (acc[type] || 0) + 1;
-        return acc;
-      }, {}),
-      recentVans: vansData.filter(v => {
-        const createdAt = v.createdAt?.toDate?.() || new Date(v.createdAt);
-        return createdAt > thirtyDaysAgo;
-      }).length,
-      thisWeekVans: vansData.filter(v => {
-        const createdAt = v.createdAt?.toDate?.() || new Date(v.createdAt);
-        return createdAt > sevenDaysAgo;
-      }).length,
-    });
-  };
+  // 📊 Charger les données
+  useEffect(() => {
+    if (isAdmin) {
+      loadAllData();
+    }
+  }, [isAdmin, loadAllData]);
 
   const handleRefresh = async () => {
     setRefreshing(true);

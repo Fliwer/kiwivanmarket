@@ -1,8 +1,8 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { safeDate } from './utils/dateHelper';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('safeDate parses supported date formats', () => {
+  const parsed = safeDate('2024-05-12 12:30:00');
+  expect(parsed).toBeInstanceOf(Date);
+  expect(parsed?.toISOString()).toContain('2024-05-12');
+  expect(Number.isNaN(parsed?.getTime())).toBe(false);
 });
