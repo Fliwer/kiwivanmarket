@@ -25,7 +25,10 @@ export default function MyVans({ onClose }) {
   const [deleting, setDeleting] = useState(false);
 
   const fetchVans = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -151,8 +154,8 @@ export default function MyVans({ onClose }) {
       <AddVanForm
         onClose={() => setEditingVan(null)}
         onVanAdded={handleVanUpdated}
-        editMode={true}
-        vanData={editingVan}
+        isEditMode={true}
+        van={editingVan}
       />
     );
   }

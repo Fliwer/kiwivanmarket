@@ -77,6 +77,8 @@ export default function SellPage() {
     },
     wofExpiry: '',
     regoExpiry: '',
+    imageFocusX: 50,
+    imageFocusY: 50,
     plateNumber: '',
     customFeatures: '',
     sellerPhone: '',
@@ -215,6 +217,8 @@ export default function SellPage() {
         buyBackConditions: formData.buyBack ? formData.buyBackConditions : '',
         wofExpiry: formData.wofExpiry,
         regoExpiry: formData.regoExpiry,
+        imageFocusX: Math.max(0, Math.min(100, Number(formData.imageFocusX ?? 50))),
+        imageFocusY: Math.max(0, Math.min(100, Number(formData.imageFocusY ?? 50))),
         plateNumber: (formData.plateNumber || '').trim().toUpperCase().replace(/\s+/g, ''),
         customFeatures: formData.customFeatures || '',
         imageUrl: imageUrls[0],
@@ -433,7 +437,16 @@ export default function SellPage() {
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
                     <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg">
-                      <img src={image.url} alt={`Listing view ${index + 1}`} className="w-full h-full object-cover" />
+                      <img
+                        src={image.url}
+                        alt={`Listing view ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        style={{
+                          objectPosition: index === 0
+                            ? `${formData.imageFocusX}% ${formData.imageFocusY}%`
+                            : 'center'
+                        }}
+                      />
                       {image.uploading && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -491,6 +504,38 @@ export default function SellPage() {
                 <p className="text-sm text-orange-600 bg-orange-50 border border-orange-200 rounded-xl p-3">
                   At least 1 photo is required - good photos sell faster!
                 </p>
+              )}
+
+              {images.length > 0 && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <p className="text-sm font-bold text-blue-900 mb-3">
+                    Center your main photo (homepage preview)
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <label className="text-xs font-semibold text-blue-800">
+                      Horizontal ({formData.imageFocusX}%)
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={formData.imageFocusX}
+                        onChange={(e) => setFormData({ ...formData, imageFocusX: Number(e.target.value) })}
+                        className="w-full mt-2"
+                      />
+                    </label>
+                    <label className="text-xs font-semibold text-blue-800">
+                      Vertical ({formData.imageFocusY}%)
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={formData.imageFocusY}
+                        onChange={(e) => setFormData({ ...formData, imageFocusY: Number(e.target.value) })}
+                        className="w-full mt-2"
+                      />
+                    </label>
+                  </div>
+                </div>
               )}
             </div>
 

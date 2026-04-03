@@ -89,6 +89,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     },
     wofExpiry: '',
     regoExpiry: '',
+    imageFocusX: 50,
+    imageFocusY: 50,
     customFeatures: '',
     sellerPhone: '',
     sellerFacebook: '',
@@ -147,6 +149,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           equipment: { ...defaultEquipment, ...(van.equipment || {}) },
           wofExpiry: formatDateForInput(van.wofExpiry),
           regoExpiry: formatDateForInput(van.regoExpiry),
+          imageFocusX: Number.isFinite(Number(van.imageFocusX)) ? Number(van.imageFocusX) : 50,
+          imageFocusY: Number.isFinite(Number(van.imageFocusY)) ? Number(van.imageFocusY) : 50,
           customFeatures: van.customFeatures || '',
           sellerPhone: van.seller?.phone || '',
           sellerFacebook: van.seller?.facebook || '',
@@ -396,6 +400,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           buyBackConditions: formData.buyBack ? sanitizeText(formData.buyBackConditions) : '',
           wofExpiry: formData.wofExpiry,
           regoExpiry: formData.regoExpiry,
+          imageFocusX: Math.max(0, Math.min(100, Number(formData.imageFocusX ?? 50))),
+          imageFocusY: Math.max(0, Math.min(100, Number(formData.imageFocusY ?? 50))),
           customFeatures: sanitizeText(formData.customFeatures || ''),
           imageUrl: imageUrls[0],
           images: imageUrls,
@@ -439,6 +445,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           buyBackConditions: formData.buyBack ? sanitizeText(formData.buyBackConditions) : '',
           wofExpiry: formData.wofExpiry,
           regoExpiry: formData.regoExpiry,
+          imageFocusX: Math.max(0, Math.min(100, Number(formData.imageFocusX ?? 50))),
+          imageFocusY: Math.max(0, Math.min(100, Number(formData.imageFocusY ?? 50))),
           customFeatures: sanitizeText(formData.customFeatures || ''),
           imageUrl: imageUrls[0],
           images: imageUrls,
@@ -576,6 +584,11 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                         src={image.url}
                         alt={`Listing view ${index + 1}`}
                         className="w-full h-full object-cover"
+                        style={{
+                          objectPosition: index === 0
+                            ? `${formData.imageFocusX}% ${formData.imageFocusY}%`
+                            : 'center'
+                        }}
                       />
                       {image.uploading && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -635,6 +648,38 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                   <span>⚠️</span>
                   <span>At least 1 photo required</span>
                 </p>
+              )}
+
+              {images.length > 0 && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <p className="text-sm font-bold text-blue-900 mb-3">
+                    Center your main photo (homepage preview)
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <label className="text-xs font-semibold text-blue-800">
+                      Horizontal ({formData.imageFocusX}%)
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={formData.imageFocusX}
+                        onChange={(e) => setFormData({ ...formData, imageFocusX: Number(e.target.value) })}
+                        className="w-full mt-2"
+                      />
+                    </label>
+                    <label className="text-xs font-semibold text-blue-800">
+                      Vertical ({formData.imageFocusY}%)
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={formData.imageFocusY}
+                        onChange={(e) => setFormData({ ...formData, imageFocusY: Number(e.target.value) })}
+                        className="w-full mt-2"
+                      />
+                    </label>
+                  </div>
+                </div>
               )}
             </div>
 

@@ -9,13 +9,16 @@ import { useTranslation } from 'react-i18next';
 import { useAutoTranslate } from '../hooks/useAutoTranslate';
 
 // Carousel de photos pour la card
-const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
+const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStart = useRef(null);
 
   const allImages = images?.length > 0
     ? images
     : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'];
+  const focalX = Number.isFinite(Number(focalPoint?.x)) ? Number(focalPoint.x) : 50;
+  const focalY = Number.isFinite(Number(focalPoint?.y)) ? Number(focalPoint.y) : 50;
+  const imagePosition = currentIndex === 0 ? `${focalX}% ${focalY}%` : 'center';
 
   const goNext = (e) => {
     e?.stopPropagation();
@@ -58,6 +61,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
         alt={`Campervan for sale NZ - ${title} ${currentIndex + 1} - Kiwi Van Market`}
         className={`relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${vanStatus === 'sold' ? 'grayscale-[0.5] contrast-[0.8]' : 'opacity-100'}`}
         loading={priority ? "eager" : "lazy"}
+        style={{ objectPosition: imagePosition }}
       />
 
       {vanStatus === 'sold' && (
@@ -129,7 +133,13 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
       className="premium-card group block overflow-hidden"
     >
       <div className="relative">
-        <ImageCarousel images={images} title={translatedTitle} vanStatus={van.status} priority={priority} />
+        <ImageCarousel
+          images={images}
+          title={translatedTitle}
+          vanStatus={van.status}
+          priority={priority}
+          focalPoint={{ x: van.imageFocusX, y: van.imageFocusY }}
+        />
 
         {/* Favorite button */}
         <button

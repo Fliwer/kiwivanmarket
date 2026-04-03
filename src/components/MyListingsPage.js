@@ -46,7 +46,10 @@ export default function MyListingsPage() {
   }, [currentUser, loading, navigate]);
 
   const fetchVans = useCallback(async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
