@@ -306,7 +306,7 @@ export default function VanPage() {
                   ...userData, // Start with latest user data (photo, bio, phone)
                   ...rawVanData.seller, // Override with van-specific data if any
                 };
-                
+
                 // Ensure phone from profile is used if van-specific phone is missing
                 if (!vanData.seller.phone && userData.phone) {
                   vanData.seller.phone = userData.phone;
@@ -431,7 +431,7 @@ ${shareUrl}
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!showLightbox) return;
-      
+
       if (e.key === 'Escape') setShowLightbox(false);
       if (e.key === 'ArrowLeft') prevImage();
       if (e.key === 'ArrowRight') nextImage();
@@ -653,12 +653,12 @@ ${shareUrl}
               {/* Main Image */}
               <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl overflow-hidden shadow-2xl group z-20">
                 <div className="aspect-[4/3] flex items-center justify-center p-2">
-                    <img
-                      src={getLargeImage(images[currentImageIndex])}
-                      alt={`${van.title} - ${currentImageIndex + 1}`}
-                      className="max-w-full max-h-full object-contain rounded-2xl cursor-zoom-in"
-                      onClick={() => setShowLightbox(true)}
-                    />
+                  <img
+                    src={getLargeImage(images[currentImageIndex])}
+                    alt={`${van.title} - ${currentImageIndex + 1}`}
+                    className="max-w-full max-h-full object-contain rounded-2xl cursor-zoom-in"
+                    onClick={() => setShowLightbox(true)}
+                  />
                 </div>
 
                 {/* Navigation images */}
@@ -916,15 +916,15 @@ ${shareUrl}
                       </p>
                     </div>
                   </div>
-                  
+
                   {/* CarJam Background Check Link */}
                   <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                       <Shield size={18} className="text-blue-500" />
-                       <span className="text-sm font-bold text-slate-700">CarJam Background Check</span>
+                      <Shield size={18} className="text-blue-500" />
+                      <span className="text-sm font-bold text-slate-700">CarJam Background Check</span>
                     </div>
                     {van.plateNumber ? (
-                      <a 
+                      <a
                         href={`https://www.carjam.co.nz/car/?plate=${van.plateNumber.toUpperCase()}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -935,7 +935,7 @@ ${shareUrl}
                       </a>
                     ) : (
                       <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl uppercase tracking-widest italic opacity-60">
-                         {t('van_page.carjam_not_provided')}
+                        {t('van_page.carjam_not_provided')}
                       </span>
                     )}
                   </div>
@@ -1093,7 +1093,7 @@ ${shareUrl}
                 {/* Premium Contact Actions */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                   {seller.phone && (
-                    <button 
+                    <button
                       onClick={() => {
                         if (!currentUser) {
                           setShowAuthModal(true);
@@ -1108,7 +1108,7 @@ ${shareUrl}
                     </button>
                   )}
                   {seller.facebook && (
-                    <button 
+                    <button
                       onClick={() => {
                         if (!currentUser) {
                           setShowAuthModal(true);
@@ -1440,10 +1440,10 @@ ${shareUrl}
                     <button
                       key={idx}
                       onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
-                      className={`flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden transition-all duration-300 ${idx === currentImageIndex 
-                        ? 'ring-4 ring-emerald-500 ring-offset-4 ring-offset-black scale-110' 
+                      className={`flex-shrink-0 w-16 h-16 rounded-2xl overflow-hidden transition-all duration-300 ${idx === currentImageIndex
+                        ? 'ring-4 ring-emerald-500 ring-offset-4 ring-offset-black scale-110'
                         : 'opacity-40 hover:opacity-100 hover:scale-105'
-                      }`}
+                        }`}
                     >
                       <img src={getThumbnail(img)} alt="" className="w-full h-full object-cover" />
                     </button>
@@ -1457,7 +1457,7 @@ ${shareUrl}
         {/* Sticky Mobile Action Bar - HIGH CONVERSION TOOL */}
         {!isOwner && van.status !== 'sold' && (
           <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[150] p-4 safe-bottom pointer-events-none">
-            <motion.div 
+            <motion.div
               initial={{ y: 100 }}
               animate={{ y: 0 }}
               className="bg-white/95 backdrop-blur-xl border border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-[2.5rem] p-3 flex items-center gap-3 pointer-events-auto max-w-md mx-auto"
@@ -1473,7 +1473,7 @@ ${shareUrl}
 
               <div className="flex gap-2">
                 {seller.phone && (
-                  <button 
+                  <button
                     onClick={() => {
                       if (!currentUser) {
                         setShowAuthModal(true);
@@ -1487,7 +1487,7 @@ ${shareUrl}
                     <Phone size={24} fill="currentColor" />
                   </button>
                 )}
-                
+
                 <button
                   onClick={() => {
                     const messageBox = document.getElementById('quick-message-box');

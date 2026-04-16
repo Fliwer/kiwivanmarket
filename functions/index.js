@@ -3,7 +3,7 @@
 // ============================================
 //
 // ✅ Email notifications (Resend)
-// 🔒 Stripe payment functions (COMMENTED - activate when needed)
+// 🔒 Stripe (Checkout, Connect, webhook) — secrets via Secret Manager
 //
 // ============================================
 
@@ -21,6 +21,8 @@ const { Resend } = require('resend');
 // ✅ Define secrets for Firebase Functions v2
 const resendApiKey = defineSecret('RESEND_API_KEY');
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
+const stripeSecretKey = defineSecret('STRIPE_SECRET_KEY');
+const stripeWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET');
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
@@ -1067,46 +1069,17 @@ exports.generateVanDescription = onCall(
   }
 );
 
-/* ============================================
-// 🔒 STRIPE FUNCTIONS - COMMENTED OUT
 // ============================================
-// Uncomment when you're ready to use Stripe payments
-// Don't forget to add STRIPE_SECRET_KEY to .env
-
-const { onRequest, onCall, HttpsError } = require('firebase-functions/v2/https');
-const { onSchedule } = require('firebase-functions/v2/scheduler');
-const { onDocumentUpdated } = require('firebase-functions/v2/firestore');
-
-// Initialiser Stripe avec la clé secrète
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
+// 💳 STRIPE PAYMENTS - Production Grade
 // ============================================
-// 🔒 CORS SÉCURISÉ
-// ============================================
+const Stripe = require('stripe');
 
 const ALLOWED_ORIGINS = [
-  'http://localhost:3000',
-  'http://localhost:5173',
   'https://kiwivanmarket.com',
   'https://www.kiwivanmarket.com',
+  'http://localhost:3000',
+  'http://localhost:5173',
 ];
-
-function isOriginAllowed(origin) {
-  if (!origin) return true;
-  return ALLOWED_ORIGINS.includes(origin);
-}
-
-function setCorsHeaders(res, origin) {
-  const allowedOrigin = isOriginAllowed(origin) ? origin : ALLOWED_ORIGINS[0];
-  res.set('Access-Control-Allow-Origin', allowedOrigin);
-  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.set('Access-Control-Max-Age', '3600');
-}
-
-// ============================================
-// 💰 CONFIG PAIEMENT
-// ============================================
 
 const PAYMENT_CONFIG = {
   MIN_DEPOSIT: 500,
@@ -1117,14 +1090,34 @@ const PAYMENT_CONFIG = {
   SELLER_RESPONSE_HOURS: 48,
 };
 
+function getStripeClient() {
+  const key = stripeSecretKey.value();
+  if (!key) {
+    throw new HttpsError('failed-precondition', 'STRIPE_SECRET_KEY is not configured.');
+  }
+  return new Stripe(key);
+}
+
+function isOriginAllowed(origin) {
+  if (!origin) return true;
+  return ALLOWED_ORIGINS.includes(origin);
+}
+
+function setCorsHeaders(res, origin) {
+  const allowedOrigin = isOriginAllowed(origin) ? origin : ALLOWED_ORIGINS[0];
+  res.set('Access-Control-Allow-Origin', allowedOrigin);
+  res.set('Vary', 'Origin');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Max-Age', '3600');
+}
+
 function calculateDepositFromPrice(vanPrice) {
   if (!vanPrice || vanPrice <= 0) return PAYMENT_CONFIG.MIN_DEPOSIT;
-
   if (vanPrice >= PAYMENT_CONFIG.PERCENTAGE_THRESHOLD) {
     const percentageDeposit = Math.round(vanPrice * (PAYMENT_CONFIG.DEPOSIT_PERCENTAGE / 100));
     return Math.max(percentageDeposit, PAYMENT_CONFIG.MIN_DEPOSIT);
   }
-
   return PAYMENT_CONFIG.MIN_DEPOSIT;
 }
 
@@ -1132,29 +1125,478 @@ function calculatePlatformFee(depositAmount) {
   return Math.round(depositAmount * (PAYMENT_CONFIG.PLATFORM_FEE_PERCENTAGE / 100));
 }
 
-// ============================================
-// 🔒 VÉRIFICATION AUTHENTIFICATION
-// ============================================
-
 async function verifyAuthToken(req) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw new Error('Missing authentication token');
+  const authHeader = req.headers.authorization || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    throw new HttpsError('unauthenticated', 'Missing authentication token');
   }
-
-  const idToken = authHeader.split('Bearer ')[1];
-
+  const idToken = authHeader.slice('Bearer '.length).trim();
+  if (!idToken) {
+    throw new HttpsError('unauthenticated', 'Invalid authentication token');
+  }
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-    return decodedToken;
+    return await admin.auth().verifyIdToken(idToken);
   } catch (error) {
-    console.error('❌ Token invalide:', error.message);
-    throw new Error('Invalid authentication token');
+    console.error('❌ Invalid token:', error.message);
+    throw new HttpsError('unauthenticated', 'Invalid authentication token');
   }
 }
 
-// ... REST OF STRIPE FUNCTIONS ...
-// See full code in git history or backup
+function sanitizeBaseUrl(baseUrl) {
+  if (!baseUrl || typeof baseUrl !== 'string') return 'https://kiwivanmarket.com';
+  const normalized = baseUrl.trim().replace(/\/+$/, '');
+  return ALLOWED_ORIGINS.includes(normalized) ? normalized : 'https://kiwivanmarket.com';
+}
 
-============================================ */
+async function refreshStripeAccountSnapshot(stripe, uid) {
+  const stripeRef = db.collection('stripeAccounts').doc(uid);
+  const stripeDoc = await stripeRef.get();
+  if (!stripeDoc.exists) return null;
+  const data = stripeDoc.data();
+  if (!data?.stripeAccountId) return null;
+
+  const account = await stripe.accounts.retrieve(data.stripeAccountId);
+  const patch = {
+    chargesEnabled: !!account.charges_enabled,
+    payoutsEnabled: !!account.payouts_enabled,
+    detailsSubmitted: !!account.details_submitted,
+    disabledReason: account.requirements?.disabled_reason || null,
+    currentlyDue: account.requirements?.currently_due || [],
+    eventuallyDue: account.requirements?.eventually_due || [],
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastCheckedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+  await stripeRef.set(patch, { merge: true });
+
+  return { ...data, ...patch };
+}
+
+exports.createStripeConnectAccount = onCall(
+  { secrets: [stripeSecretKey], timeoutSeconds: 60 },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required.');
+    }
+
+    const uid = request.auth.uid;
+    const email = request.auth.token.email || null;
+    const baseUrl = sanitizeBaseUrl(request.data?.baseUrl);
+    const stripe = getStripeClient();
+    const stripeRef = db.collection('stripeAccounts').doc(uid);
+    const existing = await stripeRef.get();
+
+    let accountId = existing.data()?.stripeAccountId || null;
+    if (!accountId) {
+      const account = await stripe.accounts.create({
+        type: 'express',
+        country: 'NZ',
+        email: email || undefined,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
+        metadata: {
+          userId: uid,
+          source: 'kiwivanmarket',
+        },
+      });
+      accountId = account.id;
+      await stripeRef.set(
+        {
+          userId: uid,
+          stripeAccountId: accountId,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
+
+    const accountLink = await stripe.accountLinks.create({
+      account: accountId,
+      refresh_url: `${baseUrl}/profile?stripe=refresh`,
+      return_url: `${baseUrl}/profile?stripe=return`,
+      type: 'account_onboarding',
+    });
+
+    await refreshStripeAccountSnapshot(stripe, uid);
+    return { url: accountLink.url, accountId };
+  }
+);
+
+exports.checkSellerStripeStatus = onCall(
+  { secrets: [stripeSecretKey], timeoutSeconds: 30 },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required.');
+    }
+    const uid = request.auth.uid;
+    const stripe = getStripeClient();
+    const status = await refreshStripeAccountSnapshot(stripe, uid);
+    if (!status) {
+      return {
+        hasAccount: false,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+      };
+    }
+    return {
+      hasAccount: true,
+      chargesEnabled: !!status.chargesEnabled,
+      payoutsEnabled: !!status.payoutsEnabled,
+      detailsSubmitted: !!status.detailsSubmitted,
+      disabledReason: status.disabledReason || null,
+      currentlyDue: status.currentlyDue || [],
+    };
+  }
+);
+
+exports.getStripeDashboardLink = onCall(
+  { secrets: [stripeSecretKey], timeoutSeconds: 30 },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required.');
+    }
+
+    const uid = request.auth.uid;
+    const stripeDoc = await db.collection('stripeAccounts').doc(uid).get();
+    const accountId = stripeDoc.data()?.stripeAccountId;
+    if (!accountId) {
+      throw new HttpsError('failed-precondition', 'Stripe account is not configured.');
+    }
+
+    const stripe = getStripeClient();
+    const link = await stripe.accounts.createLoginLink(accountId);
+    return { url: link.url };
+  }
+);
+
+exports.createCheckoutSession = onRequest(
+  { secrets: [stripeSecretKey], timeoutSeconds: 60 },
+  async (req, res) => {
+    const origin = req.get('origin') || '';
+    setCorsHeaders(res, origin);
+    if (req.method === 'OPTIONS') return res.status(204).send('');
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+    if (!isOriginAllowed(origin)) return res.status(403).json({ error: 'Origin not allowed' });
+
+    try {
+      const decoded = await verifyAuthToken(req);
+      const reservationId = String(req.body?.reservationId || '').trim();
+      const vanId = String(req.body?.vanId || '').trim();
+      const successUrl = String(req.body?.successUrl || '').trim();
+      const cancelUrl = String(req.body?.cancelUrl || '').trim();
+
+      if (!reservationId || !vanId || !successUrl || !cancelUrl) {
+        return res.status(400).json({ error: 'Missing required payload.' });
+      }
+
+      const reservationRef = db.collection('reservations').doc(reservationId);
+      const reservationDoc = await reservationRef.get();
+      if (!reservationDoc.exists) return res.status(404).json({ error: 'Reservation not found.' });
+      const reservation = reservationDoc.data();
+
+      if (reservation.buyerId !== decoded.uid) {
+        return res.status(403).json({ error: 'Forbidden: reservation does not belong to user.' });
+      }
+      if (reservation.status !== 'pending') {
+        return res.status(409).json({ error: 'Reservation is not payable anymore.' });
+      }
+      if (reservation.vanId !== vanId) {
+        return res.status(400).json({ error: 'Van mismatch.' });
+      }
+      if (reservation.expiresAt) {
+        const expires = reservation.expiresAt.toDate ? reservation.expiresAt.toDate() : new Date(reservation.expiresAt);
+        if (expires.getTime() <= Date.now()) {
+          return res.status(409).json({ error: 'Reservation has expired.' });
+        }
+      }
+
+      const vanDoc = await db.collection('vans').doc(vanId).get();
+      if (!vanDoc.exists) return res.status(404).json({ error: 'Van not found.' });
+      const van = vanDoc.data();
+      const sellerId = van?.seller?.uid;
+      if (!sellerId || reservation.sellerId !== sellerId) {
+        return res.status(400).json({ error: 'Seller mismatch.' });
+      }
+
+      const stripeAccountDoc = await db.collection('stripeAccounts').doc(sellerId).get();
+      const sellerStripeAccountId = stripeAccountDoc.data()?.stripeAccountId;
+      const sellerPayoutsEnabled = !!stripeAccountDoc.data()?.payoutsEnabled;
+      if (!sellerStripeAccountId || !sellerPayoutsEnabled) {
+        return res.status(409).json({ error: 'Seller payment account is not ready yet.' });
+      }
+
+      const vanPrice = Number(van?.price || reservation.vanPrice || 0);
+      if (!Number.isFinite(vanPrice) || vanPrice <= 0) {
+        return res.status(400).json({ error: 'Invalid van price.' });
+      }
+
+      const depositAmount = calculateDepositFromPrice(vanPrice);
+      const platformFee = calculatePlatformFee(depositAmount);
+      const sellerPayout = depositAmount - platformFee;
+      const remainingBalance = vanPrice - depositAmount;
+      const stripe = getStripeClient();
+
+      if (reservation.checkoutSessionId) {
+        try {
+          const existing = await stripe.checkout.sessions.retrieve(reservation.checkoutSessionId);
+          if (existing?.status === 'open' && existing.url) {
+            return res.status(200).json({ url: existing.url, id: existing.id, reused: true });
+          }
+        } catch (e) {
+          console.warn('Unable to reuse previous checkout session:', e.message);
+        }
+      }
+
+      const session = await stripe.checkout.sessions.create(
+        {
+          mode: 'payment',
+          success_url: successUrl,
+          cancel_url: cancelUrl,
+          payment_method_types: ['card'],
+          customer_email: decoded.email || reservation.buyerEmail || undefined,
+          line_items: [
+            {
+              quantity: 1,
+              price_data: {
+                currency: PAYMENT_CONFIG.CURRENCY,
+                unit_amount: depositAmount * 100,
+                product_data: {
+                  name: `Reservation deposit - ${van.title || reservation.vanTitle || 'Campervan'}`,
+                  description: `Reservation ${reservationId.slice(0, 8).toUpperCase()}`,
+                },
+              },
+            },
+          ],
+          payment_intent_data: {
+            application_fee_amount: platformFee * 100,
+            transfer_data: {
+              destination: sellerStripeAccountId,
+            },
+            metadata: {
+              reservationId,
+              vanId,
+              buyerId: decoded.uid,
+              sellerId,
+            },
+          },
+          metadata: {
+            reservationId,
+            vanId,
+            buyerId: decoded.uid,
+            sellerId,
+          },
+        },
+        { idempotencyKey: `checkout_session_${reservationId}` }
+      );
+
+      await reservationRef.set(
+        {
+          checkoutSessionId: session.id,
+          checkoutUrl: session.url || null,
+          checkoutSessionCreatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          depositAmount,
+          platformFee,
+          sellerPayout,
+          remainingBalance,
+          currency: PAYMENT_CONFIG.CURRENCY.toUpperCase(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      return res.status(200).json({ url: session.url, id: session.id, reused: false });
+    } catch (error) {
+      console.error('❌ createCheckoutSession error:', error);
+      const message = error instanceof HttpsError ? error.message : 'Failed to create checkout session';
+      return res.status(500).json({ error: message });
+    }
+  }
+);
+
+async function markReservationPaidFromSession(session) {
+  const reservationId = session.metadata?.reservationId;
+  if (!reservationId) return;
+
+  const reservationRef = db.collection('reservations').doc(reservationId);
+  const reservationDoc = await reservationRef.get();
+  if (!reservationDoc.exists) return;
+  const reservation = reservationDoc.data();
+
+  if (['paid', 'buyer_confirmed', 'completed', 'cancelled', 'expired'].includes(reservation.status)) {
+    return;
+  }
+
+  const vanDoc = await db.collection('vans').doc(reservation.vanId).get();
+  const vanPrice = Number(vanDoc.data()?.price || reservation.vanPrice || 0);
+  const expectedDeposit = calculateDepositFromPrice(vanPrice);
+  const amountPaid = Number(session.amount_total || 0) / 100;
+  if (Math.round(amountPaid) !== Math.round(expectedDeposit)) {
+    console.error('❌ Amount mismatch in Stripe webhook', { reservationId, amountPaid, expectedDeposit });
+    return;
+  }
+
+  await reservationRef.set(
+    {
+      status: 'paid',
+      paidAt: admin.firestore.FieldValue.serverTimestamp(),
+      paymentIntentId: session.payment_intent || null,
+      checkoutSessionId: session.id,
+      checkoutUrl: admin.firestore.FieldValue.delete(),
+      sellerResponseDeadline: new Date(Date.now() + PAYMENT_CONFIG.SELLER_RESPONSE_HOURS * 60 * 60 * 1000),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+exports.stripeWebhook = onRequest(
+  { secrets: [stripeSecretKey, stripeWebhookSecret], timeoutSeconds: 60 },
+  async (req, res) => {
+    if (req.method !== 'POST') return res.status(405).send('Method not allowed');
+    const signature = req.get('stripe-signature');
+    if (!signature) return res.status(400).send('Missing signature');
+
+    try {
+      const stripe = getStripeClient();
+      const webhookSecret = stripeWebhookSecret.value();
+      if (!webhookSecret) {
+        return res.status(500).send('Webhook secret not configured');
+      }
+
+      const event = stripe.webhooks.constructEvent(req.rawBody, signature, webhookSecret);
+      const processedRef = db.collection('stripeWebhookEvents').doc(event.id);
+      if ((await processedRef.get()).exists) {
+        return res.status(200).json({ received: true, duplicate: true });
+      }
+
+      if (event.type === 'checkout.session.completed') {
+        await markReservationPaidFromSession(event.data.object);
+      }
+
+      await processedRef.set({
+        type: event.type,
+        processedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      return res.status(200).json({ received: true });
+    } catch (error) {
+      console.error('❌ Stripe webhook error:', error);
+      return res.status(400).send(`Webhook Error: ${error.message}`);
+    }
+  }
+);
+
+exports.getReservation = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Authentication required.');
+  }
+
+  const reservationId = String(request.data?.reservationId || '').trim();
+  if (!reservationId) {
+    throw new HttpsError('invalid-argument', 'reservationId is required.');
+  }
+
+  const reservationDoc = await db.collection('reservations').doc(reservationId).get();
+  if (!reservationDoc.exists) {
+    throw new HttpsError('not-found', 'Reservation not found.');
+  }
+  const reservation = reservationDoc.data();
+  const isParticipant = [reservation.buyerId, reservation.sellerId].includes(request.auth.uid);
+  if (!isParticipant && request.auth.token.admin !== true) {
+    throw new HttpsError('permission-denied', 'Access denied.');
+  }
+  return { id: reservationDoc.id, ...reservation };
+});
+
+exports.confirmReservation = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Authentication required.');
+  }
+
+  const reservationId = String(request.data?.reservationId || '').trim();
+  if (!reservationId) {
+    throw new HttpsError('invalid-argument', 'reservationId is required.');
+  }
+
+  const ref = db.collection('reservations').doc(reservationId);
+  const snap = await ref.get();
+  if (!snap.exists) throw new HttpsError('not-found', 'Reservation not found.');
+  const reservation = snap.data();
+
+  if (reservation.sellerId !== request.auth.uid) {
+    throw new HttpsError('permission-denied', 'Only the seller can confirm this reservation.');
+  }
+  if (reservation.status !== 'paid') {
+    throw new HttpsError('failed-precondition', 'Reservation is not in a confirmable state.');
+  }
+
+  await ref.set(
+    {
+      status: 'confirmed',
+      sellerAcceptedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  return { success: true };
+});
+
+exports.cancelReservation = onCall(
+  { secrets: [stripeSecretKey], timeoutSeconds: 60 },
+  async (request) => {
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Authentication required.');
+    }
+
+    const reservationId = String(request.data?.reservationId || '').trim();
+    const reason = String(request.data?.reason || '').trim().slice(0, 500);
+    if (!reservationId) {
+      throw new HttpsError('invalid-argument', 'reservationId is required.');
+    }
+
+    const ref = db.collection('reservations').doc(reservationId);
+    const snap = await ref.get();
+    if (!snap.exists) throw new HttpsError('not-found', 'Reservation not found.');
+    const reservation = snap.data();
+
+    const isParticipant = [reservation.buyerId, reservation.sellerId].includes(request.auth.uid);
+    if (!isParticipant && request.auth.token.admin !== true) {
+      throw new HttpsError('permission-denied', 'Access denied.');
+    }
+    if (['completed', 'cancelled', 'expired'].includes(reservation.status)) {
+      throw new HttpsError('failed-precondition', 'Reservation cannot be cancelled anymore.');
+    }
+
+    let refundId = null;
+    if (reservation.status === 'paid' && reservation.paymentIntentId) {
+      const stripe = getStripeClient();
+      const refund = await stripe.refunds.create({
+        payment_intent: reservation.paymentIntentId,
+        reason: 'requested_by_customer',
+        metadata: {
+          reservationId,
+          cancelledBy: request.auth.uid,
+        },
+      });
+      refundId = refund.id;
+    }
+
+    await ref.set(
+      {
+        status: 'cancelled',
+        cancelledAt: admin.firestore.FieldValue.serverTimestamp(),
+        cancelledBy: request.auth.uid,
+        cancellationReason: reason || null,
+        refundId,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    return { success: true, refundId };
+  }
+);

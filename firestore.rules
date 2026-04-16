@@ -26,8 +26,7 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return isAuthenticated() &&
-             (request.auth.token.admin == true || request.auth.token.email == 'kiwivanmarket.contact@gmail.com');
+      return isAuthenticated() && request.auth.token.admin == true;
     }
     
     function hasVerifiedEmail() {
@@ -131,6 +130,38 @@ service cloud.firestore {
     function isConversationParticipant(conversationId) {
       return isAuthenticated() &&
              currentUserId() in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+    }
+
+    function isValidReservationCreate(vanDoc) {
+      return request.resource.data.keys().hasOnly([
+               'vanId', 'van', 'vanTitle', 'vanPrice', 'vanImage', 'vanLocation', 'vanYear',
+               'sellerId', 'sellerName', 'sellerEmail',
+               'buyerId', 'buyerName', 'buyerEmail',
+               'depositAmount', 'platformFee', 'sellerPayout', 'remainingBalance',
+               'currency', 'status', 'createdAt', 'expiresAt', 'validUntil'
+             ]) &&
+             request.resource.data.status == 'pending' &&
+             request.resource.data.buyerId == currentUserId() &&
+             request.resource.data.buyerId != request.resource.data.sellerId &&
+             request.resource.data.vanId is string &&
+             request.resource.data.vanId.size() > 0 &&
+             request.resource.data.van is map &&
+             request.resource.data.van.id == request.resource.data.vanId &&
+             request.resource.data.vanPrice is number &&
+             request.resource.data.vanPrice == vanDoc.data.price &&
+             request.resource.data.sellerId == vanDoc.data.seller.uid &&
+             vanDoc.data.status in ['active', 'sold'] &&
+             request.resource.data.depositAmount is number &&
+             request.resource.data.depositAmount >= 500 &&
+             request.resource.data.depositAmount <= request.resource.data.vanPrice &&
+             request.resource.data.platformFee is number &&
+             request.resource.data.platformFee >= 0 &&
+             request.resource.data.platformFee <= request.resource.data.depositAmount &&
+             request.resource.data.sellerPayout is number &&
+             request.resource.data.sellerPayout == request.resource.data.depositAmount - request.resource.data.platformFee &&
+             request.resource.data.remainingBalance is number &&
+             request.resource.data.remainingBalance == request.resource.data.vanPrice - request.resource.data.depositAmount &&
+             request.resource.data.currency in ['NZD', 'nzd'];
     }
     
     
@@ -242,15 +273,35 @@ service cloud.firestore {
       allow read: if (isAuthenticated() && currentUserId() in resource.data.participants) || isAdmin();
       
       allow create: if isAuthenticated() && 
+                      request.resource.data.keys().hasOnly([
+                        'participants', 'createdAt', 'vanId',
+                        'sellerId', 'buyerId', 'buyerName',
+                        'participantNames', 'participantEmails',
+                        'van', 'status', 'lastMessage', 'lastMessageAt',
+                        'lastMessageSenderId', 'unreadCount', 'typing',
+                        'emailNotificationSent', 'emailNotificationSentAt',
+                        'lastEmailNotification', 'reminderSentAt', 'updatedAt'
+                      ]) &&
                       currentUserId() in request.resource.data.participants &&
                       request.resource.data.participants.size() == 2 &&
+                      request.resource.data.participants[0] != request.resource.data.participants[1] &&
+                      request.resource.data.buyerId in request.resource.data.participants &&
+                      request.resource.data.sellerId in request.resource.data.participants &&
+                      request.resource.data.buyerId != request.resource.data.sellerId &&
                       request.resource.data.keys().hasAll(['participants', 'createdAt', 'vanId']);
       
-      allow update: if isAuthenticated() && 
+      allow update: if isAuthenticated() &&
                       currentUserId() in resource.data.participants &&
                       fieldUnchanged('participants') &&
                       fieldUnchanged('vanId') &&
-                      fieldUnchanged('createdAt');
+                      fieldUnchanged('createdAt') &&
+                      (fieldUnchanged('status') || request.resource.data.status in ['new', 'active', 'archived', 'closed']) &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                        'lastMessage', 'lastMessageAt', 'lastMessageSenderId',
+                        'status', 'unreadCount', 'typing', 'updatedAt',
+                        'lastEmailNotification', 'emailNotificationSent', 'emailNotificationSentAt',
+                        'reminderSentAt'
+                      ]);
       
       allow delete: if isAdmin();
       
@@ -311,9 +362,8 @@ service cloud.firestore {
                      isAdmin());
       
       allow create: if isAuthenticated() &&
-                      request.resource.data.buyerId == currentUserId() &&
-                      request.resource.data.status == 'pending' &&
-                      request.resource.data.keys().hasAll(['buyerId', 'sellerId', 'vanId', 'status', 'createdAt']);
+                      exists(/databases/$(database)/documents/vans/$(request.resource.data.vanId)) &&
+                      isValidReservationCreate(get(/databases/$(database)/documents/vans/$(request.resource.data.vanId)));
       
       allow update: if isAuthenticated() && 
                       currentUserId() == resource.data.buyerId &&
@@ -327,7 +377,7 @@ service cloud.firestore {
                         )
                         ||
                         (
-                          resource.data.status == 'paid' &&
+                          resource.data.status in ['paid', 'confirmed'] &&
                           (resource.data.buyerConfirmed == false || 
                            resource.data.buyerConfirmed == null ||
                            !('buyerConfirmed' in resource.data)) &&
@@ -407,7 +457,7 @@ service cloud.firestore {
     // ═══════════════════════════════════════════════════════════════════
     
     match /confirmations/{confirmationId} {
-      allow read: if isAuthenticated();
+      allow read: if isAdmin();
       allow create, update, delete: if false;
     }
     

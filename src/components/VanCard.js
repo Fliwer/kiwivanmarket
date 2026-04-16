@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useAutoTranslate } from '../hooks/useAutoTranslate';
 
 // Carousel de photos pour la card
-const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint }) => {
+const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint, focalZoom = 1 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStart = useRef(null);
 
@@ -18,6 +18,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint 
     : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'];
   const focalX = Number.isFinite(Number(focalPoint?.x)) ? Number(focalPoint.x) : 50;
   const focalY = Number.isFinite(Number(focalPoint?.y)) ? Number(focalPoint.y) : 50;
+  const normalizedZoom = Number.isFinite(Number(focalZoom)) ? Math.min(2, Math.max(1, Number(focalZoom))) : 1;
   const imagePosition = currentIndex === 0 ? `${focalX}% ${focalY}%` : 'center';
 
   const goNext = (e) => {
@@ -59,9 +60,13 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint 
       <img
         src={getThumbnail(allImages[currentIndex]) || '/placeholder-van.jpg'}
         alt={`Campervan for sale NZ - ${title} ${currentIndex + 1} - Kiwi Van Market`}
-        className={`relative z-10 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 ${vanStatus === 'sold' ? 'grayscale-[0.5] contrast-[0.8]' : 'opacity-100'}`}
+        className={`relative z-10 w-full h-full object-cover transition-transform duration-700 ${vanStatus === 'sold' ? 'grayscale-[0.5] contrast-[0.8]' : 'opacity-100'}`}
         loading={priority ? "eager" : "lazy"}
-        style={{ objectPosition: imagePosition }}
+        style={{
+          objectPosition: imagePosition,
+          transform: `scale(${currentIndex === 0 ? normalizedZoom : 1})`,
+          transformOrigin: 'center center'
+        }}
       />
 
       {vanStatus === 'sold' && (
@@ -139,6 +144,7 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           vanStatus={van.status}
           priority={priority}
           focalPoint={{ x: van.imageFocusX, y: van.imageFocusY }}
+          focalZoom={van.imageZoom}
         />
 
         {/* Favorite button */}

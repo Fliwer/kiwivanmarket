@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
@@ -22,6 +22,8 @@ export default function SellPage() {
   const [newVanId, setNewVanId] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [generatingAI, setGeneratingAI] = useState(false);
+  const cropStageRef = useRef(null);
+  const [isCropDragging, setIsCropDragging] = useState(false);
   const toast = useToast();
 
   // ✨ IA Generation
@@ -79,6 +81,7 @@ export default function SellPage() {
     regoExpiry: '',
     imageFocusX: 50,
     imageFocusY: 50,
+    imageZoom: 1,
     plateNumber: '',
     customFeatures: '',
     sellerPhone: '',
@@ -219,6 +222,7 @@ export default function SellPage() {
         regoExpiry: formData.regoExpiry,
         imageFocusX: Math.max(0, Math.min(100, Number(formData.imageFocusX ?? 50))),
         imageFocusY: Math.max(0, Math.min(100, Number(formData.imageFocusY ?? 50))),
+        imageZoom: Math.max(1, Math.min(2, Number(formData.imageZoom ?? 1))),
         plateNumber: (formData.plateNumber || '').trim().toUpperCase().replace(/\s+/g, ''),
         customFeatures: formData.customFeatures || '',
         imageUrl: imageUrls[0],
@@ -272,6 +276,36 @@ export default function SellPage() {
       )}
     </div>
   );
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  const updateCropFromPointer = (clientX, clientY) => {
+    if (!cropStageRef.current) return;
+    const rect = cropStageRef.current.getBoundingClientRect();
+    const x = ((clientX - rect.left) / rect.width) * 100;
+    const y = ((clientY - rect.top) / rect.height) * 100;
+    setFormData((prev) => ({
+      ...prev,
+      imageFocusX: clamp(Number(x), 0, 100),
+      imageFocusY: clamp(Number(y), 0, 100),
+    }));
+  };
+
+  const handleCropPointerDown = (e) => {
+    setIsCropDragging(true);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    updateCropFromPointer(e.clientX, e.clientY);
+  };
+
+  const handleCropPointerMove = (e) => {
+    if (!isCropDragging) return;
+    updateCropFromPointer(e.clientX, e.clientY);
+  };
+
+  const handleCropPointerUp = (e) => {
+    setIsCropDragging(false);
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+  };
 
   // Success page
   if (showSuccess) {
@@ -436,7 +470,19 @@ export default function SellPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 {images.map((image, index) => (
                   <div key={index} className="relative group">
-                    <div className="aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg">
+                    <div
+                      ref={index === 0 ? cropStageRef : undefined}
+                      className={`aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 shadow-lg ${
+                        index === 0
+                          ? `border-blue-400 ring-2 ring-blue-100 ${isCropDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`
+                          : 'border-emerald-200'
+                      }`}
+                      style={index === 0 ? { touchAction: 'none' } : undefined}
+                      onPointerDown={index === 0 ? handleCropPointerDown : undefined}
+                      onPointerMove={index === 0 ? handleCropPointerMove : undefined}
+                      onPointerUp={index === 0 ? handleCropPointerUp : undefined}
+                      onPointerCancel={index === 0 ? handleCropPointerUp : undefined}
+                    >
                       <img
                         src={image.url}
                         alt={`Listing view ${index + 1}`}
@@ -444,29 +490,40 @@ export default function SellPage() {
                         style={{
                           objectPosition: index === 0
                             ? `${formData.imageFocusX}% ${formData.imageFocusY}%`
-                            : 'center'
+                            : 'center',
+                          transform: index === 0 ? `scale(${Math.max(1, Math.min(2, Number(formData.imageZoom || 1)))})` : 'scale(1)',
+                          transformOrigin: 'center center'
                         }}
+                        draggable={false}
                       />
+                      {index === 0 && (
+                        <div className="absolute inset-0 pointer-events-none">
+                          <div className="absolute top-1/3 left-0 right-0 border-t border-white/50" />
+                          <div className="absolute top-2/3 left-0 right-0 border-t border-white/50" />
+                          <div className="absolute left-1/3 top-0 bottom-0 border-l border-white/50" />
+                          <div className="absolute left-2/3 top-0 bottom-0 border-l border-white/50" />
+                        </div>
+                      )}
                       {image.uploading && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
                         </div>
                       )}
                       {!image.uploading && (
-                        <div className="absolute top-2 left-2 bg-emerald-500 text-white rounded-full p-1 shadow-lg">
+                        <div className="absolute top-2 left-2 bg-emerald-500 text-white rounded-full p-1 shadow-lg pointer-events-none">
                           <CheckCircle size={16} />
                         </div>
                       )}
                     </div>
                     {index === 0 && (
-                      <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                        Main Photo
+                      <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg pointer-events-none z-10">
+                        Main Photo — drag to frame
                       </div>
                     )}
                     <button
                       type="button"
                       onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg"
+                      className="absolute top-2 right-2 z-20 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -507,33 +564,46 @@ export default function SellPage() {
               )}
 
               {images.length > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                  <p className="text-sm font-bold text-blue-900 mb-3">
-                    Center your main photo (homepage preview)
+                <div className="mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <p className="text-sm text-slate-600 shrink-0">
+                    <span className="font-semibold text-slate-800">Main photo:</span> drag on the image to frame. Pinch-friendly on mobile.
                   </p>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <label className="text-xs font-semibold text-blue-800">
-                      Horizontal ({formData.imageFocusX}%)
+                  <div className="flex items-center gap-2 flex-1 min-w-0 max-w-md">
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, imageZoom: Math.max(1, Number((prev.imageZoom - 0.05).toFixed(2))) }))}
+                      className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold shrink-0"
+                      aria-label="Zoom out"
+                    >
+                      −
+                    </button>
+                    <label className="flex-1 min-w-0 text-xs font-semibold text-slate-700">
+                      Zoom ({Number(formData.imageZoom || 1).toFixed(2)}×)
                       <input
                         type="range"
-                        min="0"
-                        max="100"
-                        value={formData.imageFocusX}
-                        onChange={(e) => setFormData({ ...formData, imageFocusX: Number(e.target.value) })}
-                        className="w-full mt-2"
+                        min="1"
+                        max="2"
+                        step="0.01"
+                        value={formData.imageZoom || 1}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, imageZoom: Number(e.target.value) }))}
+                        className="w-full mt-1"
                       />
                     </label>
-                    <label className="text-xs font-semibold text-blue-800">
-                      Vertical ({formData.imageFocusY}%)
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={formData.imageFocusY}
-                        onChange={(e) => setFormData({ ...formData, imageFocusY: Number(e.target.value) })}
-                        className="w-full mt-2"
-                      />
-                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, imageZoom: Math.min(2, Number((prev.imageZoom + 0.05).toFixed(2))) }))}
+                      className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold shrink-0"
+                      aria-label="Zoom in"
+                    >
+                      +
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, imageFocusX: 50, imageFocusY: 50, imageZoom: 1 }))}
+                      className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-semibold text-xs shrink-0"
+                    >
+                      Reset
+                    </button>
                   </div>
                 </div>
               )}
