@@ -150,8 +150,13 @@
         "sticker_blue": "Etiqueta Azul",
         "sticker_green": "Etiqueta Verde",
         "not_specified": "No especificado",
-        "carjam_check": "Verificar en CarJam",
-        "carjam_not_provided": "No proporcionado"
+        "carjam_headline": "Historial gratuito del vehículo (CarJam NZ)",
+        "carjam_explainer_short": "Comprobaciones oficiales: deudas, robos, odómetro e historial de importación.",
+        "carjam_explainer_long": "Abrimos CarJam.co.nz con esta matrícula para que revises los mismos registros públicos que usan los compradores en Nueva Zelanda: deudas, datos de registro e indicadores básicos de odómetro e importación. El informe básico es gratuito.",
+        "carjam_cta_button": "Abrir informe gratuito en CarJam",
+        "carjam_no_plate_short": "Sin matrícula en el anuncio — pídesela al vendedor antes de pagar",
+        "carjam_no_plate_title": "CarJam necesita la matrícula",
+        "carjam_no_plate_long": "El vendedor aún no ha añadido la matrícula. Pídele que la añada: desbloquea un informe gratuito en CarJam (deudas, importación, pistas del odómetro) y es una de las señales de confianza más fuertes en Kiwi Van Market."
     },
     "guides": {
         "hub": {

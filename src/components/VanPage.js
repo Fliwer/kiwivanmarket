@@ -917,27 +917,43 @@ ${shareUrl}
                     </div>
                   </div>
 
-                  {/* CarJam Background Check Link */}
-                  <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Shield size={18} className="text-blue-500" />
-                      <span className="text-sm font-bold text-slate-700">CarJam Background Check</span>
+                  {/* CarJam — high-trust NZ vehicle history */}
+                  <div className="mt-6 rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50/90 via-white to-slate-50 p-5 shadow-md shadow-blue-100/50">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex gap-3 min-w-0">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-300/40">
+                          <Shield size={22} className="text-white" aria-hidden />
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="text-sm font-black uppercase tracking-wide text-slate-900">
+                            {t('van_page.carjam_headline')}
+                          </h4>
+                          <p className="mt-1.5 text-sm font-medium leading-relaxed text-slate-600">
+                            {t('van_page.carjam_explainer_long')}
+                          </p>
+                        </div>
+                      </div>
+                      {van.plateNumber ? (
+                        <a
+                          href={`https://www.carjam.co.nz/car/?plate=${van.plateNumber.toUpperCase()}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex shrink-0 items-center justify-center gap-2 self-stretch rounded-2xl bg-blue-600 px-5 py-3 text-xs font-black uppercase tracking-widest text-white shadow-md transition-all hover:bg-blue-700 active:scale-[0.98] sm:self-center"
+                        >
+                          <ExternalLink size={14} aria-hidden />
+                          {t('van_page.carjam_cta_button')}
+                        </a>
+                      ) : (
+                        <div className="shrink-0 rounded-2xl border border-amber-200 bg-amber-50/95 px-4 py-3 sm:max-w-xs">
+                          <p className="text-xs font-black uppercase tracking-wide text-amber-950">
+                            {t('van_page.carjam_no_plate_title')}
+                          </p>
+                          <p className="mt-1.5 text-xs font-medium leading-relaxed text-amber-950/90">
+                            {t('van_page.carjam_no_plate_long')}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    {van.plateNumber ? (
-                      <a
-                        href={`https://www.carjam.co.nz/car/?plate=${van.plateNumber.toUpperCase()}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[10px] font-black text-white bg-blue-600 px-3 py-1.5 rounded-xl uppercase tracking-widest hover:bg-blue-700 transition-all flex items-center gap-1.5 shadow-sm active:scale-95"
-                      >
-                        <ExternalLink size={12} />
-                        {t('van_page.carjam_check')}
-                      </a>
-                    ) : (
-                      <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1.5 rounded-xl uppercase tracking-widest italic opacity-60">
-                        {t('van_page.carjam_not_provided')}
-                      </span>
-                    )}
                   </div>
                 </div>
               </div>

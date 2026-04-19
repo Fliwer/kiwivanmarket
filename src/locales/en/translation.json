@@ -159,8 +159,13 @@
         "contact_title": "Ask for Info / Viewing",
         "contact_subtitle": "Fast response guaranteed",
         "verify_email_msg": "Please verify your email to contact sellers",
-        "carjam_check": "Check on CarJam",
-        "carjam_not_provided": "Not Provided"
+        "carjam_headline": "Free NZ vehicle history (CarJam)",
+        "carjam_explainer_short": "Official checks: debts, stolen status, odometer & import history.",
+        "carjam_explainer_long": "We open CarJam.co.nz with this plate so you can review the same public records buyers rely on across New Zealand — money owing, registration details, and basic odometer and import flags. The basic report is free.",
+        "carjam_cta_button": "Open free CarJam report",
+        "carjam_no_plate_short": "Plate not on listing — ask the seller before paying",
+        "carjam_no_plate_title": "CarJam needs a licence plate",
+        "carjam_no_plate_long": "The seller has not added a plate yet. Ask them to add it: it unlocks a free CarJam report (debts, import history, odometer clues) and is one of the strongest trust signals on Kiwi Van Market."
     },
     "my_listings": {
         "title": "My Vans",

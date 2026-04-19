@@ -159,8 +159,13 @@
         "contact_title": "Demander une info / visite",
         "contact_subtitle": "Réponse rapide garantie",
         "verify_email_msg": "Veuillez vérifier votre email pour contacter les vendeurs",
-        "carjam_check": "Vérifier sur CarJam",
-        "carjam_not_provided": "Non Renseigné"
+        "carjam_headline": "Historique véhicule gratuit (CarJam NZ)",
+        "carjam_explainer_short": "Vérifs officielles : dettes, vol, kilométrage et historique d’import.",
+        "carjam_explainer_long": "Nous ouvrons CarJam.co.nz avec cette plaque pour que vous puissiez consulter les mêmes données publiques qu’en Nouvelle‑Zélande — dettes, immatriculation, indices d’odomètre et d’import. Le rapport de base est gratuit.",
+        "carjam_cta_button": "Ouvrir le rapport CarJam gratuit",
+        "carjam_no_plate_short": "Plaque absente — demandez-la au vendeur avant de payer",
+        "carjam_no_plate_title": "La vérif CarJam nécessite la plaque",
+        "carjam_no_plate_long": "Le vendeur n’a pas encore indiqué de plaque. Demandez-lui de l’ajouter : cela débloque un rapport CarJam gratuit (dettes, import, indices de kilométrage) et renforce fortement la confiance sur Kiwi Van Market."
     },
     "my_listings": {
         "title": "Mes Vans",

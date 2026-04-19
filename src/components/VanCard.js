@@ -251,30 +251,37 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           </div>
         )}
 
-        {/* CarJam security row — visible on homepage cards */}
+        {/* CarJam — trust signal, explained on every card */}
         <div className="mb-4">
-          <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
-            <div className="flex items-center gap-2">
-              <Shield size={14} className="text-blue-600" />
-              <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider">
-                CarJam Safety Check
-              </span>
+          <div className="rounded-2xl border-2 border-blue-200/80 bg-gradient-to-br from-blue-50 via-white to-slate-50/80 px-3.5 py-3 shadow-sm shadow-blue-100/40">
+            <div className="flex items-start gap-2.5">
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-300/50">
+                <Shield size={16} className="text-white" aria-hidden />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-black uppercase tracking-wide text-slate-800 leading-tight">
+                  {t('van_page.carjam_headline')}
+                </p>
+                <p className="mt-1 text-[10px] font-medium leading-snug text-slate-600">
+                  {t('van_page.carjam_explainer_short')}
+                </p>
+                {van.plateNumber ? (
+                  <button
+                    type="button"
+                    onClick={openCarJam}
+                    className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98]"
+                    aria-label={t('van_page.carjam_cta_button')}
+                  >
+                    <ExternalLink size={12} className="shrink-0" aria-hidden />
+                    {t('van_page.carjam_cta_button')}
+                  </button>
+                ) : (
+                  <p className="mt-2 rounded-lg border border-amber-200/80 bg-amber-50/90 px-2 py-1.5 text-[10px] font-semibold leading-snug text-amber-950">
+                    {t('van_page.carjam_no_plate_short')}
+                  </p>
+                )}
+              </div>
             </div>
-            {van.plateNumber ? (
-              <button
-                type="button"
-                onClick={openCarJam}
-                className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider bg-blue-600 text-white px-2.5 py-1.5 rounded-lg hover:bg-blue-700 transition"
-                aria-label="Open CarJam check"
-              >
-                <ExternalLink size={11} />
-                Check
-              </button>
-            ) : (
-              <span className="text-[10px] font-bold text-slate-400">
-                Plate not provided
-              </span>
-            )}
           </div>
         </div>
 
