@@ -8,18 +8,26 @@ import { formatMileage } from '../utils/formatHelper';
 import { useTranslation } from 'react-i18next';
 import { useAutoTranslate } from '../hooks/useAutoTranslate';
 
+const RETURN_SCROLL_KEY = 'kiwiVanMarket_returnScrollY';
+const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
+
 // Carousel de photos pour la card
-const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint, focalZoom = 1 }) => {
+const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint, focalZoom = 1, imageCrops = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStart = useRef(null);
 
   const allImages = images?.length > 0
     ? images
     : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'];
-  const focalX = Number.isFinite(Number(focalPoint?.x)) ? Number(focalPoint.x) : 50;
-  const focalY = Number.isFinite(Number(focalPoint?.y)) ? Number(focalPoint.y) : 50;
-  const normalizedZoom = Number.isFinite(Number(focalZoom)) ? Math.min(2, Math.max(1, Number(focalZoom))) : 1;
-  const imagePosition = currentIndex === 0 ? `${focalX}% ${focalY}%` : 'center';
+  const fallbackCrop = {
+    x: Number.isFinite(Number(focalPoint?.x)) ? Number(focalPoint.x) : 50,
+    y: Number.isFinite(Number(focalPoint?.y)) ? Number(focalPoint.y) : 50,
+    zoom: Number.isFinite(Number(focalZoom)) ? Math.min(2, Math.max(1, Number(focalZoom))) : 1
+  };
+  const activeCrop = imageCrops?.[currentIndex] || (currentIndex === 0 ? fallbackCrop : { x: 50, y: 50, zoom: 1 });
+  const normalizedX = Number.isFinite(Number(activeCrop?.x)) ? Number(activeCrop.x) : 50;
+  const normalizedY = Number.isFinite(Number(activeCrop?.y)) ? Number(activeCrop.y) : 50;
+  const normalizedZoom = Number.isFinite(Number(activeCrop?.zoom)) ? Math.min(2, Math.max(1, Number(activeCrop.zoom))) : 1;
 
   const goNext = (e) => {
     e?.stopPropagation();
@@ -63,8 +71,8 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint,
         className={`relative z-10 w-full h-full object-cover transition-transform duration-700 ${vanStatus === 'sold' ? 'grayscale-[0.5] contrast-[0.8]' : 'opacity-100'}`}
         loading={priority ? "eager" : "lazy"}
         style={{
-          objectPosition: imagePosition,
-          transform: `scale(${currentIndex === 0 ? normalizedZoom : 1})`,
+          objectPosition: `${normalizedX}% ${normalizedY}%`,
+          transform: `scale(${normalizedZoom})`,
           transformOrigin: 'center center'
         }}
       />
@@ -135,6 +143,14 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
   return (
     <Link
       to={`/van/${van.id}`}
+      onClick={() => {
+        try {
+          window.sessionStorage.setItem(RETURN_SCROLL_KEY, String(window.scrollY || 0));
+          window.sessionStorage.setItem(RETURN_PATH_KEY, `${window.location.pathname}${window.location.search}`);
+        } catch {
+          // Ignore storage errors (private mode / blocked storage)
+        }
+      }}
       className="premium-card group block overflow-hidden"
     >
       <div className="relative">
@@ -145,6 +161,7 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           priority={priority}
           focalPoint={{ x: van.imageFocusX, y: van.imageFocusY }}
           focalZoom={van.imageZoom}
+          imageCrops={Array.isArray(van.imageCrops) ? van.imageCrops : []}
         />
 
         {/* Favorite button */}
@@ -251,38 +268,30 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           </div>
         )}
 
-        {/* CarJam — trust signal, explained on every card */}
         <div className="mb-4">
-          <div className="rounded-2xl border-2 border-blue-200/80 bg-gradient-to-br from-blue-50 via-white to-slate-50/80 px-3.5 py-3 shadow-sm shadow-blue-100/40">
-            <div className="flex items-start gap-2.5">
-              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-md shadow-blue-300/50">
-                <Shield size={16} className="text-white" aria-hidden />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-black uppercase tracking-wide text-slate-800 leading-tight">
-                  {t('van_page.carjam_headline')}
-                </p>
-                <p className="mt-1 text-[10px] font-medium leading-snug text-slate-600">
-                  {t('van_page.carjam_explainer_short')}
-                </p>
-                {van.plateNumber ? (
-                  <button
-                    type="button"
-                    onClick={openCarJam}
-                    className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white shadow-sm transition hover:bg-blue-700 active:scale-[0.98]"
-                    aria-label={t('van_page.carjam_cta_button')}
-                  >
-                    <ExternalLink size={12} className="shrink-0" aria-hidden />
-                    {t('van_page.carjam_cta_button')}
-                  </button>
-                ) : (
-                  <p className="mt-2 rounded-lg border border-amber-200/80 bg-amber-50/90 px-2 py-1.5 text-[10px] font-semibold leading-snug text-amber-950">
-                    {t('van_page.carjam_no_plate_short')}
-                  </p>
-                )}
-              </div>
+          {van.plateNumber ? (
+            <button
+              type="button"
+              onClick={openCarJam}
+              className="w-full inline-flex items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors"
+              aria-label={t('van_page.carjam_cta_button')}
+            >
+              <span className="inline-flex items-center gap-2 min-w-0">
+                <span className="inline-flex items-center rounded-full bg-blue-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white">
+                  CarJam
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-wide truncate">
+                  Vehicle history
+                </span>
+              </span>
+              <ExternalLink size={13} className="shrink-0" aria-hidden />
+            </button>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-900">
+              <span className="font-black uppercase tracking-wide">CarJam</span>
+              <span>{t('van_page.carjam_no_plate_short')}</span>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-slate-100">

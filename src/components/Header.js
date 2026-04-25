@@ -56,14 +56,14 @@ export default function Header({
     const [showUserMenuDropdown, setShowUserMenuDropdown] = useState(false);
 
     return (
-        <header className="sticky top-0 z-50 w-full px-4 py-3">
-            <div className="max-w-7xl mx-auto glass-effect rounded-[2rem] px-6 py-2 transition-all duration-300">
-                <div className="flex items-center justify-between h-14">
+        <header className="fixed top-0 left-0 right-0 z-50 w-full px-2 py-1.5 md:sticky md:px-4 md:py-3">
+            <div className="max-w-7xl mx-auto glass-effect rounded-xl md:rounded-[2rem] px-3 md:px-6 py-1 md:py-2 transition-all duration-300">
+                <div className="flex items-center justify-between h-10 md:h-14">
 
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-3 group">
-                        <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg bg-[#f7eedd] overflow-hidden transition-transform group-hover:scale-110">
-                            <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-8 h-8 object-contain" width="32" height="32" />
+                    <Link to="/" className="flex items-center gap-2 group">
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-lg bg-[#f7eedd] overflow-hidden transition-transform group-hover:scale-110">
+                            <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-6 h-6 object-contain" width="24" height="24" />
                         </div>
                         <div className="hidden sm:block">
                             <h1 className="text-lg font-bold text-slate-900 leading-tight">KiwiVan</h1>
@@ -221,7 +221,7 @@ export default function Header({
                     </div>
 
                     {/* Mobile Controls (Minimal) */}
-                    <div className="md:hidden flex items-center gap-3">
+                    <div className="md:hidden flex items-center gap-2">
                         <CurrencySelector />
                         <LanguageSelector />
                     </div>

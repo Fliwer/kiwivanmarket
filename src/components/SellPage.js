@@ -24,6 +24,8 @@ export default function SellPage() {
   const [generatingAI, setGeneratingAI] = useState(false);
   const cropStageRef = useRef(null);
   const [isCropDragging, setIsCropDragging] = useState(false);
+  const [imageCrops, setImageCrops] = useState([]);
+  const [activeCropIndex, setActiveCropIndex] = useState(0);
   const toast = useToast();
 
   // ✨ IA Generation
@@ -133,6 +135,8 @@ export default function SellPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       setImages(prev => [...prev, { url: e.target.result, uploading: true }]);
+      setImageCrops(prev => [...prev, { ...defaultCrop }]);
+      setActiveCropIndex(newIndex);
     };
     reader.readAsDataURL(file);
 
@@ -146,6 +150,7 @@ export default function SellPage() {
     } catch (error) {
       console.error('Upload error:', error);
       setImages(prev => prev.filter((_, i) => i !== newIndex));
+      setImageCrops(prev => prev.filter((_, i) => i !== newIndex));
       toast.error('Upload error. Please try again.');
     } finally {
       setUploadingIndex(null);
@@ -154,6 +159,12 @@ export default function SellPage() {
 
   const removeImage = (index) => {
     setImages(images.filter((_, i) => i !== index));
+    setImageCrops((prev) => prev.filter((_, i) => i !== index));
+    setActiveCropIndex((prev) => {
+      if (index === prev) return Math.max(0, prev - 1);
+      if (index < prev) return prev - 1;
+      return prev;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -199,6 +210,8 @@ export default function SellPage() {
 
     try {
       const imageUrls = images.map(img => img.url);
+      const normalizedImageCrops = imageUrls.map((_, index) => getCrop(index));
+      const primaryCrop = normalizedImageCrops[0] || defaultCrop;
 
       const newVanData = {
         title: formData.title,
@@ -220,9 +233,10 @@ export default function SellPage() {
         buyBackConditions: formData.buyBack ? formData.buyBackConditions : '',
         wofExpiry: formData.wofExpiry,
         regoExpiry: formData.regoExpiry,
-        imageFocusX: Math.max(0, Math.min(100, Number(formData.imageFocusX ?? 50))),
-        imageFocusY: Math.max(0, Math.min(100, Number(formData.imageFocusY ?? 50))),
-        imageZoom: Math.max(1, Math.min(2, Number(formData.imageZoom ?? 1))),
+        imageFocusX: primaryCrop.x,
+        imageFocusY: primaryCrop.y,
+        imageZoom: primaryCrop.zoom,
+        imageCrops: normalizedImageCrops,
         plateNumber: (formData.plateNumber || '').trim().toUpperCase().replace(/\s+/g, ''),
         customFeatures: formData.customFeatures || '',
         imageUrl: imageUrls[0],
@@ -278,17 +292,35 @@ export default function SellPage() {
   );
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+  const defaultCrop = { x: 50, y: 50, zoom: 1 };
+  const getCrop = (index) => {
+    const crop = imageCrops[index];
+    if (!crop) return defaultCrop;
+    return {
+      x: clamp(Number(crop.x ?? 50), 0, 100),
+      y: clamp(Number(crop.y ?? 50), 0, 100),
+      zoom: clamp(Number(crop.zoom ?? 1), 1, 2)
+    };
+  };
+  const updateCrop = (index, next) => {
+    setImageCrops((prev) => {
+      const updated = [...prev];
+      const current = updated[index] || defaultCrop;
+      updated[index] = {
+        x: clamp(Number(next.x ?? current.x), 0, 100),
+        y: clamp(Number(next.y ?? current.y), 0, 100),
+        zoom: clamp(Number(next.zoom ?? current.zoom), 1, 2)
+      };
+      return updated;
+    });
+  };
 
   const updateCropFromPointer = (clientX, clientY) => {
     if (!cropStageRef.current) return;
     const rect = cropStageRef.current.getBoundingClientRect();
     const x = ((clientX - rect.left) / rect.width) * 100;
     const y = ((clientY - rect.top) / rect.height) * 100;
-    setFormData((prev) => ({
-      ...prev,
-      imageFocusX: clamp(Number(x), 0, 100),
-      imageFocusY: clamp(Number(y), 0, 100),
-    }));
+    updateCrop(activeCropIndex, { x, y });
   };
 
   const handleCropPointerDown = (e) => {
@@ -468,67 +500,79 @@ export default function SellPage() {
               </h2>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                {images.map((image, index) => (
-                  <div key={index} className="relative group">
-                    <div
-                      ref={index === 0 ? cropStageRef : undefined}
-                      className={`aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 shadow-lg ${
-                        index === 0
-                          ? `border-blue-400 ring-2 ring-blue-100 ${isCropDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`
-                          : 'border-emerald-200'
-                      }`}
-                      style={index === 0 ? { touchAction: 'none' } : undefined}
-                      onPointerDown={index === 0 ? handleCropPointerDown : undefined}
-                      onPointerMove={index === 0 ? handleCropPointerMove : undefined}
-                      onPointerUp={index === 0 ? handleCropPointerUp : undefined}
-                      onPointerCancel={index === 0 ? handleCropPointerUp : undefined}
-                    >
-                      <img
-                        src={image.url}
-                        alt={`Listing view ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        style={{
-                          objectPosition: index === 0
-                            ? `${formData.imageFocusX}% ${formData.imageFocusY}%`
-                            : 'center',
-                          transform: index === 0 ? `scale(${Math.max(1, Math.min(2, Number(formData.imageZoom || 1)))})` : 'scale(1)',
-                          transformOrigin: 'center center'
-                        }}
-                        draggable={false}
-                      />
-                      {index === 0 && (
-                        <div className="absolute inset-0 pointer-events-none">
-                          <div className="absolute top-1/3 left-0 right-0 border-t border-white/50" />
-                          <div className="absolute top-2/3 left-0 right-0 border-t border-white/50" />
-                          <div className="absolute left-1/3 top-0 bottom-0 border-l border-white/50" />
-                          <div className="absolute left-2/3 top-0 bottom-0 border-l border-white/50" />
-                        </div>
-                      )}
-                      {image.uploading && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-                        </div>
-                      )}
-                      {!image.uploading && (
-                        <div className="absolute top-2 left-2 bg-emerald-500 text-white rounded-full p-1 shadow-lg pointer-events-none">
-                          <CheckCircle size={16} />
-                        </div>
-                      )}
-                    </div>
-                    {index === 0 && (
-                      <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg pointer-events-none z-10">
-                        Main Photo — drag to frame
+                {images.map((image, index) => {
+                  const crop = getCrop(index);
+                  const isActiveCrop = index === activeCropIndex;
+                  return (
+                    <div key={index} className="relative group">
+                      <div
+                        ref={isActiveCrop ? cropStageRef : undefined}
+                        className={`aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 shadow-lg ${
+                          isActiveCrop
+                            ? `border-blue-400 ring-2 ring-blue-100 ${isCropDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`
+                            : 'border-emerald-200'
+                        }`}
+                        style={isActiveCrop ? { touchAction: 'none' } : undefined}
+                        onPointerDown={isActiveCrop ? handleCropPointerDown : undefined}
+                        onPointerMove={isActiveCrop ? handleCropPointerMove : undefined}
+                        onPointerUp={isActiveCrop ? handleCropPointerUp : undefined}
+                        onPointerCancel={isActiveCrop ? handleCropPointerUp : undefined}
+                        onClick={() => setActiveCropIndex(index)}
+                      >
+                        <img
+                          src={image.url}
+                          alt={`Listing view ${index + 1}`}
+                          className="w-full h-full object-cover"
+                          style={{
+                            objectPosition: `${crop.x}% ${crop.y}%`,
+                            transform: `scale(${crop.zoom})`,
+                            transformOrigin: 'center center'
+                          }}
+                          draggable={false}
+                        />
+                        {isActiveCrop && (
+                          <div className="absolute inset-0 pointer-events-none">
+                            <div className="absolute top-1/3 left-0 right-0 border-t border-white/50" />
+                            <div className="absolute top-2/3 left-0 right-0 border-t border-white/50" />
+                            <div className="absolute left-1/3 top-0 bottom-0 border-l border-white/50" />
+                            <div className="absolute left-2/3 top-0 bottom-0 border-l border-white/50" />
+                          </div>
+                        )}
+                        {image.uploading && (
+                          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                          </div>
+                        )}
+                        {!image.uploading && (
+                          <div className="absolute top-2 left-2 bg-emerald-500 text-white rounded-full p-1 shadow-lg pointer-events-none">
+                            <CheckCircle size={16} />
+                          </div>
+                        )}
                       </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 z-20 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                ))}
+                      {isActiveCrop && (
+                        <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg pointer-events-none z-10">
+                          Editing frame
+                        </div>
+                      )}
+                      {!isActiveCrop && (
+                        <button
+                          type="button"
+                          onClick={() => setActiveCropIndex(index)}
+                          className="absolute bottom-2 left-2 bg-white/90 text-slate-700 px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-slate-200 hover:bg-white transition"
+                        >
+                          Crop
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 z-20 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all hover:scale-110 shadow-lg"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  );
+                })}
 
                 {images.length < 5 && (
                   <label className="aspect-video bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-dashed border-emerald-300 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-100 transition-all group">
@@ -566,32 +610,38 @@ export default function SellPage() {
               {images.length > 0 && (
                 <div className="mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
                   <p className="text-sm text-slate-600 shrink-0">
-                    <span className="font-semibold text-slate-800">Main photo:</span> drag on the image to frame. Pinch-friendly on mobile.
+                    <span className="font-semibold text-slate-800">Photo {activeCropIndex + 1}:</span> drag to frame. Tap another photo to crop it.
                   </p>
                   <div className="flex items-center gap-2 flex-1 min-w-0 max-w-md">
                     <button
                       type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, imageZoom: Math.max(1, Number((prev.imageZoom - 0.05).toFixed(2))) }))}
+                      onClick={() => {
+                        const current = getCrop(activeCropIndex);
+                        updateCrop(activeCropIndex, { zoom: Number((current.zoom - 0.05).toFixed(2)) });
+                      }}
                       className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold shrink-0"
                       aria-label="Zoom out"
                     >
                       −
                     </button>
                     <label className="flex-1 min-w-0 text-xs font-semibold text-slate-700">
-                      Zoom ({Number(formData.imageZoom || 1).toFixed(2)}×)
+                      Zoom ({Number(getCrop(activeCropIndex).zoom || 1).toFixed(2)}×)
                       <input
                         type="range"
                         min="1"
                         max="2"
                         step="0.01"
-                        value={formData.imageZoom || 1}
-                        onChange={(e) => setFormData((prev) => ({ ...prev, imageZoom: Number(e.target.value) }))}
+                        value={getCrop(activeCropIndex).zoom || 1}
+                        onChange={(e) => updateCrop(activeCropIndex, { zoom: Number(e.target.value) })}
                         className="w-full mt-1"
                       />
                     </label>
                     <button
                       type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, imageZoom: Math.min(2, Number((prev.imageZoom + 0.05).toFixed(2))) }))}
+                      onClick={() => {
+                        const current = getCrop(activeCropIndex);
+                        updateCrop(activeCropIndex, { zoom: Number((current.zoom + 0.05).toFixed(2)) });
+                      }}
                       className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold shrink-0"
                       aria-label="Zoom in"
                     >
@@ -599,7 +649,7 @@ export default function SellPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setFormData((prev) => ({ ...prev, imageFocusX: 50, imageFocusY: 50, imageZoom: 1 }))}
+                      onClick={() => updateCrop(activeCropIndex, defaultCrop)}
                       className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-semibold text-xs shrink-0"
                     >
                       Reset

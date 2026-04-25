@@ -1374,6 +1374,18 @@ ${shareUrl}
                 </p>
 
                 <div className="flex flex-col gap-3">
+                  {van?.status !== 'sold' && (
+                    <button
+                      onClick={async () => {
+                        await handleToggleSold();
+                        setShowDeleteConfirm(false);
+                      }}
+                      disabled={isUpdating}
+                      className="w-full py-4 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50"
+                    >
+                      {t('my_listings.mark_as_sold')}
+                    </button>
+                  )}
                   <button
                     onClick={handleDelete}
                     disabled={isUpdating}

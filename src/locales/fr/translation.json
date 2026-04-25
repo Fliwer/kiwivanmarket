@@ -257,7 +257,8 @@
     "listings": {
         "recently_added": "Annonces récentes",
         "recently_added_highlight": "de vans",
-        "fresh_listings": "Nouvelles annonces publiées par des backpackers en Nouvelle-Zélande"
+        "fresh_listings": "Nouvelles annonces publiées par des backpackers en Nouvelle-Zélande",
+        "carjam_info": "Cliquez sur le badge CarJam d'une annonce pour ouvrir l'historique véhicule NZ (dettes, statut volé, indices d'odomètre)."
     },
     "trust_bar": {
         "verified": "Infos véhicule vérifiées",

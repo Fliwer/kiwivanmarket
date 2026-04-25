@@ -430,7 +430,6 @@ function MainApp({
         </div>
       </section>
 
-
       <main id="main-content">
         <div id="listings-start" className="scroll-mt-24" />
         <QuickFilters
@@ -513,7 +512,7 @@ export default function KiwiVanMarket() {
     <BrowserRouter>
       <ToastProvider>
         <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
-          <div className="min-h-screen bg-slate-50">
+          <div className="min-h-screen bg-slate-50 pt-14 md:pt-0">
             <ScrollToTop />
             <Header {...headerProps} />
             <Routes>

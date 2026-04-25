@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Search, BookOpen, ArrowRight } from 'lucide-react';
@@ -5,6 +6,11 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import VanCard from './VanCard';
 import { getLongTailSlugsForVan, LONG_TAIL_PAGE_MAP } from '../constants/seoLongTailPages';
+
+const PAGE_SIZE = 24;
+const LISTINGS_PAGE_KEY = 'kiwiVanMarket_listingsPage';
+const RETURN_SCROLL_KEY = 'kiwiVanMarket_returnScrollY';
+const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
 
 export default function Listings({
     loading,
@@ -18,6 +24,12 @@ export default function Listings({
 }) {
     const { t } = useTranslation();
     const { currentUser } = useAuth();
+    const restoredScrollRef = useRef(false);
+    const [currentPage, setCurrentPage] = useState(() => {
+        if (typeof window === 'undefined') return 1;
+        const saved = Number(window.sessionStorage.getItem(LISTINGS_PAGE_KEY));
+        return Number.isInteger(saved) && saved > 0 ? saved : 1;
+    });
 
     // ItemList Schema for SEO Rich Snippets
     const itemListSchema = {
@@ -45,6 +57,40 @@ export default function Listings({
     const autoLongTailSlugs = Array.from(
         new Set(filteredVans.slice(0, 24).flatMap((van) => getLongTailSlugsForVan(van)))
     ).slice(0, 16);
+    const totalPages = Math.max(1, Math.ceil(filteredVans.length / PAGE_SIZE));
+    const pageStart = (currentPage - 1) * PAGE_SIZE;
+    const pageEnd = pageStart + PAGE_SIZE;
+    const paginatedVans = filteredVans.slice(pageStart, pageEnd);
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [currentPage, totalPages]);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem(LISTINGS_PAGE_KEY, String(currentPage));
+        }
+    }, [currentPage]);
+
+    useEffect(() => {
+        if (loading || restoredScrollRef.current || typeof window === 'undefined') return;
+        const returnPath = window.sessionStorage.getItem(RETURN_PATH_KEY);
+        const savedScroll = Number(window.sessionStorage.getItem(RETURN_SCROLL_KEY));
+
+        if (returnPath === '/' && Number.isFinite(savedScroll) && savedScroll >= 0) {
+            requestAnimationFrame(() => {
+                window.scrollTo({ top: savedScroll, behavior: 'auto' });
+                window.sessionStorage.removeItem(RETURN_SCROLL_KEY);
+                window.sessionStorage.removeItem(RETURN_PATH_KEY);
+                restoredScrollRef.current = true;
+            });
+            return;
+        }
+
+        restoredScrollRef.current = true;
+    }, [loading, filteredVans.length, currentPage]);
 
     return (
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -91,6 +137,17 @@ export default function Listings({
                 </div>
             )}
 
+            {!loading && filteredVans.length > 0 && (
+                <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50/70 px-4 py-3">
+                    <p className="text-xs font-bold text-blue-900 flex items-center gap-2">
+                        <span className="inline-flex items-center rounded-md border border-blue-300 bg-white px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-blue-700">
+                            CarJam
+                        </span>
+                        {t('listings.carjam_info')}
+                    </p>
+                </div>
+            )}
+
             {loading ? (
                 <div className="text-center py-32 animate-fade-in-up">
                     <div className="relative inline-block">
@@ -102,7 +159,9 @@ export default function Listings({
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredVans.map((van, index) => (
+                        {paginatedVans.map((van, index) => {
+                            const globalIndex = pageStart + index;
+                            return (
                             <div
                                 key={van.id}
                                 className={`animate-fade-in-up stagger-${(index % 6) + 1}`}
@@ -110,12 +169,40 @@ export default function Listings({
                                 <VanCard
                                     van={van}
                                     formatPrice={formatPrice}
-                                    priority={index < 3}
+                                    priority={globalIndex < 3}
                                     setShowAuthModal={setShowAuthModal}
                                 />
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
+
+                    {filteredVans.length > PAGE_SIZE && (
+                        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-sm text-slate-500 font-medium">
+                                Showing {Math.min(pageStart + 1, filteredVans.length)}-{Math.min(pageEnd, filteredVans.length)} of {filteredVans.length} vans
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition"
+                                >
+                                    Previous
+                                </button>
+                                <span className="px-3 py-2 text-sm font-black text-slate-700">
+                                    {currentPage} / {totalPages}
+                                </span>
+                                <button
+                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {autoLongTailSlugs.length > 0 && (
                         <div className="mt-10 bg-white border border-slate-100 rounded-2xl p-5">

@@ -483,6 +483,17 @@ export default function MyListingsPage() {
                 >
                   {t('filters.clear')}
                 </button>
+                {showDeleteConfirm?.status !== 'sold' && (
+                  <button
+                    onClick={async () => {
+                      await handleToggleSold(showDeleteConfirm);
+                      setShowDeleteConfirm(null);
+                    }}
+                    className="flex-1 px-4 py-2 bg-orange-100 text-orange-700 rounded-xl hover:bg-orange-200 transition"
+                  >
+                    {t('my_listings.mark_as_sold')}
+                  </button>
+                )}
                 <button
                   onClick={() => handleDelete(showDeleteConfirm)}
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition"

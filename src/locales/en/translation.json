@@ -257,7 +257,8 @@
     "listings": {
         "recently_added": "Recently added",
         "recently_added_highlight": "vans",
-        "fresh_listings": "Fresh listings from backpackers across New Zealand"
+        "fresh_listings": "Fresh listings from backpackers across New Zealand",
+        "carjam_info": "Click the CarJam badge on a listing to open the NZ vehicle history report (debt, stolen status, odometer clues)."
     },
     "trust_bar": {
         "verified": "Verified vehicle info",
