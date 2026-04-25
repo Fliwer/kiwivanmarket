@@ -1,0 +1,257 @@
+[debug] [2026-04-25T19:33:44.189Z] ----------------------------------------------------------------------
+[debug] [2026-04-25T19:33:44.193Z] Command:       c:\Users\fliwe\AppData\Local\Programs\cursor\resources\app\resources\helpers\node.exe C:\Users\fliwe\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --non-interactive
+[debug] [2026-04-25T19:33:44.194Z] CLI Version:   15.4.0
+[debug] [2026-04-25T19:33:44.194Z] Platform:      win32
+[debug] [2026-04-25T19:33:44.194Z] Node Version:  v22.22.0
+[debug] [2026-04-25T19:33:44.194Z] Time:          Sat Apr 25 2026 21:33:44 GMT+0200 (heure d’été d’Europe centrale)
+[debug] [2026-04-25T19:33:44.194Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-25T19:33:44.197Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-04-25T19:34:13.594Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-25T19:34:13.595Z] > authorizing via signed-in user (p.morthier@gmail.com)
+[debug] [2026-04-25T19:34:13.595Z] [iam] checking project kiwivanmarket for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2026-04-25T19:34:13.596Z] Checked if tokens are valid: false, expires at: 1775936152454
+[debug] [2026-04-25T19:34:13.597Z] Checked if tokens are valid: false, expires at: 1775936152454
+[debug] [2026-04-25T19:34:13.597Z] > refreshing access token with scopes: []
+[debug] [2026-04-25T19:34:13.599Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-04-25T19:34:13.599Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-04-25T19:33:21.255Z] ----------------------------------------------------------------------
+[debug] [2026-04-25T19:33:21.259Z] Command:       c:\Users\fliwe\AppData\Local\Programs\cursor\resources\app\resources\helpers\node.exe C:\Users\fliwe\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2026-04-25T19:33:21.260Z] CLI Version:   15.4.0
+[debug] [2026-04-25T19:33:21.260Z] Platform:      win32
+[debug] [2026-04-25T19:33:21.261Z] Node Version:  v22.22.0
+[debug] [2026-04-25T19:33:21.261Z] Time:          Sat Apr 25 2026 21:33:21 GMT+0200 (heure d’été d’Europe centrale)
+[debug] [2026-04-25T19:33:21.262Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-25T19:33:21.265Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-04-25T19:34:13.594Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-25T19:34:13.594Z] > authorizing via signed-in user (p.morthier@gmail.com)
+[debug] [2026-04-25T19:34:13.595Z] [iam] checking project kiwivanmarket for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]
+[debug] [2026-04-25T19:34:13.596Z] Checked if tokens are valid: false, expires at: 1775936152454
+[debug] [2026-04-25T19:34:13.596Z] Checked if tokens are valid: false, expires at: 1775936152454
+[debug] [2026-04-25T19:34:13.596Z] > refreshing access token with scopes: []
+[debug] [2026-04-25T19:34:13.598Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-04-25T19:34:13.598Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-04-25T19:34:13.710Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-04-25T19:34:13.711Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-04-25T19:34:13.711Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[error] Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-04-25T19:34:13.723Z] [iam] error while checking permissions, command may fail: Authentication Error: Your credentials are no longer valid. Please run firebase login --reauth
+
+For CI servers and headless environments, generate a new token with firebase login:ci
+[debug] [2026-04-25T19:34:13.723Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:13.724Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:13.724Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/kiwivanmarket/serviceAccounts/kiwivanmarket@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-04-25T19:34:13.724Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/kiwivanmarket/serviceAccounts/kiwivanmarket@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-04-25T19:34:13.710Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-04-25T19:34:13.754Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket:testIamPermissions [none]
+[debug] [2026-04-25T19:34:13.755Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket:testIamPermissions x-goog-quota-user=projects/kiwivanmarket
+[debug] [2026-04-25T19:34:13.755Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2026-04-25T19:34:13.870Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-04-25T19:34:13.899Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-04-25T19:34:13.870Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-04-25T19:34:13.900Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-04-25T19:34:14.420Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/kiwivanmarket/serviceAccounts/kiwivanmarket@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-04-25T19:34:14.422Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket:testIamPermissions 200
+[debug] [2026-04-25T19:34:14.420Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/kiwivanmarket/serviceAccounts/kiwivanmarket@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-04-25T19:34:14.421Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:14.421Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:14.421Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket [none]
+[debug] [2026-04-25T19:34:14.422Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","datastore.indexes.create","datastore.indexes.delete","datastore.indexes.list","datastore.indexes.update","firebase.projects.get","firebasehosting.sites.update","firebaserules.releases.create","firebaserules.releases.update","firebaserules.rulesets.create"]}
+[debug] [2026-04-25T19:34:14.423Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:14.423Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:14.423Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/kiwivanmarket/serviceAccounts/kiwivanmarket@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-04-25T19:34:14.423Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/kiwivanmarket/serviceAccounts/kiwivanmarket@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-04-25T19:34:14.691Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket 200
+[debug] [2026-04-25T19:34:14.691Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket {"projectId":"kiwivanmarket","projectNumber":"658498951752","displayName":"KiwiVanmarket","name":"projects/kiwivanmarket","resources":{"hostingSite":"kiwivanmarket"},"state":"ACTIVE","etag":"1_4d962aaf-a0cb-4c92-8f25-b015a9588f56"}
+[info] 
+[info] === Deploying to 'kiwivanmarket'...
+[info] 
+[info] i  deploying storage, firestore, functions, hosting 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2026-04-25T19:34:14.697Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:14.697Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:14.697Z] >>> [apiv2][query] GET https://firebasestorage.googleapis.com/v1alpha/projects/kiwivanmarket/defaultBucket [none]
+[debug] [2026-04-25T19:34:15.078Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/kiwivanmarket/serviceAccounts/kiwivanmarket@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-04-25T19:34:15.078Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/kiwivanmarket/serviceAccounts/kiwivanmarket@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-04-25T19:34:15.079Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:15.079Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:15.079Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket [none]
+[debug] [2026-04-25T19:34:15.336Z] <<< [apiv2][status] GET https://firebasestorage.googleapis.com/v1alpha/projects/kiwivanmarket/defaultBucket 200
+[debug] [2026-04-25T19:34:15.336Z] <<< [apiv2][body] GET https://firebasestorage.googleapis.com/v1alpha/projects/kiwivanmarket/defaultBucket {"name":"projects/kiwivanmarket/defaultBucket","location":"US-CENTRAL1","bucket":{"name":"projects/kiwivanmarket/buckets/kiwivanmarket.firebasestorage.app"},"storageClass":"REGIONAL"}
+[info] i  firebase.storage: checking storage.rules for compilation errors... 
+[debug] [2026-04-25T19:34:15.361Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:15.361Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:15.361Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test [none]
+[debug] [2026-04-25T19:34:15.361Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test [omitted]
+[debug] [2026-04-25T19:34:16.088Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test 200
+[debug] [2026-04-25T19:34:16.088Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test {}
+[info] +  firebase.storage: rules file storage.rules compiled successfully 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-04-25T19:34:16.090Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:16.090Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:16.090Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/kiwivanmarket/databases/(default) [none]
+[debug] [2026-04-25T19:34:16.819Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket 200
+[debug] [2026-04-25T19:34:16.819Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket {"projectId":"kiwivanmarket","projectNumber":"658498951752","displayName":"KiwiVanmarket","name":"projects/kiwivanmarket","resources":{"hostingSite":"kiwivanmarket"},"state":"ACTIVE","etag":"1_4d962aaf-a0cb-4c92-8f25-b015a9588f56"}
+[info] 
+[info] === Deploying to 'kiwivanmarket'...
+[info] 
+[info] i  deploying storage, firestore, functions, hosting 
+[info] i  storage: ensuring required API firebasestorage.googleapis.com is enabled... 
+[debug] [2026-04-25T19:34:16.823Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:16.823Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:16.823Z] >>> [apiv2][query] GET https://firebasestorage.googleapis.com/v1alpha/projects/kiwivanmarket/defaultBucket [none]
+[debug] [2026-04-25T19:34:17.445Z] <<< [apiv2][status] GET https://firebasestorage.googleapis.com/v1alpha/projects/kiwivanmarket/defaultBucket 200
+[debug] [2026-04-25T19:34:17.446Z] <<< [apiv2][body] GET https://firebasestorage.googleapis.com/v1alpha/projects/kiwivanmarket/defaultBucket {"name":"projects/kiwivanmarket/defaultBucket","location":"US-CENTRAL1","bucket":{"name":"projects/kiwivanmarket/buckets/kiwivanmarket.firebasestorage.app"},"storageClass":"REGIONAL"}
+[info] i  firebase.storage: checking storage.rules for compilation errors... 
+[debug] [2026-04-25T19:34:17.448Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:17.448Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:17.448Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test [none]
+[debug] [2026-04-25T19:34:17.448Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test [omitted]
+[debug] [2026-04-25T19:34:17.772Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test 200
+[debug] [2026-04-25T19:34:17.772Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test {}
+[info] +  firebase.storage: rules file storage.rules compiled successfully 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[info] i  firestore: ensuring required API firestore.googleapis.com is enabled... 
+[debug] [2026-04-25T19:34:17.775Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:17.775Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:17.775Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/kiwivanmarket/databases/(default) [none]
+[debug] [2026-04-25T19:34:17.994Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/kiwivanmarket/databases/(default) 200
+[debug] [2026-04-25T19:34:17.994Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/kiwivanmarket/databases/(default) {"name":"projects/kiwivanmarket/databases/(default)","uid":"af0b8bcb-6376-4d95-83be-8bb103f50fab","createTime":"2025-11-19T13:53:42.891573Z","updateTime":"2025-11-19T13:53:42.891573Z","locationId":"australia-southeast1","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-04-25T18:34:16.416357Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"f","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IOOqwrzfiZQDMPLj27Xi0ZID"}
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2026-04-25T19:34:18.024Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:18.024Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:18.024Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test [none]
+[debug] [2026-04-25T19:34:18.024Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test [omitted]
+[debug] [2026-04-25T19:34:18.756Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test 200
+[debug] [2026-04-25T19:34:18.756Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test {"issues":[{"sourcePosition":{"fileName":"firestore.rules","line":55,"column":14,"currentOffset":1962,"endOffset":1977},"description":"Unused function: isPositiveNumber.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":59,"column":14,"currentOffset":2055,"endOffset":2073},"description":"Unused function: isNonNegativeNumber.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":79,"column":14,"currentOffset":2595,"endOffset":2609},"description":"Unused function: isValidImageUrl.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":121,"column":14,"currentOffset":3921,"endOffset":3929},"description":"Unused function: docExists.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":122,"column":14,"currentOffset":3965,"endOffset":3970},"description":"Invalid function name: exists.","severity":"WARNING"}]}
+[warn] !  [W] 55:14 - Unused function: isPositiveNumber. 
+[warn] !  [W] 59:14 - Unused function: isNonNegativeNumber. 
+[warn] !  [W] 79:14 - Unused function: isValidImageUrl. 
+[warn] !  [W] 121:14 - Unused function: docExists. 
+[warn] !  [W] 122:14 - Invalid function name: exists. 
+[info] +  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2026-04-25T19:34:18.759Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:18.759Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:18.759Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket [none]
+[debug] [2026-04-25T19:34:19.486Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket 200
+[debug] [2026-04-25T19:34:19.486Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket {"projectNumber":"658498951752","projectId":"kiwivanmarket","lifecycleState":"ACTIVE","name":"KiwiVanmarket","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-11-19T10:07:41.531510Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-04-25T19:34:19.489Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:19.489Z] Checked if tokens are valid: true, expires at: 1777149252711
+[debug] [2026-04-25T19:34:19.489Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket/adminSdkConfig [none]
+[debug] [2026-04-25T19:34:19.816Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/kiwivanmarket/databases/(default) 200
+[debug] [2026-04-25T19:34:19.817Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/kiwivanmarket/databases/(default) {"name":"projects/kiwivanmarket/databases/(default)","uid":"af0b8bcb-6376-4d95-83be-8bb103f50fab","createTime":"2025-11-19T13:53:42.891573Z","updateTime":"2025-11-19T13:53:42.891573Z","locationId":"australia-southeast1","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-04-25T18:34:18.248628Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"f","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IJ6Vsr3fiZQDMPLj27Xi0ZID"}
+[info] i  cloud.firestore: checking firestore.rules for compilation errors... 
+[debug] [2026-04-25T19:34:19.818Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:19.818Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:19.818Z] >>> [apiv2][query] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test [none]
+[debug] [2026-04-25T19:34:19.818Z] >>> [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test [omitted]
+[debug] [2026-04-25T19:34:19.971Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket/adminSdkConfig 200
+[debug] [2026-04-25T19:34:19.971Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket/adminSdkConfig {"projectId":"kiwivanmarket","storageBucket":"kiwivanmarket.firebasestorage.app"}
+[debug] [2026-04-25T19:34:19.996Z] Validating nodejs source
+[debug] [2026-04-25T19:34:20.564Z] <<< [apiv2][status] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test 200
+[debug] [2026-04-25T19:34:20.564Z] <<< [apiv2][body] POST https://firebaserules.googleapis.com/v1/projects/kiwivanmarket:test {"issues":[{"sourcePosition":{"fileName":"firestore.rules","line":55,"column":14,"currentOffset":1962,"endOffset":1977},"description":"Unused function: isPositiveNumber.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":59,"column":14,"currentOffset":2055,"endOffset":2073},"description":"Unused function: isNonNegativeNumber.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":79,"column":14,"currentOffset":2595,"endOffset":2609},"description":"Unused function: isValidImageUrl.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":121,"column":14,"currentOffset":3921,"endOffset":3929},"description":"Unused function: docExists.","severity":"WARNING"},{"sourcePosition":{"fileName":"firestore.rules","line":122,"column":14,"currentOffset":3965,"endOffset":3970},"description":"Invalid function name: exists.","severity":"WARNING"}]}
+[warn] !  [W] 55:14 - Unused function: isPositiveNumber. 
+[warn] !  [W] 59:14 - Unused function: isNonNegativeNumber. 
+[warn] !  [W] 79:14 - Unused function: isValidImageUrl. 
+[warn] !  [W] 121:14 - Unused function: docExists. 
+[warn] !  [W] 122:14 - Invalid function name: exists. 
+[info] +  cloud.firestore: rules file firestore.rules compiled successfully 
+[debug] [2026-04-25T19:34:20.566Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:20.566Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:20.566Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket [none]
+[debug] [2026-04-25T19:34:21.262Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket 200
+[debug] [2026-04-25T19:34:21.262Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/kiwivanmarket {"projectNumber":"658498951752","projectId":"kiwivanmarket","lifecycleState":"ACTIVE","name":"KiwiVanmarket","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-11-19T10:07:41.531510Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-04-25T19:34:21.264Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:21.265Z] Checked if tokens are valid: true, expires at: 1777149252710
+[debug] [2026-04-25T19:34:21.265Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket/adminSdkConfig [none]
+[debug] [2026-04-25T19:34:21.703Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket/adminSdkConfig 200
+[debug] [2026-04-25T19:34:21.703Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/kiwivanmarket/adminSdkConfig {"projectId":"kiwivanmarket","storageBucket":"kiwivanmarket.firebasestorage.app"}
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[debug] [2026-04-25T19:34:21.842Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.3",
+    "resend": "^2.0.0",
+    "stripe": "^20.0.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.4.1"
+  },
+  "private": true
+}
+[debug] [2026-04-25T19:34:21.842Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-04-25T19:34:21.845Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-04-25T19:34:21.862Z] Found firebase-functions binary at 'C:\Users\fliwe\Pictures\KiwiVan\kiwivanmarket\functions\node_modules\.bin\firebase-functions'
+[debug] [2026-04-25T19:34:21.705Z] Validating nodejs source
+[warn] !  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[debug] [2026-04-25T19:34:22.898Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.3",
+    "resend": "^2.0.0",
+    "stripe": "^20.0.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.4.1"
+  },
+  "private": true
+}
+[debug] [2026-04-25T19:34:22.899Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-04-25T19:34:22.901Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-04-25T19:34:22.915Z] Found firebase-functions binary at 'C:\Users\fliwe\Pictures\KiwiVan\kiwivanmarket\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8511
+
+[info] Serving at port 8474
+
+[info] ◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+
+[info] ◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+
