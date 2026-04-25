@@ -22,10 +22,7 @@ export default function SellPage() {
   const [newVanId, setNewVanId] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [generatingAI, setGeneratingAI] = useState(false);
-  const cropStageRef = useRef(null);
-  const [isCropDragging, setIsCropDragging] = useState(false);
   const [imageCrops, setImageCrops] = useState([]);
-  const [activeCropIndex, setActiveCropIndex] = useState(0);
   const toast = useToast();
 
   // ✨ IA Generation
@@ -136,7 +133,6 @@ export default function SellPage() {
     reader.onload = (e) => {
       setImages(prev => [...prev, { url: e.target.result, uploading: true }]);
       setImageCrops(prev => [...prev, { ...defaultCrop }]);
-      setActiveCropIndex(newIndex);
     };
     reader.readAsDataURL(file);
 
@@ -160,11 +156,7 @@ export default function SellPage() {
   const removeImage = (index) => {
     setImages(images.filter((_, i) => i !== index));
     setImageCrops((prev) => prev.filter((_, i) => i !== index));
-    setActiveCropIndex((prev) => {
-      if (index === prev) return Math.max(0, prev - 1);
-      if (index < prev) return prev - 1;
-      return prev;
-    });
+    
   };
 
   const handleSubmit = async (e) => {
@@ -211,7 +203,7 @@ export default function SellPage() {
     try {
       const imageUrls = images.map(img => img.url);
       const normalizedImageCrops = imageUrls.map((_, index) => getCrop(index));
-      const primaryCrop = normalizedImageCrops[0] || defaultCrop;
+      const primaryCrop = normalizedImageCrops[0] || { ...defaultCrop };
 
       const newVanData = {
         title: formData.title,
@@ -299,46 +291,10 @@ export default function SellPage() {
     return {
       x: clamp(Number(crop.x ?? 50), 0, 100),
       y: clamp(Number(crop.y ?? 50), 0, 100),
-      zoom: clamp(Number(crop.zoom ?? 1), 1, 2)
+      zoom: clamp(Number(crop.zoom ?? 1), 1, 2),
+      area: crop.area ?? null
     };
   };
-  const updateCrop = (index, next) => {
-    setImageCrops((prev) => {
-      const updated = [...prev];
-      const current = updated[index] || defaultCrop;
-      updated[index] = {
-        x: clamp(Number(next.x ?? current.x), 0, 100),
-        y: clamp(Number(next.y ?? current.y), 0, 100),
-        zoom: clamp(Number(next.zoom ?? current.zoom), 1, 2)
-      };
-      return updated;
-    });
-  };
-
-  const updateCropFromPointer = (clientX, clientY) => {
-    if (!cropStageRef.current) return;
-    const rect = cropStageRef.current.getBoundingClientRect();
-    const x = ((clientX - rect.left) / rect.width) * 100;
-    const y = ((clientY - rect.top) / rect.height) * 100;
-    updateCrop(activeCropIndex, { x, y });
-  };
-
-  const handleCropPointerDown = (e) => {
-    setIsCropDragging(true);
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-    updateCropFromPointer(e.clientX, e.clientY);
-  };
-
-  const handleCropPointerMove = (e) => {
-    if (!isCropDragging) return;
-    updateCropFromPointer(e.clientX, e.clientY);
-  };
-
-  const handleCropPointerUp = (e) => {
-    setIsCropDragging(false);
-    e.currentTarget.releasePointerCapture?.(e.pointerId);
-  };
-
   // Success page
   if (showSuccess) {
     return (
@@ -501,43 +457,22 @@ export default function SellPage() {
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 {images.map((image, index) => {
-                  const crop = getCrop(index);
-                  const isActiveCrop = index === activeCropIndex;
                   return (
                     <div key={index} className="relative group">
                       <div
-                        ref={isActiveCrop ? cropStageRef : undefined}
-                        className={`aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 shadow-lg ${
-                          isActiveCrop
-                            ? `border-blue-400 ring-2 ring-blue-100 ${isCropDragging ? 'cursor-grabbing' : 'cursor-grab'} select-none`
-                            : 'border-emerald-200'
-                        }`}
-                        style={isActiveCrop ? { touchAction: 'none' } : undefined}
-                        onPointerDown={isActiveCrop ? handleCropPointerDown : undefined}
-                        onPointerMove={isActiveCrop ? handleCropPointerMove : undefined}
-                        onPointerUp={isActiveCrop ? handleCropPointerUp : undefined}
-                        onPointerCancel={isActiveCrop ? handleCropPointerUp : undefined}
-                        onClick={() => setActiveCropIndex(index)}
+                        className="aspect-video bg-gray-100 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-lg"
                       >
                         <img
                           src={image.url}
                           alt={`Listing view ${index + 1}`}
                           className="w-full h-full object-cover"
                           style={{
-                            objectPosition: `${crop.x}% ${crop.y}%`,
-                            transform: `scale(${crop.zoom})`,
+                            objectPosition: 'center',
+                            transform: 'scale(1)',
                             transformOrigin: 'center center'
                           }}
                           draggable={false}
                         />
-                        {isActiveCrop && (
-                          <div className="absolute inset-0 pointer-events-none">
-                            <div className="absolute top-1/3 left-0 right-0 border-t border-white/50" />
-                            <div className="absolute top-2/3 left-0 right-0 border-t border-white/50" />
-                            <div className="absolute left-1/3 top-0 bottom-0 border-l border-white/50" />
-                            <div className="absolute left-2/3 top-0 bottom-0 border-l border-white/50" />
-                          </div>
-                        )}
                         {image.uploading && (
                           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
@@ -549,20 +484,6 @@ export default function SellPage() {
                           </div>
                         )}
                       </div>
-                      {isActiveCrop && (
-                        <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg pointer-events-none z-10">
-                          Editing frame
-                        </div>
-                      )}
-                      {!isActiveCrop && (
-                        <button
-                          type="button"
-                          onClick={() => setActiveCropIndex(index)}
-                          className="absolute bottom-2 left-2 bg-white/90 text-slate-700 px-3 py-1 rounded-full text-xs font-bold shadow-lg border border-slate-200 hover:bg-white transition"
-                        >
-                          Crop
-                        </button>
-                      )}
                       <button
                         type="button"
                         onClick={() => removeImage(index)}
@@ -608,53 +529,10 @@ export default function SellPage() {
               )}
 
               {images.length > 0 && (
-                <div className="mt-3 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                  <p className="text-sm text-slate-600 shrink-0">
-                    <span className="font-semibold text-slate-800">Photo {activeCropIndex + 1}:</span> drag to frame. Tap another photo to crop it.
+                <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <p className="text-sm text-slate-600">
+                    Photos are shown as uploaded.
                   </p>
-                  <div className="flex items-center gap-2 flex-1 min-w-0 max-w-md">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const current = getCrop(activeCropIndex);
-                        updateCrop(activeCropIndex, { zoom: Number((current.zoom - 0.05).toFixed(2)) });
-                      }}
-                      className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold shrink-0"
-                      aria-label="Zoom out"
-                    >
-                      −
-                    </button>
-                    <label className="flex-1 min-w-0 text-xs font-semibold text-slate-700">
-                      Zoom ({Number(getCrop(activeCropIndex).zoom || 1).toFixed(2)}×)
-                      <input
-                        type="range"
-                        min="1"
-                        max="2"
-                        step="0.01"
-                        value={getCrop(activeCropIndex).zoom || 1}
-                        onChange={(e) => updateCrop(activeCropIndex, { zoom: Number(e.target.value) })}
-                        className="w-full mt-1"
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const current = getCrop(activeCropIndex);
-                        updateCrop(activeCropIndex, { zoom: Number((current.zoom + 0.05).toFixed(2)) });
-                      }}
-                      className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold shrink-0"
-                      aria-label="Zoom in"
-                    >
-                      +
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => updateCrop(activeCropIndex, defaultCrop)}
-                      className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-semibold text-xs shrink-0"
-                    >
-                      Reset
-                    </button>
-                  </div>
                 </div>
               )}
             </div>

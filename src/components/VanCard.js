@@ -12,22 +12,13 @@ const RETURN_SCROLL_KEY = 'kiwiVanMarket_returnScrollY';
 const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
 
 // Carousel de photos pour la card
-const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint, focalZoom = 1, imageCrops = [] }) => {
+const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStart = useRef(null);
 
   const allImages = images?.length > 0
     ? images
     : ['https://images.unsplash.com/photo-1527786356703-4b100091cd2c?w=800'];
-  const fallbackCrop = {
-    x: Number.isFinite(Number(focalPoint?.x)) ? Number(focalPoint.x) : 50,
-    y: Number.isFinite(Number(focalPoint?.y)) ? Number(focalPoint.y) : 50,
-    zoom: Number.isFinite(Number(focalZoom)) ? Math.min(2, Math.max(1, Number(focalZoom))) : 1
-  };
-  const activeCrop = imageCrops?.[currentIndex] || (currentIndex === 0 ? fallbackCrop : { x: 50, y: 50, zoom: 1 });
-  const normalizedX = Number.isFinite(Number(activeCrop?.x)) ? Number(activeCrop.x) : 50;
-  const normalizedY = Number.isFinite(Number(activeCrop?.y)) ? Number(activeCrop.y) : 50;
-  const normalizedZoom = Number.isFinite(Number(activeCrop?.zoom)) ? Math.min(2, Math.max(1, Number(activeCrop.zoom))) : 1;
 
   const goNext = (e) => {
     e?.stopPropagation();
@@ -71,8 +62,8 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false, focalPoint,
         className={`relative z-10 w-full h-full object-cover transition-transform duration-700 ${vanStatus === 'sold' ? 'grayscale-[0.5] contrast-[0.8]' : 'opacity-100'}`}
         loading={priority ? "eager" : "lazy"}
         style={{
-          objectPosition: `${normalizedX}% ${normalizedY}%`,
-          transform: `scale(${normalizedZoom})`,
+          objectPosition: 'center',
+          transform: 'scale(1)',
           transformOrigin: 'center center'
         }}
       />
@@ -159,9 +150,6 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           title={translatedTitle}
           vanStatus={van.status}
           priority={priority}
-          focalPoint={{ x: van.imageFocusX, y: van.imageFocusY }}
-          focalZoom={van.imageZoom}
-          imageCrops={Array.isArray(van.imageCrops) ? van.imageCrops : []}
         />
 
         {/* Favorite button */}
