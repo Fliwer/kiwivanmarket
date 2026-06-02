@@ -1124,32 +1124,32 @@ ${shareUrl}
                   {(seller.whatsapp || seller.phone) && (
                     <button
                       onClick={() => {
-                        if (!currentUser) {
-                          setShowAuthModal(true);
-                        } else {
-                          const whatsappTarget = seller.whatsapp || seller.phone;
-                          window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}`, '_blank');
+                        // QW1 — contact direct, sans obligation de connexion
+                        const whatsappTarget = seller.whatsapp || seller.phone;
+                        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                          window.gtag('event', 'contact_whatsapp', { van_id: van.id, seller_id: seller.uid });
                         }
+                        window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}`, '_blank', 'noopener,noreferrer');
                       }}
                       className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
                     >
                       <MessageCircle size={20} />
-                      {currentUser ? 'WhatsApp Seller' : 'Show WhatsApp'}
+                      WhatsApp Seller
                     </button>
                   )}
                   {seller.phone && (
                     <button
                       onClick={() => {
-                        if (!currentUser) {
-                          setShowAuthModal(true);
-                        } else {
-                          window.open(`tel:${seller.phone}`, '_self');
+                        // QW1 — appel direct, sans obligation de connexion
+                        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                          window.gtag('event', 'contact_phone', { van_id: van.id, seller_id: seller.uid });
                         }
+                        window.open(`tel:${seller.phone}`, '_self');
                       }}
                       className="flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-500/10 active:scale-95"
                     >
                       <Phone size={20} />
-                      {currentUser ? 'Call Seller' : 'Show Phone'}
+                      Call Seller
                     </button>
                   )}
                   {seller.facebook && (
@@ -1532,15 +1532,15 @@ ${shareUrl}
                 {(seller.whatsapp || seller.phone) && (
                   <button
                     onClick={() => {
-                      if (!currentUser) {
-                        setShowAuthModal(true);
-                      } else {
-                        const whatsappTarget = seller.whatsapp || seller.phone;
-                        window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}`, '_blank');
+                      // QW1 — contact direct, sans obligation de connexion
+                      const whatsappTarget = seller.whatsapp || seller.phone;
+                      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                        window.gtag('event', 'contact_whatsapp', { van_id: van.id, seller_id: seller.uid });
                       }
+                      window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}`, '_blank', 'noopener,noreferrer');
                     }}
                     className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-                    title={currentUser ? "WhatsApp" : "Login to see WhatsApp"}
+                    title="WhatsApp"
                   >
                     <MessageCircle size={24} fill="currentColor" />
                   </button>
@@ -1548,14 +1548,14 @@ ${shareUrl}
                 {seller.phone && (
                   <button
                     onClick={() => {
-                      if (!currentUser) {
-                        setShowAuthModal(true);
-                      } else {
-                        window.open(`tel:${seller.phone}`, '_self');
+                      // QW1 — appel direct, sans obligation de connexion
+                      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                        window.gtag('event', 'contact_phone', { van_id: van.id, seller_id: seller.uid });
                       }
+                      window.open(`tel:${seller.phone}`, '_self');
                     }}
                     className="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-                    title={currentUser ? "Call Seller" : "Login to see phone"}
+                    title="Call Seller"
                   >
                     <Phone size={22} />
                   </button>
