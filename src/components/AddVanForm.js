@@ -416,6 +416,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
       errors.push(' Buy-back price is required when buy-back is enabled');
     }
 
+    // WhatsApp — OBLIGATOIRE (canal de contact n°1 des acheteurs) + validation format
+    const waDigits = (formData.sellerWhatsApp || '').replace(/\D/g, '');
+    if (!formData.sellerWhatsApp || !formData.sellerWhatsApp.trim()) {
+      errors.push(' WhatsApp number is required so buyers can contact you');
+    } else if (waDigits.length < 8 || waDigits.length > 15) {
+      errors.push(' WhatsApp number looks invalid. Use international format, e.g. +64 21 123 4567');
+    }
+
     // Afficher les erreurs
     if (errors.length > 0) {
       toast.error(errors[0]); // Show first error as toast
@@ -929,7 +937,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             {/* WHATSAPP */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                WhatsApp Number <span className="font-normal text-gray-400">(recommended)</span>
+                WhatsApp Number <span className="text-red-500">*</span> <span className="font-normal text-gray-400">(required — buyers contact you here)</span>
               </label>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border-2 border-green-200 rounded-xl">

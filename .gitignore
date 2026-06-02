@@ -11,6 +11,9 @@
 # production
 /build
 
+# reports générés (contiennent des données vendeurs / PII)
+/reports
+
 # misc
 .DS_Store
 .env.local
