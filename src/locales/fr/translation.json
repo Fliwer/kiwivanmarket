@@ -156,6 +156,7 @@
         "reply_price": "Quel est votre meilleur prix ?",
         "reply_visit": "Est-ce que je peux venir le voir aujourd'hui ?",
         "reply_photos": "Pouvez-vous m'envoyer plus de photos ?",
+        "whatsapp_prefill": "Bonjour ! Je suis intéressé(e) par votre {{title}} {{year}} ({{price}}) sur KiwiVanMarket. Est-elle toujours disponible ?",
         "contact_title": "Demander une info / visite",
         "contact_subtitle": "Réponse rapide garantie",
         "verify_email_msg": "Veuillez vérifier votre email pour contacter les vendeurs",

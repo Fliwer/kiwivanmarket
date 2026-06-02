@@ -114,6 +114,7 @@
     },
     "van_page": {
         "back": "Volver a los anuncios",
+        "whatsapp_prefill": "¡Hola! Me interesa tu {{title}} {{year}} ({{price}}) en KiwiVanMarket. ¿Sigue disponible?",
         "not_found": "Van no encontrada",
         "not_found_desc": "Este anuncio puede haber sido eliminado o vendido.",
         "browse_all": "Ver todas las vans",
