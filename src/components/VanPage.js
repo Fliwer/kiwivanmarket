@@ -322,22 +322,22 @@ export default function VanPage() {
 
           setVan(vanData);
 
-          // 📊 QW2 — GA event: vue d'une annonce
-          if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-            window.gtag('event', 'van_view', {
-              van_id: vanSnap.id,
-              van_title: rawVanData.title,
-              van_price: rawVanData.price,
-              van_location: rawVanData.location,
-            });
-          }
-
-          // Incrémenter le compteur de vues (une seule fois par session par van)
+          // Incrémenter le compteur de vues + GA van_view (1× par session/van — M1 anti-doublon StrictMode)
           const viewedKey = `viewed_${vanSnap.id}`;
           if (!viewIncremented.current && !sessionStorage.getItem(viewedKey)) {
             viewIncremented.current = true;
             sessionStorage.setItem(viewedKey, '1');
             updateDoc(vanRef, { views: increment(1) }).catch(() => { });
+
+            // 📊 GA event: vue d'une annonce
+            if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+              window.gtag('event', 'van_view', {
+                van_id: vanSnap.id,
+                van_title: rawVanData.title,
+                van_price: rawVanData.price,
+                van_location: rawVanData.location,
+              });
+            }
           }
         } else {
           setError('Van not found');
@@ -1126,10 +1126,11 @@ ${shareUrl}
                       onClick={() => {
                         // QW1 — contact direct, sans obligation de connexion
                         const whatsappTarget = seller.whatsapp || seller.phone;
+                        const waText = encodeURIComponent(t('van_page.whatsapp_prefill', { year: van.year || '', title: van.title || '', price: formatPrice(van.price) }));
                         if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-                          window.gtag('event', 'contact_whatsapp', { van_id: van.id, seller_id: seller.uid });
+                          window.gtag('event', 'contact_seller', { method: 'whatsapp', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
                         }
-                        window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}`, '_blank', 'noopener,noreferrer');
+                        window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}?text=${waText}`, '_blank', 'noopener,noreferrer');
                       }}
                       className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
                     >
@@ -1142,7 +1143,7 @@ ${shareUrl}
                       onClick={() => {
                         // QW1 — appel direct, sans obligation de connexion
                         if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-                          window.gtag('event', 'contact_phone', { van_id: van.id, seller_id: seller.uid });
+                          window.gtag('event', 'contact_seller', { method: 'phone', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
                         }
                         window.open(`tel:${seller.phone}`, '_self');
                       }}
@@ -1534,10 +1535,11 @@ ${shareUrl}
                     onClick={() => {
                       // QW1 — contact direct, sans obligation de connexion
                       const whatsappTarget = seller.whatsapp || seller.phone;
+                      const waText = encodeURIComponent(t('van_page.whatsapp_prefill', { year: van.year || '', title: van.title || '', price: formatPrice(van.price) }));
                       if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-                        window.gtag('event', 'contact_whatsapp', { van_id: van.id, seller_id: seller.uid });
+                        window.gtag('event', 'contact_seller', { method: 'whatsapp', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
                       }
-                      window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}`, '_blank', 'noopener,noreferrer');
+                      window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}?text=${waText}`, '_blank', 'noopener,noreferrer');
                     }}
                     className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
                     title="WhatsApp"
@@ -1550,7 +1552,7 @@ ${shareUrl}
                     onClick={() => {
                       // QW1 — appel direct, sans obligation de connexion
                       if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-                        window.gtag('event', 'contact_phone', { van_id: van.id, seller_id: seller.uid });
+                        window.gtag('event', 'contact_seller', { method: 'phone', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
                       }
                       window.open(`tel:${seller.phone}`, '_self');
                     }}
