@@ -311,6 +311,9 @@ export default function VanPage() {
                 if (!vanData.seller.phone && userData.phone) {
                   vanData.seller.phone = userData.phone;
                 }
+                if (!vanData.seller.whatsapp && (userData.whatsapp || userData.phone)) {
+                  vanData.seller.whatsapp = userData.whatsapp || userData.phone;
+                }
               }
             } catch (userErr) {
               console.warn('Could not fetch latest seller profile:', userErr);
@@ -1108,19 +1111,35 @@ ${shareUrl}
 
                 {/* Premium Contact Actions */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                  {(seller.whatsapp || seller.phone) && (
+                    <button
+                      onClick={() => {
+                        if (!currentUser) {
+                          setShowAuthModal(true);
+                        } else {
+                          const whatsappTarget = seller.whatsapp || seller.phone;
+                          window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}`, '_blank');
+                        }
+                      }}
+                      className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
+                    >
+                      <MessageCircle size={20} />
+                      {currentUser ? 'WhatsApp Seller' : 'Show WhatsApp'}
+                    </button>
+                  )}
                   {seller.phone && (
                     <button
                       onClick={() => {
                         if (!currentUser) {
                           setShowAuthModal(true);
                         } else {
-                          window.open(`https://wa.me/${formatWhatsAppNumber(seller.phone)}`, '_blank');
+                          window.open(`tel:${seller.phone}`, '_self');
                         }
                       }}
-                      className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
+                      className="flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-500/10 active:scale-95"
                     >
                       <Phone size={20} />
-                      {currentUser ? 'WhatsApp Seller' : 'Show WhatsApp'}
+                      {currentUser ? 'Call Seller' : 'Show Phone'}
                     </button>
                   )}
                   {seller.facebook && (
@@ -1500,19 +1519,35 @@ ${shareUrl}
               </div>
 
               <div className="flex gap-2">
+                {(seller.whatsapp || seller.phone) && (
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        setShowAuthModal(true);
+                      } else {
+                        const whatsappTarget = seller.whatsapp || seller.phone;
+                        window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}`, '_blank');
+                      }
+                    }}
+                    className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+                    title={currentUser ? "WhatsApp" : "Login to see WhatsApp"}
+                  >
+                    <MessageCircle size={24} fill="currentColor" />
+                  </button>
+                )}
                 {seller.phone && (
                   <button
                     onClick={() => {
                       if (!currentUser) {
                         setShowAuthModal(true);
                       } else {
-                        window.open(`https://wa.me/${formatWhatsAppNumber(seller.phone)}`, '_blank');
+                        window.open(`tel:${seller.phone}`, '_self');
                       }
                     }}
-                    className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-                    title={currentUser ? "WhatsApp" : "Login to see WhatsApp"}
+                    className="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+                    title={currentUser ? "Call Seller" : "Login to see phone"}
                   >
-                    <Phone size={24} fill="currentColor" />
+                    <Phone size={22} />
                   </button>
                 )}
 

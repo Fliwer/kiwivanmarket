@@ -4,7 +4,7 @@ import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, serv
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { X, Upload, Trash2, CheckCircle, Shield } from 'lucide-react';
+import { X, Upload, Trash2, CheckCircle, Shield, Phone } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import { sanitizeString, sanitizeText } from '../securityUtils';
 import { useToast } from './ToastProvider';
@@ -95,6 +95,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     imageFocusY: 50,
     imageZoom: 1,
     customFeatures: '',
+    sellerWhatsApp: '',
     sellerPhone: '',
     sellerFacebook: '',
     plateNumber: ''
@@ -156,6 +157,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           imageFocusY: Number.isFinite(Number(van.imageFocusY)) ? Number(van.imageFocusY) : 50,
           imageZoom: Number.isFinite(Number(van.imageZoom)) ? Math.max(1, Math.min(2, Number(van.imageZoom))) : 1,
           customFeatures: van.customFeatures || '',
+          sellerWhatsApp: van.seller?.whatsapp || van.seller?.phone || '',
           sellerPhone: van.seller?.phone || '',
           sellerFacebook: van.seller?.facebook || '',
           plateNumber: van.plateNumber || ''
@@ -195,8 +197,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
         // Mode création - Essayer de pré-remplir le téléphone depuis le profil
         try {
           const userSnap = await getDoc(doc(db, 'users', currentUser.uid));
-          if (userSnap.exists() && userSnap.data().phone) {
-            setFormData(prev => ({ ...prev, sellerPhone: userSnap.data().phone }));
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            setFormData(prev => ({
+              ...prev,
+              sellerPhone: userData.phone || prev.sellerPhone,
+              sellerWhatsApp: userData.whatsapp || userData.phone || prev.sellerWhatsApp
+            }));
           }
         } catch (error) {
           console.error('Error fetching user profile for phone:', error);
@@ -453,6 +460,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           images: imageUrls,
           seller: {
             ...van.seller,
+            whatsapp: sanitizeString(formData.sellerWhatsApp || ''),
             phone: sanitizeString(formData.sellerPhone || ''),
             facebook: sanitizeString(formData.sellerFacebook || '')
           },
@@ -502,6 +510,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             uid: currentUser.uid,
             name: sanitizeString(currentUser.displayName || 'Anonymous'),
             email: currentUser.email,
+            whatsapp: sanitizeString(formData.sellerWhatsApp || ''),
             phone: sanitizeString(formData.sellerPhone || ''),
             facebook: sanitizeString(formData.sellerFacebook || '')
           },
@@ -917,10 +926,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
 
 
 
-            {/* PHONE NUMBER */}
+            {/* WHATSAPP */}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Your Phone Number <span className="font-normal text-gray-400">(for WhatsApp contact)</span>
+                WhatsApp Number <span className="font-normal text-gray-400">(recommended)</span>
               </label>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border-2 border-green-200 rounded-xl">
@@ -930,14 +939,36 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                 </div>
                 <input
                   type="tel"
-                  value={formData.sellerPhone}
-                  onChange={(e) => setFormData({ ...formData, sellerPhone: e.target.value })}
+                  value={formData.sellerWhatsApp}
+                  onChange={(e) => setFormData({ ...formData, sellerWhatsApp: e.target.value })}
                   placeholder="+64 21 123 4567"
                   className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
                 />
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Include country code (e.g. +64 for NZ). Buyers can contact you directly via WhatsApp or call.
+                Add country code (e.g. +64). Buyers can open a direct WhatsApp chat from your listing.
+              </p>
+            </div>
+
+            {/* PHONE NUMBER */}
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Phone Number <span className="font-normal text-gray-400">(for calls)</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl">
+                  <Phone size={18} className="text-slate-600" />
+                </div>
+                <input
+                  type="tel"
+                  value={formData.sellerPhone}
+                  onChange={(e) => setFormData({ ...formData, sellerPhone: e.target.value })}
+                  placeholder="+64 21 123 4567"
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:outline-none transition-colors"
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Optional but recommended. Buyers can call you directly from the listing.
               </p>
             </div>
 
