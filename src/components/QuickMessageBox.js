@@ -167,6 +167,14 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       setSent(true);
       setMessage('');
 
+      // 📊 QW2 — GA conversion event
+      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+        window.gtag('event', 'message_sent', {
+          van_id: van.id,
+          seller_id: sellerInfo.uid,
+        });
+      }
+
       // Reset after 3 seconds
       setTimeout(() => setSent(false), 3000);
 

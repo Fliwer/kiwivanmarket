@@ -322,6 +322,16 @@ export default function VanPage() {
 
           setVan(vanData);
 
+          // 📊 QW2 — GA event: vue d'une annonce
+          if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+            window.gtag('event', 'van_view', {
+              van_id: vanSnap.id,
+              van_title: rawVanData.title,
+              van_price: rawVanData.price,
+              van_location: rawVanData.location,
+            });
+          }
+
           // Incrémenter le compteur de vues (une seule fois par session par van)
           const viewedKey = `viewed_${vanSnap.id}`;
           if (!viewIncremented.current && !sessionStorage.getItem(viewedKey)) {

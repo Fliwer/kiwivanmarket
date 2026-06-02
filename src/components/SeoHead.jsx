@@ -160,7 +160,7 @@ export default function SeoHead({
         ? `${title} | Kiwi Van Market`
         : `${t('header.subtitle')} | Kiwi Van Market`;
     const metaDesc = description || t('hero.subtitle');
-    const ogImage = image || `${ORIGIN}/og-default.jpg`;
+    const ogImage = image || `${ORIGIN}/og-image.jpg`;
     const mergedKeywords = keywords && Array.isArray(keywords)
         ? keywords.join(', ')
         : (keywords || "buy campervan New Zealand, campervans for sale NZ, backpacker van NZ, acheter un van nouvelle zelande, campervan a vendre NZ, motorhome for sale New Zealand, Toyota Hiace for sale NZ, self contained van for sale NZ, buy van Auckland");
