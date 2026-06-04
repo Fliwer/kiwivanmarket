@@ -35,7 +35,7 @@
 
 @layer components {
   .glass-effect {
-    @apply backdrop-blur-md bg-white/80 border border-slate-200/50 shadow-2xl shadow-slate-200/50;
+    @apply backdrop-blur-xl bg-white/95 border border-slate-200/60 shadow-2xl shadow-slate-200/50;
   }
 
   .premium-card {
