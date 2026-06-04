@@ -114,6 +114,7 @@
     },
     "van_page": {
         "back": "Volver a los anuncios",
+        "whatsapp_prefill": "¡Hola! Me interesa tu {{title}} {{year}} ({{price}}) en KiwiVanMarket. ¿Sigue disponible?",
         "not_found": "Van no encontrada",
         "not_found_desc": "Este anuncio puede haber sido eliminado o vendido.",
         "browse_all": "Ver todas las vans",
@@ -228,7 +229,7 @@
         "recently_added": "Anuncios recientes",
         "recently_added_highlight": "de vans",
         "fresh_listings": "Nuevos anuncios publicados por mochileros en Nueva Zelanda",
-        "carjam_info": "Haz clic en la insignia CarJam de un anuncio para abrir el historial del vehículo en NZ (deudas, estado de robo, pistas del odómetro)."
+        "carjam_info": "Informe CarJam gratis: deudas, estado de robo y pistas de odómetro/importación."
     },
     "trust_bar": {
         "verified": "Información verificada",

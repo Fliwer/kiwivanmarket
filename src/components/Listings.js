@@ -139,12 +139,16 @@ export default function Listings({
 
             {!loading && filteredVans.length > 0 && (
                 <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50/70 px-4 py-3">
-                    <p className="text-xs font-bold text-blue-900 flex items-center gap-2">
-                        <span className="inline-flex items-center rounded-md border border-blue-300 bg-white px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-blue-700">
-                            CarJam
-                        </span>
-                        {t('listings.carjam_info')}
-                    </p>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-start gap-2 min-w-0">
+                            <span className="inline-flex shrink-0 items-center rounded-md border border-blue-300 bg-white px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide text-blue-700">
+                                CarJam
+                            </span>
+                            <p className="text-xs font-semibold leading-5 text-blue-900">
+                                {t('listings.carjam_info')}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             )}
 

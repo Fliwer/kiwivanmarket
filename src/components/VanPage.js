@@ -311,6 +311,9 @@ export default function VanPage() {
                 if (!vanData.seller.phone && userData.phone) {
                   vanData.seller.phone = userData.phone;
                 }
+                if (!vanData.seller.whatsapp && (userData.whatsapp || userData.phone)) {
+                  vanData.seller.whatsapp = userData.whatsapp || userData.phone;
+                }
               }
             } catch (userErr) {
               console.warn('Could not fetch latest seller profile:', userErr);
@@ -319,12 +322,22 @@ export default function VanPage() {
 
           setVan(vanData);
 
-          // Incrémenter le compteur de vues (une seule fois par session par van)
+          // Incrémenter le compteur de vues + GA van_view (1× par session/van — M1 anti-doublon StrictMode)
           const viewedKey = `viewed_${vanSnap.id}`;
           if (!viewIncremented.current && !sessionStorage.getItem(viewedKey)) {
             viewIncremented.current = true;
             sessionStorage.setItem(viewedKey, '1');
             updateDoc(vanRef, { views: increment(1) }).catch(() => { });
+
+            // 📊 GA event: vue d'une annonce
+            if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+              window.gtag('event', 'van_view', {
+                van_id: vanSnap.id,
+                van_title: rawVanData.title,
+                van_price: rawVanData.price,
+                van_location: rawVanData.location,
+              });
+            }
           }
         } else {
           setError('Van not found');
@@ -861,100 +874,84 @@ ${shareUrl}
               </div>
 
               {/* Vehicle Compliance - Premium Layout */}
-              <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
-                <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
-                  <h3 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                    <Shield size={16} className="text-emerald-500" />
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-100">
+                <div className="bg-slate-900 px-4 py-2.5 flex items-center justify-between">
+                  <h3 className="text-white font-black text-[11px] uppercase tracking-widest flex items-center gap-2">
+                    <Shield size={14} className="text-emerald-500" />
                     Technical Compliance
                   </h3>
-                  <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-black tracking-widest uppercase">Verified</div>
+                  <div className="px-2.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-black tracking-widest uppercase">Verified</div>
                 </div>
-                <div className="p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className={`p-5 rounded-2xl border-2 transition-all ${van.wofExpiry && safeDate(van.wofExpiry) > new Date()
-                      ? 'bg-emerald-50/30 border-emerald-100'
-                      : 'bg-slate-50 border-slate-100 opacity-60'
-                      }`}>
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'bg-emerald-500 text-white' : 'bg-slate-400 text-white'}`}>
-                          <CheckCircle size={18} />
-                        </div>
-                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">WOF</span>
-                      </div>
-                      <p className={`text-lg font-black ${van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'text-slate-900' : 'text-slate-400'}`}>
+                <div>
+                  <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+                    {/* WOF */}
+                    <div className="flex flex-1 items-center justify-between gap-3 px-4 py-3">
+                      <span className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-400">
+                        <CheckCircle size={14} className={van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'text-emerald-500' : 'text-slate-300'} />
+                        WOF
+                      </span>
+                      <span className={`text-sm font-bold ${van.wofExpiry && safeDate(van.wofExpiry) > new Date() ? 'text-slate-900' : 'text-slate-400'}`}>
                         {formatDate(van.wofExpiry)}
-                      </p>
+                      </span>
                     </div>
-
-                    <div className={`p-5 rounded-2xl border-2 transition-all ${van.regoExpiry && safeDate(van.regoExpiry) > new Date()
-                      ? 'bg-blue-50/30 border-blue-100'
-                      : 'bg-slate-50 border-slate-100 opacity-60'
-                      }`}>
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'bg-blue-500 text-white' : 'bg-slate-400 text-white'}`}>
-                          <CheckCircle size={18} />
-                        </div>
-                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">REGO</span>
-                      </div>
-                      <p className={`text-lg font-black ${van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'text-slate-900' : 'text-slate-400'}`}>
+                    {/* REGO */}
+                    <div className="flex flex-1 items-center justify-between gap-3 px-4 py-3">
+                      <span className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-400">
+                        <CheckCircle size={14} className={van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'text-blue-500' : 'text-slate-300'} />
+                        REGO
+                      </span>
+                      <span className={`text-sm font-bold ${van.regoExpiry && safeDate(van.regoExpiry) > new Date() ? 'text-slate-900' : 'text-slate-400'}`}>
                         {formatDate(van.regoExpiry)}
-                      </p>
+                      </span>
                     </div>
-
-                    <div className={`p-5 rounded-2xl border-2 transition-all ${van.selfContained
-                      ? 'bg-teal-50/30 border-teal-100'
-                      : 'bg-slate-50 border-slate-100 opacity-60'
-                      }`}>
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${van.selfContained ? 'bg-teal-500 text-white' : 'bg-slate-400 text-white'}`}>
-                          {van.selfContained ? <CheckCircle size={18} /> : <X size={18} />}
-                        </div>
-                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Self-Contained</span>
-                      </div>
-                      <p className={`text-lg font-black ${van.selfContained ? 'text-slate-900' : 'text-slate-400'}`}>
-                        {van.selfContained ? (van.selfContainedType === 'blue' ? '🔵 Blue Sticker' : '🟢 Green Sticker') : 'No'}
-                      </p>
+                    {/* Self-contained */}
+                    <div className="flex flex-1 items-center justify-between gap-3 px-4 py-3">
+                      <span className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-400">
+                        {van.selfContained ? <CheckCircle size={14} className="text-teal-500" /> : <X size={14} className="text-slate-300" />}
+                        Self-contained
+                      </span>
+                      <span className={`text-sm font-bold ${van.selfContained ? 'text-slate-900' : 'text-slate-400'}`}>
+                        {van.selfContained ? (van.selfContainedType === 'blue' ? '🔵 Blue' : '🟢 Green') : 'No'}
+                      </span>
                     </div>
                   </div>
 
-                  {/* CarJam — high-trust NZ vehicle history */}
-                  <div className="mt-6 rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50/90 via-white to-slate-50 p-5 shadow-md shadow-blue-100/50">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="flex gap-3 min-w-0">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-300/40">
-                          <Shield size={22} className="text-white" aria-hidden />
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="text-sm font-black uppercase tracking-wide text-slate-900">
-                            {t('van_page.carjam_headline')}
-                          </h4>
-                          <p className="mt-1.5 text-sm font-medium leading-relaxed text-slate-600">
-                            {t('van_page.carjam_explainer_long')}
-                          </p>
-                        </div>
+                  {/* CarJam — compact one-line trust signal */}
+                  {van.plateNumber ? (
+                    <div className="flex flex-col gap-2 border-t border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <Shield size={16} className="shrink-0 text-blue-600" aria-hidden />
+                        <span className="truncate text-sm font-semibold text-slate-700">
+                          {t('van_page.carjam_headline')}
+                        </span>
+                        <HelpCircle
+                          size={14}
+                          className="shrink-0 cursor-help text-slate-400"
+                          title={t('van_page.carjam_explainer_long')}
+                          aria-label={t('van_page.carjam_explainer_long')}
+                        />
                       </div>
-                      {van.plateNumber ? (
-                        <a
-                          href={`https://www.carjam.co.nz/car/?plate=${van.plateNumber.toUpperCase()}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex shrink-0 items-center justify-center gap-2 self-stretch rounded-2xl bg-blue-600 px-5 py-3 text-xs font-black uppercase tracking-widest text-white shadow-md transition-all hover:bg-blue-700 active:scale-[0.98] sm:self-center"
-                        >
-                          <ExternalLink size={14} aria-hidden />
-                          {t('van_page.carjam_cta_button')}
-                        </a>
-                      ) : (
-                        <div className="shrink-0 rounded-2xl border border-amber-200 bg-amber-50/95 px-4 py-3 sm:max-w-xs">
-                          <p className="text-xs font-black uppercase tracking-wide text-amber-950">
-                            {t('van_page.carjam_no_plate_title')}
-                          </p>
-                          <p className="mt-1.5 text-xs font-medium leading-relaxed text-amber-950/90">
-                            {t('van_page.carjam_no_plate_long')}
-                          </p>
-                        </div>
-                      )}
+                      <a
+                        href={`https://www.carjam.co.nz/car/?plate=${van.plateNumber.toUpperCase()}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => {
+                          if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                            window.gtag('event', 'carjam_click', { van_id: van.id, van_title: van.title });
+                          }
+                        }}
+                        className="inline-flex w-full shrink-0 items-center justify-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-blue-700 transition-all hover:bg-blue-100 active:scale-[0.98] sm:w-auto"
+                      >
+                        <ExternalLink size={13} aria-hidden />
+                        {t('van_page.carjam_cta_button')}
+                      </a>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex items-center gap-2 border-t border-slate-100 px-4 py-3 text-xs font-semibold text-amber-700">
+                      <AlertTriangle size={14} className="shrink-0" aria-hidden />
+                      {t('van_page.carjam_no_plate_short')}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1108,19 +1105,36 @@ ${shareUrl}
 
                 {/* Premium Contact Actions */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                  {seller.phone && (
+                  {(seller.whatsapp || seller.phone) && (
                     <button
                       onClick={() => {
-                        if (!currentUser) {
-                          setShowAuthModal(true);
-                        } else {
-                          window.open(`https://wa.me/${formatWhatsAppNumber(seller.phone)}`, '_blank');
+                        // QW1 — contact direct, sans obligation de connexion
+                        const whatsappTarget = seller.whatsapp || seller.phone;
+                        const waText = encodeURIComponent(t('van_page.whatsapp_prefill', { year: van.year || '', title: van.title || '', price: formatPrice(van.price) }));
+                        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                          window.gtag('event', 'contact_seller', { method: 'whatsapp', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
                         }
+                        window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}?text=${waText}`, '_blank', 'noopener,noreferrer');
                       }}
                       className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
                     >
+                      <MessageCircle size={20} />
+                      WhatsApp Seller
+                    </button>
+                  )}
+                  {seller.phone && (
+                    <button
+                      onClick={() => {
+                        // QW1 — appel direct, sans obligation de connexion
+                        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                          window.gtag('event', 'contact_seller', { method: 'phone', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
+                        }
+                        window.open(`tel:${seller.phone}`, '_self');
+                      }}
+                      className="flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-500/10 active:scale-95"
+                    >
                       <Phone size={20} />
-                      {currentUser ? 'WhatsApp Seller' : 'Show WhatsApp'}
+                      Call Seller
                     </button>
                   )}
                   {seller.facebook && (
@@ -1500,19 +1514,36 @@ ${shareUrl}
               </div>
 
               <div className="flex gap-2">
+                {(seller.whatsapp || seller.phone) && (
+                  <button
+                    onClick={() => {
+                      // QW1 — contact direct, sans obligation de connexion
+                      const whatsappTarget = seller.whatsapp || seller.phone;
+                      const waText = encodeURIComponent(t('van_page.whatsapp_prefill', { year: van.year || '', title: van.title || '', price: formatPrice(van.price) }));
+                      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                        window.gtag('event', 'contact_seller', { method: 'whatsapp', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
+                      }
+                      window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}?text=${waText}`, '_blank', 'noopener,noreferrer');
+                    }}
+                    className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+                    title="WhatsApp"
+                  >
+                    <MessageCircle size={24} fill="currentColor" />
+                  </button>
+                )}
                 {seller.phone && (
                   <button
                     onClick={() => {
-                      if (!currentUser) {
-                        setShowAuthModal(true);
-                      } else {
-                        window.open(`https://wa.me/${formatWhatsAppNumber(seller.phone)}`, '_blank');
+                      // QW1 — appel direct, sans obligation de connexion
+                      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                        window.gtag('event', 'contact_seller', { method: 'phone', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
                       }
+                      window.open(`tel:${seller.phone}`, '_self');
                     }}
-                    className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-                    title={currentUser ? "WhatsApp" : "Login to see WhatsApp"}
+                    className="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+                    title="Call Seller"
                   >
-                    <Phone size={24} fill="currentColor" />
+                    <Phone size={22} />
                   </button>
                 )}
 

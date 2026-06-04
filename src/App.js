@@ -10,6 +10,7 @@ import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
 import { useHideLoader } from './hooks/useHideLoader';
 import { useAutoTranslate } from './hooks/useAutoTranslate';
+import { usePageTracking } from './hooks/usePageTracking';
 import { getThumbnail, getLargeImage } from './utils/imageOptimizer';
 import { formatWhatsAppNumber } from './utils/formatHelper';
 import { NotificationProvider, useNotifications } from './components/NotificationSystem';
@@ -447,6 +448,7 @@ function MainApp({
           sortBy={sortBy} setSortBy={setSortBy}
           formatPrice={formatPrice}
           onSelectVan={setSelectedVan}
+          setShowAuthModal={setShowAuthModal}
         />
         <section className="max-w-7xl mx-auto px-4 pb-10">
           <div className="bg-white border border-slate-100 rounded-2xl p-5">
@@ -473,6 +475,7 @@ function MainApp({
 function ScrollToTop() {
   const { pathname } = useLocation();
   const navType = useNavigationType();
+  usePageTracking(); // QW2 — GA page_view sur chaque changement de route (SPA)
   useEffect(() => { if (navType !== 'POP') window.scrollTo(0, 0); }, [pathname, navType]);
   return null;
 }

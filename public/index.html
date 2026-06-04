@@ -8,7 +8,8 @@
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-    gtag('config', 'G-T8G60HSRS0');
+    // send_page_view:false → les page_view sont envoyées par usePageTracking (SPA), évite le double comptage de la home
+    gtag('config', 'G-T8G60HSRS0', { send_page_view: false });
   </script>
 
   <meta charset="utf-8" />
