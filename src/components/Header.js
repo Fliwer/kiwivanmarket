@@ -19,7 +19,8 @@ import {
     LogOut,
     User,
     Mail,
-    Shield
+    Shield,
+    Bell
 } from 'lucide-react';
 import LanguageSelector from './LanguageSelector';
 import NotificationBell from './NotificationBell';
@@ -187,6 +188,13 @@ export default function Header({
                                                     <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600"><MapPin size={16} /></div>
                                                     {t('menu.listings') || 'My Vans'}
                                                 </button>
+                                                <button
+                                                    onClick={() => { navigate('/alerts'); setShowUserMenuDropdown(false); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 rounded-2xl transition-all"
+                                                >
+                                                    <div className="p-2 bg-emerald-100 rounded-xl text-emerald-600"><Bell size={16} /></div>
+                                                    {t('menu.alerts') || 'My Alerts'}
+                                                </button>
                                                 {isAdmin && (
                                                     <button
                                                         onClick={() => { setShowAdminDashboard(true); setShowUserMenuDropdown(false); }}
@@ -290,6 +298,15 @@ export default function Header({
                                                 <MapPin size={20} />
                                             </div>
                                             <span>{t('menu.listings') || 'My Vans'}</span>
+                                        </button>
+                                        <button
+                                            onClick={() => { navigate('/alerts'); setShowMobileMenu(false); }}
+                                            className="w-full flex items-center gap-4 px-4 py-3 text-slate-700 font-semibold border-t border-slate-100"
+                                        >
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm transition-transform active:scale-95">
+                                                <Bell size={20} />
+                                            </div>
+                                            <span>{t('menu.alerts') || 'My Alerts'}</span>
                                         </button>
                                     </div>
                                     <button
