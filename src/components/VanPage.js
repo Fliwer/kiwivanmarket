@@ -13,7 +13,7 @@ import { formatMileage, formatWhatsAppNumber } from '../utils/formatHelper';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
   Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen, User, LogOut,
-  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle, Phone
+  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle, Phone, Lock
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastProvider';
@@ -1108,7 +1108,8 @@ ${shareUrl}
                   {(seller.whatsapp || seller.phone) && (
                     <button
                       onClick={() => {
-                        // QW1 — contact direct, sans obligation de connexion
+                        // Contact protégé : connexion requise pour révéler le numéro
+                        if (!currentUser) { setShowAuthModal(true); return; }
                         const whatsappTarget = seller.whatsapp || seller.phone;
                         const waText = encodeURIComponent(t('van_page.whatsapp_prefill', { year: van.year || '', title: van.title || '', price: formatPrice(van.price) }));
                         if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
@@ -1118,14 +1119,15 @@ ${shareUrl}
                       }}
                       className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
                     >
-                      <MessageCircle size={20} />
-                      WhatsApp Seller
+                      {currentUser ? <MessageCircle size={20} /> : <Lock size={18} />}
+                      {currentUser ? 'WhatsApp Seller' : 'Show contact'}
                     </button>
                   )}
                   {seller.phone && (
                     <button
                       onClick={() => {
-                        // QW1 — appel direct, sans obligation de connexion
+                        // Contact protégé : connexion requise pour révéler le numéro
+                        if (!currentUser) { setShowAuthModal(true); return; }
                         if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
                           window.gtag('event', 'contact_seller', { method: 'phone', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
                         }
@@ -1133,8 +1135,8 @@ ${shareUrl}
                       }}
                       className="flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-500/10 active:scale-95"
                     >
-                      <Phone size={20} />
-                      Call Seller
+                      {currentUser ? <Phone size={20} /> : <Lock size={18} />}
+                      {currentUser ? 'Call Seller' : 'Show number'}
                     </button>
                   )}
                   {seller.facebook && (
@@ -1517,7 +1519,8 @@ ${shareUrl}
                 {(seller.whatsapp || seller.phone) && (
                   <button
                     onClick={() => {
-                      // QW1 — contact direct, sans obligation de connexion
+                      // Contact protégé : connexion requise pour révéler le numéro
+                      if (!currentUser) { setShowAuthModal(true); return; }
                       const whatsappTarget = seller.whatsapp || seller.phone;
                       const waText = encodeURIComponent(t('van_page.whatsapp_prefill', { year: van.year || '', title: van.title || '', price: formatPrice(van.price) }));
                       if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
@@ -1526,15 +1529,14 @@ ${shareUrl}
                       window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}?text=${waText}`, '_blank', 'noopener,noreferrer');
                     }}
                     className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-                    title="WhatsApp"
+                    title={currentUser ? 'WhatsApp' : 'Sign in to contact'}
                   >
-                    <MessageCircle size={24} fill="currentColor" />
+                    {currentUser ? <MessageCircle size={24} fill="currentColor" /> : <Lock size={22} />}
                   </button>
                 )}
-                {seller.phone && (
+                {seller.phone && currentUser && (
                   <button
                     onClick={() => {
-                      // QW1 — appel direct, sans obligation de connexion
                       if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
                         window.gtag('event', 'contact_seller', { method: 'phone', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
                       }
