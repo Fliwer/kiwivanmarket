@@ -62,17 +62,12 @@
     "menu": {
         "profile": "Mon Profil",
         "listings": "Mes Vans",
-        "alerts": "Mes alertes",
         "admin": "Admin Dashboard",
         "signout": "Déconnexion",
         "sell": "Vendre mon van",
         "signin": "Connexion",
         "guides": "Guides",
         "calculator": "Calculateur Buyback"
-    },
-    "alerts": {
-        "notify_me": "Me prévenir",
-        "notify_me_tip": "Reçois un email dès qu'un van correspondant est publié"
     },
     "how_it_works": {
         "title": "Comment ça marche",

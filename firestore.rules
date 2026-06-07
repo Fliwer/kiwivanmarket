@@ -263,29 +263,8 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if isAuthenticated() && currentUserId() == resource.data.userId;
     }
-
-
-    // ═══════════════════════════════════════════════════════════════════
-    // 🔔 SAVED SEARCHES (buyer alerts)
-    // ═══════════════════════════════════════════════════════════════════
-
-    match /savedSearches/{searchId} {
-      allow read: if isAuthenticated() && currentUserId() == resource.data.userId;
-
-      allow create: if isAuthenticated() &&
-                      currentUserId() == request.resource.data.userId &&
-                      request.resource.data.keys().hasAll(['userId', 'criteria', 'label', 'active', 'createdAt']) &&
-                      request.resource.data.criteria is map &&
-                      isValidString(request.resource.data.label, 1, 200);
-
-      allow update: if isAuthenticated() &&
-                      currentUserId() == resource.data.userId &&
-                      onlyUpdating(['active', 'label', 'criteria', 'lastNotifiedAt', 'updatedAt']);
-
-      allow delete: if isAuthenticated() && currentUserId() == resource.data.userId;
-    }
-
-
+    
+    
     // ═══════════════════════════════════════════════════════════════════
     // 💬 CONVERSATIONS - FIX v2.1.0
     // ═══════════════════════════════════════════════════════════════════

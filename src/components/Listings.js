@@ -1,37 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
-import { Search, BookOpen, ArrowRight, Bell } from 'lucide-react';
+import { Search, BookOpen, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
-import { useSavedSearches } from '../hooks/useSavedSearches';
 import VanCard from './VanCard';
 import { getLongTailSlugsForVan, LONG_TAIL_PAGE_MAP } from '../constants/seoLongTailPages';
-
-// Build a human-readable label from the current filters + search term.
-function buildSearchLabel(filters, searchTerm) {
-    const parts = [];
-    if (searchTerm) parts.push(`"${searchTerm}"`);
-    if (filters) {
-        if (filters.type && filters.type !== 'all') parts.push(filters.type);
-        if (filters.location && filters.location !== 'all') parts.push(filters.location);
-        const min = filters.priceMin || 0;
-        const max = filters.priceMax ?? 500000;
-        if (min > 0 && max < 500000) parts.push(`$${min.toLocaleString()}–$${max.toLocaleString()}`);
-        else if (max < 500000) parts.push(`under $${max.toLocaleString()}`);
-        else if (min > 0) parts.push(`over $${min.toLocaleString()}`);
-        if (filters.yearMin && filters.yearMin > 1980) parts.push(`${filters.yearMin}+`);
-        if (filters.selfContained) parts.push('self-contained');
-        if (filters.buyBack) parts.push('buy-back');
-        if (filters.wofValid) parts.push('WOF valid');
-        if (filters.regoValid) parts.push('REGO valid');
-        if (filters.equipment) {
-            const eq = Object.entries(filters.equipment).filter(([, v]) => v).map(([k]) => k);
-            if (eq.length) parts.push(eq.join(', '));
-        }
-    }
-    return parts.length ? parts.join(' · ') : 'All vans';
-}
 
 const PAGE_SIZE = 24;
 const LISTINGS_PAGE_KEY = 'kiwiVanMarket_listingsPage';
@@ -46,19 +20,11 @@ export default function Listings({
     sortBy,
     setSortBy,
     formatPrice,
-    filters,
     setShowAuthModal
 }) {
     const { t } = useTranslation();
     const { currentUser } = useAuth();
-    const { addSearch } = useSavedSearches();
     const restoredScrollRef = useRef(false);
-
-    const handleNotifyMe = () => {
-        const label = buildSearchLabel(filters, searchTerm);
-        const criteria = { ...(filters || {}), keyword: searchTerm || '' };
-        addSearch(criteria, label, setShowAuthModal);
-    };
     const [currentPage, setCurrentPage] = useState(() => {
         if (typeof window === 'undefined') return 1;
         const saved = Number(window.sessionStorage.getItem(LISTINGS_PAGE_KEY));
@@ -146,13 +112,6 @@ export default function Listings({
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <button
-                            onClick={handleNotifyMe}
-                            title={t('alerts.notify_me_tip') || 'Get an email when a matching van is listed'}
-                            className="px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-sm font-bold hover:bg-emerald-100 transition-colors flex items-center gap-2"
-                        >
-                            <Bell size={16} /> {t('alerts.notify_me') || 'Notify me'}
-                        </button>
                         {searchTerm && (
                             <button
                                 onClick={() => setSearchTerm('')}
