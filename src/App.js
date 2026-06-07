@@ -35,6 +35,7 @@ import { FEATURED_LONG_TAIL_SLUGS, LONG_TAIL_PAGE_MAP } from './constants/seoLon
 
 // ✅ LAZY LOADING
 const SellPage = lazy(() => import('./components/SellPage'));
+const AlertsPage = lazy(() => import('./components/AlertsPage'));
 const AddVanForm = lazy(() => import('./components/AddVanForm'));
 const MyVans = lazy(() => import('./components/MyVans'));
 const FavoritesPage = lazy(() => import('./components/FavoritesPage'));
@@ -447,6 +448,7 @@ function MainApp({
           searchTerm={searchTerm} setSearchTerm={setSearchTerm}
           sortBy={sortBy} setSortBy={setSortBy}
           formatPrice={formatPrice}
+          filters={filters}
           onSelectVan={setSelectedVan}
           setShowAuthModal={setShowAuthModal}
         />
@@ -532,6 +534,7 @@ export default function KiwiVanMarket() {
               <Route path="/sell" element={<Suspense fallback={<PageLoader />}><SellPage /></Suspense>} />
               <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
               <Route path="/my-listings" element={<Suspense fallback={<PageLoader />}><MyListingsPage /></Suspense>} />
+              <Route path="/alerts" element={<Suspense fallback={<PageLoader />}><AlertsPage /></Suspense>} />
               <Route path="/buyback-calculator" element={<Suspense fallback={<PageLoader />}><BuybackCalculator /></Suspense>} />
               <Route path="/messages" element={<Suspense fallback={<PageLoader />}><MessagingPage onBack={() => window.history.back()} /></Suspense>} />
               <Route path="/contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />

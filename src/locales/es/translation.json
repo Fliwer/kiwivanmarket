@@ -62,12 +62,17 @@
     "menu": {
         "profile": "Mi Perfil",
         "listings": "Mis Anuncios",
+        "alerts": "Mis alertas",
         "admin": "Panel de Admin",
         "signout": "Cerrar Sesión",
         "sell": "Vender mi van",
         "signin": "Iniciar Sesión",
         "guides": "Guías",
         "calculator": "Calculadora Buyback"
+    },
+    "alerts": {
+        "notify_me": "Avísame",
+        "notify_me_tip": "Recibe un email en cuanto se publique una van que coincida"
     },
     "how_it_works": {
         "title": "Cómo funciona",

@@ -5,7 +5,7 @@ import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'fire
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Upload, Trash2, CheckCircle, ArrowLeft, Camera, FileText, Send, PartyPopper, Eye, Home, Sparkles, Loader2 } from 'lucide-react';
+import { Upload, Trash2, CheckCircle, ArrowLeft, Camera, FileText, Send, PartyPopper, Eye, Home, Sparkles, Loader2, MessageCircle, Share2, Copy } from 'lucide-react';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import AuthModal from './AuthModal';
 import SeoHead from './SeoHead';
@@ -352,6 +352,38 @@ export default function SellPage() {
                 Back to Homepage
               </Link>
             </div>
+
+            {newVanId && (() => {
+              const shareUrl = `https://www.kiwivanmarket.com/van/${newVanId}`;
+              const shareText = `Check out my ${formData.year || ''} ${formData.title} for sale on Kiwi Van Market!`.replace(/\s+/g, ' ').trim();
+              const track = (method) => {
+                if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                  window.gtag('event', 'listing_share', { method, van_id: newVanId });
+                }
+              };
+              const shareWhatsApp = () => { track('whatsapp'); window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank', 'noopener,noreferrer'); };
+              const shareFacebook = () => { track('facebook'); window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank', 'width=600,height=400'); };
+              const copyLink = async () => { track('copy'); try { await navigator.clipboard.writeText(shareUrl); toast.success('Link copied!'); } catch { toast.error('Could not copy link'); } };
+              return (
+                <div className="mt-8 pt-6 border-t border-gray-100">
+                  <p className="flex items-center justify-center gap-2 text-sm font-bold text-gray-700 mb-3">
+                    <Share2 size={16} className="text-emerald-600" /> Share your listing — sell faster
+                  </p>
+                  <p className="text-xs text-gray-500 mb-4">Listings shared by the seller get far more views. Spread the word!</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <button onClick={shareWhatsApp} className="flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl bg-[#25D366]/10 text-[#128C3E] font-bold text-xs hover:bg-[#25D366]/20 transition">
+                      <MessageCircle size={20} /> WhatsApp
+                    </button>
+                    <button onClick={shareFacebook} className="flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl bg-[#1877F2]/10 text-[#1877F2] font-bold text-xs hover:bg-[#1877F2]/20 transition">
+                      <Share2 size={20} /> Facebook
+                    </button>
+                    <button onClick={copyLink} className="flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 transition">
+                      <Copy size={20} /> Copy link
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
 
             <p className="text-sm text-gray-500 mt-6">
               Buyers can now contact you via email or WhatsApp. Good luck with your sale!
