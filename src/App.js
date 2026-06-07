@@ -165,6 +165,9 @@ function MainApp({
     yearMin: 1980,
     type: 'all',
     location: 'all',
+    brand: 'all',
+    mileageMax: 0,
+    capacityMin: 0,
     selfContained: false,
     buyBack: false,
     wofValid: false,
@@ -220,6 +223,17 @@ function MainApp({
   }, []);
 
   useEffect(() => {
+    const BRAND_KEYWORDS = {
+      toyota: ['toyota', 'hiace', 'estima', 'regius', 'townace', 'liteace', 'hilux', 'granvia'],
+      nissan: ['nissan', 'caravan', 'serena', 'elgrand', 'vanette', 'nv200', 'homy'],
+      mazda: ['mazda', 'bongo', 'e2000', 'e2500'],
+      mitsubishi: ['mitsubishi', 'delica', 'l300', 'express'],
+      ford: ['ford', 'transit', 'econovan'],
+      mercedes: ['mercedes', 'sprinter', 'benz', 'vito'],
+      hyundai: ['hyundai', 'iload', 'imax', 'h1', 'h100'],
+      volkswagen: ['volkswagen', 'vw ', 'transporter', 'kombi', 'caddy', 'crafter'],
+    };
+    const brandKw = filters.brand && filters.brand !== 'all' ? (BRAND_KEYWORDS[filters.brand] || [filters.brand]) : null;
     let filtered = vans.filter(van => {
       if (van.status && van.status !== 'active' && van.status !== 'sold') return false;
       const matchSearch = !searchTerm || [van.title, van.location, van.description].some(s => s?.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -228,6 +242,9 @@ function MainApp({
       const matchYear = (van.year || 2000) >= filters.yearMin;
       const matchType = filters.type === 'all' || van.type === filters.type;
       const matchLocation = filters.location === 'all' || van.location === filters.location;
+      const matchBrand = !brandKw || brandKw.some(k => (van.title || '').toLowerCase().includes(k));
+      const matchMileage = !filters.mileageMax || (van.mileage || 0) <= filters.mileageMax;
+      const matchCapacity = !filters.capacityMin || (van.capacity || 0) >= filters.capacityMin;
       const matchSelfContained = !filters.selfContained || van.selfContained;
       const matchBuyBack = !filters.buyBack || van.buyBack;
       const matchWofValid = !filters.wofValid || (van.wofExpiry && safeDate(van.wofExpiry) > new Date());
@@ -239,7 +256,7 @@ function MainApp({
         if (k === 'heater') return van.equipment?.heater || van.equipment?.dieselHeater;
         return van.equipment?.[k] === true;
       });
-      return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid && matchEquipment;
+      return matchSearch && matchPrice && matchYear && matchType && matchLocation && matchBrand && matchMileage && matchCapacity && matchSelfContained && matchBuyBack && matchWofValid && matchRegoValid && matchEquipment;
     });
 
     filtered.sort((a, b) => {
