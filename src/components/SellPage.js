@@ -192,11 +192,9 @@ export default function SellPage() {
     if (!formData.price || parseInt(formData.price) < 1) errors.push('Price required');
     if (!formData.location) errors.push('City required');
     if (!formData.description || formData.description.length < 20) errors.push('Description too short');
-    // WhatsApp — required (buyers' #1 contact channel) + basic format check
+    // WhatsApp — optional but recommended; if provided, must be a valid format
     const waDigits = (formData.sellerWhatsApp || '').replace(/\D/g, '');
-    if (!formData.sellerWhatsApp || !formData.sellerWhatsApp.trim()) {
-      errors.push('WhatsApp number');
-    } else if (waDigits.length < 7) {
+    if (formData.sellerWhatsApp && formData.sellerWhatsApp.trim() && waDigits.length < 7) {
       errors.push('Valid WhatsApp number (e.g. +64 21 123 4567)');
     }
     if (formData.buyBack && !formData.buyBackPrice) errors.push('Buy-back price required');
@@ -983,7 +981,7 @@ export default function SellPage() {
                 {/* WhatsApp — required */}
                 <div className="mb-5">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    WhatsApp Number <span className="text-red-500">*</span> <span className="font-normal text-gray-400">(required — buyers contact you here)</span>
+                    WhatsApp Number <span className="font-normal text-gray-400">(recommended — buyers contact you here)</span>
                   </label>
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border-2 border-green-200 rounded-xl">
@@ -1000,7 +998,7 @@ export default function SellPage() {
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Add country code (e.g. +64). Buyers can open a direct WhatsApp chat from your listing.
+                    💬 Recommended — listings with WhatsApp get contacted faster. Add the country code (e.g. +64). No number? Buyers can still message you in-app.
                   </p>
                 </div>
 
