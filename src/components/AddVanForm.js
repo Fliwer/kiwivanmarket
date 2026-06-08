@@ -97,7 +97,6 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     customFeatures: '',
     sellerWhatsApp: '',
     sellerPhone: '',
-    sellerFacebook: '',
     plateNumber: ''
   });
 
@@ -159,7 +158,6 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           customFeatures: van.customFeatures || '',
           sellerWhatsApp: van.seller?.whatsapp || van.seller?.phone || '',
           sellerPhone: van.seller?.phone || '',
-          sellerFacebook: van.seller?.facebook || '',
           plateNumber: van.plateNumber || ''
         });
 
@@ -467,8 +465,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           seller: {
             ...van.seller,
             whatsapp: sanitizeString(formData.sellerWhatsApp || ''),
-            phone: sanitizeString(formData.sellerPhone || ''),
-            facebook: sanitizeString(formData.sellerFacebook || '')
+            phone: sanitizeString(formData.sellerPhone || '')
           },
           plateNumber: sanitizeString(formData.plateNumber || ''),
           updatedAt: new Date()
@@ -517,8 +514,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             name: sanitizeString(currentUser.displayName || 'Anonymous'),
             email: currentUser.email,
             whatsapp: sanitizeString(formData.sellerWhatsApp || ''),
-            phone: sanitizeString(formData.sellerPhone || ''),
-            facebook: sanitizeString(formData.sellerFacebook || '')
+            phone: sanitizeString(formData.sellerPhone || '')
           },
           plateNumber: sanitizeString(formData.plateNumber || ''),
           views: 0,
@@ -975,30 +971,6 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
               </div>
               <p className="text-xs text-gray-500 mt-2">
                 Optional but recommended. Buyers can call you directly from the listing.
-              </p>
-            </div>
-
-            {/* FACEBOOK */}
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Facebook Profile <span className="font-normal text-gray-400">(optional)</span>
-              </label>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-xl">
-                  <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 5 3.66 9.15 8.44 9.9v-7H7.9v-2.9h2.54V9.85c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v7a10 10 0 008.44-9.9c0-5.53-4.5-10.02-10-10.02z" />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  value={formData.sellerFacebook}
-                  onChange={(e) => setFormData({ ...formData, sellerFacebook: e.target.value })}
-                  placeholder="your.name or facebook.com/your.name"
-                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                Your Facebook username or profile URL. Buyers can contact you via Messenger.
               </p>
             </div>
 

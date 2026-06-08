@@ -84,8 +84,7 @@ export default function SellPage() {
     plateNumber: '',
     customFeatures: '',
     sellerWhatsApp: '',
-    sellerPhone: '',
-    sellerFacebook: ''
+    sellerPhone: ''
   });
 
   const [showAdvancedEquipment, setShowAdvancedEquipment] = useState(false);
@@ -244,8 +243,7 @@ export default function SellPage() {
           name: currentUser.displayName || 'Anonymous',
           email: currentUser.email,
           whatsapp: formData.sellerWhatsApp || '',
-          phone: formData.sellerPhone || '',
-          facebook: formData.sellerFacebook || ''
+          phone: formData.sellerPhone || ''
         },
         userId: currentUser.uid,
         views: 0,

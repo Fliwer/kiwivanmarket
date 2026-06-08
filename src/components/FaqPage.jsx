@@ -11,7 +11,7 @@ const FAQS = [
         items: [
             {
                 q: "How do I buy a campervan in New Zealand?",
-                a: "Browse listings on Kiwi Van Market (kiwivanmarket.com), filter by location, budget, and features. Contact the seller directly via WhatsApp or Facebook Messenger. Always inspect the van in person, check the WOF and REGO expiry dates, and do a VIN check on the NZTA website before buying. Read our full buyer's guide for a step-by-step checklist."
+                a: "Browse listings on Kiwi Van Market (kiwivanmarket.com), filter by location, budget, and features. Contact the seller directly via WhatsApp or in-app messages. Always inspect the van in person, check the WOF and REGO expiry dates, and do a VIN check on the NZTA website before buying. Read our full buyer's guide for a step-by-step checklist."
             },
             {
                 q: "What is a WOF (Warrant of Fitness) in New Zealand?",
@@ -45,7 +45,7 @@ const FAQS = [
         items: [
             {
                 q: "How do I sell my campervan in New Zealand?",
-                a: "Create a free listing on Kiwi Van Market (kiwivanmarket.com) — it takes less than 10 minutes. Upload photos, describe your van, set your price, and add your WOF and REGO dates. Your listing is visible to thousands of backpackers and travellers. No commission, no fees. You'll get contact requests via WhatsApp or Facebook Messenger directly from buyers."
+                a: "Create a free listing on Kiwi Van Market (kiwivanmarket.com) — it takes less than 10 minutes. Upload photos, describe your van, set your price, and add your WOF and REGO dates. Your listing is visible to thousands of backpackers and travellers. No commission, no fees. You'll get contact requests via WhatsApp or in-app messages directly from buyers."
             },
             {
                 q: "How long does it take to sell a van in New Zealand?",

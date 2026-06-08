@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation, useNavigationType } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Facebook, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink, BookOpen, Share2, ArrowRight } from 'lucide-react';
+import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink, BookOpen, Share2, ArrowRight } from 'lucide-react';
 import { db } from './firebase';
 import { collection, getDocs, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
@@ -348,17 +348,6 @@ function MainApp({
                     >
                       <Phone size={18} />
                       WhatsApp
-                    </a>
-                  )}
-                  {seller.facebook && (
-                    <a 
-                      href={seller.facebook.startsWith('http') ? seller.facebook : `https://facebook.com/${seller.facebook}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166fe5] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg active:scale-95"
-                    >
-                      <Facebook size={18} />
-                      Facebook
                     </a>
                   )}
                 </div>
