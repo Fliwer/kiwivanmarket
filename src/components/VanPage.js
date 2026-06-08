@@ -1139,22 +1139,6 @@ ${shareUrl}
                       {currentUser ? 'Call Seller' : 'Show number'}
                     </button>
                   )}
-                  {seller.facebook && (
-                    <button
-                      onClick={() => {
-                        if (!currentUser) {
-                          setShowAuthModal(true);
-                        } else {
-                          const fbUrl = seller.facebook.startsWith('http') ? seller.facebook : `https://facebook.com/${seller.facebook}`;
-                          window.open(fbUrl, '_blank');
-                        }
-                      }}
-                      className="flex items-center justify-center gap-3 bg-[#1877F2] hover:bg-[#166fe5] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-blue-500/10 active:scale-95"
-                    >
-                      <Facebook size={20} />
-                      {currentUser ? 'Facebook Profile' : 'Show Facebook'}
-                    </button>
-                  )}
                   {/* Additional sharing option for buyers to boost virality */}
                   {!isOwner && (
                     <button
