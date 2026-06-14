@@ -12,6 +12,20 @@ const LISTINGS_PAGE_KEY = 'kiwiVanMarket_listingsPage';
 const RETURN_SCROLL_KEY = 'kiwiVanMarket_returnScrollY';
 const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
 
+// Build a compact list of page buttons, with ellipsis for large counts.
+// e.g. getPageNumbers(5, 10) -> [1, '…', 4, 5, 6, '…', 10]
+function getPageNumbers(current, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages = [1];
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    if (start > 2) pages.push('…');
+    for (let i = start; i <= end; i++) pages.push(i);
+    if (end < total - 1) pages.push('…');
+    pages.push(total);
+    return pages;
+}
+
 export default function Listings({
     loading,
     filteredVans,
@@ -20,7 +34,8 @@ export default function Listings({
     sortBy,
     setSortBy,
     formatPrice,
-    setShowAuthModal
+    setShowAuthModal,
+    onPageChange
 }) {
     const { t } = useTranslation();
     const { currentUser } = useAuth();
@@ -61,6 +76,27 @@ export default function Listings({
     const pageStart = (currentPage - 1) * PAGE_SIZE;
     const pageEnd = pageStart + PAGE_SIZE;
     const paginatedVans = filteredVans.slice(pageStart, pageEnd);
+
+    // Notify the parent of the current page (used to hide the hero past page 1)
+    useEffect(() => {
+        if (onPageChange) onPageChange(currentPage);
+    }, [currentPage, onPageChange]);
+
+    // Change page + scroll back to the top of the listings.
+    // Deferred so the scroll happens AFTER React re-renders (the hero hides on
+    // page > 1, which shifts the layout) — and instant for reliability.
+    const goToPage = (p) => {
+        const target = Math.min(totalPages, Math.max(1, p));
+        if (target === currentPage) return;
+        if (typeof window !== 'undefined') {
+            // Scroll to top BEFORE the page change so the hero hiding (page > 1)
+            // doesn't trigger scroll-anchoring that fights the scroll. Re-assert
+            // once more after the layout settles, for reliability.
+            window.scrollTo(0, 0);
+            setTimeout(() => window.scrollTo(0, 0), 60);
+        }
+        setCurrentPage(target);
+    };
 
     useEffect(() => {
         if (currentPage > totalPages) {
@@ -181,28 +217,43 @@ export default function Listings({
                         })}
                     </div>
 
-                    {filteredVans.length > PAGE_SIZE && (
-                        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {totalPages > 1 && (
+                        <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <p className="text-sm text-slate-500 font-medium">
                                 Showing {Math.min(pageStart + 1, filteredVans.length)}-{Math.min(pageEnd, filteredVans.length)} of {filteredVans.length} vans
                             </p>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 flex-wrap justify-center">
                                 <button
-                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                    onClick={() => goToPage(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition"
+                                    aria-label="Previous page"
+                                    className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-black text-base leading-none disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition"
                                 >
-                                    Previous
+                                    ‹
                                 </button>
-                                <span className="px-3 py-2 text-sm font-black text-slate-700">
-                                    {currentPage} / {totalPages}
-                                </span>
+                                {getPageNumbers(currentPage, totalPages).map((p, i) => (
+                                    p === '…' ? (
+                                        <span key={`ellipsis-${i}`} className="px-2 text-slate-400 font-bold select-none">…</span>
+                                    ) : (
+                                        <button
+                                            key={p}
+                                            onClick={() => goToPage(p)}
+                                            aria-current={p === currentPage ? 'page' : undefined}
+                                            className={`min-w-[40px] px-3 py-2 rounded-xl text-sm font-black transition ${p === currentPage
+                                                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                                                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}
+                                        >
+                                            {p}
+                                        </button>
+                                    )
+                                ))}
                                 <button
-                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                    onClick={() => goToPage(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-50 transition"
+                                    aria-label="Next page"
+                                    className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-black text-base leading-none disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition"
                                 >
-                                    Next
+                                    ›
                                 </button>
                             </div>
                         </div>
