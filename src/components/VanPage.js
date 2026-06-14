@@ -23,7 +23,6 @@ import EquipmentBadges from './EquipmentBadges';
 // Lazy load du QuickMessageBox
 const QuickMessageBox = lazy(() => import('./QuickMessageBox'));
 const AuthModal = lazy(() => import('./AuthModal'));
-const Footer = lazy(() => import('./Footer'));
 
 // ✅ Composant SEO avec Schema.org pour les vans
 const VanSEO = ({ van }) => {
@@ -1309,41 +1308,6 @@ ${shareUrl}
           </section>
         </main>
 
-        {/* Footer - Premium */}
-        <footer className="bg-slate-900 text-white py-16 mt-24">
-          <div className="max-w-7xl mx-auto px-6">
-            <div className="flex flex-col items-center">
-              <Link to="/" className="flex items-center gap-3 mb-8 group">
-                <div className="w-16 h-16 rounded-2xl bg-[#f7eedd] flex items-center justify-center shadow-xl transition-transform group-hover:scale-105">
-                  <img src="/kiwi-van-logo-48.webp" alt="KiwiVan" className="w-12 h-12 object-contain" />
-                </div>
-                <div className="text-left">
-                  <span className="block font-black text-2xl tracking-tight text-white">KiwiVan Market</span>
-                  <span className="block text-slate-400 text-xs font-bold uppercase tracking-widest">{t('van_page.footer_slogan')}</span>
-                </div>
-              </Link>
-
-              <p className="text-slate-400 text-center max-w-xl mb-10 leading-relaxed font-medium">
-                {t('footer.about_desc')}
-              </p>
-
-              <div className="flex items-center gap-4 mb-12">
-                <Link to="/" className="px-8 py-3 bg-white/5 hover:bg-white/10 rounded-2xl text-sm font-bold transition-all border border-white/10">
-                  {t('hero.cta_browse')}
-                </Link>
-                <Link to="/sell" className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-2xl text-sm font-bold transition-all shadow-lg shadow-emerald-900/20">
-                  {t('hero.cta_sell')}
-                </Link>
-              </div>
-
-              <div className="w-full pt-10 border-t border-white/5 text-center">
-                <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
-                  {t('footer.copyright', { year: new Date().getFullYear() })} • Built with passion in NZ 🇳🇿
-                </p>
-              </div>
-            </div>
-          </div>
-        </footer>
         {/* Modals & Overlays */}
         <AnimatePresence>
           {showDeleteConfirm && (
@@ -1557,8 +1521,6 @@ ${shareUrl}
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
         />
-
-        <Footer />
       </div>
     </>
   );
