@@ -158,6 +158,7 @@ function MainApp({
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [listingsPage, setListingsPage] = useState(1);
 
   const [filters, setFilters] = useState({
     priceMin: 0,
@@ -371,7 +372,8 @@ function MainApp({
         description="The easiest way to buy self-contained campervans in New Zealand. Compare Toyota Hiace, Nissan Caravan & more."
       />
 
-      {/* Hero Section */}
+      {/* Hero Section — visible uniquement sur la 1re page des annonces */}
+      {listingsPage === 1 && (
       <section className="relative pt-12 pb-24 lg:pt-20 lg:pb-32 overflow-hidden bg-white">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -436,6 +438,7 @@ function MainApp({
           </div>
         </div>
       </section>
+      )}
 
       <main id="main-content">
         <div id="listings-start" className="scroll-mt-24" />
@@ -455,6 +458,7 @@ function MainApp({
           formatPrice={formatPrice}
           onSelectVan={setSelectedVan}
           setShowAuthModal={setShowAuthModal}
+          onPageChange={setListingsPage}
         />
         <section className="max-w-7xl mx-auto px-4 pb-10">
           <div className="bg-white border border-slate-100 rounded-2xl p-5">
