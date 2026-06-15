@@ -164,7 +164,7 @@ export default function AuthModal({ isOpen, onClose }) {
                   <strong className="text-emerald-800">{email}</strong>
                 </p>
                 <p className="text-sm text-gray-500">
-                  Vérifiez votre boîte mail (et vos spams) afin de pouvoir vous connecter.
+                  You're signed in! Verify your email (check spam too) to publish a van and contact sellers.
                 </p>
               </div>
               <button

@@ -167,6 +167,12 @@ export default function SellPage() {
       return;
     }
 
+    // Email verification required to publish (also enforced by Firestore rules)
+    if (!currentUser.emailVerified) {
+      toast.error('Please verify your email to list a van — check your inbox at ' + currentUser.email);
+      return;
+    }
+
     // Check van limit
     try {
       const userVansQuery = query(collection(db, 'vans'), where('userId', '==', currentUser.uid));
