@@ -8,6 +8,7 @@ import {
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
+  sendPasswordResetEmail,
   updateProfile
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -117,6 +118,16 @@ export const AuthProvider = ({ children }) => {
       console.error('Erreur inscription:', error);
       throw error;
     }
+  };
+
+  // ✅ MOT DE PASSE OUBLIÉ - Envoyer un lien de réinitialisation
+  const resetPassword = async (email) => {
+    if (!email || !email.trim()) {
+      throw new Error('Please enter your email address first');
+    }
+    await sendPasswordResetEmail(auth, email.trim(), {
+      url: window.location.origin
+    });
   };
 
   // ✅ RENVOYER L'EMAIL DE VÉRIFICATION
@@ -272,7 +283,9 @@ export const AuthProvider = ({ children }) => {
     // ✅ Nouvelles fonctions pour la vérification email
     resendVerificationEmail,
     refreshEmailVerification,
-    canPerformActions
+    canPerformActions,
+    // ✅ Mot de passe oublié
+    resetPassword
   };
 
   return (
