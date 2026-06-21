@@ -287,18 +287,23 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     for (const file of validFiles) {
       const tempId = Math.random().toString(36).substr(2, 9);
 
-      // Local preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImages(prev => [...prev, { id: tempId, url: e.target.result, uploading: true }]);
-        setImageCrops(prev => [...prev, { ...defaultCrop }]);
-      };
-      reader.readAsDataURL(file);
+      // ✅ Lire la preview locale AVANT de lancer l'upload (ordre déterministe).
+      // Évite une race où l'upload se termine avant le FileReader : le map par
+      // id ne trouverait rien, puis l'image serait ajoutée bloquée sur
+      // "uploading" -> publication impossible.
+      const previewUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve(ev.target.result);
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(file);
+      });
+      setImages(prev => [...prev, { id: tempId, url: previewUrl, uploading: true }]);
+      setImageCrops(prev => [...prev, { ...defaultCrop }]);
 
       try {
         const result = await uploadToCloudinary(file);
         setImages(prev => prev.map(img =>
-          img.id === tempId ? { url: result.url, uploading: false } : img
+          img.id === tempId ? { ...img, url: result.url, uploading: false } : img
         ));
       } catch (error) {
         console.error('Upload error:', error);
