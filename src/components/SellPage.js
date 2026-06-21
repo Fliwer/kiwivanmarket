@@ -129,12 +129,18 @@ export default function SellPage() {
     const newIndex = images.length;
     setUploadingIndex(newIndex);
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImages(prev => [...prev, { url: e.target.result, uploading: true }]);
-      setImageCrops(prev => [...prev, { ...defaultCrop }]);
-    };
-    reader.readAsDataURL(file);
+    // ✅ Lire la preview locale AVANT de lancer l'upload, pour un ordre
+    // déterministe. Évite une race où l'upload se termine avant le FileReader
+    // et laisse une image fantôme bloquée sur "uploading" (-> "Wait for uploads"
+    // pour toujours, publication impossible).
+    const previewUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+    setImages(prev => [...prev, { url: previewUrl, uploading: true }]);
+    setImageCrops(prev => [...prev, { ...defaultCrop }]);
 
     try {
       const result = await uploadToCloudinary(file);
@@ -1033,7 +1039,7 @@ export default function SellPage() {
               <div className="sticky bottom-4 z-10">
                 <button
                   type="submit"
-                  disabled={loading || images.length === 0 || !formData.title || !formData.price}
+                  disabled={loading || images.length === 0 || !formData.title || !formData.price || uploadingIndex !== null}
                   className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
