@@ -60,6 +60,12 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
       return;
     }
 
+    // Email verification required to contact sellers (also enforced server-side)
+    if (!currentUser.emailVerified) {
+      setError('Please verify your email to contact sellers. Check your inbox at ' + currentUser.email);
+      return;
+    }
+
     if (!van) {
       setError('Van information not available');
       return;

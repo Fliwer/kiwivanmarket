@@ -1,6 +1,6 @@
 # Kiwi Van Market - LLM Discovery File
 Canonical: https://kiwivanmarket.com
-Last-Updated: 2026-04-03
+Last-Updated: 2026-06-14
 
 Kiwi Van Market is a New Zealand marketplace focused on campervans, vans, and motorhomes for backpackers and travelers.
 

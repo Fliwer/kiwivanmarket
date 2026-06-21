@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Mail, Lock, User, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../AuthContext';
 
 export default function AuthModal({ isOpen, onClose }) {
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, resendVerificationEmail } = useAuth();
   const [mode, setMode] = useState('signin'); // 'signin' ou 'signup'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -99,11 +100,54 @@ export default function AuthModal({ isOpen, onClose }) {
     }
   };
 
+  // ✅ Mot de passe oublié
+  const handleForgotPassword = async () => {
+    setError('');
+    setSuccessMsg('');
+    if (!email || !email.trim()) {
+      setError('Enter your email above first, then tap "Forgot password?"');
+      return;
+    }
+    setLoading(true);
+    try {
+      await resetPassword(email);
+      setSuccessMsg('Password reset link sent! Check your inbox (and your spam folder).');
+    } catch (err) {
+      console.error('Reset password error:', err);
+      if (err.code === 'auth/user-not-found') {
+        setError('No account found with this email.');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Invalid email format.');
+      } else {
+        setError(err.message || 'Could not send the reset email. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Renvoyer l'email de vérification (depuis l'écran "check your inbox")
+  const handleResendVerification = async () => {
+    setError('');
+    setSuccessMsg('');
+    setLoading(true);
+    try {
+      await resendVerificationEmail();
+      setSuccessMsg('Verification email resent! Check your inbox (and spam).');
+    } catch (err) {
+      console.error('Resend verification error:', err);
+      setError(err.message || 'Could not resend right now. Please try again in a few minutes.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetForm = () => {
     setEmail('');
     setPassword('');
     setDisplayName('');
     setError('');
+    setSuccessMsg('');
     setAcceptedTerms(false);
   };
 
@@ -156,6 +200,13 @@ export default function AuthModal({ isOpen, onClose }) {
             </div>
           )}
 
+          {successMsg && (
+            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
+              <CheckCircle size={20} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-emerald-700">{successMsg}</p>
+            </div>
+          )}
+
           {mode === 'verification_sent' ? (
             <div className="text-center py-4">
               <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl mb-6">
@@ -164,9 +215,17 @@ export default function AuthModal({ isOpen, onClose }) {
                   <strong className="text-emerald-800">{email}</strong>
                 </p>
                 <p className="text-sm text-gray-500">
-                  Vérifiez votre boîte mail (et vos spams) afin de pouvoir vous connecter.
+                  You're signed in! Verify your email (check spam too) to publish a van and contact sellers.
                 </p>
               </div>
+              <button
+                onClick={handleResendVerification}
+                disabled={loading}
+                className="w-full mb-3 bg-white border-2 border-emerald-200 text-emerald-700 py-3 rounded-xl font-semibold hover:bg-emerald-50 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <Mail size={18} />}
+                Resend verification email
+              </button>
               <button
                 onClick={onClose}
                 className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 rounded-xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all shadow-lg"
@@ -207,6 +266,16 @@ export default function AuthModal({ isOpen, onClose }) {
                     placeholder="••••••••"
                     required
                   />
+                </div>
+                <div className="text-right mt-2">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={loading}
+                    className="text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:underline disabled:opacity-50"
+                  >
+                    Forgot password?
+                  </button>
                 </div>
               </div>
 

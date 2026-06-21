@@ -8,6 +8,7 @@ import {
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
+  sendPasswordResetEmail,
   updateProfile
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -70,24 +71,9 @@ export const AuthProvider = ({ children }) => {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
       
-      // ✅ VÉRIFIER SI L'EMAIL EST CONFIRMÉ
-      if (!user.emailVerified) {
-        // Renvoyer un email de vérification
-        await sendEmailVerification(user, {
-          url: window.location.origin,
-          handleCodeInApp: false
-        });
-        
-        // Déconnecter l'utilisateur
-        await signOut(auth);
-        
-        // Retourner une erreur spéciale
-        const error = new Error('Please verify your email before signing in. We sent you a new verification link.');
-        error.code = 'auth/email-not-verified';
-        error.email = email;
-        throw error;
-      }
-      
+      // ✅ Les utilisateurs non vérifiés peuvent se connecter et naviguer.
+      // La vérification email reste exigée (côté serveur) pour les actions
+      // sensibles : publier une annonce, contacter un vendeur.
       return user;
     } catch (error) {
       console.error('Erreur connexion email:', error);
@@ -123,15 +109,25 @@ export const AuthProvider = ({ children }) => {
       // Sauvegarder le profil avec le nom
       await saveUserProfile(user, displayName);
       
-      // ✅ DÉCONNECTER L'UTILISATEUR - Il doit vérifier son email d'abord
-      await signOut(auth);
-      console.log('✅ Utilisateur déconnecté - doit vérifier son email');
-      
-      return { email, needsVerification: true };
+      // ✅ L'utilisateur RESTE connecté : il peut naviguer et ajouter des favoris
+      // tout de suite. La vérification email n'est exigée que pour les actions
+      // sensibles (publier une annonce, contacter un vendeur) — gardée côté
+      // serveur (règles Firestore) + message clair côté client.
+      return { email, needsVerification: true, user };
     } catch (error) {
       console.error('Erreur inscription:', error);
       throw error;
     }
+  };
+
+  // ✅ MOT DE PASSE OUBLIÉ - Envoyer un lien de réinitialisation
+  const resetPassword = async (email) => {
+    if (!email || !email.trim()) {
+      throw new Error('Please enter your email address first');
+    }
+    await sendPasswordResetEmail(auth, email.trim(), {
+      url: window.location.origin
+    });
   };
 
   // ✅ RENVOYER L'EMAIL DE VÉRIFICATION
@@ -287,7 +283,9 @@ export const AuthProvider = ({ children }) => {
     // ✅ Nouvelles fonctions pour la vérification email
     resendVerificationEmail,
     refreshEmailVerification,
-    canPerformActions
+    canPerformActions,
+    // ✅ Mot de passe oublié
+    resetPassword
   };
 
   return (
