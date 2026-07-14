@@ -24,166 +24,6 @@ import { useToast } from '../components/ToastProvider';
 // MESSAGING PAGE - Full Page 3 Columns
 // ============================================
 
-// 🌐 Language Selector Component - CORRIGÉ
-function LanguageSelector() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentLang, setCurrentLang] = useState('en');
-
-  const languages = [
-    { code: 'en', flag: 'https://flagcdn.com/24x18/gb.png', name: 'ENGLISH', short: 'EN' },
-    { code: 'fr', flag: 'https://flagcdn.com/24x18/fr.png', name: 'FRANÇAIS', short: 'FR' },
-    { code: 'de', flag: 'https://flagcdn.com/24x18/de.png', name: 'DEUTSCH', short: 'DE' },
-    { code: 'es', flag: 'https://flagcdn.com/24x18/es.png', name: 'ESPAÑOL', short: 'ES' },
-    { code: 'zh-CN', flag: 'https://flagcdn.com/24x18/cn.png', name: '简体中文', short: '中文' },
-    { code: 'ja', flag: 'https://flagcdn.com/24x18/jp.png', name: '日本語', short: 'JA' },
-    { code: 'ko', flag: 'https://flagcdn.com/24x18/kr.png', name: '한국어', short: 'KO' },
-    { code: 'pt', flag: 'https://flagcdn.com/24x18/br.png', name: 'PORTUGUÊS', short: 'PT' },
-    { code: 'th', flag: 'https://flagcdn.com/24x18/th.png', name: 'ไทย', short: 'TH' },
-    { code: 'vi', flag: 'https://flagcdn.com/24x18/vn.png', name: 'TIẾNG VIỆT', short: 'VI' }
-  ];
-
-  // ✨ CORRECTION: Force Google Translate à rafraîchir complètement
-  const applyLanguage = useCallback((langCode) => {
-    // 1. Nettoyer TOUS les cookies Google Translate
-    const domains = ['', '.' + window.location.hostname, '.kiwivanmarket.com'];
-    domains.forEach(domain => {
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;${domain ? ' domain=' + domain + ';' : ''}`;
-    });
-
-    // 2. Supprimer aussi du localStorage
-    try {
-      localStorage.removeItem('googtrans');
-      sessionStorage.clear();
-    } catch (e) { }
-
-    // 3. Supprimer les éléments Google Translate du DOM
-    const gtFrame = document.querySelector('.goog-te-banner-frame');
-    if (gtFrame) gtFrame.remove();
-    const gtElement = document.getElementById('google_translate_element');
-    if (gtElement) gtElement.innerHTML = '';
-
-    // 4. Réinitialiser le body
-    document.body.className = document.body.className.replace(/translated-[a-z]+/g, '');
-    const html = document.documentElement;
-    html.className = html.className.replace(/translated-[a-z]+/g, '');
-
-    // 5. Supprimer le script Google Translate pour forcer une réinitialisation
-    const oldScript = document.getElementById('google-translate-script');
-    if (oldScript) oldScript.remove();
-
-    // 6. Supprimer les iframes Google
-    document.querySelectorAll('iframe.goog-te-menu-frame, iframe.goog-te-banner-frame').forEach(el => el.remove());
-
-    if (langCode === 'en') {
-      // Retour à l'anglais - reload COMPLET sans cache
-      setTimeout(() => {
-        window.location.replace(window.location.pathname + '?lang=en&t=' + Date.now());
-      }, 100);
-      return;
-    }
-
-    // Définir le nouveau cookie de langue
-    const langCookie = `/en/${langCode}`;
-    document.cookie = `googtrans=${langCookie}; path=/;`;
-    document.cookie = `googtrans=${langCookie}; path=/; domain=.${window.location.hostname}`;
-
-    // Force reload avec cache bypass
-    setTimeout(() => {
-      window.location.replace(window.location.pathname + '?lang=' + langCode + '&t=' + Date.now());
-    }, 100);
-  }, []);
-
-  const changeLanguage = (langCode) => {
-    setIsOpen(false);
-    setCurrentLang(langCode);
-    localStorage.setItem('preferredLang', langCode);
-    applyLanguage(langCode);
-  };
-
-  useEffect(() => {
-    const savedLang = localStorage.getItem('preferredLang') || 'en';
-    setCurrentLang(savedLang);
-
-    // On injecte le script Google si ce n'est pas déjà fait
-    if (!document.getElementById('google-translate-script')) {
-      const translateDiv = document.createElement('div');
-      translateDiv.id = 'google_translate_element';
-      translateDiv.style.display = 'none';
-      document.body.appendChild(translateDiv);
-
-      window.googleTranslateElementInit = function () {
-        new window.google.translate.TranslateElement(
-          {
-            pageLanguage: 'en',
-            includedLanguages: 'en,fr,de,es,zh-CN,ja,ko,pt,th,vi',
-            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-            autoDisplay: false
-          },
-          'google_translate_element'
-        );
-      };
-
-      const script = document.createElement('script');
-      script.id = 'google-translate-script';
-      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
-
-  const currentLangData =
-    languages.find((l) => l.code === currentLang) || languages[0];
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition text-white text-sm font-semibold"
-        title="Change language"
-      >
-        <img
-          src={currentLangData.flag}
-          alt={currentLangData.name}
-          className="w-6 h-4 object-cover rounded-sm shadow-sm"
-        />
-        <span className="hidden sm:inline">{currentLangData.short}</span>
-        <ChevronDown
-          size={14}
-          className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        />
-      </button>
-
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-[100]"
-            onClick={() => setIsOpen(false)}
-          />
-
-          <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[180px] z-[101]">
-            {languages.map((lang) => (
-              <button
-                key={lang.code}
-                onClick={() => changeLanguage(lang.code)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition ${currentLang === lang.code
-                  ? 'bg-emerald-50 text-emerald-700 font-semibold'
-                  : 'hover:bg-gray-50 text-gray-700'
-                  }`}
-              >
-                <img
-                  src={lang.flag}
-                  alt={lang.name}
-                  className="w-6 h-4 object-cover rounded-sm shadow-sm"
-                />
-                <span className="font-medium">{lang.name}</span>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
 
 export default function MessagingPage({ onBack }) {
   useHideLoader();
@@ -196,27 +36,6 @@ export default function MessagingPage({ onBack }) {
   // (L'ancien window.history.back() + pushState/popstate polluait l'historique
   //  et, combiné à Google Translate, faisait sortir vers Google sans retour.)
   const goBackInApp = () => navigate('/');
-
-  // 🔄 Force Google Translate à re-traduire au chargement de la page
-  useEffect(() => {
-    const savedLang = localStorage.getItem('preferredLang');
-    if (savedLang && savedLang !== 'en') {
-      // Attendre que Google Translate soit prêt
-      const intervalId = setInterval(() => {
-        const combo = document.querySelector('.goog-te-combo');
-        if (combo) {
-          combo.value = savedLang;
-          combo.dispatchEvent(new Event('change'));
-          clearInterval(intervalId);
-        }
-      }, 500);
-
-      // Timeout après 5 secondes
-      setTimeout(() => clearInterval(intervalId), 5000);
-
-      return () => clearInterval(intervalId);
-    }
-  }, []);
 
   // Write lastSeen heartbeat while on messaging page
   useEffect(() => {
@@ -578,31 +397,22 @@ export default function MessagingPage({ onBack }) {
       />
       {/* Header */}
       <header className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={goBackInApp}
-              className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all"
-            >
-              <ArrowLeft size={20} />
-            </button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                <MessageCircle size={22} />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">Messages</h1>
-                <p className="text-white/70 text-sm">
-                  {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Sélecteur de langue uniquement — les icônes Favoris/Messages/Profil
-              faisaient doublon avec la navigation et ont été retirées. */}
-          <div className="flex items-center gap-1">
-            <LanguageSelector />
+        {/* Header minimal : juste le retour + le titre. Sélecteur de langue
+            (Google Translate) retiré — inutile, les gens traduisent déjà via
+            leur navigateur/téléphone. */}
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
+          <button
+            onClick={goBackInApp}
+            className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
+            aria-label="Retour"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold leading-tight">Messages</h1>
+            <p className="text-white/70 text-sm">
+              {conversations.length} {conversations.length === 1 ? 'conversation' : 'conversations'}
+            </p>
           </div>
         </div>
       </header>
