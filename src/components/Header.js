@@ -14,6 +14,7 @@ import {
     MapPin,
     Settings,
     ChevronDown,
+    ChevronRight,
     HelpCircle,
     Clock,
     LogOut,
@@ -65,9 +66,9 @@ export default function Header({
                         <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-lg bg-[#f7eedd] overflow-hidden transition-transform group-hover:scale-110">
                             <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-6 h-6 object-contain" width="24" height="24" />
                         </div>
-                        <div className="hidden sm:block">
-                            <h1 className="text-lg font-bold text-slate-900 leading-tight">KiwiVan</h1>
-                            <p className="text-[10px] uppercase tracking-widest font-black text-emerald-600 leading-none">Market</p>
+                        <div className="block">
+                            <h1 className="text-base md:text-lg font-bold text-slate-900 leading-tight">KiwiVan</h1>
+                            <p className="text-[9px] md:text-[10px] uppercase tracking-widest font-black text-emerald-600 leading-none">Market</p>
                         </div>
                     </Link>
 
@@ -220,10 +221,16 @@ export default function Header({
                         )}
                     </div>
 
-                    {/* Mobile Controls (Minimal) */}
-                    <div className="md:hidden flex items-center gap-2">
-                        <CurrencySelector />
-                        <LanguageSelector />
+                    {/* Mobile : bouton burger clean (devise/langue déplacées dans le menu) */}
+                    <div className="md:hidden flex items-center">
+                        <button
+                            onClick={() => setShowMobileMenu(!showMobileMenu)}
+                            aria-label="Menu"
+                            aria-expanded={showMobileMenu}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-800 hover:bg-slate-100 active:scale-95 transition"
+                        >
+                            {showMobileMenu ? <X size={22} /> : <Menu size={22} />}
+                        </button>
                     </div>
                 </div>
 
@@ -236,96 +243,88 @@ export default function Header({
                         onClick={() => setShowMobileMenu(false)}
                         aria-hidden="true"
                     />
-                    <div className="md:hidden relative z-40 pt-4 pb-2 border-t border-slate-100 animate-in fade-in slide-in-from-top-4 duration-300">
-                        {/* Barre de fermeture */}
-                        <div className="flex items-center justify-between mb-4 px-1">
-                            <span className="text-sm font-black text-slate-900">Menu</span>
+                    <div className="md:hidden relative z-40 mt-2 bg-white rounded-3xl shadow-2xl shadow-slate-300/40 border border-slate-100 p-3 animate-in fade-in slide-in-from-top-4 duration-200">
+                        {/* En-tête du menu */}
+                        <div className="flex items-center justify-between mb-3 px-1.5">
+                            <span className="text-base font-black text-slate-900">Menu</span>
                             <button
                                 onClick={() => setShowMobileMenu(false)}
-                                aria-label="Close menu"
-                                className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 active:scale-95 transition"
+                                aria-label="Fermer le menu"
+                                className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 active:scale-95 transition"
                             >
                                 <X size={18} />
                             </button>
                         </div>
-                        <div className="grid grid-cols-2 gap-3 mb-6">
-                            <Link
-                                to="/guides"
-                                onClick={() => setShowMobileMenu(false)}
-                                className="bg-slate-50 p-4 rounded-3xl flex flex-col items-center gap-2 border border-slate-100"
-                            >
-                                <div className="p-3 bg-white rounded-2xl shadow-sm"><BookOpen size={20} className="text-emerald-600" /></div>
-                                <span className="text-xs font-bold text-slate-800">Guides</span>
-                            </Link>
-                            <Link
-                                to="/buyback-calculator"
-                                onClick={() => setShowMobileMenu(false)}
-                                className="bg-slate-50 p-4 rounded-3xl flex flex-col items-center gap-2 border border-slate-100"
-                            >
-                                <div className="p-3 bg-white rounded-2xl shadow-sm"><Calculator size={20} className="text-emerald-600" /></div>
-                                <span className="text-xs font-bold text-slate-800">Calculator</span>
-                            </Link>
-                        </div>
 
-                        <div className="px-1 mb-6">
-                            <Link
-                                to="/contact"
-                                onClick={() => setShowMobileMenu(false)}
-                                className="w-full bg-slate-50 p-4 rounded-3xl flex items-center gap-4 border border-slate-100"
+                        {/* Carte utilisateur */}
+                        {currentUser && (
+                            <button
+                                onClick={() => { navigate('/profile'); setShowMobileMenu(false); }}
+                                className="w-full flex items-center gap-3 p-3 mb-3 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 active:scale-[0.98] transition"
                             >
-                                <div className="p-3 bg-white rounded-2xl shadow-sm text-emerald-600"><Mail size={20} /></div>
-                                <div className="text-left">
-                                    <p className="text-xs font-bold text-slate-800">Need Help?</p>
-                                    <p className="text-[10px] text-slate-400">Contact our support team</p>
+                                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black text-lg shadow-sm flex-shrink-0">
+                                    {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
                                 </div>
+                                <div className="text-left min-w-0">
+                                    <p className="font-bold text-slate-900 truncate">{currentUser.displayName || 'Mon compte'}</p>
+                                    <p className="text-xs text-slate-500 truncate">{currentUser.email}</p>
+                                </div>
+                                <ChevronRight size={18} className="text-emerald-400 ml-auto flex-shrink-0" />
+                            </button>
+                        )}
+
+                        {/* Accès rapides */}
+                        <div className="grid grid-cols-2 gap-2 mb-2">
+                            <Link to="/guides" onClick={() => setShowMobileMenu(false)} className="flex flex-col items-center gap-2 py-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-100 transition active:scale-95">
+                                <BookOpen size={20} className="text-emerald-600" />
+                                <span className="text-xs font-bold text-slate-700">{t('header.guides', 'Guides')}</span>
+                            </Link>
+                            <Link to="/buyback-calculator" onClick={() => setShowMobileMenu(false)} className="flex flex-col items-center gap-2 py-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-100 transition active:scale-95">
+                                <Calculator size={20} className="text-emerald-600" />
+                                <span className="text-xs font-bold text-slate-700">{t('header.calculator', 'Calculateur')}</span>
                             </Link>
                         </div>
 
-                        <div className="space-y-2">
-                            {!currentUser ? (
-                                <button
-                                    onClick={() => { setShowAuthModal(true); setShowMobileMenu(false); }}
-                                    className="w-full flex items-center justify-center gap-3 py-4 bg-slate-900 text-white rounded-[1.5rem] font-bold shadow-xl active:scale-95 transition-all"
-                                >
-                                    <Users size={20} />
-                                    <span>{t('header.signin')}</span>
+                        {/* Liste d'actions */}
+                        <div className="rounded-2xl border border-slate-100 overflow-hidden mb-3">
+                            {currentUser && (
+                                <button onClick={() => { navigate('/my-listings'); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition text-left">
+                                    <MapPin size={18} className="text-emerald-600 flex-shrink-0" />
+                                    <span className="font-semibold text-slate-700 text-sm">{t('menu.listings', 'Mes Vans')}</span>
+                                    <ChevronRight size={16} className="text-slate-300 ml-auto" />
                                 </button>
-                            ) : (
-                                <>
-                                    <div className="p-2 bg-slate-50 rounded-[1.5rem] border border-slate-100 mb-4">
-                                        <button
-                                            onClick={() => { navigate('/profile'); setShowMobileMenu(false); }}
-                                            className="w-full flex items-center gap-4 px-4 py-3 text-slate-700 font-semibold"
-                                        >
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white"><User size={20} /></div>
-                                            <span>My Profile</span>
-                                        </button>
-                                        <button
-                                            onClick={() => { navigate('/my-listings'); setShowMobileMenu(false); }}
-                                            className="w-full flex items-center gap-4 px-4 py-3 text-slate-700 font-semibold border-t border-slate-100"
-                                        >
-                                            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shadow-sm transition-transform active:scale-95">
-                                                <MapPin size={20} />
-                                            </div>
-                                            <span>{t('menu.listings') || 'My Vans'}</span>
-                                        </button>
-                                    </div>
-                                    <button
-                                        onClick={() => { logout(); setShowMobileMenu(false); }}
-                                        className="w-full py-4 text-red-600 font-bold bg-red-50 rounded-[1.5rem] flex items-center justify-center gap-2"
-                                    >
-                                        <LogOut size={20} />
-                                        <span>Sign Out</span>
-                                    </button>
-                                </>
                             )}
-                            <div className="pt-4 flex flex-col items-center gap-4">
-                                <div className="flex items-center gap-3">
-                                    <CurrencySelector />
-                                    <LanguageSelector />
-                                </div>
-                            </div>
+                            <Link to="/contact" onClick={() => setShowMobileMenu(false)} className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition ${currentUser ? 'border-t border-slate-100' : ''}`}>
+                                <Mail size={18} className="text-emerald-600 flex-shrink-0" />
+                                <span className="font-semibold text-slate-700 text-sm">{t('header.help', "Besoin d'aide ?")}</span>
+                                <ChevronRight size={16} className="text-slate-300 ml-auto" />
+                            </Link>
                         </div>
+
+                        {/* Devise + langue */}
+                        <div className="flex items-center justify-center gap-3 mb-3">
+                            <CurrencySelector />
+                            <LanguageSelector />
+                        </div>
+
+                        {/* Connexion / Déconnexion */}
+                        {!currentUser ? (
+                            <button
+                                onClick={() => { setShowAuthModal(true); setShowMobileMenu(false); }}
+                                className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-900 text-white rounded-2xl font-bold active:scale-95 transition"
+                            >
+                                <Users size={18} />
+                                <span>{t('header.signin')}</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => { logout(); setShowMobileMenu(false); }}
+                                className="w-full flex items-center justify-center gap-2 py-3.5 bg-red-50 text-red-600 rounded-2xl font-bold active:scale-95 transition"
+                            >
+                                <LogOut size={18} />
+                                <span>{t('header.signout', 'Se déconnecter')}</span>
+                            </button>
+                        )}
                     </div>
                     </>
                 )}
