@@ -3,10 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../firebase';
+import { db, functions, auth } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { Upload, Trash2, CheckCircle, ArrowLeft, Camera, FileText, Send, PartyPopper, Eye, Home, Sparkles, Loader2 } from 'lucide-react';
-import { uploadToCloudinary } from '../cloudinaryConfig';
+import { uploadToCloudinary, compressImage } from '../cloudinaryConfig';
 import AuthModal from './AuthModal';
 import SeoHead from './SeoHead';
 import { useToast } from './ToastProvider';
@@ -117,33 +117,48 @@ export default function SellPage() {
     }
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Invalid file type!');
+      toast.error('That file is not an image. Please choose a JPG, PNG or WebP photo.');
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image too large (max 10MB)');
+    // iPhone HEIC/HEIF n'est pas supporté par les navigateurs/Cloudinary
+    if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name)) {
+      toast.error('iPhone HEIC photos are not supported. On iPhone: Settings → Camera → Formats → "Most Compatible", then retake/re-add the photo.');
+      return;
+    }
+
+    // Garde-fou mémoire (les photos sont compressées juste après)
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error('Photo too large (max 25MB). Please use a smaller one.');
       return;
     }
 
     const newIndex = images.length;
     setUploadingIndex(newIndex);
 
+    // ✅ Compresser/redimensionner les grosses photos dans le navigateur AVANT
+    // l'upload : uploads bien plus rapides/fiables (surtout mobile).
+    let fileToUpload = file;
+    try {
+      fileToUpload = await compressImage(file);
+    } catch (e) {
+      fileToUpload = file;
+    }
+
     // ✅ Lire la preview locale AVANT de lancer l'upload, pour un ordre
     // déterministe. Évite une race où l'upload se termine avant le FileReader
-    // et laisse une image fantôme bloquée sur "uploading" (-> "Wait for uploads"
-    // pour toujours, publication impossible).
+    // et laisse une image fantôme bloquée sur "uploading".
     const previewUrl = await new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => resolve(e.target.result);
       reader.onerror = () => resolve('');
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(fileToUpload);
     });
     setImages(prev => [...prev, { url: previewUrl, uploading: true }]);
     setImageCrops(prev => [...prev, { ...defaultCrop }]);
 
     try {
-      const result = await uploadToCloudinary(file);
+      const result = await uploadToCloudinary(fileToUpload);
       setImages(prev => {
         const updated = [...prev];
         updated[newIndex] = { url: result.url, uploading: false };
@@ -153,7 +168,8 @@ export default function SellPage() {
       console.error('Upload error:', error);
       setImages(prev => prev.filter((_, i) => i !== newIndex));
       setImageCrops(prev => prev.filter((_, i) => i !== newIndex));
-      toast.error('Upload error. Please try again.');
+      // Message clair (taille, dimensions, format…) renvoyé par la validation
+      toast.error(error.message || 'Upload failed. Please try another photo.');
     } finally {
       setUploadingIndex(null);
     }
@@ -263,6 +279,14 @@ export default function SellPage() {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
+
+      // Force-refresh the ID token so Firestore rules see the latest
+      // email_verified claim. reload()/onAuthStateChanged update the JS flag
+      // but NOT the token claim, so a freshly-verified seller would otherwise
+      // be denied by the `hasVerifiedEmail()` rule on create.
+      if (auth.currentUser) {
+        try { await auth.currentUser.getIdToken(true); } catch (_) {}
+      }
 
       const docRef = await addDoc(collection(db, 'vans'), newVanData);
       setNewVanId(docRef.id);

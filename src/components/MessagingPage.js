@@ -192,22 +192,10 @@ export default function MessagingPage({ onBack }) {
   const navigate = useNavigate();
   const toast = useToast();
 
-  // Handle browser back button
-  useEffect(() => {
-    // Push a state when opening
-    window.history.pushState({ messaging: true }, '', window.location.href);
-
-    const handlePopState = (event) => {
-      // When user clicks browser back, close messaging
-      onBack();
-    };
-
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [onBack]);
+  // Navigation "retour" fiable : on reste TOUJOURS dans l'app via react-router.
+  // (L'ancien window.history.back() + pushState/popstate polluait l'historique
+  //  et, combiné à Google Translate, faisait sortir vers Google sans retour.)
+  const goBackInApp = () => navigate('/');
 
   // 🔄 Force Google Translate à re-traduire au chargement de la page
   useEffect(() => {
@@ -574,7 +562,7 @@ export default function MessagingPage({ onBack }) {
           <MessageCircle size={64} className="mx-auto mb-4 text-gray-300" />
           <h2 className="text-2xl font-bold text-gray-700 mb-2">Sign in required</h2>
           <p className="text-gray-500 mb-4">Please sign in to view your messages</p>
-          <button onClick={onBack} className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold">
+          <button onClick={goBackInApp} className="bg-emerald-600 text-white px-6 py-2 rounded-lg font-semibold">
             Go Back
           </button>
         </div>
@@ -593,7 +581,7 @@ export default function MessagingPage({ onBack }) {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={onBack}
+              onClick={goBackInApp}
               className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all"
             >
               <ArrowLeft size={20} />
@@ -618,7 +606,7 @@ export default function MessagingPage({ onBack }) {
 
             {/* Favoris */}
             <button
-              onClick={onBack}
+              onClick={() => navigate('/')}
               className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
               title="Favorites"
             >
@@ -637,7 +625,7 @@ export default function MessagingPage({ onBack }) {
 
             {/* Profil */}
             <button
-              onClick={onBack}
+              onClick={() => navigate('/profile')}
               className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
               title="Profile"
             >
@@ -1150,10 +1138,9 @@ export default function MessagingPage({ onBack }) {
             <div className="p-4 border-t border-gray-200 space-y-2">
               <button
                 onClick={() => {
+                  // navigate() quitte déjà /messages : pas besoin de history.back()
                   if (selectedConversation.van?.id) {
-                    // Close messaging and navigate to the van page
-                    onBack();
-                    setTimeout(() => navigate(`/van/${selectedConversation.van.id}`), 100);
+                    navigate(`/van/${selectedConversation.van.id}`);
                   }
                 }}
                 className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-medium text-sm hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"

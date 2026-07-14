@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../firebase';
+import { db, functions, auth } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { X, Upload, Trash2, CheckCircle, Shield, Phone } from 'lucide-react';
-import { uploadToCloudinary } from '../cloudinaryConfig';
+import { uploadToCloudinary, compressImage } from '../cloudinaryConfig';
 import { sanitizeString, sanitizeText } from '../securityUtils';
 import { useToast } from './ToastProvider';
 
@@ -272,8 +272,18 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
         toast.error(`Invalid file type: ${file.name}`);
         return false;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(`Image too large (max 10MB): ${file.name}`);
+      // iPhone HEIC/HEIF : message clair (comme SellPage). Cas rare car iOS
+      // Safari convertit en général en JPEG à l'upload, mais si un HEIC passe
+      // on donne une consigne utile plutôt qu'un "Invalid file type" confus.
+      if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name)) {
+        toast.error('iPhone HEIC photos are not supported. On iPhone: Settings → Camera → Formats → "Most Compatible", then re-add the photo.');
+        return false;
+      }
+      // Garde-fou mémoire uniquement : les photos sont compressées/redimensionnées
+      // juste avant l'upload (compressImage), donc une grosse photo de smartphone
+      // passe très bien. On ne rejette qu'au-delà de 25 Mo.
+      if (file.size > 25 * 1024 * 1024) {
+        toast.error(`Photo too large (max 25MB): ${file.name}`);
         return false;
       }
       return true;
@@ -287,6 +297,16 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     for (const file of validFiles) {
       const tempId = Math.random().toString(36).substr(2, 9);
 
+      // ✅ Compresser/redimensionner AVANT l'upload : uploads bien plus fiables
+      // sur mobile et évite le rejet Cloudinary "max 10MB" (les photos de
+      // smartphone dépassent souvent 10 Mo).
+      let fileToUpload = file;
+      try {
+        fileToUpload = await compressImage(file);
+      } catch (_) {
+        fileToUpload = file;
+      }
+
       // ✅ Lire la preview locale AVANT de lancer l'upload (ordre déterministe).
       // Évite une race où l'upload se termine avant le FileReader : le map par
       // id ne trouverait rien, puis l'image serait ajoutée bloquée sur
@@ -295,13 +315,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
         const reader = new FileReader();
         reader.onload = (ev) => resolve(ev.target.result);
         reader.onerror = () => resolve('');
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(fileToUpload);
       });
       setImages(prev => [...prev, { id: tempId, url: previewUrl, uploading: true }]);
       setImageCrops(prev => [...prev, { ...defaultCrop }]);
 
       try {
-        const result = await uploadToCloudinary(file);
+        const result = await uploadToCloudinary(fileToUpload);
         setImages(prev => prev.map(img =>
           img.id === tempId ? { ...img, url: result.url, uploading: false } : img
         ));
@@ -527,6 +547,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           createdAt: serverTimestamp(),
           updatedAt: new Date()
         };
+
+        // Force-refresh the ID token so Firestore rules see the latest
+        // email_verified claim (reload() updates the JS flag but not the token
+        // claim, so a freshly-verified seller would otherwise be denied).
+        if (auth.currentUser) {
+          try { await auth.currentUser.getIdToken(true); } catch (_) {}
+        }
 
         await addDoc(collection(db, 'vans'), newVanData);
 

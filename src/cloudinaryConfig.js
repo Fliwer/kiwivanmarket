@@ -227,6 +227,58 @@ export const uploadMultipleImages = async (files, maxImages = 5) => {
 };
 
 // ============================================
+// 🗜️ COMPRESSION (navigateur, sans dépendance)
+// ============================================
+
+/**
+ * Redimensionne + compresse une image dans le navigateur AVANT l'upload.
+ * Rend les uploads beaucoup plus rapides/fiables (surtout mobile) et évite
+ * les rejets "trop lourd / trop grand". Si l'image est déjà petite, ou si la
+ * compression échoue, on renvoie le fichier d'origine (aucune perte).
+ * @param {File} file
+ * @param {{ maxDimension?: number, quality?: number, skipUnderBytes?: number }} opts
+ * @returns {Promise<File>}
+ */
+export const compressImage = (file, { maxDimension = 1600, quality = 0.85, skipUnderBytes = 1024 * 1024 } = {}) => {
+  return new Promise((resolve) => {
+    // Ne traite que les images raster décodables par le navigateur (pas HEIC)
+    if (!file || !file.type || !file.type.startsWith('image/') || /heic|heif/i.test(file.type)) {
+      resolve(file);
+      return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const { width, height } = img;
+      const needsResize = width > maxDimension || height > maxDimension;
+      // Déjà petite et légère → on garde l'original (zéro perte de qualité)
+      if (!needsResize && file.size <= skipUnderBytes) {
+        resolve(file);
+        return;
+      }
+      const scale = needsResize ? maxDimension / Math.max(width, height) : 1;
+      const w = Math.max(1, Math.round(width * scale));
+      const h = Math.max(1, Math.round(height * scale));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { resolve(file); return; }
+      ctx.drawImage(img, 0, 0, w, h);
+      canvas.toBlob((blob) => {
+        // Si échec ou si ça n'allège pas → garder l'original
+        if (!blob || blob.size >= file.size) { resolve(file); return; }
+        const name = (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg';
+        resolve(new File([blob], name, { type: 'image/jpeg', lastModified: Date.now() }));
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+};
+
+// ============================================
 // 🔗 URL HELPERS
 // ============================================
 

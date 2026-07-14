@@ -4,12 +4,13 @@ import { ChevronDown, RefreshCw } from 'lucide-react';
 import safeStorage from '../utils/safeStorage';
 
 // Fallback rates (used if API is unavailable)
+// Taux de secours (utilisés si l'API est indisponible) — rafraîchis 2026-07-13
 const FALLBACK_RATES = {
     NZD: 1,
-    EUR: 0.55,
-    USD: 0.59,
-    AUD: 0.92,
-    GBP: 0.47,
+    EUR: 0.51,
+    USD: 0.58,
+    AUD: 0.83,
+    GBP: 0.43,
 };
 
 export const CURRENCY_META = {
@@ -42,8 +43,10 @@ async function fetchLiveRates() {
         } catch { /* ignore */ }
     }
 
-    // Frankfurter API — free, no key, CORS-ok
-    const res = await fetch('https://api.frankfurter.app/latest?from=NZD&to=EUR,USD,AUD,GBP');
+    // Frankfurter API — free, no key, CORS-ok.
+    // NB: l'ancien host api.frankfurter.app renvoie désormais un 301 qui casse
+    // le CORS dans le navigateur → on utilise le host maintenu api.frankfurter.dev.
+    const res = await fetch('https://api.frankfurter.dev/v1/latest?base=NZD&symbols=EUR,USD,AUD,GBP');
     if (!res.ok) throw new Error('FX fetch failed');
     const data = await res.json();
 

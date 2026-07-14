@@ -30,6 +30,7 @@ import { safeDate } from './utils/dateHelper';
 import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
 import GuidePreviewSection from './components/GuidePreviewSection';
+import HeroGuideCard from './components/HeroGuideCard';
 import BottomNavigation from './components/BottomNavigation';
 import { FEATURED_LONG_TAIL_SLUGS, LONG_TAIL_PAGE_MAP } from './constants/seoLongTailPages';
 
@@ -374,25 +375,25 @@ function MainApp({
 
       {/* Hero Section — visible uniquement sur la 1re page des annonces */}
       {listingsPage === 1 && (
-      <section className="relative pt-12 pb-24 lg:pt-20 lg:pb-32 overflow-hidden bg-white">
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section className="relative pt-10 pb-16 lg:pt-20 lg:pb-32 overflow-hidden bg-white">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left Column: Content */}
             <div className="flex flex-col items-start text-left">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-xs font-black uppercase tracking-wider mb-6 border border-emerald-100 shadow-sm transition-transform hover:scale-105">
-                <Zap size={14} fill="currentColor" />
-                {t('home.badge')}
+              <div className="inline-flex max-w-full items-center gap-2 px-3.5 py-2 rounded-full bg-emerald-50 text-emerald-700 text-[11px] sm:text-xs font-black uppercase tracking-wider mb-5 lg:mb-6 border border-emerald-100 shadow-sm transition-transform hover:scale-105">
+                <Zap size={14} fill="currentColor" className="flex-shrink-0" />
+                <span className="truncate">{t('home.badge')}</span>
               </div>
 
-              <h1 className="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-[1.1] tracking-tight">
+              <h1 className="text-[2.6rem] leading-[1.05] sm:text-5xl lg:text-7xl font-black text-slate-900 mb-4 lg:mb-6 sm:leading-[1.1] tracking-tight">
                 {t('home.title_part1')} <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('home.title_highlight')}</span> {t('home.title_part2')}
               </h1>
 
-              <p className="text-lg lg:text-xl text-slate-500 font-medium mb-10 max-w-xl leading-relaxed opacity-90">
+              <p className="text-base sm:text-lg lg:text-xl text-slate-500 font-medium mb-7 lg:mb-10 max-w-xl leading-relaxed opacity-90">
                 {t('home.subtitle')}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 mb-8 w-full">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 lg:mb-8 w-full">
                 <button
                   onClick={() => document.getElementById('listings-start')?.scrollIntoView({ behavior: 'smooth' })}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-emerald-600 text-white px-10 py-5 rounded-2xl font-black hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-900/20 active:scale-95 text-lg"
@@ -410,21 +411,25 @@ function MainApp({
                 </Link>
               </div>
 
-              {/* Buying Guides Link */}
+              {/* Guide vedette — carte compacte affichée sur mobile/tablette,
+                  où l'image du hero (colonne de droite) n'offre aucune action */}
+              <HeroGuideCard className="lg:hidden w-full mt-1" />
+
+              {/* Buying Guides Link — version texte, réservée au desktop */}
               <Link
                 to="/guides"
-                className="flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold transition-colors border-b-2 border-dotted border-slate-200 hover:border-emerald-200 pb-0.5 text-sm"
+                className="hidden lg:flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold transition-colors border-b-2 border-dotted border-slate-200 hover:border-emerald-200 pb-0.5 text-sm"
               >
                 <BookOpen size={15} />
-                <span>Buying Guides</span>
+                <span>{t('home.buying_guides', 'Buying Guides')}</span>
               </Link>
             </div>
 
             {/* Right Column: Hero Image Card */}
             <div className="relative group">
               <div className="absolute -inset-4 bg-emerald-500/5 rounded-[4rem] blur-3xl group-hover:bg-emerald-500/10 transition-colors" />
-              <div className="relative bg-white p-3 rounded-[3.5rem] shadow-2xl shadow-slate-200 border border-slate-50 overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-700">
-                <div className="rounded-[3rem] overflow-hidden border-[12px] border-white shadow-inner aspect-[4/3] lg:aspect-auto">
+              <div className="relative bg-white p-2 sm:p-3 rounded-[2rem] sm:rounded-[3.5rem] shadow-2xl shadow-slate-200 border border-slate-50 overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-700">
+                <div className="rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden border-[6px] sm:border-[12px] border-white shadow-inner aspect-[4/3] lg:aspect-auto">
                   <img
                     src="/hiace-camper.png"
                     alt="NZ Road Adventure"

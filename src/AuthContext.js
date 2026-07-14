@@ -164,15 +164,20 @@ export const AuthProvider = ({ children }) => {
     try {
       await auth.currentUser.reload();
       const isVerified = auth.currentUser.emailVerified;
-      
+
       // Mettre à jour le state
       setCurrentUser(prev => ({
         ...prev,
         emailVerified: isVerified
       }));
-      
+
       // Mettre à jour Firestore si vérifié
       if (isVerified) {
+        // ✅ Forcer le rafraîchissement du token : reload() met à jour la
+        // propriété JS emailVerified mais PAS le claim `email_verified` du token
+        // ID. Sans ce force-refresh, les règles Firestore (hasVerifiedEmail)
+        // continuent de voir email_verified=false et refusent la publication.
+        await auth.currentUser.getIdToken(true);
         const userRef = doc(db, 'users', auth.currentUser.uid);
         await setDoc(userRef, { emailVerified: true }, { merge: true });
       }
@@ -271,6 +276,50 @@ export const AuthProvider = ({ children }) => {
 
     return unsubscribe;
   }, []);
+
+  // ✅ Détection AUTOMATIQUE de la vérification e-mail.
+  // refreshEmailVerification() existait mais n'était appelé nulle part : un
+  // utilisateur email/mot de passe qui cliquait le lien de vérification restait
+  // bloqué à emailVerified=false pour toute sa session → publication refusée
+  // (SellPage l.193) même après avoir vérifié. C'est pire sur mobile, où le lien
+  // s'ouvre dans une autre app puis on revient sur l'onglet sans rechargement.
+  // On sonde tant que non vérifié + on re-vérifie au retour sur l'onglet, et on
+  // force le refresh du token pour propager le claim email_verified aux règles.
+  useEffect(() => {
+    if (!currentUser || currentUser.emailVerified) return;
+
+    let cancelled = false;
+
+    const checkVerified = async () => {
+      if (cancelled || !auth.currentUser) return;
+      try {
+        await auth.currentUser.reload();
+        if (!cancelled && auth.currentUser.emailVerified) {
+          await auth.currentUser.getIdToken(true);
+          setCurrentUser(prev => (prev ? { ...prev, emailVerified: true } : prev));
+          try {
+            await setDoc(doc(db, 'users', auth.currentUser.uid), { emailVerified: true }, { merge: true });
+          } catch (_) { /* non bloquant */ }
+        }
+      } catch (_) { /* réseau indisponible : on réessaiera au prochain tick */ }
+    };
+
+    const intervalId = setInterval(checkVerified, 4000);
+    const onVisible = () => { if (document.visibilityState === 'visible') checkVerified(); };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    checkVerified(); // vérification immédiate au montage
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+    // On dépend volontairement des primitives (uid + emailVerified) et non de
+    // l'objet currentUser, qui change d'identité à chaque ré-enrichissement.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.uid, currentUser?.emailVerified]);
 
   // Valeurs exposees par le contexte
   const value = {

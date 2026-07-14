@@ -229,7 +229,25 @@ export default function Header({
 
                 {/* Mobile Menu */}
                 {showMobileMenu && (
-                    <div className="md:hidden pt-4 pb-2 border-t border-slate-100 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <>
+                    {/* Fond cliquable : taper à côté ferme le menu (geste naturel mobile) */}
+                    <div
+                        className="md:hidden fixed inset-0 top-14 bg-slate-900/20 z-30"
+                        onClick={() => setShowMobileMenu(false)}
+                        aria-hidden="true"
+                    />
+                    <div className="md:hidden relative z-40 pt-4 pb-2 border-t border-slate-100 animate-in fade-in slide-in-from-top-4 duration-300">
+                        {/* Barre de fermeture */}
+                        <div className="flex items-center justify-between mb-4 px-1">
+                            <span className="text-sm font-black text-slate-900">Menu</span>
+                            <button
+                                onClick={() => setShowMobileMenu(false)}
+                                aria-label="Close menu"
+                                className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 active:scale-95 transition"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
                         <div className="grid grid-cols-2 gap-3 mb-6">
                             <Link
                                 to="/guides"
@@ -309,6 +327,7 @@ export default function Header({
                             </div>
                         </div>
                     </div>
+                    </>
                 )}
 
             </div>
