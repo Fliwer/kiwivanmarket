@@ -599,41 +599,10 @@ export default function MessagingPage({ onBack }) {
             </div>
           </div>
 
-          {/* Navigation Icons */}
+          {/* Sélecteur de langue uniquement — les icônes Favoris/Messages/Profil
+              faisaient doublon avec la navigation et ont été retirées. */}
           <div className="flex items-center gap-1">
-            {/* Language Selector */}
             <LanguageSelector />
-
-            {/* Favoris */}
-            <button
-              onClick={() => navigate('/')}
-              className="relative flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-              title="Favorites"
-            >
-              <Heart size={22} className="text-white" />
-              <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Favorites</span>
-            </button>
-
-            {/* Messages (actif) */}
-            <button
-              className="relative flex flex-col items-center p-2.5 bg-white/20 rounded-xl transition"
-              title="Messages"
-            >
-              <MessageCircle size={22} className="text-white" />
-              <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Messages</span>
-            </button>
-
-            {/* Profil */}
-            <button
-              onClick={() => navigate('/profile')}
-              className="flex flex-col items-center p-2.5 hover:bg-white/10 rounded-xl transition"
-              title="Profile"
-            >
-              <div className="w-6 h-6 bg-white text-emerald-600 rounded-full flex items-center justify-center text-xs font-bold">
-                {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
-              </div>
-              <span className="text-[10px] text-white/80 hidden sm:block mt-0.5">Profile</span>
-            </button>
           </div>
         </div>
       </header>
@@ -693,68 +662,81 @@ export default function MessagingPage({ onBack }) {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
               </div>
             ) : filteredConversations.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-40 text-gray-500 p-4">
-                <MessageCircle size={48} className="mb-3 opacity-30" />
-                <p className="font-medium">No conversations yet</p>
-                <p className="text-sm text-center mt-1">Start by messaging a seller on a van listing</p>
+              <div className="flex flex-col items-center justify-center h-full min-h-[240px] text-center px-6">
+                <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center mb-5 shadow-inner">
+                  <MessageCircle size={38} className="text-emerald-500" />
+                </div>
+                <p className="font-black text-slate-800">No conversations yet</p>
+                <p className="text-sm text-slate-500 mt-1.5 max-w-[220px]">Message a seller from any van listing to start a conversation.</p>
               </div>
             ) : (
-              filteredConversations.map(conv => (
-                <div
-                  key={conv.id}
-                  onClick={() => {
-                    setSelectedConversation(conv);
-                    setMobileView('chat');
-                  }}
-                  className={`p-4 border-b border-gray-100 cursor-pointer transition-all hover:bg-gray-50 ${selectedConversation?.id === conv.id ? 'bg-emerald-50 border-l-4 border-l-emerald-500' : ''
-                    }`}
-                >
-                  <div className="flex gap-3">
-                    {/* Van Image */}
-                    <div className="relative flex-shrink-0">
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-200">
-                        {conv.van?.imageUrl ? (
-                          <img src={conv.van.imageUrl} alt="" className={`w-full h-full object-cover ${conv.van?.status === 'sold' ? 'opacity-50 grayscale' : ''}`} />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-500">
-                            <span className="text-white text-xl">🚐</span>
+              <div className="p-2 space-y-1">
+                {filteredConversations.map(conv => {
+                  const isSelected = selectedConversation?.id === conv.id;
+                  const isSold = conv.van?.status === 'sold';
+                  const hasUnread = conv.unreadCount > 0;
+                  return (
+                    <div
+                      key={conv.id}
+                      onClick={() => {
+                        setSelectedConversation(conv);
+                        setMobileView('chat');
+                      }}
+                      className={`p-3 rounded-2xl cursor-pointer transition-all border ${isSelected
+                        ? 'bg-emerald-50 border-emerald-200 shadow-sm'
+                        : 'border-transparent hover:bg-slate-50'}`}
+                    >
+                      <div className="flex gap-3">
+                        {/* Van Image */}
+                        <div className="relative flex-shrink-0">
+                          <div className={`w-14 h-14 rounded-2xl overflow-hidden bg-slate-200 ring-2 ${isSelected ? 'ring-emerald-300' : 'ring-white'} shadow-sm`}>
+                            {conv.van?.imageUrl ? (
+                              <img src={conv.van.imageUrl} alt="" className={`w-full h-full object-cover ${isSold ? 'opacity-50 grayscale' : ''}`} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-500">
+                                <span className="text-white text-xl">🚐</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      {conv.van?.status === 'sold' && (
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                          SOLD
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <h4 className={`font-semibold text-sm truncate ${conv.van?.status === 'sold' ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
-                            {conv.van?.title || 'Unknown Van'}
-                          </h4>
-                          <p className="text-xs text-gray-500 truncate">
-                            {getOtherUserName(conv)}
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <span className="text-xs text-gray-400">{formatTime(conv.lastMessageAt)}</span>
-                          {conv.unreadCount > 0 && (
-                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                              {conv.unreadCount}
-                            </span>
+                          {isSold && (
+                            <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                              SOLD
+                            </div>
                           )}
                         </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h4 className={`font-bold text-sm truncate ${isSold ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                                {conv.van?.title || 'Unknown Van'}
+                              </h4>
+                              <p className="text-xs text-slate-500 truncate flex items-center gap-1">
+                                <span className="w-4 h-4 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center text-[8px] font-black uppercase flex-shrink-0">
+                                  {getOtherUserName(conv)?.[0] || '?'}
+                                </span>
+                                {getOtherUserName(conv)}
+                              </p>
+                            </div>
+                            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                              <span className={`text-[11px] ${hasUnread ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>{formatTime(conv.lastMessageAt)}</span>
+                              {hasUnread && (
+                                <span className="bg-emerald-500 text-white text-[10px] font-black min-w-[20px] text-center px-1.5 py-0.5 rounded-full shadow-sm">
+                                  {conv.unreadCount}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <p className={`text-sm truncate mt-1 ${hasUnread ? 'text-slate-800 font-semibold' : 'text-slate-500'}`}>
+                            {conv.lastMessage || 'No messages yet'}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-600 truncate mt-1">
-                        {conv.lastMessage || 'No messages yet'}
-                      </p>
                     </div>
-                  </div>
-                </div>
-              ))
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
@@ -831,7 +813,7 @@ export default function MessagingPage({ onBack }) {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-50 to-emerald-50/40">
                 {messages.length === 0 && (
                   <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-3 text-center">Quick replies:</p>
