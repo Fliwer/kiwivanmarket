@@ -2,10 +2,29 @@
   "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "CI=false npm run build",
   "outputDirectory": "build",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.kiwivanmarket.com" }],
+      "destination": "https://kiwivanmarket.com/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/sitemap-vehicles.xml",
       "destination": "/api/sitemap-vehicles"
+    },
+    {
+      "source": "/van/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|gptbot|oai-searchbot|chatgpt|claudebot|claude-web|claude-searchbot|anthropic|perplexity|ccbot|amazonbot|bytespider|meta-externalagent|facebookexternalhit|twitterbot|linkedinbot|slackbot|whatsapp|telegrambot|discordbot|pinterestbot|google-extended).*"
+        }
+      ],
+      "destination": "/api/prerender-van?id=:id"
     }
   ],
   "headers": [

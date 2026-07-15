@@ -147,15 +147,12 @@ export default function SeoHead({
     }
     normalizedPath = normalizedPath.toLowerCase();
 
-    const searchParams = new URLSearchParams(location.search);
-    const urlLang = searchParams.get('lang');
     const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
-    const canonicalLang = (urlLang && ['fr', 'es'].includes(urlLang)) ? urlLang : null;
-    const computedCanonicalUrl = canonicalLang
-        ? `${ORIGIN}${normalizedPath}?lang=${canonicalLang}`
-        : `${ORIGIN}${normalizedPath}`;
-
-    const languages = ['en', 'fr', 'es'];
+    // ✅ Canonical TOUJOURS vers l'URL propre, sans ?lang=. Les variantes
+    // ?lang=fr/es servent le même HTML côté serveur (traduction 100% client),
+    // donc les canoniser séparément créait des signaux de contenu dupliqué
+    // (8 pages « en double sans canonique » dans Search Console).
+    const computedCanonicalUrl = `${ORIGIN}${normalizedPath}`;
     const fullTitle = title
         ? `${title} | Kiwi Van Market`
         : `${t('header.subtitle')} | Kiwi Van Market`;
@@ -188,16 +185,10 @@ export default function SeoHead({
                 <html lang={currentLang} />
 
                 {/* ── Hreflang ────────────────────────────────────────── */}
-                {!noindex && languages.map(lang => (
-                    <link
-                        key={lang}
-                        rel="alternate"
-                        hreflang={lang}
-                        href={lang === 'en'
-                            ? `${ORIGIN}${normalizedPath}`
-                            : `${ORIGIN}${normalizedPath}?lang=${lang}`}
-                    />
-                ))}
+                {/* Plus d'alternates vers ?lang=fr/es : ces variantes servent le
+                    même HTML (traduction client) → elles créaient des doublons.
+                    On ne déclare que la version canonique anglaise. */}
+                {!noindex && <link rel="alternate" hreflang="en" href={`${ORIGIN}${normalizedPath}`} />}
                 {!noindex && <link rel="alternate" hreflang="x-default" href={`${ORIGIN}${normalizedPath}`} />}
 
                 {/* ── Open Graph ──────────────────────────────────────── */}

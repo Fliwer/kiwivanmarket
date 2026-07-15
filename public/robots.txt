@@ -52,6 +52,7 @@ Sitemap: https://kiwivanmarket.com/sitemap-main.xml
 Sitemap: https://kiwivanmarket.com/sitemap-guides.xml
 Sitemap: https://kiwivanmarket.com/sitemap-locations.xml
 Sitemap: https://kiwivanmarket.com/sitemap-brands.xml
+Sitemap: https://kiwivanmarket.com/sitemap-vehicles.xml
 
 # AI-readable content summary
 # https://kiwivanmarket.com/llms.txt
