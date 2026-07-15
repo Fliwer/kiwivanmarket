@@ -234,99 +234,119 @@ export default function Header({
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
+                {/* Mobile Menu — Drawer plein écran (épuré, inspiré des marketplaces) */}
                 {showMobileMenu && (
-                    <>
-                    {/* Fond cliquable : taper à côté ferme le menu (geste naturel mobile) */}
-                    <div
-                        className="md:hidden fixed inset-0 top-14 bg-slate-900/20 z-30"
-                        onClick={() => setShowMobileMenu(false)}
-                        aria-hidden="true"
-                    />
-                    <div className="md:hidden relative z-40 mt-2 bg-white rounded-3xl shadow-2xl shadow-slate-300/40 border border-slate-100 p-3 animate-in fade-in slide-in-from-top-4 duration-200">
-                        {/* En-tête du menu */}
-                        <div className="flex items-center justify-between mb-3 px-1.5">
-                            <span className="text-base font-black text-slate-900">Menu</span>
+                    <div className="md:hidden fixed inset-0 z-[70] bg-white flex flex-col animate-in fade-in slide-in-from-right-4 duration-200">
+                        {/* Barre du haut : logo + fermer */}
+                        <div className="flex items-center justify-between px-5 h-16 border-b border-slate-100 flex-shrink-0">
+                            <Link to="/" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#f7eedd] overflow-hidden">
+                                    <img src="/kiwi-van-logo-48.webp" alt="KiwiVan Market" className="w-6 h-6 object-contain" />
+                                </div>
+                                <span className="font-black text-slate-900 text-lg">KiwiVan <span className="text-emerald-600">Market</span></span>
+                            </Link>
                             <button
                                 onClick={() => setShowMobileMenu(false)}
                                 aria-label="Fermer le menu"
-                                className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 active:scale-95 transition"
+                                className="w-11 h-11 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 active:scale-95 transition"
                             >
-                                <X size={18} />
+                                <X size={22} />
                             </button>
                         </div>
 
-                        {/* Carte utilisateur */}
-                        {currentUser && (
-                            <button
-                                onClick={() => { navigate('/profile'); setShowMobileMenu(false); }}
-                                className="w-full flex items-center gap-3 p-3 mb-3 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 active:scale-[0.98] transition"
-                            >
-                                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black text-lg shadow-sm flex-shrink-0">
-                                    {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
-                                </div>
-                                <div className="text-left min-w-0">
-                                    <p className="font-bold text-slate-900 truncate">{currentUser.displayName || 'Mon compte'}</p>
-                                    <p className="text-xs text-slate-500 truncate">{currentUser.email}</p>
-                                </div>
-                                <ChevronRight size={18} className="text-emerald-400 ml-auto flex-shrink-0" />
+                        {/* Contenu scrollable */}
+                        <div className="flex-1 overflow-y-auto px-5 pb-8">
+
+                            {/* EXPLORER */}
+                            <p className="text-xs font-black uppercase tracking-wider text-slate-400 mt-6 mb-1">Explorer</p>
+                            <Link to="/" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
+                                <span>Acheter un van</span>
+                                <ChevronRight size={20} className="text-slate-300" />
+                            </Link>
+                            <Link to="/guides" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
+                                <span>{t('header.guides', 'Guides')}</span>
+                                <ChevronRight size={20} className="text-slate-300" />
+                            </Link>
+                            <Link to="/buyback-calculator" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
+                                <span>{t('header.calculator', 'Calculateur de rachat')}</span>
+                                <ChevronRight size={20} className="text-slate-300" />
+                            </Link>
+
+                            {/* VOUS VENDEZ ? */}
+                            <p className="text-xs font-black uppercase tracking-wider text-slate-400 mt-7 mb-1">Vous vendez ?</p>
+                            <button onClick={() => { navigate('/sell'); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600 text-left">
+                                <span className="w-8 h-8 rounded-full border-2 border-slate-300 text-slate-500 flex items-center justify-center flex-shrink-0"><Plus size={16} /></span>
+                                <span>Déposer une annonce</span>
+                                <ChevronRight size={20} className="text-slate-300 ml-auto" />
                             </button>
-                        )}
 
-                        {/* Accès rapides */}
-                        <div className="grid grid-cols-2 gap-2 mb-2">
-                            <Link to="/guides" onClick={() => setShowMobileMenu(false)} className="flex flex-col items-center gap-2 py-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-100 transition active:scale-95">
-                                <BookOpen size={20} className="text-emerald-600" />
-                                <span className="text-xs font-bold text-slate-700">{t('header.guides', 'Guides')}</span>
-                            </Link>
-                            <Link to="/buyback-calculator" onClick={() => setShowMobileMenu(false)} className="flex flex-col items-center gap-2 py-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-100 transition active:scale-95">
-                                <Calculator size={20} className="text-emerald-600" />
-                                <span className="text-xs font-bold text-slate-700">{t('header.calculator', 'Calculateur')}</span>
-                            </Link>
-                        </div>
-
-                        {/* Liste d'actions */}
-                        <div className="rounded-2xl border border-slate-100 overflow-hidden mb-3">
+                            {/* Carte compte (connecté) */}
                             {currentUser && (
-                                <button onClick={() => { navigate('/my-listings'); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition text-left">
-                                    <MapPin size={18} className="text-emerald-600 flex-shrink-0" />
-                                    <span className="font-semibold text-slate-700 text-sm">{t('menu.listings', 'Mes Vans')}</span>
-                                    <ChevronRight size={16} className="text-slate-300 ml-auto" />
+                                <button onClick={() => { navigate('/profile'); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 mt-4 p-4 rounded-2xl border border-slate-200 shadow-sm active:scale-[0.99] transition text-left">
+                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black text-xl flex-shrink-0">
+                                        {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="font-bold text-slate-900 truncate">{currentUser.displayName || 'Mon compte'}</p>
+                                        <p className="text-sm text-slate-500 truncate">{currentUser.email}</p>
+                                    </div>
+                                    <ChevronRight size={20} className="text-slate-300 ml-auto flex-shrink-0" />
                                 </button>
                             )}
-                            <Link to="/contact" onClick={() => setShowMobileMenu(false)} className={`w-full flex items-center gap-3 px-4 py-3.5 hover:bg-slate-50 transition ${currentUser ? 'border-t border-slate-100' : ''}`}>
-                                <Mail size={18} className="text-emerald-600 flex-shrink-0" />
-                                <span className="font-semibold text-slate-700 text-sm">{t('header.help', "Besoin d'aide ?")}</span>
-                                <ChevronRight size={16} className="text-slate-300 ml-auto" />
+
+                            {/* MON ESPACE (connecté) */}
+                            {currentUser && (
+                                <>
+                                    <p className="text-xs font-black uppercase tracking-wider text-slate-400 mt-7 mb-1">Mon espace</p>
+                                    <button onClick={() => { navigate('/my-listings'); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600 text-left">
+                                        <MapPin size={20} className="text-emerald-600 flex-shrink-0" />
+                                        <span>{t('menu.listings', 'Mes Vans')}</span>
+                                        <ChevronRight size={20} className="text-slate-300 ml-auto" />
+                                    </button>
+                                    <button onClick={() => { setShowFavorites(true); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600 text-left">
+                                        <Heart size={20} className="text-emerald-600 flex-shrink-0" />
+                                        <span>Favoris</span>
+                                        <ChevronRight size={20} className="text-slate-300 ml-auto" />
+                                    </button>
+                                    <button onClick={() => { navigate('/messages'); setShowMobileMenu(false); }} className="w-full flex items-center gap-3 py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600 text-left">
+                                        <MessageCircle size={20} className="text-emerald-600 flex-shrink-0" />
+                                        <span>Messages</span>
+                                        <ChevronRight size={20} className="text-slate-300 ml-auto" />
+                                    </button>
+                                </>
+                            )}
+
+                            {/* AIDE */}
+                            <p className="text-xs font-black uppercase tracking-wider text-slate-400 mt-7 mb-1">Aide</p>
+                            <Link to="/contact" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
+                                <HelpCircle size={20} className="text-emerald-600 flex-shrink-0" />
+                                <span>{t('header.help', "Centre d'aide")}</span>
+                                <ChevronRight size={20} className="text-slate-300 ml-auto" />
                             </Link>
+
+                            {/* Devise & langue */}
+                            <p className="text-xs font-black uppercase tracking-wider text-slate-400 mt-7 mb-3">Devise & langue</p>
+                            <div className="flex items-center gap-3">
+                                <CurrencySelector />
+                                <LanguageSelector />
+                            </div>
                         </div>
 
-                        {/* Devise + langue */}
-                        <div className="flex items-center justify-center gap-3 mb-3">
-                            <CurrencySelector />
-                            <LanguageSelector />
+                        {/* Bas fixe : connexion / déconnexion */}
+                        <div className="flex-shrink-0 px-5 py-4 border-t border-slate-100 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                            {!currentUser ? (
+                                <button onClick={() => { setShowAuthModal(true); setShowMobileMenu(false); }} className="w-full flex items-center justify-center gap-2 py-4 bg-slate-900 text-white rounded-2xl font-bold active:scale-95 transition">
+                                    <User size={18} />
+                                    <span>Se connecter / Créer un compte</span>
+                                </button>
+                            ) : (
+                                <button onClick={() => { logout(); setShowMobileMenu(false); }} className="w-full flex items-center justify-center gap-2 py-4 bg-red-50 text-red-600 rounded-2xl font-bold active:scale-95 transition">
+                                    <LogOut size={18} />
+                                    <span>{t('header.signout', 'Se déconnecter')}</span>
+                                </button>
+                            )}
                         </div>
-
-                        {/* Connexion / Déconnexion */}
-                        {!currentUser ? (
-                            <button
-                                onClick={() => { setShowAuthModal(true); setShowMobileMenu(false); }}
-                                className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-900 text-white rounded-2xl font-bold active:scale-95 transition"
-                            >
-                                <Users size={18} />
-                                <span>{t('header.signin')}</span>
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => { logout(); setShowMobileMenu(false); }}
-                                className="w-full flex items-center justify-center gap-2 py-3.5 bg-red-50 text-red-600 rounded-2xl font-bold active:scale-95 transition"
-                            >
-                                <LogOut size={18} />
-                                <span>{t('header.signout', 'Se déconnecter')}</span>
-                            </button>
-                        )}
                     </div>
-                    </>
                 )}
 
             </div>
