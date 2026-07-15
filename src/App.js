@@ -26,6 +26,7 @@ import EquipmentBadges from './components/EquipmentBadges';
 // ✅ COMPOSANTS CRITIQUES - Chargés immédiatement
 import AuthModal from './components/AuthModal';
 import safeStorage, { safeSessionStorage } from './utils/safeStorage';
+import lazyWithReload from './utils/lazyWithReload';
 import { safeDate } from './utils/dateHelper';
 import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
@@ -35,29 +36,29 @@ import BottomNavigation from './components/BottomNavigation';
 import { FEATURED_LONG_TAIL_SLUGS, LONG_TAIL_PAGE_MAP } from './constants/seoLongTailPages';
 
 // ✅ LAZY LOADING
-const SellPage = lazy(() => import('./components/SellPage'));
-const AddVanForm = lazy(() => import('./components/AddVanForm'));
-const MyVans = lazy(() => import('./components/MyVans'));
-const FavoritesPage = lazy(() => import('./components/FavoritesPage'));
-const MessagingPage = lazy(() => import('./components/MessagingPage'));
-const BuybackCalculator = lazy(() => import('./components/BuybackCalculator'));
-const UserProfile = lazy(() => import('./components/UserProfile'));
-const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
-const TermsOfServiceModal = lazy(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfServiceModal })));
-const HomeSeoSection = lazy(() => import('./components/HomeSeoSection'));
-const QuickMessageBox = lazy(() => import('./components/QuickMessageBox'));
-const VanPage = lazy(() => import('./components/VanPage'));
-const BrandPage = lazy(() => import('./components/BrandPage'));
-const LocationPage = lazy(() => import('./components/LocationPage'));
-const GuidePage = lazy(() => import('./components/GuidePage'));
-const ContactPage = lazy(() => import('./components/ContactPage'));
-const ProfilePage = lazy(() => import('./components/ProfilePage'));
-const MyListingsPage = lazy(() => import('./components/MyListingsPage'));
-const GuidesHubPage = lazy(() => import('./components/GuidesHubPage'));
-const FaqPage = lazy(() => import('./components/FaqPage'));
-const WhyPage = lazy(() => import('./components/WhyPage'));
-const SeoLongTailPage = lazy(() => import('./components/SeoLongTailPage'));
-const SeoTopicFaqPage = lazy(() => import('./components/SeoTopicFaqPage'));
+const SellPage = lazyWithReload(() => import('./components/SellPage'));
+const AddVanForm = lazyWithReload(() => import('./components/AddVanForm'));
+const MyVans = lazyWithReload(() => import('./components/MyVans'));
+const FavoritesPage = lazyWithReload(() => import('./components/FavoritesPage'));
+const MessagingPage = lazyWithReload(() => import('./components/MessagingPage'));
+const BuybackCalculator = lazyWithReload(() => import('./components/BuybackCalculator'));
+const UserProfile = lazyWithReload(() => import('./components/UserProfile'));
+const AdminDashboard = lazyWithReload(() => import('./components/AdminDashboard'));
+const TermsOfServiceModal = lazyWithReload(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfServiceModal })));
+const HomeSeoSection = lazyWithReload(() => import('./components/HomeSeoSection'));
+const QuickMessageBox = lazyWithReload(() => import('./components/QuickMessageBox'));
+const VanPage = lazyWithReload(() => import('./components/VanPage'));
+const BrandPage = lazyWithReload(() => import('./components/BrandPage'));
+const LocationPage = lazyWithReload(() => import('./components/LocationPage'));
+const GuidePage = lazyWithReload(() => import('./components/GuidePage'));
+const ContactPage = lazyWithReload(() => import('./components/ContactPage'));
+const ProfilePage = lazyWithReload(() => import('./components/ProfilePage'));
+const MyListingsPage = lazyWithReload(() => import('./components/MyListingsPage'));
+const GuidesHubPage = lazyWithReload(() => import('./components/GuidesHubPage'));
+const FaqPage = lazyWithReload(() => import('./components/FaqPage'));
+const WhyPage = lazyWithReload(() => import('./components/WhyPage'));
+const SeoLongTailPage = lazyWithReload(() => import('./components/SeoLongTailPage'));
+const SeoTopicFaqPage = lazyWithReload(() => import('./components/SeoTopicFaqPage'));
 
 
 // ✅ LOADING COMPONENTS

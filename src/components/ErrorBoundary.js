@@ -13,7 +13,27 @@ class ErrorBoundary extends React.Component {
 
     componentDidCatch(error, errorInfo) {
         console.error("Uncaught error:", error, errorInfo);
-        // You can also log the error to an error reporting service
+
+        // ✅ Auto-récupération des chunks périmés : après un déploiement, les
+        // anciens fichiers JS n'existent plus (404) → ChunkLoadError. Plutôt
+        // que d'afficher "Something went wrong" (page Sell morte pour le
+        // visiteur), on recharge UNE fois avec un cache-buster pour obtenir
+        // le HTML frais. Garde-fou sessionStorage contre toute boucle.
+        const isChunkError =
+            error?.name === 'ChunkLoadError' ||
+            /Loading (CSS )?chunk .* failed/i.test(error?.message || '');
+        if (isChunkError) {
+            let alreadyTried = true;
+            try {
+                alreadyTried = sessionStorage.getItem('kvm_eb_chunk_reloaded') === '1';
+                if (!alreadyTried) sessionStorage.setItem('kvm_eb_chunk_reloaded', '1');
+            } catch (_) { alreadyTried = false; }
+            if (!alreadyTried) {
+                const { pathname, search } = window.location;
+                const sep = search ? '&' : '?';
+                window.location.replace(pathname + search + sep + 'cb=' + Date.now());
+            }
+        }
     }
 
     handleReload = () => {

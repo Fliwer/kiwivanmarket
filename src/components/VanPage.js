@@ -20,9 +20,10 @@ import { useToast } from './ToastProvider';
 import SeoHead from './SeoHead';
 import EquipmentBadges from './EquipmentBadges';
 
-// Lazy load du QuickMessageBox
-const QuickMessageBox = lazy(() => import('./QuickMessageBox'));
-const AuthModal = lazy(() => import('./AuthModal'));
+// Lazy load du QuickMessageBox (avec auto-récupération si chunk périmé)
+import lazyWithReload from '../utils/lazyWithReload';
+const QuickMessageBox = lazyWithReload(() => import('./QuickMessageBox'));
+const AuthModal = lazyWithReload(() => import('./AuthModal'));
 
 // ✅ Composant SEO avec Schema.org pour les vans
 const VanSEO = ({ van }) => {
