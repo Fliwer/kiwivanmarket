@@ -58,17 +58,6 @@
         }
       ],
       "destination": "/api/prerender-guide?slug=:slug"
-    },
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "header",
-          "key": "user-agent",
-          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|gptbot|oai-searchbot|chatgpt|claudebot|claude-web|claude-searchbot|anthropic|perplexity|ccbot|amazonbot|bytespider|meta-externalagent|facebookexternalhit|twitterbot|linkedinbot|slackbot|whatsapp|telegrambot|discordbot|pinterestbot|google-extended).*"
-        }
-      ],
-      "destination": "/api/prerender-home"
     }
   ],
   "headers": [
