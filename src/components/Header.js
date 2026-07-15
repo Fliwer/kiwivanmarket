@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -234,8 +235,11 @@ export default function Header({
                     </div>
                 </div>
 
-                {/* Mobile Menu — Drawer plein écran (épuré, inspiré des marketplaces) */}
-                {showMobileMenu && (
+                {/* Mobile Menu — Drawer plein écran (épuré, inspiré des marketplaces).
+                    Rendu via un Portal dans <body> : le header a `backdrop-filter`
+                    (glass-effect) qui, sinon, "capture" le position:fixed et
+                    empêche le drawer de couvrir tout l'écran. */}
+                {showMobileMenu && createPortal(
                     <div className="md:hidden fixed inset-0 z-[70] bg-white flex flex-col animate-in fade-in slide-in-from-right-4 duration-200">
                         {/* Barre du haut : logo + fermer */}
                         <div className="flex items-center justify-between px-5 h-16 border-b border-slate-100 flex-shrink-0">
@@ -346,7 +350,8 @@ export default function Header({
                                 </button>
                             )}
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 )}
 
             </div>
