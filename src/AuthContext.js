@@ -171,15 +171,13 @@ export const AuthProvider = ({ children }) => {
         emailVerified: isVerified
       }));
 
-      // Mettre à jour Firestore si vérifié
       if (isVerified) {
         // ✅ Forcer le rafraîchissement du token : reload() met à jour la
         // propriété JS emailVerified mais PAS le claim `email_verified` du token
         // ID. Sans ce force-refresh, les règles Firestore (hasVerifiedEmail)
         // continuent de voir email_verified=false et refusent la publication.
+        // (Pas d'écriture users.emailVerified : refusée par les règles.)
         await auth.currentUser.getIdToken(true);
-        const userRef = doc(db, 'users', auth.currentUser.uid);
-        await setDoc(userRef, { emailVerified: true }, { merge: true });
       }
       
       return isVerified;
@@ -225,10 +223,13 @@ export const AuthProvider = ({ children }) => {
         lastLogin: new Date()
       });
     } else {
-      // Mettre a jour la derniere connexion + statut vérification
+      // Mettre a jour la derniere connexion.
+      // ⚠️ Ne PAS écrire emailVerified ici : les règles Firestore
+      // (onlyUpdating) ne l'autorisent pas sur ce chemin → l'update entier
+      // était refusé en silence et lastLogin ne se mettait jamais à jour.
+      // La source de vérité pour emailVerified reste Firebase Auth (token).
       await setDoc(userRef, {
-        lastLogin: new Date(),
-        emailVerified: user.emailVerified || false
+        lastLogin: new Date()
       }, { merge: true });
     }
   };
@@ -297,9 +298,8 @@ export const AuthProvider = ({ children }) => {
         if (!cancelled && auth.currentUser.emailVerified) {
           await auth.currentUser.getIdToken(true);
           setCurrentUser(prev => (prev ? { ...prev, emailVerified: true } : prev));
-          try {
-            await setDoc(doc(db, 'users', auth.currentUser.uid), { emailVerified: true }, { merge: true });
-          } catch (_) { /* non bloquant */ }
+          // NB : pas d'écriture users.emailVerified ici — les règles Firestore
+          // la refusent (onlyUpdating) ; la source de vérité est le token Auth.
         }
       } catch (_) { /* réseau indisponible : on réessaiera au prochain tick */ }
     };

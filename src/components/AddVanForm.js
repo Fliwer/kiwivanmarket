@@ -24,7 +24,7 @@ const formatDateForInput = (date) => {
 
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode = false, van = null, focusPlate = false }) {
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
+  const { currentUser, resendVerificationEmail } = useAuth();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
@@ -350,7 +350,21 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     }
 
     if (!currentUser.emailVerified) {
-      toast.error('Please verify your email to list a van! ✨ Check your inbox at ' + currentUser.email);
+      // Proposer directement le renvoi : un ancien inscrit jamais vérifié n'a
+      // souvent plus le mail d'origine — sans renvoi, il est bloqué à vie.
+      const resend = window.confirm(
+        `Please verify your email to list a van (${currentUser.email}).\n\n` +
+        'No email? Click OK to resend the verification link (check spam too). ' +
+        'The form unlocks automatically once verified.'
+      );
+      if (resend) {
+        try {
+          await resendVerificationEmail();
+          toast.success('Verification email sent! Check your inbox (and spam).');
+        } catch (err) {
+          toast.error(err.message || 'Could not send the email. Try again in a few minutes.');
+        }
+      }
       return;
     }
 
@@ -541,6 +555,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             whatsapp: sanitizeString(formData.sellerWhatsApp || ''),
             phone: sanitizeString(formData.sellerPhone || '')
           },
+          // Aligné sur SellPage : le quota anti-spam (20 vans) et d'autres
+          // requêtes filtrent sur userId — sans lui, les vans créés ici
+          // échappaient au comptage.
+          userId: currentUser.uid,
           plateNumber: sanitizeString(formData.plateNumber || ''),
           views: 0,
           status: 'active',

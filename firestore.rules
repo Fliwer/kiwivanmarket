@@ -230,7 +230,10 @@ service cloud.firestore {
                       fieldsUnchanged(['views', 'createdAt']) &&
                       (fieldUnchanged('seller') || (
                         request.resource.data.seller.uid == resource.data.seller.uid &&
-                        request.resource.data.seller.diff(resource.data.seller).affectedKeys().hasOnly(['phone', 'facebook'])
+                        // whatsapp inclus : le formulaire d'édition permet de le
+                        // modifier — sans lui, tout update touchant le WhatsApp
+                        // était refusé.
+                        request.resource.data.seller.diff(resource.data.seller).affectedKeys().hasOnly(['phone', 'facebook', 'whatsapp'])
                       )) &&
                       (fieldUnchanged('price') || isValidPrice(request.resource.data.price)) &&
                       (fieldUnchanged('title') || isValidString(request.resource.data.title, 3, 200)) &&

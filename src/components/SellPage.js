@@ -5,7 +5,7 @@ import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'fire
 import { httpsCallable } from 'firebase/functions';
 import { db, functions, auth } from '../firebase';
 import { useAuth } from '../AuthContext';
-import { Upload, Trash2, CheckCircle, ArrowLeft, Camera, FileText, Send, PartyPopper, Eye, Home, Sparkles, Loader2 } from 'lucide-react';
+import { Upload, Trash2, CheckCircle, ArrowLeft, Camera, FileText, Send, PartyPopper, Eye, Home, Sparkles, Loader2, Mail } from 'lucide-react';
 import { uploadToCloudinary, compressImage } from '../cloudinaryConfig';
 import AuthModal from './AuthModal';
 import SeoHead from './SeoHead';
@@ -13,8 +13,9 @@ import { useToast } from './ToastProvider';
 
 export default function SellPage() {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, resendVerificationEmail } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
   const [images, setImages] = useState([]);
   const [uploadingIndex, setUploadingIndex] = useState(null);
   const [currentStep, setCurrentStep] = useState(1);
@@ -427,6 +428,59 @@ export default function SellPage() {
         {showAuthModal && (
           <AuthModal isOpen={true} onClose={() => setShowAuthModal(false)} />
         )}
+      </>
+    );
+  }
+
+  // Écran "vérifie ton e-mail" — indispensable pour les ANCIENS inscrits
+  // email/mot de passe jamais vérifiés : sans ce bouton "Renvoyer", ils
+  // n'avaient AUCUN moyen de recevoir un nouveau lien (le renvoi n'existait
+  // que sur l'écran juste après l'inscription) → cul-de-sac définitif.
+  // La page se débloque toute seule dès que la vérification est détectée
+  // (polling AuthContext) : pas besoin de recharger.
+  if (!currentUser.emailVerified) {
+    return (
+      <>
+        <SeoHead
+          title="Verify Your Email to Sell"
+          description="Verify your email address to list your campervan on Kiwi Van Market."
+        />
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center">
+            <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Mail size={40} className="text-amber-600" />
+            </div>
+            <h1 className="text-2xl font-black text-gray-900 mb-3">Verify your email</h1>
+            <p className="text-gray-600 mb-2">
+              To list a van, please verify your email address:
+            </p>
+            <p className="font-bold text-gray-900 mb-6 break-all">{currentUser.email}</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Click the link in the email we sent you (check spam too). This page unlocks automatically once verified.
+            </p>
+            <button
+              onClick={async () => {
+                setResendingEmail(true);
+                try {
+                  await resendVerificationEmail();
+                  toast.success('Verification email sent! Check your inbox (and spam).');
+                } catch (err) {
+                  toast.error(err.message || 'Could not send the email. Try again in a few minutes.');
+                } finally {
+                  setResendingEmail(false);
+                }
+              }}
+              disabled={resendingEmail}
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              {resendingEmail ? <Loader2 size={20} className="animate-spin" /> : <Send size={18} />}
+              {resendingEmail ? 'Sending…' : 'Resend verification email'}
+            </button>
+            <Link to="/" className="block mt-4 text-gray-500 hover:text-gray-700 transition">
+              Back to listings
+            </Link>
+          </div>
+        </div>
       </>
     );
   }
