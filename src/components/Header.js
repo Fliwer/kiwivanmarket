@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -57,8 +57,23 @@ export default function Header({
     const navigate = useNavigate();
     const [showUserMenuDropdown, setShowUserMenuDropdown] = useState(false);
 
+    // Barre qui se masque quand on descend (>120px) et réapparaît dès qu'on
+    // remonte — libère l'écran pendant la lecture, nav toujours à un geste.
+    const [hideOnScroll, setHideOnScroll] = useState(false);
+    const lastScrollY = useRef(0);
+    useEffect(() => {
+        const onScroll = () => {
+            const y = window.scrollY;
+            setHideOnScroll(y > lastScrollY.current && y > 120);
+            lastScrollY.current = y;
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+    const headerHidden = hideOnScroll && !showMobileMenu;
+
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 w-full px-2 py-1.5 md:sticky md:px-4 md:py-3">
+        <header className={`fixed top-0 left-0 right-0 z-50 w-full px-2 py-1.5 md:sticky md:px-4 md:py-3 transition-transform duration-300 ${headerHidden ? '-translate-y-full' : 'translate-y-0'}`}>
             <div className="max-w-7xl mx-auto glass-effect rounded-xl md:rounded-[2rem] px-3 md:px-6 py-1 md:py-2 transition-all duration-300">
                 <div className="flex items-center justify-between h-10 md:h-14">
 

@@ -64,8 +64,10 @@ export default function QuickFilters({
         <div className="bg-transparent">
             <div className="max-w-7xl mx-auto px-4 py-4">
 
-                {/* Search Mobile */}
-                <div className="lg:hidden mb-4">
+                {/* Search Mobile — sur mobile/tablette : UNE barre + UN bouton Filters
+                    (le tiroir contient déjà tous les filtres rapides). Les pastilles
+                    et le 2e bouton Filters sont réservés au desktop → épuré. */}
+                <div className="lg:hidden mb-1">
                     <div className="flex gap-2">
                         <div className="relative flex-1">
                             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
@@ -97,9 +99,10 @@ export default function QuickFilters({
                     </div>
                 </div>
 
-                {/* Mobile Slide-Up Filter Drawer */}
+                {/* Mobile Slide-Up Filter Drawer (lg:hidden — dispo aussi sur tablette,
+                    où le bouton l'ouvrait alors que le tiroir était masqué en md) */}
                 {showMobileDrawer && (
-                    <div className="md:hidden fixed inset-0 z-[200] flex flex-col justify-end">
+                    <div className="lg:hidden fixed inset-0 z-[200] flex flex-col justify-end">
                         {/* Backdrop */}
                         <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowMobileDrawer(false)} />
                         {/* Drawer */}
@@ -240,8 +243,9 @@ export default function QuickFilters({
                     </div>
                 )}
 
-                {/* Desktop Quick Filters - unchanged */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                {/* Quick Filters — DESKTOP UNIQUEMENT (les pastilles doublonnaient
+                    avec le tiroir mobile et créaient 2 boutons « Filters ») */}
+                <div className="hidden lg:flex lg:items-center lg:justify-between gap-3">
 
                     <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:gap-3 md:overflow-visible md:pb-0 md:flex-wrap">
 

@@ -381,11 +381,6 @@ function MainApp({
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Left Column: Content */}
             <div className="flex flex-col items-start text-left">
-              <div className="inline-flex max-w-full items-center gap-2 px-3.5 py-2 rounded-full bg-emerald-50 text-emerald-700 text-[11px] sm:text-xs font-black uppercase tracking-wider mb-5 lg:mb-6 border border-emerald-100 shadow-sm transition-transform hover:scale-105">
-                <Zap size={14} fill="currentColor" className="flex-shrink-0" />
-                <span className="truncate">{t('home.badge')}</span>
-              </div>
-
               <h1 className="text-[2.6rem] leading-[1.05] sm:text-5xl lg:text-7xl font-black text-slate-900 mb-4 lg:mb-6 sm:leading-[1.1] tracking-tight">
                 {t('home.title_part1')} <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('home.title_highlight')}</span> {t('home.title_part2')}
               </h1>
