@@ -517,144 +517,69 @@ ${shareUrl}
       <VanSEO van={van} />
 
       <div className="min-h-screen bg-slate-50">
-        {/* Header - Floating Glass Design */}
-        <header className="fixed top-0 left-0 right-0 z-50 p-4 transition-all duration-300">
-          <div className="max-w-7xl mx-auto glass-effect rounded-3xl p-3 flex items-center justify-between shadow-2xl border border-white/40">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => navigate('/')}
-                className="p-2.5 bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 rounded-2xl transition-all"
-                title={t('van_page.back')}
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <Link to="/" className="flex items-center gap-2 group">
-                <div className="w-10 h-10 rounded-xl bg-[#f7eedd] flex items-center justify-center shadow-lg transition-transform group-hover:scale-105">
-                  <img src="/kiwi-van-logo-48.webp" alt="KiwiVan" className="w-8 h-8 object-contain" />
-                </div>
-                <div className="hidden sm:block">
-                  <span className="font-black text-slate-800 tracking-tight">KiwiVan</span>
-                </div>
-              </Link>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <Link
-                to="/guides"
-                className="hidden md:flex items-center gap-2 px-4 py-2 text-slate-600 font-bold hover:text-emerald-600 transition-all text-xs uppercase tracking-widest"
-              >
-                <BookOpen size={16} />
-                Guides
-              </Link>
-
-              <div className="hidden sm:block">
-                <button
-                  onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
-                  className="p-2.5 bg-slate-100 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 rounded-2xl transition-all relative"
-                  title="Messages"
-                >
-                  <MessageCircle size={20} />
-                </button>
-              </div>
-
-              <button
-                onClick={() => toggleFavorite(van.id)}
-                className="p-2.5 bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-500 rounded-2xl transition-all relative"
-                title="Favorites"
-              >
-                <Heart size={20} className={isFavorite(van.id) ? 'fill-red-500 text-red-500' : ''} />
-                {favoritesCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
-                    {favoritesCount}
-                  </span>
-                )}
-              </button>
-
-              <div className="h-8 w-[1px] bg-slate-200 mx-1 hidden sm:block" />
-
-              <div className="hidden sm:block">
-                {!currentUser ? (
-                  <button
-                    onClick={() => setShowAuthModal(true)}
-                    className="px-5 py-2.5 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-2xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
-                  >
-                    {t('header.signin')}
-                  </button>
-                ) : (
-                  <div className="relative">
-                    <button
-                      onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 border-2 border-white shadow-xl flex items-center justify-center text-white font-black text-sm hover:scale-105 transition-transform"
-                    >
-                      {currentUser.displayName?.[0]?.toUpperCase() || 'U'}
-                    </button>
-                    {showUserMenu && (
-                      <>
-                        <div className="fixed inset-0 z-[100]" onClick={() => setShowUserMenu(false)} />
-                        <div className="absolute right-0 top-full mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
-                          <Link to="/profile" className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
-                            <User size={18} className="text-slate-400" /> {t('header.profile')}
-                          </Link>
-                          <Link to="/my-listings" className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
-                            <MapPin size={18} className="text-slate-400" /> {t('header.my_listings') || 'My Listings'}
-                          </Link>
-                          <button onClick={logout} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-red-50 text-slate-700 hover:text-red-700 font-bold transition-all">
-                            <LogOut size={18} className="text-slate-400" /> {t('header.logout')}
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="relative">
-                <button
-                  onClick={handleMainShareClick}
-                  className="p-2.5 bg-slate-100 hover:bg-blue-50 text-slate-500 hover:text-blue-500 rounded-2xl transition-all"
-                  title="Share this van"
-                >
-                  <Share2 size={20} />
-                </button>
-
-                {showShareMenu && (
+        {/* Barre d'actions : retour + fil d'ariane + favori/partage.
+            (Le header GLOBAL du site s'affiche au-dessus — l'ancien header
+            interne de cette page faisait doublon et a été supprimé.) */}
+        <div className="max-w-7xl mx-auto px-4 md:px-6 pt-3 pb-1 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={() => navigate('/')}
+              className="p-2.5 bg-white border border-slate-200 hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 rounded-xl transition-all flex-shrink-0 shadow-sm"
+              title={t('van_page.back')}
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <nav aria-label="Breadcrumb" className="min-w-0">
+              <ol className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 flex-wrap">
+                <li className="hidden sm:block"><Link to="/" className="hover:text-emerald-600 transition-colors">Marketplace</Link></li>
+                <li className="hidden sm:block"><ChevronRight size={12} className="text-slate-300" /></li>
+                {van.location && (
                   <>
-                    <div className="fixed inset-0 z-[100]" onClick={() => setShowShareMenu(false)} />
-                    <div className="absolute right-0 top-full mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
-                      <button onClick={() => handleShare('whatsapp')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
-                        <MessageCircle size={18} className="text-green-500" /> Share on WhatsApp
-                      </button>
-                      <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
-                        <Facebook size={18} className="text-blue-600" /> Share on Facebook
-                      </button>
-                      <button onClick={() => handleShare('copy')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all">
-                        <Copy size={18} className="text-slate-400" /> Copy Link
-                      </button>
-                    </div>
+                    <li><Link to={`/location/${encodeURIComponent(van.location)}`} className="hover:text-emerald-600 transition-colors">{van.location}</Link></li>
+                    <li><ChevronRight size={12} className="text-slate-300" /></li>
                   </>
                 )}
-              </div>
+                <li className="text-slate-900 truncate max-w-[140px] sm:max-w-[240px]">{van.title}</li>
+              </ol>
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => toggleFavorite(van.id)}
+              className="p-2.5 bg-white border border-slate-200 hover:bg-red-50 text-slate-500 hover:text-red-500 rounded-xl transition-all shadow-sm"
+              title="Favorites"
+            >
+              <Heart size={18} className={isFavorite(van.id) ? 'fill-red-500 text-red-500' : ''} />
+            </button>
+            <div className="relative">
+              <button
+                onClick={handleMainShareClick}
+                className="p-2.5 bg-white border border-slate-200 hover:bg-blue-50 text-slate-500 hover:text-blue-500 rounded-xl transition-all shadow-sm"
+                title="Share this van"
+              >
+                <Share2 size={18} />
+              </button>
+              {showShareMenu && (
+                <>
+                  <div className="fixed inset-0 z-[100]" onClick={() => setShowShareMenu(false)} />
+                  <div className="absolute right-0 top-full mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-slate-100 py-2 z-[101] overflow-hidden animate-fade-in-up">
+                    <button onClick={() => handleShare('whatsapp')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
+                      <MessageCircle size={18} className="text-green-500" /> Share on WhatsApp
+                    </button>
+                    <button onClick={() => handleShare('facebook')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all border-b border-slate-50">
+                      <Facebook size={18} className="text-blue-600" /> Share on Facebook
+                    </button>
+                    <button onClick={() => handleShare('copy')} className="w-full flex items-center gap-3 px-5 py-3.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-bold transition-all">
+                      <Copy size={18} className="text-slate-400" /> Copy Link
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-        </header>
-
-        {/* Spacer for fixed header */}
-        <div className="h-24 md:h-28" />
-
-        {/* Breadcrumb SEO - Aéré avec location */}
-        <nav className="max-w-7xl mx-auto px-6 py-4" aria-label="Breadcrumb">
-          <ol className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 flex-wrap">
-            <li><Link to="/" className="hover:text-emerald-600 transition-colors">Marketplace</Link></li>
-            <li><ChevronRight size={12} className="text-slate-300" /></li>
-            {van.location && (
-              <>
-                <li><Link to={`/location/${encodeURIComponent(van.location)}`} className="hover:text-emerald-600 transition-colors">{van.location}</Link></li>
-                <li><ChevronRight size={12} className="text-slate-300" /></li>
-              </>
-            )}
-            <li className="text-slate-900 truncate max-w-[200px]">{van.title}</li>
-          </ol>
-        </nav>
+        </div>
 
         {/* Contenu principal */}
         <main className="max-w-7xl mx-auto px-4 pb-12">
