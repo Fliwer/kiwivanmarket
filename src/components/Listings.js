@@ -88,12 +88,10 @@ export default function Listings({
     const goToPage = (p) => {
         const target = Math.min(totalPages, Math.max(1, p));
         if (target === currentPage) return;
+        // Le hero (photo) reste affiché sur toutes les pages : on ramène
+        // l'utilisateur en haut de la LISTE, pas en haut de la page.
         if (typeof window !== 'undefined') {
-            // Scroll to top BEFORE the page change so the hero hiding (page > 1)
-            // doesn't trigger scroll-anchoring that fights the scroll. Re-assert
-            // once more after the layout settles, for reliability.
-            window.scrollTo(0, 0);
-            setTimeout(() => window.scrollTo(0, 0), 60);
+            document.getElementById('listings-start')?.scrollIntoView({ behavior: 'auto', block: 'start' });
         }
         setCurrentPage(target);
     };

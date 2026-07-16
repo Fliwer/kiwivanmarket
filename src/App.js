@@ -162,6 +162,17 @@ function MainApp({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [listingsPage, setListingsPage] = useState(1);
 
+  // Barre de recherche du hero (pattern marketplace : l'action au 1er regard)
+  const [heroQuery, setHeroQuery] = useState('');
+  const [heroBudget, setHeroBudget] = useState('');
+  const handleHeroSearch = (e) => {
+    e.preventDefault();
+    setSearchTerm(heroQuery.trim());
+    const max = parseInt(heroBudget, 10);
+    setFilters(prev => ({ ...prev, priceMax: Number.isFinite(max) && max > 0 ? max : 500000 }));
+    document.getElementById('listings-start')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const [filters, setFilters] = useState({
     priceMin: 0,
     priceMax: 500000,
@@ -370,81 +381,93 @@ function MainApp({
     <div className="min-h-screen bg-slate-50 pb-20 md:pb-0">
       <SeoHead
         isHomepage
-        title="Buy Campervans & Backpacker Vans in New Zealand | Kiwi Van Market"
+        title="Buy Campervans & Backpacker Vans in New Zealand"
         description="The easiest way to buy self-contained campervans in New Zealand. Compare Toyota Hiace, Nissan Caravan & more."
       />
 
-      {/* Hero Section — visible uniquement sur la 1re page des annonces */}
-      {listingsPage === 1 && (
-      <section className="relative pt-10 pb-16 lg:pt-20 lg:pb-32 overflow-hidden bg-white">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* Left Column: Content */}
-            <div className="flex flex-col items-start text-left">
-              <div className="inline-flex max-w-full items-center gap-2 px-3.5 py-2 rounded-full bg-emerald-50 text-emerald-700 text-[11px] sm:text-xs font-black uppercase tracking-wider mb-5 lg:mb-6 border border-emerald-100 shadow-sm transition-transform hover:scale-105">
-                <Zap size={14} fill="currentColor" className="flex-shrink-0" />
-                <span className="truncate">{t('home.badge')}</span>
+      {/* ===== HERO — photo plein écran, collée sous le header transparent ===== */}
+      <section className="relative overflow-hidden -mt-14 md:mt-0 min-h-[55vh] md:min-h-[65vh] flex items-center">
+        {/* Photo de fond (déjà préchargée dans index.html → zéro coût LCP)
+            + voile sombre dégradé pour la lisibilité du texte blanc */}
+        <div className="absolute inset-0" aria-hidden="true">
+          <picture>
+            <source media="(max-width: 768px)" srcSet="/nz-background-mobile.webp" />
+            <img src="/nz-background.webp" alt="" fetchPriority="high" className="w-full h-full object-cover" />
+          </picture>
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-900/40 to-slate-950/60" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 w-full pt-20 md:pt-32 pb-8 md:pb-16">
+          <div className="max-w-2xl">
+            <div className="inline-flex max-w-full items-center gap-2 px-3.5 py-2 rounded-full bg-white/10 backdrop-blur-sm text-emerald-200 text-[11px] sm:text-xs font-black uppercase tracking-wider mb-4 border border-white/20">
+              <Zap size={14} fill="currentColor" className="flex-shrink-0" />
+              <span className="truncate">{t('home.badge')}</span>
+            </div>
+
+            <h1 className="text-[2.4rem] leading-[1.05] sm:text-5xl lg:text-6xl font-black text-white mb-3 sm:leading-[1.08] tracking-tight drop-shadow-sm">
+              {t('home.title_part1')} <span className="text-emerald-300">{t('home.title_highlight')}</span> {t('home.title_part2')}
+            </h1>
+
+            <p className="text-base sm:text-lg text-slate-200 font-medium mb-5 md:mb-7 max-w-xl leading-relaxed">
+              {t('home.subtitle')}
+            </p>
+
+            {/* Barre de recherche — l'action utile au premier regard */}
+            <form
+              onSubmit={handleHeroSearch}
+              className="bg-white rounded-2xl p-2 shadow-2xl shadow-slate-950/30 flex flex-col sm:flex-row gap-2 mb-5"
+            >
+              <div className="relative flex-1">
+                <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={heroQuery}
+                  onChange={(e) => setHeroQuery(e.target.value)}
+                  placeholder={t('home.search_placeholder', 'Model or city (e.g. Hiace, Auckland)')}
+                  className="w-full pl-10 pr-3 py-3.5 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium"
+                  aria-label={t('home.search_placeholder', 'Model or city')}
+                />
               </div>
+              <input
+                type="number"
+                min="0"
+                value={heroBudget}
+                onChange={(e) => setHeroBudget(e.target.value)}
+                placeholder={t('home.budget_placeholder', 'Max budget (NZD)')}
+                className="sm:w-44 px-4 py-3.5 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium"
+                aria-label={t('home.budget_placeholder', 'Max budget (NZD)')}
+              />
+              <button
+                type="submit"
+                className="sm:w-auto px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-black text-sm transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Search size={16} />
+                {t('home.search_button', 'Search')}
+              </button>
+            </form>
 
-              <h1 className="text-[2.6rem] leading-[1.05] sm:text-5xl lg:text-7xl font-black text-slate-900 mb-4 lg:mb-6 sm:leading-[1.1] tracking-tight">
-                {t('home.title_part1')} <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('home.title_highlight')}</span> {t('home.title_part2')}
-              </h1>
-
-              <p className="text-base sm:text-lg lg:text-xl text-slate-500 font-medium mb-7 lg:mb-10 max-w-xl leading-relaxed opacity-90">
-                {t('home.subtitle')}
-              </p>
-
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 lg:mb-8 w-full">
-                <button
-                  onClick={() => document.getElementById('listings-start')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-emerald-600 text-white px-10 py-5 rounded-2xl font-black hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-900/20 active:scale-95 text-lg"
-                >
-                  <Search size={20} />
-                  {t('home.cta_browse_listings')}
-                </button>
-
-                <Link
-                  to="/sell"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-white text-slate-700 border-2 border-dashed border-slate-300 px-8 py-5 rounded-2xl font-bold hover:border-emerald-400 hover:text-emerald-700 transition-all active:scale-95 text-base"
-                >
-                  <Plus size={18} />
-                  {t('home.cta_sell_van')}
-                </Link>
-              </div>
-
-              {/* Guide vedette — carte compacte affichée sur mobile/tablette,
-                  où l'image du hero (colonne de droite) n'offre aucune action */}
-              <HeroGuideCard className="lg:hidden w-full mt-1" />
-
-              {/* Buying Guides Link — version texte, réservée au desktop */}
+            <div className="flex flex-wrap items-center gap-4 mb-5">
+              <Link
+                to="/sell"
+                className="inline-flex items-center gap-2 text-white font-bold border border-white/40 hover:border-white hover:bg-white/10 px-5 py-2.5 rounded-xl transition-all text-sm"
+              >
+                <Plus size={16} />
+                {t('home.cta_sell_van')}
+              </Link>
               <Link
                 to="/guides"
-                className="hidden lg:flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold transition-colors border-b-2 border-dotted border-slate-200 hover:border-emerald-200 pb-0.5 text-sm"
+                className="hidden lg:inline-flex items-center gap-2 text-white/80 hover:text-white font-bold transition-colors text-sm"
               >
                 <BookOpen size={15} />
                 <span>{t('home.buying_guides', 'Buying Guides')}</span>
               </Link>
             </div>
 
-            {/* Right Column: Hero Image Card */}
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-emerald-500/5 rounded-[4rem] blur-3xl group-hover:bg-emerald-500/10 transition-colors" />
-              <div className="relative bg-white p-2 sm:p-3 rounded-[2rem] sm:rounded-[3.5rem] shadow-2xl shadow-slate-200 border border-slate-50 overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-700">
-                <div className="rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden border-[6px] sm:border-[12px] border-white shadow-inner aspect-[4/3] lg:aspect-auto">
-                  <img
-                    src="/hiace-camper.png"
-                    alt="NZ Road Adventure"
-                    fetchPriority="high"
-                    loading="eager"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
-                  />
-                </div>
-              </div>
-            </div>
+            {/* Guide vedette — carte compacte (mobile/tablette) */}
+            <HeroGuideCard className="lg:hidden w-full" />
           </div>
         </div>
       </section>
-      )}
 
       <main id="main-content">
         <div id="listings-start" className="scroll-mt-24" />
