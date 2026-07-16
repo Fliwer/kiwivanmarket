@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
     BookOpen,
@@ -55,24 +55,11 @@ export default function Header({
 }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const location = useLocation();
     const [showUserMenuDropdown, setShowUserMenuDropdown] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-
-    // Header transparent posé SUR la photo du hero (home, haut de page) ;
-    // redevient "verre dépoli" dès qu'on scrolle ou sur les autres pages.
-    useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 24);
-        onScroll();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
-    }, []);
-    const isHome = location.pathname === '/';
-    const transparent = isHome && !scrolled;
 
     return (
-        <header className={`fixed top-0 left-0 right-0 z-50 w-full px-2 py-1.5 md:px-4 md:py-3 ${isHome ? '' : 'md:sticky'}`}>
-            <div className={`max-w-7xl mx-auto rounded-xl md:rounded-[2rem] px-3 md:px-6 py-1 md:py-2 transition-all duration-300 ${transparent ? 'bg-transparent' : 'glass-effect'}`}>
+        <header className="fixed top-0 left-0 right-0 z-50 w-full px-2 py-1.5 md:sticky md:px-4 md:py-3">
+            <div className="max-w-7xl mx-auto glass-effect rounded-xl md:rounded-[2rem] px-3 md:px-6 py-1 md:py-2 transition-all duration-300">
                 <div className="flex items-center justify-between h-10 md:h-14">
 
                     {/* Logo */}
@@ -81,8 +68,8 @@ export default function Header({
                             <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-6 h-6 object-contain" width="24" height="24" />
                         </div>
                         <div className="block">
-                            <h1 className={`text-base md:text-lg font-bold leading-tight ${transparent ? 'text-white' : 'text-slate-900'}`}>KiwiVan</h1>
-                            <p className={`text-[9px] md:text-[10px] uppercase tracking-widest font-black leading-none ${transparent ? 'text-emerald-300' : 'text-emerald-600'}`}>Market</p>
+                            <h1 className="text-base md:text-lg font-bold text-slate-900 leading-tight">KiwiVan</h1>
+                            <p className="text-[9px] md:text-[10px] uppercase tracking-widest font-black text-emerald-600 leading-none">Market</p>
                         </div>
                     </Link>
 
@@ -90,27 +77,23 @@ export default function Header({
                     <nav className="hidden md:flex items-center gap-1 ml-6">
                         <Link
                             to="/guides"
-                            className={`px-4 py-2 font-bold rounded-xl transition-all flex items-center gap-2 text-sm border ${transparent
-                                ? 'bg-white/10 text-white border-white/20 hover:bg-white/20'
-                                : 'bg-emerald-50 text-emerald-700 border-emerald-200/50 hover:bg-emerald-100 hover:border-emerald-300'}`}
+                            className="px-4 py-2 bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 rounded-xl transition-all flex items-center gap-2 text-sm border border-emerald-200/50 hover:border-emerald-300"
                         >
-                            <BookOpen size={15} className={transparent ? 'text-emerald-300' : 'text-emerald-600'} />
+                            <BookOpen size={15} className="text-emerald-600" />
                             <span>{t('header.guides')}</span>
                         </Link>
 
                         <Link
                             to="/buyback-calculator"
-                            className={`px-4 py-2 font-medium rounded-xl transition-all flex items-center gap-2 text-sm ${transparent
-                                ? 'text-white/90 hover:text-white hover:bg-white/10'
-                                : 'text-slate-600 hover:text-emerald-600 hover:bg-emerald-50'}`}
+                            className="px-4 py-2 text-slate-600 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2 text-sm"
                         >
                             <Calculator size={16} />
                             <span>{t('header.calculator')}</span>
                         </Link>
                     </nav>
 
-                    {/* Barre de recherche - Desktop (masquée sur le hero : il a sa propre barre) */}
-                    <div className={`${transparent ? 'hidden' : 'hidden lg:flex'} flex-1 max-w-sm mx-8`}>
+                    {/* Barre de recherche - Desktop Content-Aware */}
+                    <div className="hidden lg:flex flex-1 max-w-sm mx-8">
                         <div className="relative w-full group">
                             <input
                                 type="text"
@@ -134,7 +117,7 @@ export default function Header({
                             <span>Sell Van</span>
                         </button>
 
-                        <div className={`h-8 w-[1px] mx-1 ${transparent ? 'bg-white/30' : 'bg-slate-200'}`} />
+                        <div className="h-8 w-[1px] bg-slate-200 mx-1" />
 
                         <div className="flex items-center gap-1">
                             <CurrencySelector />
@@ -152,7 +135,7 @@ export default function Header({
 
                         <button
                             onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
-                            className={`p-2.5 rounded-xl transition-all relative ${transparent ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-red-600 hover:bg-red-50'}`}
+                            className="p-2.5 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all relative"
                             title="Favorites"
                         >
                             <Heart size={20} className={favoritesCount > 0 ? "fill-red-500 text-red-500" : ""} />
@@ -160,7 +143,7 @@ export default function Header({
 
                         <button
                             onClick={() => currentUser ? navigate('/messages') : setShowAuthModal(true)}
-                            className={`p-2.5 rounded-xl transition-all relative ${transparent ? 'text-white hover:bg-white/10' : 'text-slate-600 hover:text-emerald-700 hover:bg-emerald-50'}`}
+                            className="p-2.5 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all relative"
                             title="Messages"
                         >
                             <MessageCircle size={20} />
@@ -245,7 +228,7 @@ export default function Header({
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
                             aria-label="Menu"
                             aria-expanded={showMobileMenu}
-                            className={`w-10 h-10 flex items-center justify-center rounded-xl active:scale-95 transition ${transparent ? 'text-white hover:bg-white/10' : 'text-slate-800 hover:bg-slate-100'}`}
+                            className="w-10 h-10 flex items-center justify-center rounded-xl text-slate-800 hover:bg-slate-100 active:scale-95 transition"
                         >
                             {showMobileMenu ? <X size={22} /> : <Menu size={22} />}
                         </button>
