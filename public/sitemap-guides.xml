@@ -1,61 +1,301 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://kiwivanmarket.com/guide/buying-campervan-nz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/buying-campervan-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/buying-campervan-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/buying-campervan-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/buying-campervan-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/buying-campervan-nz?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/buying-campervan-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/buying-campervan-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/buying-campervan-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/buying-campervan-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/buying-campervan-nz?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/buying-campervan-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/buying-campervan-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/buying-campervan-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/buying-campervan-nz"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/guide/campervan-buyer-checklist</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/campervan-buyer-checklist?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/campervan-buyer-checklist?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/campervan-buyer-checklist"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/guide/freedom-camping-nz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/freedom-camping-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/freedom-camping-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/freedom-camping-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/freedom-camping-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/freedom-camping-nz?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/freedom-camping-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/freedom-camping-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/freedom-camping-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/freedom-camping-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/freedom-camping-nz?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/freedom-camping-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/freedom-camping-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/freedom-camping-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/freedom-camping-nz"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/guide/selling-campervan-nz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/selling-campervan-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/selling-campervan-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/selling-campervan-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/selling-campervan-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/selling-campervan-nz?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/selling-campervan-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/selling-campervan-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/selling-campervan-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/selling-campervan-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/selling-campervan-nz?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/selling-campervan-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/selling-campervan-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/selling-campervan-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/selling-campervan-nz"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/how-to-inspect-campervan-nz"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/guide/winter-camping-nz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/winter-camping-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/winter-camping-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/winter-camping-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/winter-camping-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/winter-camping-nz?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/winter-camping-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/winter-camping-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/winter-camping-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/winter-camping-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/winter-camping-nz?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/winter-camping-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/winter-camping-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/winter-camping-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/winter-camping-nz"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/guide/south-island-road-trip</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/south-island-road-trip"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/south-island-road-trip?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/south-island-road-trip?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/south-island-road-trip"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/south-island-road-trip?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/south-island-road-trip"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/south-island-road-trip?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/south-island-road-trip?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/south-island-road-trip"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/south-island-road-trip?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/south-island-road-trip"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/south-island-road-trip?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/south-island-road-trip?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/south-island-road-trip"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/guide/best-vanlife-apps-nz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/best-vanlife-apps-nz"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/guide/top-10-best-vans-nz</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/top-10-best-vans-nz?lang=fr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz"/>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/guide/top-10-best-vans-nz?lang=es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://kiwivanmarket.com/guide/top-10-best-vans-nz"/>
     <lastmod>2026-07-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

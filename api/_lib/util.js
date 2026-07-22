@@ -135,9 +135,12 @@ const NAV_LINKS = `<nav>
   <a href="${ORIGIN}/faq">FAQ</a>
 </nav>`;
 
-function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogType = 'website' }) {
+function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogType = 'website', alternates = [], htmlLang = 'en', ogLocale = 'en_NZ' }) {
+  const alternateTags = (alternates || [])
+    .map((a) => `<link rel="alternate" hreflang="${a.hreflang}" href="${a.href}">`)
+    .join('\n');
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${htmlLang}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -145,6 +148,7 @@ function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogT
 <meta name="description" content="${esc(metaDesc)}">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="${canonical}">
+${alternateTags}
 <link rel="icon" type="image/png" sizes="192x192" href="${ORIGIN}/logo192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="${ORIGIN}/favicon.png">
 <link rel="apple-touch-icon" href="${ORIGIN}/logo192.png">
@@ -153,7 +157,7 @@ function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogT
 <meta property="og:description" content="${esc(metaDesc)}">
 <meta property="og:url" content="${canonical}">
 <meta property="og:site_name" content="Kiwi Van Market">
-<meta property="og:locale" content="en_NZ">
+<meta property="og:locale" content="${ogLocale}">
 <meta property="og:image" content="${esc(ogImage || ORIGIN + '/og-image.jpg')}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">

@@ -137,6 +137,10 @@ export default function SeoHead({
     faqs,
     breadcrumbs,
     isHomepage = false,
+    // Langues pour lesquelles cette page a une vraie traduction indexable
+    // (ex. les guides : ['en','fr','es']). Quand fourni, on émet un canonical
+    // auto-référent par langue (?lang=fr/es) + des hreflang réciproques.
+    alternateLangs = null,
 }) {
     const { i18n, t } = useTranslation();
     const location = useLocation();
@@ -148,11 +152,15 @@ export default function SeoHead({
     normalizedPath = normalizedPath.toLowerCase();
 
     const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
-    // ✅ Canonical TOUJOURS vers l'URL propre, sans ?lang=. Les variantes
-    // ?lang=fr/es servent le même HTML côté serveur (traduction 100% client),
-    // donc les canoniser séparément créait des signaux de contenu dupliqué
-    // (8 pages « en double sans canonique » dans Search Console).
-    const computedCanonicalUrl = `${ORIGIN}${normalizedPath}`;
+    const cleanUrl = `${ORIGIN}${normalizedPath}`;
+
+    // Pages localisées (guides) : canonical auto-référent par langue + hreflang
+    // réciproques. Le prerender bots sert la traduction correspondante, donc
+    // ?lang=fr/es sont de vraies pages distinctes (plus des doublons).
+    // Ailleurs : canonical propre + en/x-default uniquement (comportement d'avant).
+    const localized = Array.isArray(alternateLangs) && alternateLangs.length > 0;
+    const langHref = (l) => (l === 'en' ? cleanUrl : `${cleanUrl}?lang=${l}`);
+    const computedCanonicalUrl = localized ? langHref(currentLang) : cleanUrl;
     const fullTitle = title
         ? `${title} | Kiwi Van Market`
         : `${t('header.subtitle')} | Kiwi Van Market`;
@@ -185,18 +193,27 @@ export default function SeoHead({
                 <html lang={currentLang} />
 
                 {/* ── Hreflang ────────────────────────────────────────── */}
-                {/* Plus d'alternates vers ?lang=fr/es : ces variantes servent le
-                    même HTML (traduction client) → elles créaient des doublons.
-                    On ne déclare que la version canonique anglaise. */}
-                {!noindex && <link rel="alternate" hreflang="en" href={`${ORIGIN}${normalizedPath}`} />}
-                {!noindex && <link rel="alternate" hreflang="x-default" href={`${ORIGIN}${normalizedPath}`} />}
+                {!noindex && localized && (
+                    <>
+                        <link rel="alternate" hreflang="en" href={langHref('en')} />
+                        <link rel="alternate" hreflang="fr" href={langHref('fr')} />
+                        <link rel="alternate" hreflang="es" href={langHref('es')} />
+                        <link rel="alternate" hreflang="x-default" href={cleanUrl} />
+                    </>
+                )}
+                {!noindex && !localized && (
+                    <>
+                        <link rel="alternate" hreflang="en" href={cleanUrl} />
+                        <link rel="alternate" hreflang="x-default" href={cleanUrl} />
+                    </>
+                )}
 
                 {/* ── Open Graph ──────────────────────────────────────── */}
                 <meta property="og:type" content={type} />
                 <meta property="og:url" content={finalCanonicalUrl} />
                 <meta property="og:title" content={fullTitle} />
                 <meta property="og:description" content={metaDesc} />
-                <meta property="og:locale" content={currentLang === 'fr' ? 'fr_FR' : 'en_NZ'} />
+                <meta property="og:locale" content={currentLang === 'fr' ? 'fr_FR' : currentLang === 'es' ? 'es_ES' : 'en_NZ'} />
                 <meta property="og:site_name" content="Kiwi Van Market" />
                 <meta property="og:image" content={ogImage} />
                 <meta property="og:image:width" content="1200" />

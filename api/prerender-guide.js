@@ -1,7 +1,9 @@
 // ============================================================================
 // Prerender /guide/:slug pour les crawlers — contenu complet des guides
-// (extrait de src/constants/guides.js → api/_lib/guides-data.json).
-// Article JSON-LD + rendu texte intégral = idéal SEO et citations IA (GEO).
+// (extrait de src/constants/guides.js → api/_lib/guides-data.json, nesté par
+// langue). Multilingue : ?lang=fr / ?lang=es servent la traduction + canonical
+// auto-référent + hreflang réciproques. Article JSON-LD + texte intégral =
+// idéal SEO et citations IA (GEO).
 // ============================================================================
 
 const {
@@ -11,7 +13,20 @@ const GUIDES = require('./_lib/guides-data.json');
 
 const absUrl = (u) => (typeof u === 'string' && u.startsWith('/') ? `${ORIGIN}${u}` : u);
 
-function renderItem(item) {
+const OG_LOCALE = { en: 'en_NZ', fr: 'fr_FR', es: 'es_ES' };
+const L = {
+  expertTip: { en: 'Expert tip:', fr: 'Conseil de pro :', es: 'Consejo de experto:' },
+  moreGuides: { en: 'More guides', fr: 'Plus de guides', es: 'Más guías' },
+  browseAll: {
+    en: 'Browse campervans for sale in New Zealand',
+    fr: 'Voir les campervans à vendre en Nouvelle-Zélande',
+    es: 'Ver campervans en venta en Nueva Zelanda',
+  },
+  guidesCrumb: { en: 'Guides', fr: 'Guides', es: 'Guías' },
+  homeCrumb: { en: 'Home', fr: 'Accueil', es: 'Inicio' },
+};
+
+function renderItem(item, lang) {
   if (!item || typeof item !== 'object') return '';
   if (item.type === 'image') {
     return `<figure><img src="${esc(absUrl(item.url))}" alt="${esc(item.caption || 'Guide illustration')}" loading="lazy">${item.caption ? `<figcaption>${esc(item.caption)}</figcaption>` : ''}</figure>`;
@@ -26,7 +41,7 @@ function renderItem(item) {
     return `<ol>${(item.items || []).map((s) => `<li><strong>${esc(s.title || '')}</strong>${s.title && s.text ? ' — ' : ''}${esc(s.text || '')}</li>`).join('')}</ol>`;
   }
   if (item.type === 'cta') {
-    const target = item.href || `https://kiwivanmarket.com${item.to || '/'}`;
+    const target = item.href || `${ORIGIN}${item.to || '/'}`;
     return `<p><a href="${esc(target)}"><strong>${esc(item.text || '')} →</strong></a></p>`;
   }
   if (item.type === 'table') {
@@ -40,16 +55,32 @@ function renderItem(item) {
   let out = '';
   if (item.title) out += `<h3>${esc(item.title)}</h3>`;
   if (item.text) out += `<p>${esc(item.text)}</p>`;
-  if (item.expertTip) out += `<blockquote><strong>Expert tip:</strong> ${esc(item.expertTip)}</blockquote>`;
+  if (item.expertTip) out += `<blockquote><strong>${L.expertTip[lang]}</strong> ${esc(item.expertTip)}</blockquote>`;
   return out;
 }
 
 module.exports = async function handler(req, res) {
   const slug = String(req.query.slug || '').toLowerCase();
-  const guide = GUIDES[slug];
+
+  // Langue demandée (?lang=fr|es), défaut/fallback en.
+  let lang = String(req.query.lang || 'en').slice(0, 2).toLowerCase();
+  if (!GUIDES[lang]) lang = 'en';
+
+  const guide = (GUIDES[lang] && GUIDES[lang][slug]) || GUIDES.en[slug];
   if (!guide) return send404(res, 'This guide does not exist');
 
-  const url = `${ORIGIN}/guide/${slug}`;
+  const suffix = lang === 'en' ? '' : `?lang=${lang}`;
+  const cleanUrl = `${ORIGIN}/guide/${slug}`;
+  const canonical = `${cleanUrl}${suffix}`;
+
+  // Hreflang réciproques (chaque variante pointe vers toutes les autres).
+  const alternates = [
+    { hreflang: 'en', href: cleanUrl },
+    { hreflang: 'fr', href: `${cleanUrl}?lang=fr` },
+    { hreflang: 'es', href: `${cleanUrl}?lang=es` },
+    { hreflang: 'x-default', href: cleanUrl },
+  ];
+
   const title = `${guide.title} | Kiwi Van Market`;
   const metaDesc = String(guide.description || '').slice(0, 155);
   const content = guide.content || {};
@@ -58,25 +89,26 @@ module.exports = async function handler(req, res) {
   const articleLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    '@id': `${url}#article`,
+    '@id': `${canonical}#article`,
     headline: guide.title,
     description: guide.description,
     image: guide.heroImage ? [absUrl(guide.heroImage)] : undefined,
-    url,
-    inLanguage: 'en',
+    url: canonical,
+    inLanguage: lang,
     author: { '@type': 'Organization', name: 'Kiwi Van Market', url: ORIGIN },
     publisher: {
       '@type': 'Organization',
       name: 'Kiwi Van Market',
       logo: { '@type': 'ImageObject', url: `${ORIGIN}/kiwi-van-logo-128.webp` },
     },
-    mainEntityOfPage: url,
+    mainEntityOfPage: canonical,
   };
 
-  const otherGuides = Object.entries(GUIDES)
+  const byLang = GUIDES[lang] || GUIDES.en;
+  const otherGuides = Object.entries(byLang)
     .filter(([s]) => s !== slug)
     .slice(0, 6)
-    .map(([s, g]) => `<li><a href="${ORIGIN}/guide/${s}">${esc(g.title)}</a></li>`)
+    .map(([s, g]) => `<li><a href="${ORIGIN}/guide/${s}${suffix}">${esc(g.title)}</a></li>`)
     .join('\n');
 
   const body = `
@@ -88,13 +120,13 @@ ${content.intro ? `<p>${esc(content.intro)}</p>` : ''}
 ${sections.map((s) => `
 <section>
 <h2>${esc(s.title || '')}</h2>
-${(Array.isArray(s.items) ? s.items : []).map(renderItem).join('\n')}
+${(Array.isArray(s.items) ? s.items : []).map((it) => renderItem(it, lang)).join('\n')}
 </section>`).join('\n')}
 </article>
-<h2>More guides</h2>
+<h2>${L.moreGuides[lang]}</h2>
 <ul>
 ${otherGuides}
-<li><a href="${ORIGIN}/">Browse campervans for sale in New Zealand</a></li>
+<li><a href="${ORIGIN}/${suffix}">${L.browseAll[lang]}</a></li>
 </ul>`;
 
   // FAQ du guide → schéma FAQPage (SEO + citations IA)
@@ -105,6 +137,7 @@ ${otherGuides}
   const faqPageLd = faqItems.length ? {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
+    inLanguage: lang,
     mainEntity: faqItems.map((f) => ({
       '@type': 'Question',
       name: f.q,
@@ -115,16 +148,19 @@ ${otherGuides}
   const html = htmlShell({
     title,
     metaDesc,
-    canonical: url,
+    canonical,
     ogImage: absUrl(guide.heroImage),
     ogType: 'article',
+    htmlLang: lang,
+    ogLocale: OG_LOCALE[lang] || 'en_NZ',
+    alternates,
     jsonLd: [
       articleLd,
       ...(faqPageLd ? [faqPageLd] : []),
       breadcrumbLd([
-        { name: 'Home', path: '/' },
-        { name: 'Guides', path: '/guides' },
-        { name: guide.title, path: `/guide/${slug}` },
+        { name: L.homeCrumb[lang], path: `/${suffix}` },
+        { name: L.guidesCrumb[lang], path: `/guides${suffix}` },
+        { name: guide.title, path: `/guide/${slug}${suffix}` },
       ]),
     ],
     body,

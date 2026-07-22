@@ -274,6 +274,7 @@ export default function GuidePage() {
         description={guide.description}
         image={guide.heroImage}
         type="article"
+        alternateLangs={['en', 'fr', 'es']}
         faqs={guideFaqs}
         breadcrumbs={[
           { name: 'Home', path: '/' },

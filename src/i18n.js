@@ -28,7 +28,12 @@ i18n
         supportedLngs: ['en', 'fr', 'es'],
         debug: process.env.NODE_ENV === 'development',
 
-        detector: {
+        // ⚠️ La clé DOIT être "detection" (pas "detector") sinon
+        // i18next-browser-languagedetector l'ignore et retombe sur ses défauts
+        // (lookupQuerystring 'lng'), ce qui faisait que ?lang= n'était pas lu
+        // au chargement. Nécessaire pour que les URLs hreflang FR/ES rendent
+        // la bonne langue pour un visiteur arrivant depuis Google.
+        detection: {
             order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
             lookupQuerystring: 'lang',
             lookupCookie: 'i18next',
