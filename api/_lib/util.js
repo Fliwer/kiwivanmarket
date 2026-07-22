@@ -145,6 +145,9 @@ function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogT
 <meta name="description" content="${esc(metaDesc)}">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <link rel="canonical" href="${canonical}">
+<link rel="icon" type="image/png" sizes="192x192" href="${ORIGIN}/logo192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="${ORIGIN}/favicon.png">
+<link rel="apple-touch-icon" href="${ORIGIN}/logo192.png">
 <meta property="og:type" content="${ogType}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(metaDesc)}">
