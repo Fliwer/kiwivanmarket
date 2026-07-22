@@ -13,7 +13,7 @@ import { formatMileage, formatWhatsAppNumber } from '../utils/formatHelper';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
   Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen, User, LogOut,
-  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle, Phone, Lock
+  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle, Phone, Lock, Fuel, Cog
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastProvider';
@@ -516,12 +516,12 @@ ${shareUrl}
       {/* SEO Meta Tags */}
       <VanSEO van={van} />
 
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-white">
 
         {/* Barre d'actions : retour + fil d'ariane + favori/partage.
             (Le header GLOBAL du site s'affiche au-dessus — l'ancien header
             interne de cette page faisait doublon et a été supprimé.) */}
-        <div className="max-w-7xl mx-auto px-4 md:px-6 pt-3 pb-1 flex items-center justify-between gap-3">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-3 pb-1 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => navigate('/')}
@@ -582,90 +582,120 @@ ${shareUrl}
         </div>
 
         {/* Contenu principal */}
-        <main className="max-w-7xl mx-auto px-4 pb-12">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 pb-28 lg:pb-16">
 
-          <div className="grid lg:grid-cols-2 gap-8 items-start">
+          {/* Titre & sous-ligne */}
+          <header className="pt-1 pb-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-[2rem] font-semibold text-slate-900 tracking-tight leading-tight">
+              {van.title}
+            </h1>
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-slate-600">
+              <span className="inline-flex items-center gap-1.5 font-medium text-slate-800">
+                <MapPin size={15} className="text-emerald-600" />
+                {van.location}{van.region ? `, ${van.region}` : ', New Zealand'}
+              </span>
+              {hasRating && (
+                <span className="inline-flex items-center gap-1 font-medium text-slate-800">
+                  <Star size={14} className="fill-amber-400 text-amber-400" />
+                  {seller.rating.toFixed(1)}
+                </span>
+              )}
+            </div>
+          </header>
 
-            {/* GALERIE PHOTOS - Design premium */}
-            <div className="lg:sticky lg:top-20 space-y-3 relative z-10">
-              {/* Main Image */}
-              <div className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl overflow-hidden shadow-2xl group z-20">
-                <div className="aspect-[4/3] flex items-center justify-center p-2">
-                  <img
-                    src={getLargeImage(images[currentImageIndex])}
-                    alt={`${van.title} - ${currentImageIndex + 1}`}
-                    className="max-w-full max-h-full object-contain rounded-2xl cursor-zoom-in"
-                    onClick={() => setShowLightbox(true)}
-                  />
-                </div>
-
-                {/* Navigation images */}
-                {images.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur rounded-full p-3 shadow-xl hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100"
-                    >
-                      <ChevronLeft size={24} className="text-gray-800" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur rounded-full p-3 shadow-xl hover:bg-white hover:scale-110 transition-all opacity-0 group-hover:opacity-100"
-                    >
-                      <ChevronRight size={24} className="text-gray-800" />
-                    </button>
-                  </>
-                )}
-
-                {/* Badges */}
-                <div className="absolute top-4 left-4 flex flex-col gap-2">
-                  {van.featured && (
-                    <span className="bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 text-gray-900 px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg animate-pulse">
-                      <Star size={16} fill="currentColor" /> {t('van_page.featured')}
-                    </span>
-                  )}
-                  <span className={`text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur ${van.selfContainedType === 'blue'
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-400'
-                    : 'bg-gradient-to-r from-green-500 to-emerald-400'
-                    }`}>
-                    ✓ {t('filters.self_contained')} {van.selfContainedType === 'blue' ? '🔵' : '🟢'}
-                  </span>
-                  {van.buyBack && (
-                    <span className="bg-gradient-to-r from-emerald-500 to-green-400 text-white px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
-                      <Shield size={16} /> {t('filters.buyback')}
-                    </span>
-                  )}
-                </div>
-
-                {/* Image counter */}
-                {images.length > 1 && (
-                  <div className="absolute bottom-4 right-4 bg-black/70 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold">
-                    📷 {currentImageIndex + 1} / {images.length}
-                  </div>
-                )}
-              </div>
-
-              {/* Thumbnails - Hidden on mobile, visible on desktop */}
+          {/* GALERIE — style Airbnb : mosaïque en desktop, carrousel en mobile */}
+          <div className="relative">
+            {/* Mobile : image unique swipeable */}
+            <div className="sm:hidden relative rounded-2xl overflow-hidden bg-slate-100 aspect-[4/3] group">
+              <img
+                src={getLargeImage(images[currentImageIndex])}
+                alt={`${van.title} - ${currentImageIndex + 1}`}
+                className="w-full h-full object-cover cursor-zoom-in"
+                onClick={() => setShowLightbox(true)}
+              />
               {images.length > 1 && (
-                <div className="relative z-0 hidden lg:flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {images.map((img, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setCurrentImageIndex(idx)}
-                      className={`flex-shrink-0 w-20 h-16 rounded-xl overflow-hidden transition-all duration-200 ${idx === currentImageIndex
-                        ? 'ring-3 ring-emerald-500 ring-offset-2'
-                        : 'opacity-60 hover:opacity-100'
-                        }`}
-                    >
-                      <img src={getThumbnail(img)} alt="" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
+                <>
+                  <button onClick={prevImage} className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow-lg active:scale-90 transition">
+                    <ChevronLeft size={20} className="text-slate-800" />
+                  </button>
+                  <button onClick={nextImage} className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-2 shadow-lg active:scale-90 transition">
+                    <ChevronRight size={20} className="text-slate-800" />
+                  </button>
+                  <div className="absolute bottom-3 right-3 bg-black/60 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    {currentImageIndex + 1} / {images.length}
+                  </div>
+                </>
               )}
             </div>
 
-            {/* INFORMATIONS */}
-            <div className="space-y-8">
+            {/* Desktop : mosaïque cliquable (ouvre la lightbox) */}
+            <div className="hidden sm:block relative">
+              {images.length >= 5 ? (
+                <div className="grid grid-cols-4 grid-rows-2 gap-2 h-[400px] lg:h-[460px] rounded-2xl overflow-hidden">
+                  <button onClick={() => { setCurrentImageIndex(0); setShowLightbox(true); }} className="col-span-2 row-span-2 relative overflow-hidden group">
+                    <img src={getLargeImage(images[0])} alt={van.title} className="w-full h-full object-cover group-hover:brightness-95 transition" />
+                  </button>
+                  {[1, 2, 3, 4].map((i) => (
+                    <button key={i} onClick={() => { setCurrentImageIndex(i); setShowLightbox(true); }} className="relative overflow-hidden group">
+                      <img src={getThumbnail(images[i])} alt="" className="w-full h-full object-cover group-hover:brightness-95 transition" />
+                    </button>
+                  ))}
+                </div>
+              ) : images.length >= 2 ? (
+                <div className="grid grid-cols-2 gap-2 h-[380px] lg:h-[440px] rounded-2xl overflow-hidden">
+                  <button onClick={() => { setCurrentImageIndex(0); setShowLightbox(true); }} className="relative overflow-hidden group">
+                    <img src={getLargeImage(images[0])} alt={van.title} className="w-full h-full object-cover group-hover:brightness-95 transition" />
+                  </button>
+                  <div className="grid gap-2" style={{ gridTemplateRows: `repeat(${images.length - 1}, minmax(0, 1fr))` }}>
+                    {images.slice(1).map((img, idx) => (
+                      <button key={idx} onClick={() => { setCurrentImageIndex(idx + 1); setShowLightbox(true); }} className="relative overflow-hidden group">
+                        <img src={getThumbnail(img)} alt="" className="w-full h-full object-cover group-hover:brightness-95 transition" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setShowLightbox(true)} className="block w-full h-[380px] lg:h-[440px] rounded-2xl overflow-hidden">
+                  <img src={getLargeImage(images[0])} alt={van.title} className="w-full h-full object-cover" />
+                </button>
+              )}
+
+              {images.length > 1 && (
+                <button
+                  onClick={() => setShowLightbox(true)}
+                  className="absolute bottom-4 right-4 inline-flex items-center gap-2 bg-white text-slate-900 px-4 py-2 rounded-xl text-sm font-semibold shadow-lg border border-slate-200 hover:bg-slate-50 transition"
+                >
+                  <LayoutDashboard size={15} />
+                  {i18n.language.startsWith('fr') ? `Voir les ${images.length} photos` : `Show all ${images.length} photos`}
+                </button>
+              )}
+            </div>
+
+            {/* Badges (superposés) */}
+            <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+              {van.featured && (
+                <span className="bg-white text-amber-600 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md">
+                  <Star size={13} fill="currentColor" /> {t('van_page.featured')}
+                </span>
+              )}
+              {van.selfContained && (
+                <span className="bg-white/95 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md text-slate-800">
+                  {van.selfContainedType === 'blue' ? '🔵' : '🟢'} {t('filters.self_contained')}
+                </span>
+              )}
+              {van.buyBack && (
+                <span className="bg-white/95 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md text-emerald-700">
+                  <Shield size={13} /> {t('filters.buyback')}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Corps : contenu (gauche) + carte contact sticky (droite) */}
+          <div className="mt-8 lg:mt-10 grid lg:grid-cols-3 gap-8 lg:gap-12 items-start">
+
+            {/* Colonne principale */}
+            <div className="lg:col-span-2 space-y-8">
 
               {/* ✅ OWNER DASHBOARD */}
               {currentUser?.uid === van.seller?.uid && (
@@ -741,73 +771,81 @@ ${shareUrl}
                 </div>
               )}
 
-              {/* Titre & Prix - Premium Design */}
-              <div className="premium-card p-8 bg-white">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                  <div>
-                    <h1 className="text-3xl lg:text-4xl font-black text-slate-900 leading-tight mb-4 tracking-tight">
-                      {van.title}
-                    </h1>
-                    <div className="flex items-center gap-2 text-slate-500 font-bold bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100 w-fit">
-                      <MapPin size={18} className="text-emerald-500" />
-                      <span className="text-sm">{van.location}, {van.region || 'New Zealand'}</span>
+              {/* Faits clés — ligne épurée style Airbnb */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 shrink-0 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center">
+                    <Calendar size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-400 font-medium">{t('van_page.year')}</p>
+                    <p className="text-base font-semibold text-slate-900 leading-tight truncate">{van.year || 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 shrink-0 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center">
+                    <Gauge size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-400 font-medium">{t('van_page.mileage')}</p>
+                    <p className="text-base font-semibold text-slate-900 leading-tight truncate">{formatMileage(van.mileage)} km</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 shrink-0 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center">
+                    <Users size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-400 font-medium">{t('van_page.sleeps')}</p>
+                    <p className="text-base font-semibold text-slate-900 leading-tight truncate">{van.capacity || 2} pax</p>
+                  </div>
+                </div>
+                {van.fuelType && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 shrink-0 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center">
+                      <Fuel size={20} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-slate-400 font-medium">{i18n.language.startsWith('fr') ? 'Carburant' : 'Fuel'}</p>
+                      <p className="text-base font-semibold text-slate-900 leading-tight truncate capitalize">
+                        {van.fuelType === 'petrol' ? (i18n.language.startsWith('fr') ? 'Essence' : 'Petrol') : (van.fuelType === 'diesel' ? 'Diesel' : van.fuelType)}
+                      </p>
                     </div>
                   </div>
-                  <div className="text-left md:text-right pt-6 md:pt-0 border-t md:border-t-0 border-slate-100">
-                    <p className="text-xs text-slate-400 uppercase tracking-[0.2em] font-black mb-1">{t('van_page.asking_price')}</p>
-                    <p className="text-5xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent leading-none">
-                      {formatPrice(van.price)}
-                    </p>
-                    <div className="flex items-center gap-1.5 justify-end mt-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
-                      <Clock size={14} />
-                      {t('van_page.days_ago', { count: getDaysAgo(van.createdAt) })}
+                )}
+                {van.transmission && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 shrink-0 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center">
+                      <Cog size={20} />
                     </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-slate-400 font-medium">{i18n.language.startsWith('fr') ? 'Boîte' : 'Transmission'}</p>
+                      <p className="text-base font-semibold text-slate-900 leading-tight truncate capitalize">
+                        {van.transmission === 'automatic' ? (i18n.language.startsWith('fr') ? 'Automatique' : 'Automatic') : (van.transmission === 'manual' ? (i18n.language.startsWith('fr') ? 'Manuelle' : 'Manual') : van.transmission)}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 shrink-0 bg-slate-100 text-slate-700 rounded-xl flex items-center justify-center">
+                    <Clock size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-400 font-medium">Views</p>
+                    <p className="text-base font-semibold text-slate-900 leading-tight truncate">{van.views || 0}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Stats rapides - Premium Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
-                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                    <Calendar size={24} />
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{t('van_page.year')}</p>
-                  <p className="text-2xl font-black text-slate-900 leading-tight">{van.year || 'N/A'}</p>
+              {/* Vehicle Compliance */}
+              <div className="border-t border-slate-200 pt-8">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                    <Shield size={20} className="text-emerald-600" />
+                    {i18n.language.startsWith('fr') ? 'Conformité & historique' : 'Compliance & history'}
+                  </h2>
                 </div>
-                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
-                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                    <Gauge size={24} />
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{t('van_page.mileage')}</p>
-                  <p className="text-2xl font-black text-slate-900 leading-tight">{formatMileage(van.mileage)}<span className="text-sm font-bold ml-1 text-slate-400 uppercase tracking-tighter">km</span></p>
-                </div>
-                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
-                  <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                    <Users size={24} />
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">{t('van_page.sleeps')}</p>
-                  <p className="text-2xl font-black text-slate-900 leading-tight">{van.capacity || 2}<span className="text-sm font-bold ml-1 text-slate-400 uppercase tracking-tighter">pax</span></p>
-                </div>
-                <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
-                  <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
-                    <Clock size={24} />
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Views</p>
-                  <p className="text-2xl font-black text-slate-900 leading-tight">{van.views || 0}</p>
-                </div>
-              </div>
-
-              {/* Vehicle Compliance - Premium Layout */}
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-slate-100">
-                <div className="bg-slate-900 px-4 py-2.5 flex items-center justify-between">
-                  <h3 className="text-white font-black text-[11px] uppercase tracking-widest flex items-center gap-2">
-                    <Shield size={14} className="text-emerald-500" />
-                    Technical Compliance
-                  </h3>
-                  <div className="px-2.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-[10px] font-black tracking-widest uppercase">Verified</div>
-                </div>
-                <div>
+                <div className="rounded-2xl border border-slate-200 overflow-hidden">
                   <div className="flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
                     {/* WOF */}
                     <div className="flex flex-1 items-center justify-between gap-3 px-4 py-3">
@@ -880,31 +918,22 @@ ${shareUrl}
                 </div>
               </div>
 
-              {/* Description - Premium Design */}
-              <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
-                <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
-                  <h3 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                    <MessageCircle size={16} className="text-emerald-500" />
-                    {t('van_page.about')}
-                  </h3>
-                </div>
-                <div className="p-8">
-                  <p className="text-slate-700 leading-relaxed whitespace-pre-line text-base font-medium">
-                    {van.description || t('van_page.no_description')}
-                  </p>
-                </div>
+              {/* Description */}
+              <div className="border-t border-slate-200 pt-8">
+                <h2 className="text-xl font-semibold text-slate-900 mb-4">{t('van_page.about')}</h2>
+                <p className="text-slate-700 leading-relaxed whitespace-pre-line text-[15px]">
+                  {van.description || t('van_page.no_description')}
+                </p>
               </div>
 
               {/* Equipment - Premium Grid */}
               {van.equipment && Object.values(van.equipment).some(v => v === true) && (
-                <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
-                  <div className="bg-slate-900 px-6 py-4 flex items-center justify-between">
-                    <h3 className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-2">
-                      <CheckCircle size={16} className="text-amber-500" />
-                      Features & Equipment
-                    </h3>
-                  </div>
-                  <div className="p-8">
+                <div className="border-t border-slate-200 pt-8">
+                  <h2 className="text-xl font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                    <CheckCircle size={20} className="text-amber-500" />
+                    {i18n.language.startsWith('fr') ? 'Ce que propose ce van' : 'What this van offers'}
+                  </h2>
+                  <div>
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                       {van.equipment.doubleBed && (
                         <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 px-4 py-3 rounded-2xl hover:bg-emerald-50 hover:border-emerald-100 transition-all group">
@@ -997,13 +1026,13 @@ ${shareUrl}
                 </div>
               )}
 
-              {/* Seller Info - Premium Section */}
-              <div className="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100 p-8">
-                <h3 className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em] mb-6">{t('van_page.about_seller') || 'Seller Information'}</h3>
+              {/* Seller Info */}
+              <div className="border-t border-slate-200 pt-8">
+                <h2 className="text-xl font-semibold text-slate-900 mb-5">{i18n.language.startsWith('fr') ? 'Le vendeur' : 'Meet the seller'}</h2>
 
-                <div className="flex items-center gap-6 mb-8">
+                <div className="flex items-center gap-5 mb-7">
                   <div className="relative">
-                    <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-3xl font-black shadow-2xl transform rotate-3 hover:rotate-0 transition-transform">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
                       {seller.name?.[0]?.toUpperCase() || 'U'}
                     </div>
 
@@ -1028,53 +1057,16 @@ ${shareUrl}
                   </div>
                 </div>
 
-                {/* Premium Contact Actions */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                  {(seller.whatsapp || seller.phone) && (
-                    <button
-                      onClick={() => {
-                        // Contact protégé : connexion requise pour révéler le numéro
-                        if (!currentUser) { setShowAuthModal(true); return; }
-                        const whatsappTarget = seller.whatsapp || seller.phone;
-                        const waText = encodeURIComponent(t('van_page.whatsapp_prefill', { year: van.year || '', title: van.title || '', price: formatPrice(van.price) }));
-                        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-                          window.gtag('event', 'contact_seller', { method: 'whatsapp', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
-                        }
-                        window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}?text=${waText}`, '_blank', 'noopener,noreferrer');
-                      }}
-                      className="flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-green-500/10 active:scale-95"
-                    >
-                      {currentUser ? <MessageCircle size={20} /> : <Lock size={18} />}
-                      {currentUser ? 'WhatsApp Seller' : 'Show contact'}
-                    </button>
-                  )}
-                  {seller.phone && (
-                    <button
-                      onClick={() => {
-                        // Contact protégé : connexion requise pour révéler le numéro
-                        if (!currentUser) { setShowAuthModal(true); return; }
-                        if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-                          window.gtag('event', 'contact_seller', { method: 'phone', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
-                        }
-                        window.open(`tel:${seller.phone}`, '_self');
-                      }}
-                      className="flex items-center justify-center gap-3 bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-slate-500/10 active:scale-95"
-                    >
-                      {currentUser ? <Phone size={20} /> : <Lock size={18} />}
-                      {currentUser ? 'Call Seller' : 'Show number'}
-                    </button>
-                  )}
-                  {/* Additional sharing option for buyers to boost virality */}
-                  {!isOwner && (
-                    <button
-                      onClick={() => handleShare('facebook')}
-                      className="flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-[#1877F2] border-2 border-[#1877F2]/20 hover:border-[#1877F2] py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all col-span-1 sm:col-span-full active:scale-95"
-                    >
-                      <Share2 size={20} />
-                      {i18n.language.startsWith('fr') ? 'Partager à un ami' : 'Share with a friend'}
-                    </button>
-                  )}
-                </div>
+                {/* Partage (le contact direct est dans la carte sticky à droite) */}
+                {!isOwner && (
+                  <button
+                    onClick={() => handleShare('facebook')}
+                    className="mb-6 w-full flex items-center justify-center gap-2.5 border border-slate-300 hover:border-slate-900 text-slate-700 hover:text-slate-900 py-3 rounded-xl font-semibold transition active:scale-[0.98]"
+                  >
+                    <Share2 size={18} />
+                    {i18n.language.startsWith('fr') ? 'Partager à un ami' : 'Share with a friend'}
+                  </button>
+                )}
 
                 {/* Quick Message Box */}
                 <div id="quick-message-box" className="transition-all duration-500 rounded-3xl">
@@ -1089,8 +1081,10 @@ ${shareUrl}
                 </div>
               </div>
 
-              {/* Facebook Ad Generator - GROWTH TOOL */}
-              <div className="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-200 shadow-sm">
+              {/* Facebook Ad Generator — outil vendeur (owner uniquement) */}
+              {isOwner && (
+              <div className="border-t border-slate-200 pt-8">
+              <div className="p-5 bg-blue-50 rounded-2xl border border-blue-100">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="bg-blue-600 p-2 rounded-lg text-white">
                     <Facebook size={20} />
@@ -1110,16 +1104,16 @@ ${shareUrl}
                   {i18n.language.startsWith('fr') ? 'Copier le texte FB' : 'Copy Facebook Ad Text'}
                 </button>
               </div>
+              </div>
+              )}
 
-              {/* Helpful Resources for Buyers - RETENTION TOOL */}
-              <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden">
-                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
-                  <h4 className="font-black text-slate-800 text-xs uppercase tracking-widest flex items-center gap-2">
-                    <HelpCircle size={16} className="text-emerald-600" />
-                    Helpful Resources
-                  </h4>
-                </div>
-                <div className="p-4 space-y-2">
+              {/* Helpful Resources for Buyers */}
+              <div className="border-t border-slate-200 pt-8">
+                <h2 className="text-xl font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                  <HelpCircle size={20} className="text-emerald-600" />
+                  {i18n.language.startsWith('fr') ? 'Ressources utiles' : 'Helpful resources'}
+                </h2>
+                <div className="space-y-2">
                   <Link to="/guide/how-to-inspect-campervan-nz" className="flex items-center justify-between p-4 hover:bg-emerald-50 rounded-2xl transition-all group border border-transparent hover:border-emerald-100">
                     <div className="flex items-center gap-3">
                       <span className="text-xl">🛠️</span>
@@ -1137,15 +1131,116 @@ ${shareUrl}
                 </div>
               </div>
             </div>
+
+            {/* Colonne droite : carte contact / gestion (sticky) */}
+            <aside className="lg:sticky lg:top-24">
+              {!isOwner ? (
+                <div className="rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 bg-white p-6">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="text-3xl font-bold text-slate-900">{formatPrice(van.price)}</span>
+                    {van.status === 'sold' && (
+                      <span className="text-xs font-bold text-red-600 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded-full">{t('my_listings.sold') || 'Sold'}</span>
+                    )}
+                  </div>
+                  <p className="mt-1.5 text-xs text-slate-400 flex items-center gap-1.5">
+                    <Clock size={13} /> {t('van_page.days_ago', { count: getDaysAgo(van.createdAt) })}
+                  </p>
+
+                  <div className="mt-5 space-y-2.5">
+                    {(seller.whatsapp || seller.phone) && (
+                      <button
+                        onClick={() => {
+                          if (!currentUser) { setShowAuthModal(true); return; }
+                          const whatsappTarget = seller.whatsapp || seller.phone;
+                          const waText = encodeURIComponent(t('van_page.whatsapp_prefill', { year: van.year || '', title: van.title || '', price: formatPrice(van.price) }));
+                          if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                            window.gtag('event', 'contact_seller', { method: 'whatsapp', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
+                          }
+                          window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}?text=${waText}`, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="w-full flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5c] text-white py-3.5 rounded-xl font-semibold transition active:scale-[0.98]"
+                      >
+                        {currentUser ? <MessageCircle size={19} /> : <Lock size={17} />}
+                        {currentUser ? 'WhatsApp' : (i18n.language.startsWith('fr') ? 'Voir le contact' : 'Reveal contact')}
+                      </button>
+                    )}
+                    {seller.phone && (
+                      <button
+                        onClick={() => {
+                          if (!currentUser) { setShowAuthModal(true); return; }
+                          if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                            window.gtag('event', 'contact_seller', { method: 'phone', van_id: van.id, van_title: van.title, seller_id: seller.uid || van.userId });
+                          }
+                          window.open(`tel:${seller.phone}`, '_self');
+                        }}
+                        className="w-full flex items-center justify-center gap-2.5 bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-semibold transition active:scale-[0.98]"
+                      >
+                        {currentUser ? <Phone size={18} /> : <Lock size={17} />}
+                        {currentUser ? (i18n.language.startsWith('fr') ? 'Appeler' : 'Call seller') : (i18n.language.startsWith('fr') ? 'Voir le numéro' : 'Show number')}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        const messageBox = document.getElementById('quick-message-box');
+                        if (messageBox) {
+                          messageBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          messageBox.classList.add('ring-4', 'ring-emerald-500/20');
+                          setTimeout(() => messageBox.classList.remove('ring-4', 'ring-emerald-500/20'), 2000);
+                        }
+                      }}
+                      className="w-full flex items-center justify-center gap-2.5 border border-slate-300 hover:border-slate-900 text-slate-900 py-3.5 rounded-xl font-semibold transition active:scale-[0.98]"
+                    >
+                      <MessageCircle size={18} />
+                      {i18n.language.startsWith('fr') ? 'Envoyer un message' : 'Send a message'}
+                    </button>
+                  </div>
+
+                  {!currentUser && (seller.whatsapp || seller.phone) && (
+                    <p className="mt-3 text-center text-xs text-slate-400">
+                      {i18n.language.startsWith('fr') ? 'Connexion requise pour contacter le vendeur' : 'Sign in to contact the seller'}
+                    </p>
+                  )}
+
+                  {/* Mini vendeur */}
+                  <div className="mt-5 pt-5 border-t border-slate-100 flex items-center gap-3">
+                    <div className="w-11 h-11 shrink-0 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold">
+                      {seller.name?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-900 text-sm truncate">{seller.name || 'Private seller'}</p>
+                      <p className="text-xs text-slate-400">
+                        {hasRating ? `★ ${seller.rating.toFixed(1)} (${seller.reviewCount})` : t('van_page.new_seller')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40 bg-white p-6">
+                  <span className="text-3xl font-bold text-slate-900">{formatPrice(van.price)}</span>
+                  <p className="mt-1.5 text-xs text-slate-400 flex items-center gap-1.5">
+                    <Clock size={13} /> {t('van_page.days_ago', { count: getDaysAgo(van.createdAt) })} · {van.views || 0} views
+                  </p>
+                  <Link
+                    to={`/sell?edit=${van.id}`}
+                    className="mt-5 w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white py-3.5 rounded-xl font-semibold transition active:scale-[0.98]"
+                  >
+                    <Edit2 size={17} /> {t('my_listings.edit')}
+                  </Link>
+                  <p className="mt-3 text-center text-xs text-slate-400">
+                    {i18n.language.startsWith('fr') ? 'Gérez votre annonce ci-dessous' : 'Manage your listing below'}
+                  </p>
+                </div>
+              )}
+            </aside>
           </div>
 
           {/* Browse More - Internal Links for SEO */}
-          <section className="mt-16 bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
-            <div className="bg-slate-900 px-8 py-6">
-              <h2 className="text-xl font-black text-white tracking-tight">{t('van_page.browse_more')}</h2>
-              <p className="text-slate-400 text-sm font-medium mt-1">{t('van_page.discover')}</p>
+          <section className="mt-14 border-t border-slate-200 pt-10">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold text-slate-900 tracking-tight">{t('van_page.browse_more')}</h2>
+              <p className="text-slate-500 text-sm mt-1">{t('van_page.discover')}</p>
             </div>
-            <div className="p-8">
+            <div>
               <div className="mb-8 bg-slate-50 rounded-2xl border border-slate-100 p-5">
                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Related SEO paths</h3>
                 <div className="flex flex-wrap gap-2">

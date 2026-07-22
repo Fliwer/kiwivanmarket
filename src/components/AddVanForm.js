@@ -40,6 +40,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
     year: new Date().getFullYear(),
     mileage: '',
     type: 'Van',
+    fuelType: 'petrol',
+    transmission: 'manual',
     description: '',
     capacity: 2,
     selfContained: false,
@@ -139,6 +141,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           year: van.year || new Date().getFullYear(),
           mileage: van.mileage?.toString() || '',
           type: van.type || 'Van',
+          fuelType: van.fuelType || 'petrol',
+          transmission: van.transmission || 'manual',
           description: van.description || '',
           capacity: van.capacity || 2,
           selfContained: van.selfContained || false,
@@ -482,6 +486,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           year: parseInt(formData.year),
           mileage: parseInt(formData.mileage),
           type: formData.type,
+          fuelType: formData.fuelType,
+          transmission: formData.transmission,
           description: sanitizeText(formData.description),
           capacity: parseInt(formData.capacity),
           selfContained: formData.selfContained,
@@ -529,6 +535,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           year: parseInt(formData.year),
           mileage: parseInt(formData.mileage),
           type: formData.type,
+          fuelType: formData.fuelType,
+          transmission: formData.transmission,
           description: sanitizeText(formData.description),
           capacity: parseInt(formData.capacity),
           selfContained: formData.selfContained,
@@ -887,6 +895,28 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                   <option value="Car">Car</option>
                   <option value="Van">Van</option>
                   <option value="Motorhome">Motorhome</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Fuel</label>
+                <select
+                  value={formData.fuelType}
+                  onChange={(e) => setFormData({ ...formData, fuelType: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                  <option value="petrol">Petrol</option>
+                  <option value="diesel">Diesel</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Transmission</label>
+                <select
+                  value={formData.transmission}
+                  onChange={(e) => setFormData({ ...formData, transmission: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors">
+                  <option value="manual">Manual</option>
+                  <option value="automatic">Automatic</option>
                 </select>
               </div>
 
