@@ -237,9 +237,16 @@ export default function BuybackCalculator({ isEmbedded = false }) {
               </div>
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 line-clamp-1">{t.subtitle}</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900">
-              {t.title}
-            </h1>
+            {/* h2 quand intégré dans un guide : une page ne doit avoir qu'UN h1 (SEO) */}
+            {isEmbedded ? (
+              <h2 className="text-3xl md:text-4xl font-black tracking-tight text-slate-900">
+                {t.title}
+              </h2>
+            ) : (
+              <h1 className="text-4xl md:text-6xl font-black tracking-tight text-slate-900">
+                {t.title}
+              </h1>
+            )}
             <p className="text-slate-500 text-base md:text-lg max-w-2xl font-medium leading-relaxed">
               {t.intro}
             </p>

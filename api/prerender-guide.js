@@ -19,6 +19,24 @@ function renderItem(item) {
   if (item.type === 'callout') {
     return `<blockquote><strong>${esc(item.title || (item.variant === 'warning' ? 'Warning' : 'Good to know'))}</strong><br>${esc(item.text || '')}</blockquote>`;
   }
+  if (item.type === 'checklist') {
+    return `<h3>${esc(item.title || 'Checklist')}</h3><ul>${(item.items || []).map((li) => `<li>✅ ${esc(li)}</li>`).join('')}</ul>`;
+  }
+  if (item.type === 'steps') {
+    return `<ol>${(item.items || []).map((s) => `<li><strong>${esc(s.title || '')}</strong>${s.title && s.text ? ' — ' : ''}${esc(s.text || '')}</li>`).join('')}</ol>`;
+  }
+  if (item.type === 'cta') {
+    const target = item.href || `https://kiwivanmarket.com${item.to || '/'}`;
+    return `<p><a href="${esc(target)}"><strong>${esc(item.text || '')} →</strong></a></p>`;
+  }
+  if (item.type === 'table') {
+    const head = `<tr>${(item.headers || []).map((h) => `<th>${esc(h)}</th>`).join('')}</tr>`;
+    const rows = (item.rows || []).map((r) => `<tr>${r.map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('');
+    return `${item.title ? `<h3>${esc(item.title)}</h3>` : ''}<table border="1" cellpadding="6">${head}${rows}</table>${item.caption ? `<p><small>${esc(item.caption)}</small></p>` : ''}`;
+  }
+  if (item.type === 'faq') {
+    return (item.items || []).map((f) => `<h3>${esc(f.q)}</h3><p>${esc(f.a)}</p>`).join('\n');
+  }
   let out = '';
   if (item.title) out += `<h3>${esc(item.title)}</h3>`;
   if (item.text) out += `<p>${esc(item.text)}</p>`;
@@ -79,6 +97,21 @@ ${otherGuides}
 <li><a href="${ORIGIN}/">Browse campervans for sale in New Zealand</a></li>
 </ul>`;
 
+  // FAQ du guide → schéma FAQPage (SEO + citations IA)
+  const faqItems = sections
+    .flatMap((s) => s.items || [])
+    .filter((i) => i && i.type === 'faq')
+    .flatMap((i) => i.items || []);
+  const faqPageLd = faqItems.length ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  } : null;
+
   const html = htmlShell({
     title,
     metaDesc,
@@ -87,6 +120,7 @@ ${otherGuides}
     ogType: 'article',
     jsonLd: [
       articleLd,
+      ...(faqPageLd ? [faqPageLd] : []),
       breadcrumbLd([
         { name: 'Home', path: '/' },
         { name: 'Guides', path: '/guides' },

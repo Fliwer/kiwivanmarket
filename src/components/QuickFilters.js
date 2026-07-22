@@ -250,11 +250,7 @@ export default function QuickFilters({
                     <div className="grid grid-cols-2 md:flex md:items-center gap-2 md:gap-3 md:overflow-visible md:pb-0 md:flex-wrap">
 
                         {/* Buy-Back */}
-                        <div
-                            className="relative w-full md:w-auto"
-                            onMouseEnter={() => setShowBuyBackInfo(true)}
-                            onMouseLeave={() => setShowBuyBackInfo(false)}
-                        >
+                        <div className="relative w-full md:w-auto">
                             <button
                                 onClick={() => setFilters({ ...filters, buyBack: !filters.buyBack })}
                                 aria-pressed={filters.buyBack}
@@ -264,11 +260,6 @@ export default function QuickFilters({
                                     }`}>
                                 <Shield size={16} className={filters.buyBack ? 'text-white' : 'text-green-500'} />
                                 {t('filters.buyback')}
-                                <span
-                                    onClick={(e) => { e.stopPropagation(); setShowBuyBackInfo(!showBuyBackInfo); }}
-                                    aria-label="More information about buy-back"
-                                    className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.buyBack ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-green-100 hover:text-green-600'
-                                        }`}>?</span>
                             </button>
                             {showBuyBackInfo && (
                                 <>
@@ -292,8 +283,6 @@ export default function QuickFilters({
                         {/* REGO Valid */}
                         <div
                             className="relative w-full md:w-auto"
-                            onMouseEnter={() => window.innerWidth >= 768 && setShowRegoInfo(true)}
-                            onMouseLeave={() => setShowRegoInfo(false)}
                         >
                             <button
                                 onClick={() => setFilters({ ...filters, regoValid: !filters.regoValid })}
@@ -304,11 +293,6 @@ export default function QuickFilters({
                                     }`}>
                                 <CheckCircle size={16} className={filters.regoValid ? 'text-white' : 'text-purple-500'} />
                                 {t('filters.rego')}
-                                <span
-                                    onClick={(e) => { e.stopPropagation(); setShowRegoInfo(!showRegoInfo); }}
-                                    aria-label="More information about REGO"
-                                    className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.regoValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-purple-100 hover:text-purple-600'
-                                        }`}>?</span>
                             </button>
                             {showRegoInfo && (
                                 <>
@@ -331,8 +315,6 @@ export default function QuickFilters({
                         {/* Self-Contained */}
                         <div
                             className="relative w-full md:w-auto"
-                            onMouseEnter={() => window.innerWidth >= 768 && setShowSelfContainedInfo(true)}
-                            onMouseLeave={() => setShowSelfContainedInfo(false)}
                         >
                             <button
                                 onClick={() => setFilters({ ...filters, selfContained: !filters.selfContained })}
@@ -344,11 +326,6 @@ export default function QuickFilters({
                                 <CheckCircle size={16} className={filters.selfContained ? 'text-white' : 'text-blue-500'} />
                                 <span className="md:hidden">Self-Cont</span>
                                 <span className="hidden md:inline">{t('filters.self_contained')}</span>
-                                <span
-                                    onClick={(e) => { e.stopPropagation(); setShowSelfContainedInfo(!showSelfContainedInfo); }}
-                                    aria-label="More information about self-contained certification"
-                                    className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.selfContained ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-blue-100 hover:text-blue-600'
-                                        }`}>?</span>
                             </button>
                             {showSelfContainedInfo && (
                                 <>
@@ -376,8 +353,6 @@ export default function QuickFilters({
                         {/* WOF Valid */}
                         <div
                             className="relative w-full md:w-auto"
-                            onMouseEnter={() => window.innerWidth >= 768 && setShowWofInfo(true)}
-                            onMouseLeave={() => setShowWofInfo(false)}
                         >
                             <button
                                 onClick={() => setFilters({ ...filters, wofValid: !filters.wofValid })}
@@ -389,11 +364,6 @@ export default function QuickFilters({
                                 <CheckCircle size={16} className={filters.wofValid ? 'text-white' : 'text-emerald-500'} />
                                 <span className="md:hidden">WOF</span>
                                 <span className="hidden md:inline">{t('filters.wof')}</span>
-                                <span
-                                    onClick={(e) => { e.stopPropagation(); setShowWofInfo(!showWofInfo); }}
-                                    aria-label="More information about WOF"
-                                    className={`hidden md:flex w-5 h-5 rounded-full items-center justify-center text-xs font-bold transition-all ${filters.wofValid ? 'bg-white/25 text-white hover:bg-white/40' : 'bg-gray-200 text-gray-500 hover:bg-emerald-100 hover:text-emerald-600'
-                                        }`}>?</span>
                             </button>
                             {showWofInfo && (
                                 <>

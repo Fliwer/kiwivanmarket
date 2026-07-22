@@ -276,7 +276,10 @@ function MainApp({
 
   const formatPrice = (price) => {
     const curr = CURRENCIES[currency] || CURRENCIES.NZD;
-    return `${Math.round((price || 0) * curr.rate).toLocaleString()} ${curr.symbol}`;
+    const amount = Math.round((price || 0) * curr.rate).toLocaleString();
+    // NZD = monnaie réelle des annonces. Toute autre devise n'est qu'une
+    // conversion indicative → préfixée « ≈ » pour ne pas induire en erreur.
+    return curr.code === 'NZD' ? `${amount} ${curr.symbol}` : `≈ ${amount} ${curr.symbol}`;
   };
 
   const VanDetailsModal = ({ van }) => {
@@ -407,18 +410,10 @@ function MainApp({
                 </Link>
               </div>
 
-              {/* Guide vedette — carte compacte affichée sur mobile/tablette,
-                  où l'image du hero (colonne de droite) n'offre aucune action */}
-              <HeroGuideCard className="lg:hidden w-full mt-1" />
-
-              {/* Buying Guides Link — version texte, réservée au desktop */}
-              <Link
-                to="/guides"
-                className="hidden lg:flex items-center gap-2 text-slate-400 hover:text-emerald-600 font-bold transition-colors border-b-2 border-dotted border-slate-200 hover:border-emerald-200 pb-0.5 text-sm"
-              >
-                <BookOpen size={15} />
-                <span>{t('home.buying_guides', 'Buying Guides')}</span>
-              </Link>
+              {/* Guide vedette — la même carte (image + titre + lien) sur TOUTES
+                  les tailles d'écran : bien plus engageante que l'ancien simple
+                  lien texte « Buying Guides » du desktop */}
+              <HeroGuideCard className="w-full max-w-xl mt-1" />
             </div>
 
             {/* Right Column: Hero Image Card */}

@@ -23,10 +23,8 @@ import {
     Mail,
     Shield
 } from 'lucide-react';
-import LanguageSelector from './LanguageSelector';
-import NotificationBell from './NotificationBell';
 import MessageBadge from './MessageBadge';
-import CurrencySelector from './CurrencySelector';
+import RegionSelector from './RegionSelector';
 
 // Note: I will move LanguageSelector, MessageBadge to their own files if they are not already.
 // According to my previous list_dir, they are NOT separate files in src/components.
@@ -134,19 +132,8 @@ export default function Header({
 
                         <div className="h-8 w-[1px] bg-slate-200 mx-1" />
 
-                        <div className="flex items-center gap-1">
-                            <CurrencySelector />
-                            <LanguageSelector />
-                        </div>
-
-                        {currentUser && (
-                            <NotificationBell
-                                user={currentUser}
-                                onNotificationClick={(notif) => {
-                                    if (notif.type === 'new_message') navigate('/messages');
-                                }}
-                            />
-                        )}
+                        {/* Devise + langue fusionnées en un seul menu ; cloche retirée */}
+                        <RegionSelector />
 
                         <button
                             onClick={() => currentUser ? setShowFavorites(true) : setShowAuthModal(true)}
@@ -343,11 +330,10 @@ export default function Header({
                                 <ChevronRight size={20} className="text-slate-300 ml-auto" />
                             </Link>
 
-                            {/* Devise & langue */}
+                            {/* Devise & langue (menu combiné) */}
                             <p className="text-xs font-black uppercase tracking-wider text-slate-400 mt-7 mb-3">Devise & langue</p>
                             <div className="flex items-center gap-3">
-                                <CurrencySelector />
-                                <LanguageSelector />
+                                <RegionSelector />
                             </div>
                         </div>
 

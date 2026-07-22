@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
-import { Search, BookOpen, ArrowRight } from 'lucide-react';
+import { Search, BookOpen, ArrowRight, ArrowUpDown, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import VanCard from './VanCard';
@@ -147,16 +147,31 @@ export default function Listings({
                         </p>
                     </div>
 
-                    {/* Sélecteur « Sort By » retiré (épure) — le tri par défaut
-                        reste « plus récents d'abord » */}
-                    {searchTerm && (
-                        <button
-                            onClick={() => setSearchTerm('')}
-                            className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
-                        >
-                            ✕ Clear Filters
-                        </button>
-                    )}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                className="px-4 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-200 transition-colors flex items-center gap-2"
+                            >
+                                ✕ {t('listings.clear', 'Clear')}
+                            </button>
+                        )}
+                        {/* Tri — version épurée (icône + chevron custom, sans gros label) */}
+                        <div className="relative">
+                            <ArrowUpDown size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="appearance-none bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-sm font-semibold text-slate-700 pl-10 pr-9 py-2.5 cursor-pointer focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 outline-none transition-all shadow-sm"
+                                aria-label={t('listings.sort_by', 'Sort listings')}
+                            >
+                                <option value="newest">{t('listings.sort_newest', 'Newest first')}</option>
+                                <option value="price-asc">{t('listings.sort_price_asc', 'Lowest price')}</option>
+                                <option value="price-desc">{t('listings.sort_price_desc', 'Highest price')}</option>
+                            </select>
+                            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                        </div>
+                    </div>
                 </div>
             )}
 

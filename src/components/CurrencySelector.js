@@ -32,7 +32,7 @@ export const CURRENCIES = Object.fromEntries(
 const CACHE_KEY = 'kiwivanmarket_fx_rates';
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
-async function fetchLiveRates() {
+export async function fetchLiveRates() {
     const cached = safeStorage.getItem(CACHE_KEY);
     if (cached) {
         try {
