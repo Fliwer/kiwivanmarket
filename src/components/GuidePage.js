@@ -177,7 +177,7 @@ function GuideItem({ item, lang }) {
       {item.title && <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">{item.title}</h3>}
       {item.text && <p className="text-[16px] leading-[1.75] text-slate-600">{item.text}</p>}
       {item.expertTip && (
-        <TipBox tone="emerald" label={lang === 'fr' ? '💡 Astuce de pro' : '💡 Pro tip'}>
+        <TipBox tone="emerald" label={lang === 'fr' ? '💡 Astuce de pro' : lang === 'es' ? '💡 Consejo de experto' : '💡 Pro tip'}>
           {item.expertTip}
         </TipBox>
       )}
@@ -191,6 +191,8 @@ export default function GuidePage() {
   const { slug } = useParams();
   const { t, i18n } = useTranslation();
   const currentLang = (i18n.language || 'en').split('-')[0];
+  // Sélecteur de langue pour les libellés d'UI (FR / ES / EN par défaut)
+  const tri = (fr, es, en) => (currentLang === 'fr' ? fr : currentLang === 'es' ? es : en);
 
   const [activeSection, setActiveSection] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -252,7 +254,7 @@ export default function GuidePage() {
   }
 
   const { content } = guide;
-  const updatedLabel = new Date().toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-NZ', { month: 'long', year: 'numeric' });
+  const updatedLabel = new Date().toLocaleDateString(tri('fr-FR', 'es-ES', 'en-NZ'), { month: 'long', year: 'numeric' });
 
   const guideFaqs = (content.sections || [])
     .flatMap((s) => s.items || [])
@@ -316,7 +318,7 @@ export default function GuidePage() {
                 <Clock size={14} />
                 {t('guides.hub.min_read', { count: readingTime })}
               </span>
-              <span className="text-slate-400">{currentLang === 'fr' ? 'Mis à jour' : 'Updated'} {updatedLabel}</span>
+              <span className="text-slate-400">{tri('Mis à jour', 'Actualizado', 'Updated')} {updatedLabel}</span>
             </div>
 
             <img
@@ -333,7 +335,7 @@ export default function GuidePage() {
               {/* Sommaire mobile repliable */}
               <details className="lg:hidden mb-8 rounded-xl border border-slate-200 bg-slate-50">
                 <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between text-sm font-bold text-slate-700">
-                  {currentLang === 'fr' ? 'Sommaire' : 'On this page'}
+                  {tri('Sommaire', 'Índice', 'On this page')}
                   <ChevronDown size={16} className="text-slate-400" />
                 </summary>
                 <ul className="px-4 pb-3 space-y-1">
@@ -375,13 +377,13 @@ export default function GuidePage() {
                         <div className="relative z-10 mb-8">
                           <p className="inline-flex items-center gap-2 text-emerald-400 text-[11px] font-black uppercase tracking-widest mb-3">
                             <Calculator size={14} />
-                            {currentLang === 'fr' ? 'Outil gratuit' : 'Free tool'}
+                            {tri('Outil gratuit', 'Herramienta gratis', 'Free tool')}
                           </p>
                           <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
-                            {currentLang === 'fr' ? 'Estimez votre valeur de revente' : 'Estimate your resale value'}
+                            {tri('Estimez votre valeur de revente', 'Estima tu valor de reventa', 'Estimate your resale value')}
                           </h2>
                           <p className="text-slate-400 text-[15px]">
-                            {currentLang === 'fr' ? 'Basé sur la saisonnalité réelle du marché NZ.' : 'Based on real NZ market seasonality.'}
+                            {tri('Basé sur la saisonnalité réelle du marché NZ.', 'Basado en la estacionalidad real del mercado NZ.', 'Based on real NZ market seasonality.')}
                           </p>
                         </div>
                         <BuybackCalculator isEmbedded={true} />
@@ -395,7 +397,7 @@ export default function GuidePage() {
                   <div className="flex items-baseline gap-3 mb-6">
                     <AlertTriangle size={18} className="text-amber-500 self-center" />
                     <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                      {currentLang === 'fr' ? 'Points de vigilance' : 'Crucial warnings'}
+                      {tri('Points de vigilance', 'Puntos de atención', 'Crucial warnings')}
                     </h2>
                   </div>
                   {content.warnings.map((warning, idx) => (
@@ -407,8 +409,8 @@ export default function GuidePage() {
               {/* Footer de partage — « Found this helpful? » */}
               <div className="rounded-2xl border border-slate-200 p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
                 <div>
-                  <p className="font-bold text-slate-900">{currentLang === 'fr' ? 'Ce guide vous a aidé ?' : 'Found this helpful?'}</p>
-                  <p className="text-sm text-slate-500">{currentLang === 'fr' ? 'Partagez-le à un ami qui prépare son trip NZ.' : 'Share it with a friend planning their NZ trip.'}</p>
+                  <p className="font-bold text-slate-900">{tri('Ce guide vous a aidé ?', '¿Te ha servido esta guía?', 'Found this helpful?')}</p>
+                  <p className="text-sm text-slate-500">{tri('Partagez-le à un ami qui prépare son trip NZ.', 'Compártela con alguien que prepara su viaje por NZ.', 'Share it with a friend planning their NZ trip.')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <a
@@ -443,18 +445,19 @@ export default function GuidePage() {
               {/* CTA final */}
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-7 md:p-9 mb-20">
                 <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight mb-2">
-                  {content.cta?.title || (currentLang === 'fr' ? 'Prêt à trouver votre van ?' : 'Ready to find your van?')}
+                  {content.cta?.title || tri('Prêt à trouver votre van ?', '¿Listo para encontrar tu van?', 'Ready to find your van?')}
                 </h2>
                 <p className="text-[15px] text-slate-600 leading-relaxed mb-5 max-w-lg">
-                  {content.cta?.text || (currentLang === 'fr'
-                    ? 'Parcourez les campervans à vendre partout en Nouvelle-Zélande — WOF, REGO et certification self-contained affichés sur chaque annonce.'
-                    : 'Browse campervans for sale across New Zealand — WOF, REGO and self-contained status shown on every listing.')}
+                  {content.cta?.text || tri(
+                    'Parcourez les campervans à vendre partout en Nouvelle-Zélande — WOF, REGO et certification self-contained affichés sur chaque annonce.',
+                    'Explora campervans en venta por toda Nueva Zelanda — WOF, REGO y estado self-contained en cada anuncio.',
+                    'Browse campervans for sale across New Zealand — WOF, REGO and self-contained status shown on every listing.')}
                 </p>
                 <Link
                   to={content.cta?.buttonLink || '/'}
                   className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-emerald-500 transition active:scale-95"
                 >
-                  {content.cta?.buttonText || (currentLang === 'fr' ? 'Voir les annonces' : 'Browse campervans')}
+                  {content.cta?.buttonText || tri('Voir les annonces', 'Ver anuncios', 'Browse campervans')}
                   <ArrowRight size={16} />
                 </Link>
               </div>
@@ -468,25 +471,26 @@ export default function GuidePage() {
                 {/* CTA principal — toujours visible pendant la lecture */}
                 <div className="rounded-2xl bg-emerald-900 text-white p-6">
                   <h4 className="font-extrabold text-lg leading-snug mb-1.5">
-                    {currentLang === 'fr' ? 'Prêt à trouver votre van ?' : 'Ready to find your van?'}
+                    {tri('Prêt à trouver votre van ?', '¿Listo para encontrar tu van?', 'Ready to find your van?')}
                   </h4>
                   <p className="text-emerald-200/80 text-[13px] leading-relaxed mb-4">
-                    {currentLang === 'fr'
-                      ? 'Des campervans vendus par de vrais propriétaires, partout en NZ.'
-                      : 'Campervans listed by real owners across New Zealand.'}
+                    {tri(
+                      'Des campervans vendus par de vrais propriétaires, partout en NZ.',
+                      'Campervans publicadas por dueños reales por toda NZ.',
+                      'Campervans listed by real owners across New Zealand.')}
                   </p>
                   <Link
                     to="/"
                     className="block text-center bg-white text-emerald-900 font-bold rounded-xl px-4 py-2.5 text-sm hover:bg-emerald-50 transition active:scale-95"
                   >
-                    {currentLang === 'fr' ? 'Voir les annonces →' : 'Browse vans →'}
+                    {tri('Voir les annonces →', 'Ver anuncios →', 'Browse vans →')}
                   </Link>
                 </div>
 
                 {/* Sommaire compact */}
                 <div className="rounded-2xl border border-slate-200 p-5">
                   <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-3">
-                    {currentLang === 'fr' ? 'Sur cette page' : 'On this page'}
+                    {tri('Sur cette page', 'En esta página', 'On this page')}
                   </p>
                   <ul className="space-y-0.5">
                     {content.sections.map((section, idx) => (
@@ -508,7 +512,7 @@ export default function GuidePage() {
                 {related.length > 0 && (
                   <div className="rounded-2xl border border-slate-200 p-5">
                     <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-4">
-                      {currentLang === 'fr' ? 'Articles liés' : 'Related articles'}
+                      {tri('Articles liés', 'Artículos relacionados', 'Related articles')}
                     </p>
                     <div className="space-y-4">
                       {related.map(([s, g]) => (
@@ -543,7 +547,7 @@ export default function GuidePage() {
           {related.length > 0 && (
             <div className="border-t border-slate-100 pt-8">
               <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 mb-5">
-                {currentLang === 'fr' ? 'À lire ensuite' : 'Keep reading'}
+                {tri('À lire ensuite', 'Sigue leyendo', 'Keep reading')}
               </p>
               <div className="grid sm:grid-cols-3 gap-5">
                 {related.map(([s, g]) => (
