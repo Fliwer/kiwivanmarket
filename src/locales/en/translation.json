@@ -71,7 +71,7 @@
         "sell": "Sell your van",
         "signin": "Sign In",
         "guides": "Guides",
-        "calculator": "Buyback Calculator"
+        "calculator": "Resale estimate"
     },
     "how_it_works": {
         "title": "How It Works",
@@ -104,7 +104,7 @@
             "Look for Self-Contained vans to freedom camp legally",
             "Check WOF (safety) and REGO (registration) expiry dates",
             "Buy-Back guarantee = seller buys it back when you leave NZ",
-            "Use our Buyback Calculator to estimate your costs"
+            "Use our resale estimate to gauge your costs"
         ],
         "cta": "Got it! Start browsing 🚐"
     },

@@ -71,7 +71,7 @@
         "sell": "Vender mi van",
         "signin": "Iniciar Sesión",
         "guides": "Guías",
-        "calculator": "Calculadora Buyback"
+        "calculator": "Estimación de reventa"
     },
     "how_it_works": {
         "title": "Cómo funciona",
@@ -104,7 +104,7 @@
             "Busca vans Self-Contained para acampar gratis",
             "Revisa las fechas de vencimiento de WOF y REGO",
             "Garantía Buy-Back = el vendedor la recompra al irte",
-            "Usa nuestra Calculadora Buyback para estimar costos"
+            "Usa nuestra estimación de reventa para calcular tus costes"
         ],
         "cta": "¡Entendido! Ver vans 🚐"
     },

@@ -150,7 +150,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
               </li>
               <li>
                 <Link to="/buyback-calculator" className="text-gray-300 hover:text-white transition">
-                  Buy-back Calculator
+                  Resale estimate
                 </Link>
               </li>
               <li>
