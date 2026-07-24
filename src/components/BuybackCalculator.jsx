@@ -8,42 +8,57 @@ import { CURRENCIES } from './CurrencySelector';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-// Professional Valuation Parameters - NZ Specific
+// ============================================================================
+// Paramètres d'estimation de revente — spécifiques au marché NZ (backpackers).
+// Modèle ADDITIF : on part de 100 % du prix d'achat (le "taux de récupération"),
+// on retire l'usure (temps + km), puis on applique des ajustements clairs, en
+// POINTS DE POURCENTAGE. Chaque facteur a donc un effet lisible et prévisible
+// (contrairement à l'ancien modèle multiplicatif qui s'emballait > 1 et était
+// écrasé par un plafond, rendant les réglages fins inutiles).
+// ============================================================================
 const CONFIG = {
+  // adj = points de % ajoutés/retirés au taux de récupération.
   brands: {
-    toyota: { name: 'Toyota (Hiace/Estima)', factor: 1.08, reliability: 5 },
-    mazda: { name: 'Mazda (Bongo/E2000)', factor: 1.02, reliability: 4 },
-    nissan: { name: 'Nissan (Caravan/Serena)', factor: 0.98, reliability: 4 },
-    mitsubishi: { name: 'Mitsubishi (L300/Delica)', factor: 1.05, reliability: 4 },
-    other: { name: 'Generic / Other', factor: 0.85, reliability: 3 },
+    toyota: { name: 'Toyota (Hiace/Estima)', adj: 4, reliability: 5 },
+    mitsubishi: { name: 'Mitsubishi (L300/Delica)', adj: 2, reliability: 4 },
+    mazda: { name: 'Mazda (Bongo/E2000)', adj: 0, reliability: 4 },
+    nissan: { name: 'Nissan (Caravan/Serena)', adj: -1, reliability: 4 },
+    other: { name: 'Generic / Other', adj: -6, reliability: 3 },
   },
+  // Self-contained : le VERT (toilettes fixes) est la norme actuelle et prend
+  // de la valeur ; le BLEU est en voie de suppression → vaut moins que le vert.
   scStatus: {
-    blue: { multiplier: 1.12 },
-    green: { multiplier: 1.05 },
-    none: { multiplier: 0.9 },
+    green: { adj: 6 },
+    blue: { adj: 3 },
+    none: { adj: -10 },
   },
   serviceHistory: {
-    full: { multiplier: 1.08 },
-    partial: { multiplier: 1.02 },
-    none: { multiplier: 0.95 },
+    full: { adj: 3 },
+    partial: { adj: 0 },
+    none: { adj: -4 },
   },
   equipment: {
-    basic: { multiplier: 1.0 },
-    premium: { multiplier: 1.15 },
+    premium: { adj: 5 },
+    basic: { adj: 0 },
   },
+  // Saison de REVENTE : forte demande l'été, faible l'hiver.
   seasons: {
-    summer: { multiplier: 1.1 },
-    winter: { multiplier: 0.9 },
+    summer: { adj: 6 },
+    winter: { adj: -6 },
   },
   marketTrends: {
-    exceptional: { multiplier: 1.15 },
-    standard: { multiplier: 1.0 },
-    slow: { multiplier: 0.85 },
+    exceptional: { adj: 6 },
+    standard: { adj: 0 },
+    slow: { adj: -8 },
   },
-  baseDepreciation: 1.6,
-  kmDepreciationRate: 0.02,
-  maintenanceBase: 250,
-  rentalDayCost: 115,
+  // Dépréciation mensuelle (%/mois) selon l'âge : les vans backpackers se
+  // déprécient lentement, et les plus vieux (déjà bon marché) encore moins.
+  monthlyDepreciation: (age) => (age >= 20 ? 0.6 : age >= 12 ? 0.8 : 1.1),
+  kmWearPer: 4000,          // -1 pt de récupération par 4 000 km parcourus
+  maintenancePerMonth: 45,  // réserve entretien, ajoutée au coût de possession
+  rentalDayCost: 115,       // coût moyen/jour d'une location équivalente (NZD)
+  retentionFloor: 50,       // plancher réaliste du taux de récupération
+  retentionCeil: 105,       // l'arbitrage saisonnier peut faire revendre ~au prix d'achat
 };
 
 const translations = {
@@ -143,54 +158,50 @@ export default function BuybackCalculator({ isEmbedded = false }) {
 
   const calculation = useMemo(() => {
     const priceUser = parseFloat(purchasePrice) || 0;
-    const durOrig = parseFloat(duration) || 0;
+    const durMonths = parseFloat(duration) || 0;
     const km = parseFloat(kilometers) || 0;
     const yr = parseInt(year) || 2000;
 
-    if (priceUser <= 0 || durOrig <= 0) return null;
+    if (priceUser <= 0 || durMonths <= 0) return null;
 
     const priceNZD = priceUser / curr.rate;
-    const totalDays = durOrig * 30.44;
+    const totalDays = durMonths * 30.44;
+    const age = Math.max(0, CURRENT_YEAR - yr);
 
-    const ageFactor = Math.max(0.7, 1 - (CURRENT_YEAR - yr) * 0.015);
-    let resaleNZD = priceNZD;
+    // Taux de récupération, en % du prix d'achat. On part de 100 % et on ajuste.
+    let retention = 100;
 
-    const depRate = CONFIG.baseDepreciation * ageFactor;
-    resaleNZD *= (1 - (durOrig * depRate) / 100);
+    // 1) Dépréciation dans le temps (durée de possession).
+    retention -= CONFIG.monthlyDepreciation(age) * durMonths;
 
-    resaleNZD -= (km / 1000) * (priceNZD * CONFIG.kmDepreciationRate / 20);
+    // 2) Km ajoutés pendant le voyage (usure).
+    retention -= km / CONFIG.kmWearPer;
 
-    // Advanced Factors Multipliers
-    const brandData = CONFIG.brands[brand];
-    const trendData = CONFIG.marketTrends[trend];
-    const scData = CONFIG.scStatus[sc];
-    const historyData = CONFIG.serviceHistory[history];
-    const equipData = CONFIG.equipment[equip];
-    const seasonData = CONFIG.seasons[season];
+    // 3) Ajustements de désirabilité / marché (points de %).
+    retention += CONFIG.brands[brand].adj;
+    retention += CONFIG.scStatus[sc].adj;
+    retention += CONFIG.serviceHistory[history].adj;
+    retention += CONFIG.equipment[equip].adj;
+    retention += CONFIG.seasons[season].adj;
+    retention += CONFIG.marketTrends[trend].adj;
 
-    resaleNZD *= brandData.factor;
-    resaleNZD *= trendData.multiplier;
-    resaleNZD *= scData.multiplier;
-    resaleNZD *= historyData.multiplier;
-    resaleNZD *= equipData.multiplier;
-    resaleNZD *= seasonData.multiplier;
+    // 4) Bande réaliste (plancher / plafond).
+    retention = Math.min(CONFIG.retentionCeil, Math.max(CONFIG.retentionFloor, retention));
 
-    resaleNZD -= CONFIG.maintenanceBase;
+    const resaleNZD = priceNZD * (retention / 100);
 
-    resaleNZD = Math.max(resaleNZD, priceNZD * 0.45);
-    resaleNZD = Math.min(resaleNZD, priceNZD * 0.98);
-
-    const ownerCost = priceNZD - resaleNZD;
+    // Coût réel de possession = perte à la revente + réserve entretien.
+    const ownerCost = (priceNZD - resaleNZD) + CONFIG.maintenancePerMonth * durMonths;
     const totalRentCost = totalDays * CONFIG.rentalDayCost;
 
     return {
       resalePrice: resaleNZD * curr.rate,
-      percentage: Math.round((resaleNZD / priceNZD) * 100),
-      totalSaved: (totalRentCost - ownerCost) * curr.rate,
-      dailyNet: (ownerCost / totalDays) * curr.rate,
-      brandReliability: brandData.reliability,
-      trendImpact: Math.round((trendData.multiplier - 1) * 100),
-      equipImpact: Math.round((equipData.multiplier - 1) * 100),
+      percentage: Math.round(retention),
+      totalSaved: Math.max(0, totalRentCost - ownerCost) * curr.rate,
+      dailyNet: Math.max(0, ownerCost / totalDays) * curr.rate,
+      brandReliability: CONFIG.brands[brand].reliability,
+      trendImpact: CONFIG.marketTrends[trend].adj,
+      equipImpact: CONFIG.equipment[equip].adj,
     };
   }, [purchasePrice, duration, kilometers, year, brand, trend, sc, history, equip, season, curr.rate]);
 

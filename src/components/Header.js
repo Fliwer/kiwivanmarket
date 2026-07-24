@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
     BookOpen,
-    Calculator,
+    Tag,
     Plus,
     Search,
     Heart,
@@ -100,7 +100,7 @@ export default function Header({
                             to="/buyback-calculator"
                             className="px-4 py-2 text-slate-600 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2 text-sm"
                         >
-                            <Calculator size={16} />
+                            <Tag size={16} />
                             <span>{t('header.calculator')}</span>
                         </Link>
                     </nav>
@@ -274,7 +274,7 @@ export default function Header({
                                 <ChevronRight size={20} className="text-slate-300" />
                             </Link>
                             <Link to="/buyback-calculator" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
-                                <span>{t('header.calculator', 'Calculateur de rachat')}</span>
+                                <span>{t('header.calculator', 'Estimation de revente')}</span>
                                 <ChevronRight size={20} className="text-slate-300" />
                             </Link>
 
