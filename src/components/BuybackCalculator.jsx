@@ -206,7 +206,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
   }, [purchasePrice, duration, kilometers, year, brand, trend, sc, history, equip, season, curr.rate]);
 
   return (
-    <div className={isEmbedded ? 'w-full py-4 md:py-8' : 'min-h-screen bg-[#FDFDFD] text-slate-800 py-8 md:py-16 px-4'}>
+    <div className={isEmbedded ? 'w-full py-4 md:py-8' : 'relative overflow-hidden min-h-screen bg-[#FDFDFD] text-slate-800 py-8 md:py-16 px-4'}>
       {!isEmbedded && (
         <SeoHead
           title={lang === 'fr' ? 'Estimation Buyback KiwiVan' : lang === 'es' ? 'Estimación Buyback KiwiVan' : 'KiwiVan Buyback Appraisal'}
@@ -217,7 +217,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
       {/* Cinematic Background Layer */}
       {!isEmbedded && (
         <>
-          <div className="fixed inset-0 z-0 overflow-hidden">
+          <div className="absolute inset-0 z-0 overflow-hidden">
             <img
               src="/nz-road-bg.png"
               alt="NZ Road Adventure"
@@ -227,8 +227,8 @@ export default function BuybackCalculator({ isEmbedded = false }) {
           </div>
 
           {/* Subtle Brand Accents */}
-          <div className="fixed top-0 right-0 w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
-          <div className="fixed bottom-0 left-0 w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
+          <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-emerald-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
+          <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-blue-50 rounded-full blur-[120px] pointer-events-none opacity-30" />
         </>
       )}
 
@@ -239,8 +239,8 @@ export default function BuybackCalculator({ isEmbedded = false }) {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               {!isEmbedded && (
-                <Link to="/" className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shadow-lg hover:scale-110 transition-transform shrink-0">
-                  <img src="/kiwi-van-logo-48.webp" className="w-8 h-8 invert brightness-0" alt="Home" />
+                <Link to="/" className="w-10 h-10 rounded-xl bg-[#f7eedd] flex items-center justify-center shadow-lg hover:scale-110 transition-transform shrink-0 overflow-hidden">
+                  <img src="/kiwi-van-logo-48.webp" className="w-8 h-8 object-contain" alt="Kiwi Van Market home" />
                 </Link>
               )}
               <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200 shrink-0">
