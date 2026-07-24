@@ -81,7 +81,7 @@ export default function Header({
                             <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-6 h-6 object-contain" width="24" height="24" />
                         </div>
                         <div className="block">
-                            <h1 className="text-base md:text-lg font-bold text-slate-900 leading-tight">KiwiVan</h1>
+                            <p className="text-base md:text-lg font-bold text-slate-900 leading-tight">KiwiVan</p>
                             <p className="text-[9px] md:text-[10px] uppercase tracking-widest font-black text-emerald-600 leading-none">Market</p>
                         </div>
                     </Link>

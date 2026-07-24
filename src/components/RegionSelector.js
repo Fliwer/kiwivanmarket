@@ -76,7 +76,7 @@ export default function RegionSelector() {
         </span>
         <span className="tracking-tight text-slate-600">{curr.code}</span>
         <span className="w-px h-4 bg-slate-200" />
-        <img src={lang.flag} alt="" className="w-5 h-3.5 object-cover rounded shadow-sm" />
+        <img src={lang.flag} alt={lang.name} className="w-5 h-3.5 object-cover rounded shadow-sm" />
         <span className="tracking-tight text-slate-600 uppercase hidden sm:inline">{lang.code}</span>
         {loading
           ? <RefreshCw size={13} className="text-emerald-400 animate-spin" />
@@ -118,7 +118,7 @@ export default function RegionSelector() {
                   onClick={() => changeLanguage(l.code)}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition ${active ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-600'}`}
                 >
-                  <img src={l.flag} alt="" className="w-6 h-4 object-cover rounded shadow-sm" />
+                  <img src={l.flag} alt={l.name} className="w-6 h-4 object-cover rounded shadow-sm" />
                   <span className="text-sm font-bold flex-1">{l.name}</span>
                   {active && <Check size={15} strokeWidth={3} className="text-emerald-500" />}
                 </button>
