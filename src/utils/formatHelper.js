@@ -4,12 +4,13 @@
  */
 
 /**
- * Formats mileage as a full number with thousands separators.
- * Example: 254800 -> 254,800
+ * Formats mileage rounded down to the nearest thousand.
+ * Example: 254800 -> 254,000
  */
 export const formatMileage = (mileage) => {
   if (!mileage && mileage !== 0) return '0';
-  return Math.round(mileage).toLocaleString();
+  const rounded = Math.floor(mileage / 1000) * 1000;
+  return rounded.toLocaleString();
 };
 
 /**
