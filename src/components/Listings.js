@@ -71,7 +71,7 @@ export default function Listings({
     };
     const autoLongTailSlugs = Array.from(
         new Set(filteredVans.slice(0, 24).flatMap((van) => getLongTailSlugsForVan(van)))
-    ).slice(0, 16);
+    ).slice(0, 8);
     const totalPages = Math.max(1, Math.ceil(filteredVans.length / PAGE_SIZE));
     const pageStart = (currentPage - 1) * PAGE_SIZE;
     const pageEnd = pageStart + PAGE_SIZE;

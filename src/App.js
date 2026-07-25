@@ -187,7 +187,8 @@ function MainApp({
   });
   const featuredSearchPages = FEATURED_LONG_TAIL_SLUGS
     .map((slug) => LONG_TAIL_PAGE_MAP[slug])
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, 6);
 
   useEffect(() => {
     const savedCurrency = safeStorage.getItem('kiwivanmarket_currency') || 'NZD';

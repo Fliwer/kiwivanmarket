@@ -63,7 +63,7 @@ const CONFIG = {
 
 const translations = {
   en: {
-    title: 'Buyback Appraisal',
+    title: 'Resale Estimate',
     subtitle: 'NZ Campervan Resale Estimator',
     intro: 'Get a market estimate based on New Zealand vehicle demographics, seasonal demand, and brand reliability.',
     labels: { price: 'Purchase Price', year: 'Vehicle Year', brand: 'Vehicle Brand', duration: 'Travel Duration', mileage: 'Estimated KM', sc: 'Self-Containment (NZ Standards)', history: 'Service History', equipment: 'Equipment', marketTiming: 'Market Context & Timing', season: 'Season', trend: 'Trend' },
@@ -80,7 +80,7 @@ const translations = {
     },
   },
   fr: {
-    title: 'Estimation Buyback',
+    title: 'Estimation de revente',
     subtitle: 'Estimateur de revente NZ',
     intro: 'Obtiens une estimation de marché basée sur le parc automobile néo-zélandais, la demande saisonnière et la fiabilité des marques.',
     labels: { price: 'Prix d\'achat', year: 'Année du van', brand: 'Marque du van', duration: 'Durée du voyage', mileage: 'Distance estimée', sc: 'Auto-suffisance (normes NZ)', history: 'Historique d\'entretien', equipment: 'Équipement', marketTiming: 'Contexte marché & saison', season: 'Saison', trend: 'Tendance' },
@@ -97,7 +97,7 @@ const translations = {
     },
   },
   es: {
-    title: 'Estimación Buyback',
+    title: 'Estimación de reventa',
     subtitle: 'Estimador de reventa NZ',
     intro: 'Obtén una estimación de mercado basada en el parque de vehículos de Nueva Zelanda, la demanda estacional y la fiabilidad de las marcas.',
     labels: { price: 'Precio de compra', year: 'Año del van', brand: 'Marca del van', duration: 'Duración del viaje', mileage: 'KM estimados', sc: 'Auto-contenido (normas NZ)', history: 'Historial de servicio', equipment: 'Equipamiento', marketTiming: 'Contexto de mercado y temporada', season: 'Temporada', trend: 'Tendencia' },
@@ -209,7 +209,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
     <div className={isEmbedded ? 'w-full py-4 md:py-8' : 'relative overflow-hidden min-h-screen bg-[#FDFDFD] text-slate-800 py-8 md:py-16 px-4'}>
       {!isEmbedded && (
         <SeoHead
-          title={lang === 'fr' ? 'Estimation Buyback KiwiVan' : lang === 'es' ? 'Estimación Buyback KiwiVan' : 'KiwiVan Buyback Appraisal'}
+          title={lang === 'fr' ? 'Estimation de revente — KiwiVan' : lang === 'es' ? 'Estimación de reventa — KiwiVan' : 'Resale Estimate — KiwiVan'}
           description="New Zealand campervan resale value estimator."
         />
       )}
@@ -406,13 +406,29 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                   </div>
                 </div>
 
+                <button
+                  type="button"
+                  onClick={() => {
+                    const el = document.getElementById('resale-result');
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      el.classList.add('ring-4', 'ring-emerald-500/40');
+                      setTimeout(() => el.classList.remove('ring-4', 'ring-emerald-500/40'), 1600);
+                    }
+                  }}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm md:text-base py-4 rounded-2xl shadow-lg shadow-emerald-200 transition active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <Zap size={18} />
+                  {lang === 'fr' ? 'Estimer ma revente' : lang === 'es' ? 'Estimar mi reventa' : 'Estimate my resale'}
+                </button>
+
               </div>
             </div>
           </div>
 
           {/* Results Panel - High-End Frosted Glass */}
           <div className="xl:col-span-7 relative order-1 xl:order-2">
-            <div className="bg-white/60 backdrop-blur-2xl border-2 md:border-4 border-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-2xl shadow-slate-200/50 min-h-[400px] md:min-h-[600px] relative overflow-hidden flex flex-col justify-between">
+            <div id="resale-result" className="bg-white/60 backdrop-blur-2xl border-2 md:border-4 border-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-2xl shadow-slate-200/50 min-h-[400px] md:min-h-[600px] relative overflow-hidden flex flex-col justify-between transition-shadow">
 
               {!calculation && (
                 <div className="flex-1 flex items-center justify-center text-center px-6">
