@@ -195,7 +195,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "type": "image",
-                                "url": "/van_inspection_expert_1772133711431.png",
+                                "url": "/van_inspection_expert_1772133711431.webp",
                                 "caption": "Always check the oil BEFORE the engine warms up — a cold start tells the truth."
                             },
                             {
@@ -329,7 +329,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "type": "image",
-                                "url": "/self_contained_sticker_van_1772133744005.png",
+                                "url": "/self_contained_sticker_van_1772133744005.webp",
                                 "caption": "The certification sticker: your key to legal freedom camping."
                             },
                             {
@@ -434,7 +434,7 @@ export const GUIDES = {
         'campervan-buyer-checklist': {
             "title": "Used Campervan Inspection Checklist NZ: How to Check a Van Before Buying",
             "description": "A chronological pre-purchase routine for campervans in New Zealand — the homework the night before, the first minutes on site, the walk-around, the test drive, and the handover. Free printable version.",
-            "heroImage": "/van_inspection_expert_1772133711431.png",
+            "heroImage": "/van_inspection_expert_1772133711431.webp",
             "content": {
                 "intro": "Every hostel has the story: someone bought a van on day two, then spent week three paying a mechanic to explain what they missed. You don't avoid becoming that story with luck — you avoid it with a routine. This checklist follows a real viewing in the order it actually happens: the homework the night before, the first minutes on site, the walk-around, the test drive, and the fifteen minutes where money and paperwork change hands. Tick your way through, and by the end you'll know the van better than the seller expects.",
                 "sections": [
@@ -516,7 +516,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "type": "image",
-                                "url": "/van_inspection_expert_1772133711431.png",
+                                "url": "/van_inspection_expert_1772133711431.webp",
                                 "caption": "Bring a torch. The van's real history is written underneath it."
                             },
                             {
@@ -1474,7 +1474,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "type": "image",
-                                "url": "/van_inspection_expert_1772133711431.png",
+                                "url": "/van_inspection_expert_1772133711431.webp",
                                 "caption": "Vérifiez toujours l'huile AVANT que le moteur ne chauffe — un démarrage à froid dit la vérité."
                             },
                             {
@@ -1608,7 +1608,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "type": "image",
-                                "url": "/self_contained_sticker_van_1772133744005.png",
+                                "url": "/self_contained_sticker_van_1772133744005.webp",
                                 "caption": "Le macaron de certification : votre clé pour le freedom camping légal."
                             },
                             {
@@ -1713,7 +1713,7 @@ export const GUIDES = {
         'campervan-buyer-checklist': {
             "title": "Checklist d'inspection d'un van d'occasion en NZ : comment vérifier avant d'acheter",
             "description": "Une routine pré-achat chronologique pour les campervans en Nouvelle-Zélande — les devoirs la veille, les premières minutes sur place, le tour du véhicule, l'essai routier et la remise des clés. Version imprimable gratuite.",
-            "heroImage": "/van_inspection_expert_1772133711431.png",
+            "heroImage": "/van_inspection_expert_1772133711431.webp",
             "content": {
                 "intro": "Chaque auberge a son histoire : quelqu'un qui a acheté un van le deuxième jour, puis passé la troisième semaine à payer un mécano pour lui expliquer ce qu'il avait raté. On n'évite pas de devenir cette histoire avec de la chance — on l'évite avec une méthode. Cette checklist suit une vraie visite dans l'ordre où elle se déroule vraiment : les devoirs la veille, les premières minutes sur place, le tour du véhicule, l'essai routier, et le quart d'heure où l'argent et les papiers changent de mains. Cochez au fil de l'eau et, à la fin, vous connaîtrez le van mieux que le vendeur ne s'y attend.",
                 "sections": [
@@ -1795,7 +1795,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "type": "image",
-                                "url": "/van_inspection_expert_1772133711431.png",
+                                "url": "/van_inspection_expert_1772133711431.webp",
                                 "caption": "Prends une lampe torche. La vraie histoire du van est écrite en dessous."
                             },
                             {
@@ -2753,7 +2753,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "type": "image",
-                                "url": "/van_inspection_expert_1772133711431.png",
+                                "url": "/van_inspection_expert_1772133711431.webp",
                                 "caption": "Revisa siempre el aceite ANTES de que el motor se caliente — un arranque en frío dice la verdad."
                             },
                             {
@@ -2887,7 +2887,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "type": "image",
-                                "url": "/self_contained_sticker_van_1772133744005.png",
+                                "url": "/self_contained_sticker_van_1772133744005.webp",
                                 "caption": "La pegatina de certificación: tu llave para el freedom camping legal."
                             },
                             {
@@ -2992,7 +2992,7 @@ export const GUIDES = {
         'campervan-buyer-checklist': {
             "title": "Checklist de inspección de una van de segunda mano en NZ: cómo revisarla antes de comprar",
             "description": "Una rutina pre-compra cronológica para campervans en Nueva Zelanda — los deberes la noche antes, los primeros minutos en el sitio, la vuelta al vehículo, la prueba de conducción y la entrega. Versión imprimible gratis.",
-            "heroImage": "/van_inspection_expert_1772133711431.png",
+            "heroImage": "/van_inspection_expert_1772133711431.webp",
             "content": {
                 "intro": "Cada hostel tiene su historia: alguien que compró una van el segundo día y luego pasó la tercera semana pagando a un mecánico para que le explicara lo que se le pasó. No evitas convertirte en esa historia con suerte — la evitas con un método. Esta checklist sigue una visita real en el orden en que ocurre de verdad: los deberes la noche antes, los primeros minutos en el sitio, la vuelta al vehículo, la prueba de conducción, y el cuarto de hora en que el dinero y los papeles cambian de manos. Ve marcando y, al final, conocerás la van mejor de lo que el vendedor espera.",
                 "sections": [
@@ -3074,7 +3074,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "type": "image",
-                                "url": "/van_inspection_expert_1772133711431.png",
+                                "url": "/van_inspection_expert_1772133711431.webp",
                                 "caption": "Lleva una linterna. La verdadera historia de la van está escrita por debajo."
                             },
                             {
