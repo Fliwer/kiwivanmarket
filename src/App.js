@@ -5,7 +5,7 @@ import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation, useNaviga
 import { Helmet } from 'react-helmet-async';
 import { Search, MapPin, Calendar, Gauge, Users, Heart, Filter, ChevronDown, Star, Phone, Mail, Shield, Award, CheckCircle, X, Plus, TrendingUp, Zap, Clock, Instagram, Twitter, AlertCircle, MessageCircle, Calculator, Settings, Menu, HelpCircle, CalendarCheck, ExternalLink, BookOpen, Share2, ArrowRight } from 'lucide-react';
 import { db } from './firebase';
-import { collection, getDocs, doc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, updateDoc, increment, query, orderBy, limit } from 'firebase/firestore';
 import { useAuth } from './AuthContext';
 import { useFavorites } from './hooks/useFavorites';
 import { useHideLoader } from './hooks/useHideLoader';
@@ -210,6 +210,23 @@ function MainApp({
         const cacheAge = cacheTimestamp ? now - parseInt(cacheTimestamp) : Infinity;
         if (currentVans.length > 0 && cacheAge < 30000) { setLoading(false); return; }
 
+        // ── Étape 1 : page rapide (30 dernières annonces) pour un affichage
+        // quasi-immédiat au premier chargement (cache vide). Repli silencieux
+        // si l'orderBy échoue → l'étape 2 charge tout de toute façon.
+        if (currentVans.length === 0) {
+          try {
+            const fastSnap = await getDocs(query(collection(db, 'vans'), orderBy('createdAt', 'desc'), limit(30)));
+            const fastVans = fastSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+            if (fastVans.length > 0) {
+              setVans(fastVans);
+              setFilteredVans(fastVans);
+              setLoading(false);
+            }
+          } catch (e) { /* repli : l'étape 2 gère l'affichage */ }
+        }
+
+        // ── Étape 2 : liste complète (pour recherche/filtres) — en arrière-plan
+        // si l'étape 1 a déjà affiché la première page.
         const querySnapshot = await getDocs(collection(db, 'vans'));
         const vansData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         const sortedVans = [...vansData].sort((a, b) => (safeDate(b.createdAt)?.getTime() || 0) - (safeDate(a.createdAt)?.getTime() || 0));
