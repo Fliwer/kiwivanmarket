@@ -230,8 +230,19 @@
       pointer-events: none;
     }
   </style>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8152984258767131"
-     crossorigin="anonymous"></script>
+  <!-- AdSense différé : chargé après l'affichage de la page pour ne pas
+       pénaliser le LCP / la performance mobile. -->
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8152984258767131';
+        s.crossOrigin = 'anonymous';
+        document.head.appendChild(s);
+      }, 1200);
+    });
+  </script>
 </head>
 
 <body>

@@ -422,13 +422,18 @@ function MainApp({
               <div className="absolute -inset-4 bg-emerald-500/5 rounded-[4rem] blur-3xl group-hover:bg-emerald-500/10 transition-colors" />
               <div className="relative bg-white p-2 sm:p-3 rounded-[2rem] sm:rounded-[3.5rem] shadow-2xl shadow-slate-200 border border-slate-50 overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-700">
                 <div className="rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden border-[6px] sm:border-[12px] border-white shadow-inner aspect-[4/3] lg:aspect-auto">
-                  <img
-                    src="/hiace-camper.png"
-                    alt="NZ Road Adventure"
-                    fetchPriority="high"
-                    loading="eager"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
-                  />
+                  <picture>
+                    <source srcSet="/hiace-camper.webp" type="image/webp" />
+                    <img
+                      src="/hiace-camper.png"
+                      alt="Toyota Hiace campervan for sale in New Zealand"
+                      fetchPriority="high"
+                      loading="eager"
+                      width="640"
+                      height="640"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
+                    />
+                  </picture>
                 </div>
               </div>
             </div>
