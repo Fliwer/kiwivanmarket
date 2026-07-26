@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -170,6 +170,63 @@ export default function SeoHead({
         ? keywords.join(', ')
         : (keywords || "buy campervan New Zealand, campervans for sale NZ, backpacker van NZ, acheter un van nouvelle zelande, campervan a vendre NZ, motorhome for sale New Zealand, Toyota Hiace for sale NZ, self contained van for sale NZ, buy van Auckland");
     const finalCanonicalUrl = canonicalUrl || computedCanonicalUrl;
+
+    // ── Injection SEO impérative ──────────────────────────────────────────
+    // react-helmet-async ne réécrit pas le <head> dans cette app (constaté en
+    // prod). On pose donc directement les balises SEO critiques pour garantir
+    // leur présence côté client (title, description, robots, canonical,
+    // hreflang, lang). On n'utilise que appendChild / setAttribute / title /
+    // remove() → aucune des méthodes patchées globalement dans index.js.
+    useEffect(() => {
+        if (typeof document === 'undefined' || !document.head) return;
+        const head = document.head;
+        try {
+            document.title = fullTitle;
+            document.documentElement.setAttribute('lang', currentLang);
+
+            const upsertMeta = (name, content) => {
+                let el = head.querySelector(`meta[name="${name}"][data-seo]`);
+                if (!el) {
+                    el = document.createElement('meta');
+                    el.setAttribute('name', name);
+                    el.setAttribute('data-seo', '');
+                    head.appendChild(el);
+                }
+                el.setAttribute('content', content);
+            };
+            upsertMeta('description', metaDesc);
+            upsertMeta('robots', noindex
+                ? 'noindex, follow'
+                : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+
+            // On purge nos anciens canonical/alternate puis on les repose
+            // selon la page courante (évite les résidus lors des navigations SPA).
+            head.querySelectorAll('link[data-seo]').forEach((el) => el.remove());
+            const addLink = (rel, href, hreflang) => {
+                const el = document.createElement('link');
+                el.setAttribute('rel', rel);
+                el.setAttribute('href', href);
+                if (hreflang) el.setAttribute('hreflang', hreflang);
+                el.setAttribute('data-seo', '');
+                head.appendChild(el);
+            };
+            if (!noindex) {
+                addLink('canonical', finalCanonicalUrl);
+                if (localized) {
+                    addLink('alternate', langHref('en'), 'en');
+                    addLink('alternate', langHref('fr'), 'fr');
+                    addLink('alternate', langHref('es'), 'es');
+                    addLink('alternate', cleanUrl, 'x-default');
+                } else {
+                    addLink('alternate', cleanUrl, 'en');
+                    addLink('alternate', cleanUrl, 'x-default');
+                }
+            }
+        } catch (e) {
+            /* silencieux : ne jamais casser le rendu pour du SEO */
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [fullTitle, metaDesc, finalCanonicalUrl, currentLang, noindex, localized, cleanUrl]);
 
     return (
         <>
