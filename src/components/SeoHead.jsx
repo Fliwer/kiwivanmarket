@@ -184,12 +184,13 @@ export default function SeoHead({
             document.title = fullTitle;
             document.documentElement.setAttribute('lang', currentLang);
 
+            // Met à jour la balise existante (celle d'index.html) plutôt que
+            // d'en créer une seconde → évite les doublons de description/robots.
             const upsertMeta = (name, content) => {
-                let el = head.querySelector(`meta[name="${name}"][data-seo]`);
+                let el = head.querySelector(`meta[name="${name}"]`);
                 if (!el) {
                     el = document.createElement('meta');
                     el.setAttribute('name', name);
-                    el.setAttribute('data-seo', '');
                     head.appendChild(el);
                 }
                 el.setAttribute('content', content);
