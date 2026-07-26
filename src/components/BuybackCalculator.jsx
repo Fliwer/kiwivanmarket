@@ -51,14 +51,15 @@ const CONFIG = {
     standard: { adj: 0 },
     slow: { adj: -8 },
   },
-  // Dépréciation mensuelle (%/mois) selon l'âge : les vans backpackers se
-  // déprécient lentement, et les plus vieux (déjà bon marché) encore moins.
-  monthlyDepreciation: (age) => (age >= 20 ? 0.6 : age >= 12 ? 0.8 : 1.1),
-  kmWearPer: 4000,          // -1 pt de récupération par 4 000 km parcourus
+  // Dépréciation mensuelle (%/mois) selon l'âge, appliquée sur la durée de
+  // possession. Les vans backpackers se déprécient lentement, les plus vieux
+  // (déjà bon marché) encore moins.
+  monthlyDepreciation: (age) => (age >= 20 ? 1.0 : age >= 12 ? 1.3 : 1.6),
+  kmWearPer: 3500,          // -1 pt de récupération par 3 500 km parcourus
   maintenancePerMonth: 45,  // réserve entretien, ajoutée au coût de possession
   rentalDayCost: 115,       // coût moyen/jour d'une location équivalente (NZD)
-  retentionFloor: 50,       // plancher réaliste du taux de récupération
-  retentionCeil: 105,       // l'arbitrage saisonnier peut faire revendre ~au prix d'achat
+  retentionFloor: 45,       // plancher réaliste du taux de récupération
+  retentionCeil: 93,        // plafond : on ne revend pas plus cher que le prix payé
 };
 
 const translations = {
@@ -168,8 +169,9 @@ export default function BuybackCalculator({ isEmbedded = false }) {
     const totalDays = durMonths * 30.44;
     const age = Math.max(0, CURRENT_YEAR - yr);
 
-    // Taux de récupération, en % du prix d'achat. On part de 100 % et on ajuste.
-    let retention = 100;
+    // Taux de récupération, en % du prix d'achat. On part d'une base réaliste
+    // (~78 % pour un van moyen) puis on ajuste selon l'usure et les facteurs.
+    let retention = 78;
 
     // 1) Dépréciation dans le temps (durée de possession).
     retention -= CONFIG.monthlyDepreciation(age) * durMonths;
