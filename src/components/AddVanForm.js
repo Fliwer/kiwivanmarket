@@ -333,7 +333,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
         console.error('Upload error:', error);
         setImages(prev => prev.filter(img => img.id !== tempId));
         setImageCrops(prev => prev.slice(0, Math.max(0, prev.length - 1)));
-        toast.error(`Error uploading ${file.name}`);
+        toast.error(error.message || `Error uploading ${file.name}`);
       }
     }
     setLoading(false);
