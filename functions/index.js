@@ -1674,3 +1674,75 @@ exports.sendContactMessage = onCall(
     }
   }
 );
+
+
+// ============================================
+// 🚩 REPORT LISTING — acheteur signale un van vendu / sans reponse
+// ============================================
+exports.reportListing = onCall(
+  { secrets: [resendApiKey] },
+  async (request) => {
+    const data = request.data || {};
+    const vanId = String(data.vanId || '').trim().slice(0, 100);
+    const vanTitle = String(data.vanTitle || '').trim().slice(0, 200);
+    const reason = String(data.reason || '').trim().slice(0, 40);
+    const note = String(data.note || '').trim().slice(0, 500);
+    // Honeypot anti-bot
+    if (String(data.company || '').trim()) {
+      return { success: true };
+    }
+    if (!vanId) {
+      throw new HttpsError('invalid-argument', 'Missing listing reference.');
+    }
+    const REASONS = {
+      sold: 'Already sold',
+      no_response: 'Seller not responding',
+      other: 'Other issue',
+    };
+    const safeReasonKey = REASONS[reason] ? reason : 'other';
+    const reasonLabel = REASONS[safeReasonKey];
+
+    const apiKey = resendApiKey.value();
+    if (!apiKey) {
+      console.error('❌ RESEND_API_KEY not configured');
+      throw new HttpsError('failed-precondition', 'Email service is not configured.');
+    }
+    const resend = new Resend(apiKey);
+
+    const vanUrl = `https://www.kiwivanmarket.com/van/${encodeURIComponent(vanId)}`;
+    const safeTitle = escapeHtml(vanTitle || vanId);
+    const safeNote = note ? escapeHtml(note).replace(/\n/g, '<br>') : '';
+    const reporterUid = request.auth ? request.auth.uid : 'anonymous';
+
+    try {
+      const { error } = await resend.emails.send({
+        from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+        to: CONTACT_RECIPIENT,
+        subject: `[Report] ${reasonLabel} — ${vanTitle || vanId}`.slice(0, 200),
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 24px; border-radius: 16px 16px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 20px;">🚩 Listing reported</h1>
+            </div>
+            <div style="background: #f9fafb; padding: 24px; border-radius: 0 0 16px 16px;">
+              <p style="margin: 4px 0; color:#374151;"><strong>Reason:</strong> ${escapeHtml(reasonLabel)}</p>
+              <p style="margin: 4px 0; color:#374151;"><strong>Van:</strong> ${safeTitle}</p>
+              <p style="margin: 4px 0; color:#374151;"><strong>Reported by:</strong> ${escapeHtml(reporterUid)}</p>
+              ${safeNote ? `<p style="margin: 12px 0; color:#374151;"><strong>Note:</strong><br>${safeNote}</p>` : ''}
+              <a href="${vanUrl}" style="display:inline-block; background:#dc2626; color:white; padding:12px 24px; border-radius:10px; text-decoration:none; font-weight:bold; margin:16px 0;">Open the listing</a>
+              <p style="margin-top:16px; font-size:12px; color:#9ca3af;">If it's really sold/unavailable, mark it Sold from your admin / the seller's listings.</p>
+            </div>
+          </div>`,
+      });
+      if (error) {
+        console.error('reportListing email error:', error);
+        throw new HttpsError('internal', 'Could not send the report. Please try again.');
+      }
+      return { success: true };
+    } catch (e) {
+      if (e instanceof HttpsError) throw e;
+      console.error('reportListing error:', e);
+      throw new HttpsError('internal', 'Could not send the report. Please try again.');
+    }
+  }
+);

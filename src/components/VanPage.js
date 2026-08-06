@@ -3,7 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import { doc, getDoc, updateDoc, increment, deleteDoc } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, functions } from '../firebase';
+import { httpsCallable } from 'firebase/functions';
 import { useAuth } from '../AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
 import { useHideLoader } from '../hooks/useHideLoader';
@@ -213,6 +214,8 @@ export default function VanPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const [reportSent, setReportSent] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const { t, i18n } = useTranslation();
 
@@ -467,6 +470,23 @@ ${shareUrl}
     const created = safeDate(createdAt);
     if (!created) return 0;
     return Math.floor((new Date() - created) / (1000 * 60 * 60 * 24));
+  };
+
+  // Signaler une annonce (vendu / vendeur ne répond plus) -> email à l'équipe
+  const handleReportListing = async (reason) => {
+    if (reporting || reportSent) return;
+    setReporting(true);
+    try {
+      const reportListing = httpsCallable(functions, 'reportListing');
+      await reportListing({ vanId: id, vanTitle: van?.title || '', reason });
+      setReportSent(true);
+      toast.success(i18n.language.startsWith('fr') ? 'Merci ! On vérifie cette annonce.' : "Thanks! We'll check this listing.");
+    } catch (e) {
+      console.error('reportListing error:', e);
+      toast.error(i18n.language.startsWith('fr') ? 'Échec du signalement. Réessaie.' : 'Could not send the report. Please try again.');
+    } finally {
+      setReporting(false);
+    }
   };
 
   const inferBrandSlug = (title = '') => {
@@ -1146,6 +1166,17 @@ ${shareUrl}
                     <Clock size={13} /> {t('van_page.days_ago', { count: getDaysAgo(van.createdAt) })}
                   </p>
 
+                  {van.status !== 'sold' && getDaysAgo(van.createdAt) > 30 && (
+                    <div className="mt-4 flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                      <AlertTriangle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-800 leading-relaxed">
+                        {i18n.language.startsWith('fr')
+                          ? 'Annonce publiée il y a plus d\'un mois — elle est peut-être déjà vendue. Confirme la disponibilité avec le vendeur avant de te déplacer.'
+                          : 'Listed over a month ago — it may already be sold. Confirm availability with the seller before travelling to see it.'}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="mt-5 space-y-2.5">
                     {(seller.whatsapp || seller.phone) && (
                       <button
@@ -1200,6 +1231,25 @@ ${shareUrl}
                       {i18n.language.startsWith('fr') ? 'Connexion requise pour contacter le vendeur' : 'Sign in to contact the seller'}
                     </p>
                   )}
+
+                  {/* Signalement : van vendu / vendeur injoignable */}
+                  <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+                    {reportSent ? (
+                      <p className="text-xs text-slate-400 inline-flex items-center gap-1.5">
+                        <CheckCircle size={13} className="text-emerald-500" />
+                        {i18n.language.startsWith('fr') ? 'Signalé, merci !' : 'Reported, thanks!'}
+                      </p>
+                    ) : (
+                      <button
+                        onClick={() => handleReportListing('sold')}
+                        disabled={reporting}
+                        className="text-xs text-slate-400 hover:text-red-500 transition disabled:opacity-50 inline-flex items-center gap-1.5"
+                      >
+                        <AlertTriangle size={12} />
+                        {i18n.language.startsWith('fr') ? 'Déjà vendu ou vendeur injoignable ? Signaler' : 'Already sold or seller not responding? Report it'}
+                      </button>
+                    )}
+                  </div>
 
                   {/* Mini vendeur */}
                   <div className="mt-5 pt-5 border-t border-slate-100 flex items-center gap-3">
