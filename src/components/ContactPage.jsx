@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Mail, MessageSquare, Send, CheckCircle, Shield, Clock, MapPin } from 'lucide-react';
+import { Mail, MessageSquare, Send, CheckCircle, Shield, Clock, MapPin, AlertCircle } from 'lucide-react';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../firebase';
 import SeoHead from './SeoHead';
 import { useHideLoader } from '../hooks/useHideLoader';
 
@@ -9,15 +11,25 @@ export default function ContactPage() {
     useHideLoader();
     const { t } = useTranslation();
     const [status, setStatus] = useState('idle'); // idle, sending, success, error
+    const [errorMsg, setErrorMsg] = useState('');
+    const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', company: '' });
 
-    const handleSubmit = (e) => {
+    const setField = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus('sending');
-        // Simulate sending for now as there's no backend for this yet
-        // In a real app, we'd use something like Formspree or a custom API
-        setTimeout(() => {
+        setErrorMsg('');
+        try {
+            const sendContactMessage = httpsCallable(functions, 'sendContactMessage');
+            await sendContactMessage(form);
             setStatus('success');
-        }, 1500);
+            setForm({ name: '', email: '', subject: '', message: '', company: '' });
+        } catch (err) {
+            console.error('Contact form error:', err);
+            setStatus('error');
+            setErrorMsg(err?.message || 'Could not send your message. Please try again, or email us directly at kiwivanmarket.contact@gmail.com.');
+        }
     };
 
     return (
@@ -130,6 +142,8 @@ export default function ContactPage() {
                                             <input
                                                 required
                                                 type="text"
+                                                value={form.name}
+                                                onChange={setField('name')}
                                                 className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
                                                 placeholder="John Doe"
                                             />
@@ -139,6 +153,8 @@ export default function ContactPage() {
                                             <input
                                                 required
                                                 type="email"
+                                                value={form.email}
+                                                onChange={setField('email')}
                                                 className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
                                                 placeholder="john@example.com"
                                             />
@@ -150,8 +166,21 @@ export default function ContactPage() {
                                         <input
                                             required
                                             type="text"
+                                            value={form.subject}
+                                            onChange={setField('subject')}
                                             className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all"
                                             placeholder="How can we help?"
+                                        />
+                                        {/* Honeypot anti-bot (invisible) */}
+                                        <input
+                                            type="text"
+                                            name="company"
+                                            value={form.company}
+                                            onChange={setField('company')}
+                                            tabIndex={-1}
+                                            autoComplete="off"
+                                            aria-hidden="true"
+                                            style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0 }}
                                         />
                                     </div>
 
@@ -160,10 +189,19 @@ export default function ContactPage() {
                                         <textarea
                                             required
                                             rows="5"
+                                            value={form.message}
+                                            onChange={setField('message')}
                                             className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all resize-none"
                                             placeholder="Write your message here..."
                                         ></textarea>
                                     </div>
+
+                                    {status === 'error' && (
+                                        <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl">
+                                            <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+                                            <p className="text-sm text-red-700">{errorMsg}</p>
+                                        </div>
+                                    )}
 
                                     <button
                                         type="submit"

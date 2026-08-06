@@ -1600,3 +1600,77 @@ exports.cancelReservation = onCall(
     return { success: true, refundId };
   }
 );
+
+
+// ============================================
+// ✉️ CONTACT FORM — envoie le message par email (Resend)
+// ============================================
+// Formulaire public (sans auth). Destinataire fixe = boite de l'equipe.
+const CONTACT_RECIPIENT = 'kiwivanmarket.contact@gmail.com';
+
+exports.sendContactMessage = onCall(
+  { secrets: [resendApiKey] },
+  async (request) => {
+    const data = request.data || {};
+    const name = String(data.name || '').trim().slice(0, 100);
+    const email = String(data.email || '').trim().slice(0, 254);
+    const subject = String(data.subject || '').trim().slice(0, 200);
+    const message = String(data.message || '').trim().slice(0, 5000);
+    // Honeypot anti-bot : champ cache que seuls les bots remplissent
+    const honeypot = String(data.company || '').trim();
+    if (honeypot) {
+      // On fait semblant de reussir pour ne pas aider le bot
+      return { success: true };
+    }
+
+    if (!name || !email || !subject || message.length < 5) {
+      throw new HttpsError('invalid-argument', 'Please fill in all fields.');
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new HttpsError('invalid-argument', 'Please enter a valid email address.');
+    }
+
+    const apiKey = resendApiKey.value();
+    if (!apiKey) {
+      console.error('❌ RESEND_API_KEY not configured');
+      throw new HttpsError('failed-precondition', 'Email service is not configured.');
+    }
+    const resend = new Resend(apiKey);
+
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
+
+    try {
+      const { error } = await resend.emails.send({
+        from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+        to: CONTACT_RECIPIENT,
+        reply_to: email,
+        subject: `[Contact] ${subject}`.slice(0, 200),
+        html: `
+          <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: linear-gradient(135deg, #059669 0%, #0d9488 100%); padding: 24px; border-radius: 16px 16px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 20px;">✉️ New contact message</h1>
+            </div>
+            <div style="background: #f9fafb; padding: 24px; border-radius: 0 0 16px 16px;">
+              <p style="margin: 4px 0; color:#374151;"><strong>From:</strong> ${safeName} &lt;${safeEmail}&gt;</p>
+              <p style="margin: 4px 0; color:#374151;"><strong>Subject:</strong> ${safeSubject}</p>
+              <hr style="border:none; border-top:1px solid #e5e7eb; margin:16px 0;" />
+              <p style="color:#111827; line-height:1.6; white-space:pre-wrap;">${safeMessage}</p>
+              <p style="margin-top:24px; font-size:12px; color:#9ca3af;">Reply directly to this email to answer ${safeName}.</p>
+            </div>
+          </div>`,
+      });
+      if (error) {
+        console.error('Contact email error:', error);
+        throw new HttpsError('internal', 'Could not send your message. Please try again.');
+      }
+      return { success: true };
+    } catch (e) {
+      if (e instanceof HttpsError) throw e;
+      console.error('sendContactMessage error:', e);
+      throw new HttpsError('internal', 'Could not send your message. Please try again.');
+    }
+  }
+);
