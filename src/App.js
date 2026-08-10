@@ -540,13 +540,16 @@ export default function KiwiVanMarket() {
     showAdminDashboard, setShowAdminDashboard
   };
 
+  // Mode "embed" : page widget (iframe) sans header/footer du site
+  const embedMode = typeof window !== 'undefined' && window.location.pathname.startsWith('/embed');
+
   return (
     <BrowserRouter>
       <ToastProvider>
         <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
-          <div className="min-h-screen bg-slate-50 pt-14 md:pt-0">
+          <div className={`min-h-screen ${embedMode ? 'bg-white' : 'bg-slate-50 pt-14 md:pt-0'}`}>
             <ScrollToTop />
-            <Header {...headerProps} />
+            {!embedMode && <Header {...headerProps} />}
             <Routes>
               <Route path="/" element={<MainApp {...sharedProps} />} />
               <Route path="/van/:id" element={<Suspense fallback={<PageLoader />}><VanPage /></Suspense>} />
@@ -562,10 +565,11 @@ export default function KiwiVanMarket() {
               <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
               <Route path="/my-listings" element={<Suspense fallback={<PageLoader />}><MyListingsPage /></Suspense>} />
               <Route path="/buyback-calculator" element={<Suspense fallback={<PageLoader />}><BuybackCalculator /></Suspense>} />
+              <Route path="/embed/buyback-calculator" element={<Suspense fallback={<PageLoader />}><BuybackCalculator isEmbedded={true} /></Suspense>} />
               <Route path="/messages" element={<Suspense fallback={<PageLoader />}><MessagingPage onBack={() => window.history.back()} /></Suspense>} />
               <Route path="/contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
             </Routes>
-            <Footer onOpenFAQ={() => setShowFAQ(true)} onOpenTerms={() => setShowTerms(true)} />
+            {!embedMode && <Footer onOpenFAQ={() => setShowFAQ(true)} onOpenTerms={() => setShowTerms(true)} />}
           </div>
           {showAuthModal && <AuthModal isOpen={true} onClose={() => setShowAuthModal(false)} />}
           {showFavorites && <Suspense fallback={<LoadingSpinner />}><FavoritesPage onClose={() => setShowFavorites(false)} /></Suspense>}

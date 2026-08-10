@@ -143,12 +143,25 @@ export default function BuybackCalculator({ isEmbedded = false }) {
   const [currency, setCurrency] = useState(() => {
     try { return localStorage.getItem('kiwivanmarket_currency') || 'NZD'; } catch { return 'NZD'; }
   });
+  const [copied, setCopied] = useState(false);
 
   // Language follows the site (react-i18next), not the old googtrans cookie
   const code = (i18n.language || 'en').slice(0, 2);
   const lang = translations[code] ? code : 'en';
   const t = translations[lang];
   const curr = CURRENCIES[currency] || CURRENCIES.NZD;
+
+  // Code d'intégration (widget iframe). Le lien <a> dans le snippet = backlink
+  // sur le site qui l'intègre.
+  const EMBED_CODE = '<iframe src="https://kiwivanmarket.com/embed/buyback-calculator" width="100%" height="760" style="border:0;border-radius:16px;max-width:900px" title="Campervan Buyback Calculator — Kiwi Van Market" loading="lazy"></iframe>\n<p>Powered by <a href="https://kiwivanmarket.com" target="_blank" rel="noopener">Kiwi Van Market</a> — buy &amp; sell campervans in New Zealand.</p>';
+  const copyEmbed = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(EMBED_CODE).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {});
+    }
+  };
 
   // Currency follows the site-wide selector
   useEffect(() => {
@@ -508,6 +521,29 @@ export default function BuybackCalculator({ isEmbedded = false }) {
           </div>
 
         </div>
+
+        {isEmbedded && (
+          <div className="mt-6 text-center">
+            <a href="https://kiwivanmarket.com" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600 transition">
+              ⚡ Powered by Kiwi Van Market — {lang === 'fr' ? 'achat & vente de vans en NZ' : lang === 'es' ? 'compra y venta de vans en NZ' : 'buy & sell campervans in NZ'}
+            </a>
+          </div>
+        )}
+
+        {!isEmbedded && (
+          <div className="mt-12 md:mt-16 bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white">
+            <h2 className="text-xl md:text-2xl font-black mb-2">
+              {lang === 'fr' ? 'Ajoute cette calculatrice à ton site' : lang === 'es' ? 'Añade esta calculadora a tu sitio' : 'Add this calculator to your site'}
+            </h2>
+            <p className="text-slate-400 text-sm mb-5">
+              {lang === 'fr' ? 'Gratuit. Colle ce code dans ton blog / site vanlife (ça t\'ajoute un lien vers ton site aussi).' : lang === 'es' ? 'Gratis. Pega este código en tu blog / sitio.' : 'Free. Paste this into your vanlife blog / site.'}
+            </p>
+            <pre className="bg-slate-950 text-slate-300 text-[11px] md:text-xs rounded-2xl p-4 overflow-x-auto whitespace-pre-wrap break-words">{EMBED_CODE}</pre>
+            <button onClick={copyEmbed} className="mt-3 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold transition">
+              {copied ? (lang === 'fr' ? 'Copié ✓' : lang === 'es' ? 'Copiado ✓' : 'Copied ✓') : (lang === 'fr' ? 'Copier le code' : lang === 'es' ? 'Copiar código' : 'Copy code')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
