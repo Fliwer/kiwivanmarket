@@ -110,7 +110,7 @@ export default function FaqPage() {
     return (
         <>
             <SeoHead
-                title="Van Life NZ FAQ — Everything About Buying & Selling Campervans in New Zealand"
+                title="Campervan FAQ — Buying & Selling in NZ"
                 description="All your questions answered: how to buy a campervan in New Zealand, WOF, REGO, self-contained certification, freedom camping, van prices, and more. Expert answers from Kiwi Van Market."
                 faqs={FAQ_SCHEMA}
                 breadcrumbs={[
