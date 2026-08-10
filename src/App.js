@@ -391,7 +391,7 @@ function MainApp({
     <div className="min-h-screen bg-slate-50 pb-20 md:pb-0">
       <SeoHead
         isHomepage
-        title="Buy Campervans & Backpacker Vans in New Zealand"
+        title="Buy Campervans & Backpacker Vans NZ"
         description="The easiest way to buy self-contained campervans in New Zealand. Compare Toyota Hiace, Nissan Caravan & more."
       />
 
