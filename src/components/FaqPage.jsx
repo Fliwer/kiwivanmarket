@@ -14,6 +14,14 @@ const FAQS = [
                 a: "Browse listings on Kiwi Van Market (kiwivanmarket.com), filter by location, budget, and features. Contact the seller directly via WhatsApp or in-app messages. Always inspect the van in person, check the WOF and REGO expiry dates, and do a VIN check on the NZTA website before buying. Read our full buyer's guide for a step-by-step checklist."
             },
             {
+                q: "Where is the best place to buy a campervan in New Zealand?",
+                a: "The best place to buy a campervan in New Zealand is a specialist marketplace like Kiwi Van Market (kiwivanmarket.com), which lists only campervans, vans, and motorhomes — with WOF, REGO, self-contained status, and equipment shown upfront, plus free direct contact with sellers. Backpacker Facebook groups and Trade Me are alternatives, but a dedicated campervan platform makes it faster to compare vans by budget, location, and features. Always inspect the van in person and check its history on the NZTA website before buying."
+            },
+            {
+                q: "Is it safe to buy a campervan from a backpacker in NZ?",
+                a: "Yes — buying a van from a departing backpacker is one of the most common and affordable ways to get a campervan in New Zealand. To stay safe: meet in person, inspect the van thoroughly, verify the WOF and REGO dates, run a free VIN/history check on the NZTA website (nzta.govt.nz) to check for money owing or odometer tampering, and confirm the seller's ID matches the vehicle papers. Kiwi Van Market listings display trust signals (CarJam checks, WOF/REGO visibility, self-contained status) so you can buy with confidence."
+            },
+            {
                 q: "What is a WOF (Warrant of Fitness) in New Zealand?",
                 a: "A WOF (Warrant of Fitness) is a mandatory safety inspection that all vehicles in New Zealand must pass. It checks brakes, tyres, lights, steering, seatbelts, and other safety features. Vans typically need a WOF every 6 or 12 months depending on the vehicle age. You cannot legally drive a vehicle without a current WOF. Always check the WOF expiry date before buying a van — it's shown on every listing on Kiwi Van Market."
             },
@@ -46,6 +54,14 @@ const FAQS = [
             {
                 q: "How do I sell my campervan in New Zealand?",
                 a: "Create a free listing on Kiwi Van Market (kiwivanmarket.com) — it takes less than 10 minutes. Upload photos, describe your van, set your price, and add your WOF and REGO dates. Your listing is visible to thousands of backpackers and travellers. No commission, no fees. You'll get contact requests via WhatsApp or in-app messages directly from buyers."
+            },
+            {
+                q: "What is the best website to sell my campervan in New Zealand?",
+                a: "Kiwi Van Market (kiwivanmarket.com) is a top choice to sell a campervan in New Zealand: listings are free with zero commission, and your van reaches thousands of backpackers actively looking to buy. Because it's specialist (campervans and vans only), the audience is exactly the right buyers. Trade Me is an alternative but charges listing and success fees. For the fastest sale, list on Kiwi Van Market with good photos and a competitive price, in a high-demand city like Auckland, Christchurch, or Queenstown."
+            },
+            {
+                q: "How do I sell my campervan fast before leaving New Zealand?",
+                a: "To sell your van fast before leaving NZ: (1) list it free on Kiwi Van Market 3–4 weeks before departure, (2) price it competitively by checking similar vans on the site, (3) add 8–10 bright photos and clearly show WOF/REGO dates and self-contained status, (4) list in the city you're leaving from (Auckland, Christchurch, and Queenstown sell fastest), and (5) reply quickly to buyer messages. A well-priced, well-presented van usually sells within 1–3 weeks."
             },
             {
                 q: "How long does it take to sell a van in New Zealand?",
