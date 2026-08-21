@@ -279,10 +279,10 @@ export default function BuybackCalculator({ isEmbedded = false }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 md:gap-10">
+        <div className={`grid grid-cols-1 ${isEmbedded ? '' : 'xl:grid-cols-12'} gap-8 md:gap-10`}>
 
           {/* Input Panel - Clean White Card */}
-          <div className="xl:col-span-5 order-2 xl:order-1">
+          <div className={isEmbedded ? 'order-1' : 'xl:col-span-5 order-2 xl:order-1'}>
             <div className="bg-white border-2 border-slate-100 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-xl shadow-slate-200/40">
               <div className="space-y-6 md:space-y-8">
 
@@ -442,7 +442,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
           </div>
 
           {/* Results Panel - High-End Frosted Glass */}
-          <div className="xl:col-span-7 relative order-1 xl:order-2">
+          <div className={isEmbedded ? 'relative order-2' : 'xl:col-span-7 relative order-1 xl:order-2'}>
             <div id="resale-result" className="bg-white/60 backdrop-blur-2xl border-2 md:border-4 border-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-2xl shadow-slate-200/50 min-h-[400px] md:min-h-[600px] relative overflow-hidden flex flex-col justify-between transition-shadow">
 
               {!calculation && (
@@ -472,7 +472,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                   </div>
 
                   {/* Quick Stats Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4">
+                  <div className={`grid grid-cols-2 ${isEmbedded ? '' : 'sm:grid-cols-4'} gap-3 md:gap-4`}>
                     {[
                       { label: t.results.recoveryRate, val: `${calculation.percentage}%`, icon: Award, color: 'emerald' },
                       { label: t.results.scStatus, val: t.options.sc[sc], icon: Shield, color: 'blue' },
