@@ -294,7 +294,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                         type="number"
                         value={purchasePrice}
                         onChange={(e) => setPurchasePrice(e.target.value)}
-                        className="w-full bg-slate-50 border-2 border-slate-100 focus:border-emerald-500/30 focus:bg-white rounded-xl md:rounded-2xl px-4 py-3 md:px-5 md:py-4 outline-none transition-all font-black text-lg md:text-xl text-slate-800"
+                        className="w-full bg-slate-50 border-2 border-slate-100 focus:border-emerald-500/30 focus:bg-white rounded-xl md:rounded-2xl px-4 py-3 md:px-5 md:py-4 outline-none transition-all font-black text-base md:text-lg text-slate-800"
                       />
                     </div>
                   </div>
@@ -306,7 +306,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                       max={CURRENT_YEAR}
                       value={year}
                       onChange={(e) => setYear(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-100 focus:border-emerald-500/30 focus:bg-white rounded-xl md:rounded-2xl px-4 py-3 md:px-5 md:py-4 outline-none transition-all font-black text-lg md:text-xl text-slate-800"
+                      className="w-full bg-slate-50 border-2 border-slate-100 focus:border-emerald-500/30 focus:bg-white rounded-xl md:rounded-2xl px-4 py-3 md:px-5 md:py-4 outline-none transition-all font-black text-base md:text-lg text-slate-800"
                     />
                   </div>
                 </div>
@@ -333,7 +333,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                       type="number"
                       value={duration}
                       onChange={(e) => setDuration(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl md:rounded-2xl px-4 py-3 md:px-5 md:py-4 outline-none focus:border-emerald-500/30 transition-all font-black text-lg md:text-xl"
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl md:rounded-2xl px-4 py-3 md:px-5 md:py-4 outline-none focus:border-emerald-500/30 transition-all font-black text-base md:text-lg"
                     />
                   </div>
                   <div className="space-y-2">
@@ -342,7 +342,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                       type="number"
                       value={kilometers}
                       onChange={(e) => setKilometers(e.target.value)}
-                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl md:rounded-2xl px-4 py-3 md:px-5 md:py-4 outline-none focus:border-emerald-500/30 transition-all font-black text-lg md:text-xl"
+                      className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl md:rounded-2xl px-4 py-3 md:px-5 md:py-4 outline-none focus:border-emerald-500/30 transition-all font-black text-base md:text-lg"
                     />
                   </div>
                 </div>
@@ -464,7 +464,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                       <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">{t.results.estimatedValue}</span>
                     </div>
                     <div className="flex flex-wrap items-baseline justify-center md:justify-start gap-2 md:gap-4">
-                      <h2 className="text-5xl sm:text-6xl md:text-8xl font-black tracking-tighter text-slate-900 line-clamp-1">
+                      <h2 className={`${isEmbedded ? 'text-4xl' : 'text-5xl sm:text-6xl md:text-8xl line-clamp-1'} font-black tracking-tighter text-slate-900 break-words`}>
                         <AnimatedCounter value={calculation.resalePrice} symbol={curr.symbol} />
                       </h2>
                       <span className="text-xl md:text-2xl font-black text-slate-300 uppercase">{curr.code}</span>
@@ -493,7 +493,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                     <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8 text-center md:text-left">
                       <div className="space-y-1 md:space-y-2">
                         <p className="text-emerald-100 text-[10px] md:text-xs font-black uppercase tracking-[0.2em]">{t.results.totalSaved}</p>
-                        <h3 className="text-3xl md:text-5xl font-black">
+                        <h3 className={`${isEmbedded ? 'text-2xl' : 'text-3xl md:text-5xl'} font-black break-words`}>
                           +<AnimatedCounter value={calculation.totalSaved} symbol={curr.symbol} />
                         </h3>
                         <p className="text-emerald-200/60 text-[9px] md:text-[10px] font-bold uppercase tracking-widest italic">{t.results.comparedRenting}</p>
@@ -501,7 +501,7 @@ export default function BuybackCalculator({ isEmbedded = false }) {
                       <div className="h-0.5 md:h-20 w-12 md:w-[2px] bg-white/10 shrink-0" />
                       <div className="space-y-1 md:space-y-2">
                         <p className="text-emerald-100 text-[9px] md:text-[10px] font-bold uppercase tracking-wider mb-1">{t.results.dailyNet}</p>
-                        <p className="text-2xl md:text-3xl font-black">
+                        <p className={`${isEmbedded ? 'text-xl' : 'text-2xl md:text-3xl'} font-black break-words`}>
                           <AnimatedCounter value={calculation.dailyNet} symbol={curr.symbol} />
                         </p>
                         <p className="text-emerald-200/60 text-[9px] md:text-[10px] font-bold uppercase tracking-widest mt-1">{t.results.perDayNet}</p>
