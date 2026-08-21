@@ -531,18 +531,23 @@ export default function BuybackCalculator({ isEmbedded = false }) {
         )}
 
         {!isEmbedded && (
-          <div className="mt-12 md:mt-16 bg-slate-900 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 text-white">
-            <h2 className="text-xl md:text-2xl font-black mb-2">
-              {lang === 'fr' ? 'Ajoute cette calculatrice à ton site' : lang === 'es' ? 'Añade esta calculadora a tu sitio' : 'Add this calculator to your site'}
-            </h2>
-            <p className="text-slate-400 text-sm mb-5">
-              {lang === 'fr' ? 'Gratuit. Colle ce code dans ton blog / site vanlife (ça t\'ajoute un lien vers ton site aussi).' : lang === 'es' ? 'Gratis. Pega este código en tu blog / sitio.' : 'Free. Paste this into your vanlife blog / site.'}
-            </p>
-            <pre className="bg-slate-950 text-slate-300 text-[11px] md:text-xs rounded-2xl p-4 overflow-x-auto whitespace-pre-wrap break-words">{EMBED_CODE}</pre>
-            <button onClick={copyEmbed} className="mt-3 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold transition">
-              {copied ? (lang === 'fr' ? 'Copié ✓' : lang === 'es' ? 'Copiado ✓' : 'Copied ✓') : (lang === 'fr' ? 'Copier le code' : lang === 'es' ? 'Copiar código' : 'Copy code')}
-            </button>
-          </div>
+          <details className="mt-10 md:mt-14 bg-slate-900 rounded-2xl md:rounded-[1.75rem] text-white overflow-hidden group">
+            <summary className="cursor-pointer list-none px-5 md:px-6 py-4 flex items-center justify-between gap-4">
+              <span className="font-bold text-sm md:text-base">
+                🧩 {lang === 'fr' ? 'Blogueur / partenaire ? Intègre cette calculatrice (gratuit)' : lang === 'es' ? '¿Blog o socio? Inserta esta calculadora (gratis)' : 'Run a blog? Embed this calculator (free)'}
+              </span>
+              <span className="text-emerald-400 transition-transform group-open:rotate-180 shrink-0">▾</span>
+            </summary>
+            <div className="px-5 md:px-6 pb-6">
+              <p className="text-slate-400 text-xs md:text-sm mb-4">
+                {lang === 'fr' ? 'Colle ce code dans ton blog / site vanlife (ça t\'ajoute aussi un lien vers ton site).' : lang === 'es' ? 'Pega este código en tu blog / sitio.' : 'Paste this into your vanlife blog / site.'}
+              </p>
+              <pre className="bg-slate-950 text-slate-300 text-[11px] md:text-xs rounded-2xl p-4 overflow-x-auto whitespace-pre-wrap break-words">{EMBED_CODE}</pre>
+              <button onClick={copyEmbed} className="mt-3 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-sm font-bold transition">
+                {copied ? (lang === 'fr' ? 'Copié ✓' : lang === 'es' ? 'Copiado ✓' : 'Copied ✓') : (lang === 'fr' ? 'Copier le code' : lang === 'es' ? 'Copiar código' : 'Copy code')}
+              </button>
+            </div>
+          </details>
         )}
       </div>
     </div>
