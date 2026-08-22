@@ -57,6 +57,7 @@ const MyListingsPage = lazyWithReload(() => import('./components/MyListingsPage'
 const GuidesHubPage = lazyWithReload(() => import('./components/GuidesHubPage'));
 const FaqPage = lazyWithReload(() => import('./components/FaqPage'));
 const WhyPage = lazyWithReload(() => import('./components/WhyPage'));
+const PriceIndexPage = lazyWithReload(() => import('./components/PriceIndexPage'));
 const SeoLongTailPage = lazyWithReload(() => import('./components/SeoLongTailPage'));
 const SeoTopicFaqPage = lazyWithReload(() => import('./components/SeoTopicFaqPage'));
 
@@ -559,6 +560,7 @@ export default function KiwiVanMarket() {
               <Route path="/faq" element={<Suspense fallback={<PageLoader />}><FaqPage /></Suspense>} />
               <Route path="/faq/:scope/:slug" element={<Suspense fallback={<PageLoader />}><SeoTopicFaqPage /></Suspense>} />
               <Route path="/why" element={<Suspense fallback={<PageLoader />}><WhyPage /></Suspense>} />
+              <Route path="/campervan-prices-nz" element={<Suspense fallback={<PageLoader />}><PriceIndexPage /></Suspense>} />
               <Route path="/search/:slug" element={<Suspense fallback={<PageLoader />}><SeoLongTailPage /></Suspense>} />
               <Route path="/guide/:slug" element={<Suspense fallback={<PageLoader />}><GuidePage /></Suspense>} />
               <Route path="/sell" element={<Suspense fallback={<PageLoader />}><SellPage /></Suspense>} />
