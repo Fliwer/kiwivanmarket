@@ -154,6 +154,11 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
                 </Link>
               </li>
               <li>
+                <Link to="/campervan-prices-nz" className="text-gray-300 hover:text-white transition">
+                  Campervan prices NZ
+                </Link>
+              </li>
+              <li>
                 <Link to="/contact" className="text-gray-300 hover:text-white transition">
                   {t('footer.contact')}
                 </Link>

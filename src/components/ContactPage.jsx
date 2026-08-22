@@ -24,6 +24,9 @@ export default function ContactPage() {
             const sendContactMessage = httpsCallable(functions, 'sendContactMessage');
             await sendContactMessage(form);
             setStatus('success');
+            if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                window.gtag('event', 'contact_message_sent', { subject: form.subject || undefined });
+            }
             setForm({ name: '', email: '', subject: '', message: '', company: '' });
         } catch (err) {
             console.error('Contact form error:', err);

@@ -530,6 +530,31 @@ export default function BuybackCalculator({ isEmbedded = false }) {
           </div>
         )}
 
+        {/* Lien contextuel vers les donnees de marche : l'utilisateur qui
+            estime sa revente veut ensuite savoir a quel prix les autres vendent. */}
+        {!isEmbedded && (
+          <Link
+            to="/campervan-prices-nz"
+            className="mt-10 md:mt-14 flex items-center justify-between gap-4 bg-white border border-slate-200 hover:border-emerald-400 rounded-2xl px-5 md:px-6 py-4 transition group"
+          >
+            <span className="text-sm md:text-base font-bold text-slate-800">
+              📊 {lang === 'fr'
+                ? 'À quel prix se vendent vraiment les vans en NZ ?'
+                : lang === 'es'
+                  ? '¿A qué precio se venden realmente las vans en NZ?'
+                  : 'What are campervans actually selling for in NZ?'}
+              <span className="block text-xs font-medium text-slate-500 mt-0.5">
+                {lang === 'fr'
+                  ? 'Prix médians par marque, âge et certification — données réelles.'
+                  : lang === 'es'
+                    ? 'Precios medianos por marca, edad y certificación — datos reales.'
+                    : 'Median prices by brand, age and certification — real listing data.'}
+              </span>
+            </span>
+            <span className="text-emerald-600 font-black shrink-0 group-hover:translate-x-1 transition-transform">→</span>
+          </Link>
+        )}
+
         {!isEmbedded && (
           <details className="mt-10 md:mt-14 bg-slate-900 rounded-2xl md:rounded-[1.75rem] text-white overflow-hidden group">
             <summary className="cursor-pointer list-none px-5 md:px-6 py-4 flex items-center justify-between gap-4">

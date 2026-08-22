@@ -296,6 +296,16 @@ export default function SellPage() {
       const docRef = await addDoc(collection(db, 'vans'), newVanData);
       setNewVanId(docRef.id);
 
+      // GA — métrique d'offre : un van a été publié (funnel vendeur)
+      if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+        window.gtag('event', 'van_published', {
+          van_id: docRef.id,
+          price: Number(formData.price) || undefined,
+          brand: formData.brand || undefined,
+          has_whatsapp: !!(formData.whatsapp || formData.phone),
+        });
+      }
+
       localStorage.removeItem('kiwiVanMarket_vans');
       localStorage.removeItem('kiwiVanMarket_timestamp');
 
