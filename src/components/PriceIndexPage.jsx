@@ -21,8 +21,8 @@ const BRAND_MATCHERS = [
   { name: 'VW Transporter', kws: ['transporter', 'kombi'] },
   { name: 'Hyundai iLoad', kws: ['iload', 'imax'] },
   { name: 'Mercedes Sprinter', kws: ['sprinter', 'vito'] },
-  { name: 'Toyota (autres modèles)', kws: ['toyota', 'estima', 'regius', 'townace', 'liteace', 'granvia'] },
-  { name: 'Nissan (autres modèles)', kws: ['nissan', 'serena', 'vanette', 'nv200'] },
+  { name: 'Toyota (other models)', kws: ['toyota', 'estima', 'regius', 'townace', 'liteace', 'granvia'] },
+  { name: 'Nissan (other models)', kws: ['nissan', 'serena', 'vanette', 'nv200'] },
 ];
 
 // ─── Stats helpers ────────────────────────────────────────────────────────────
@@ -122,20 +122,20 @@ export default function PriceIndexPage() {
     };
 
     const byAge = [
-      segment('Avant 2000', vans.filter((v) => v.year && v.year < 2000)),
+      segment('Before 2000', vans.filter((v) => v.year && v.year < 2000)),
       segment('2000 – 2009', vans.filter((v) => v.year >= 2000 && v.year <= 2009)),
-      segment('2010 et plus récent', vans.filter((v) => v.year >= 2010)),
+      segment('2010 or newer', vans.filter((v) => v.year >= 2010)),
     ].filter(Boolean);
 
-    const selfContained = segment('Self-contained certifié', vans.filter((v) => v.selfContained));
-    const notSelfContained = segment('Non certifié', vans.filter((v) => !v.selfContained));
+    const selfContained = segment('Self-contained certified', vans.filter((v) => v.selfContained));
+    const notSelfContained = segment('Not certified', vans.filter((v) => !v.selfContained));
 
     const buckets = [
-      { label: 'Moins de $5,000', test: (p) => p < 5000 },
+      { label: 'Under $5,000', test: (p) => p < 5000 },
       { label: '$5,000 – $9,999', test: (p) => p >= 5000 && p < 10000 },
       { label: '$10,000 – $14,999', test: (p) => p >= 10000 && p < 15000 },
       { label: '$15,000 – $24,999', test: (p) => p >= 15000 && p < 25000 },
-      { label: '$25,000 et plus', test: (p) => p >= 25000 },
+      { label: '$25,000 and above', test: (p) => p >= 25000 },
     ].map((b) => {
       const count = prices.filter(b.test).length;
       return { ...b, count, pct: Math.round((count / prices.length) * 100) };
@@ -193,29 +193,29 @@ export default function PriceIndexPage() {
       <section className="bg-slate-900 text-white">
         <div className="max-w-5xl mx-auto px-5 py-14 sm:py-20">
           <div className="inline-flex items-center gap-2 bg-emerald-500/15 text-emerald-300 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-5">
-            <BarChart3 size={14} /> Données de marché {CURRENT_YEAR}
+            <BarChart3 size={14} /> {CURRENT_YEAR} market data
           </div>
           <h1 className="text-3xl sm:text-5xl font-black leading-tight mb-4">
-            Prix des campervans en Nouvelle-Zélande
+            Campervan prices in New Zealand
           </h1>
           <p className="text-slate-300 text-base sm:text-lg max-w-2xl leading-relaxed">
-            Combien coûte un van en NZ&nbsp;? Voici les prix réellement demandés,
-            calculés en direct depuis les annonces publiées sur Kiwi Van Market —
-            par marque, par âge et selon la certification self-contained.
+            How much does a campervan cost in New Zealand? These are the prices
+            sellers are actually asking, calculated live from the listings published on
+            Kiwi Van Market — by brand, by age and by self-contained certification.
           </p>
 
           {loading ? (
             <div className="mt-10 h-24 w-full max-w-md bg-white/5 rounded-2xl animate-pulse" />
           ) : stats ? (
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Stat label="Prix médian" value={nzd(stats.median)} highlight />
-              <Stat label="Le moins cher" value={nzd(stats.min)} />
-              <Stat label="Le plus cher" value={nzd(stats.max)} />
-              <Stat label="Annonces analysées" value={stats.total} />
+              <Stat label="Median price" value={nzd(stats.median)} highlight />
+              <Stat label="Lowest" value={nzd(stats.min)} />
+              <Stat label="Highest" value={nzd(stats.max)} />
+              <Stat label="Listings analysed" value={stats.total} />
             </div>
           ) : (
             <p className="mt-10 text-slate-400">
-              Pas encore assez d'annonces pour publier des statistiques fiables.
+              Not enough listings yet to publish reliable statistics.
             </p>
           )}
         </div>
@@ -226,18 +226,18 @@ export default function PriceIndexPage() {
           {/* ── Réponse directe (format citable par les IA) ──────────── */}
           <section className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8">
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 mb-3">
-              Combien coûte un campervan en Nouvelle-Zélande&nbsp;?
+              How much does a campervan cost in New Zealand?
             </h2>
             <p className="text-slate-600 leading-relaxed">
-              Sur les <strong>{stats.total} vans</strong> actuellement en vente sur Kiwi Van Market,
-              le prix médian demandé est de <strong className="text-emerald-600">{nzd(stats.median)} NZD</strong>,
-              dans une fourchette allant de {nzd(stats.min)} à {nzd(stats.max)}.
-              La majorité des vans de backpackers se négocient entre $5,000 et $15,000 NZD.
+              Across the <strong>{stats.total} campervans</strong> currently for sale on Kiwi Van Market,
+              the median asking price is <strong className="text-emerald-600">{nzd(stats.median)} NZD</strong>,
+              ranging from {nzd(stats.min)} to {nzd(stats.max)}.
+              Most backpacker vans sell for between $5,000 and $15,000 NZD.
             </p>
           </section>
 
           {/* ── Répartition ─────────────────────────────────────────── */}
-          <Section title="Répartition des prix" icon={TrendingUp}>
+          <Section title="Price distribution" icon={TrendingUp}>
             <div className="space-y-2.5">
               {stats.buckets.map((b) => (
                 <div key={b.label} className="flex items-center gap-3">
@@ -258,34 +258,34 @@ export default function PriceIndexPage() {
 
           {/* ── Par marque ──────────────────────────────────────────── */}
           {stats.byBrand.length > 0 && (
-            <Section title="Prix médian par marque" icon={BarChart3}>
-              <PriceTable rows={stats.byBrand} firstCol="Modèle" />
+            <Section title="Median price by brand" icon={BarChart3}>
+              <PriceTable rows={stats.byBrand} firstCol="Model" />
             </Section>
           )}
 
           {/* ── Par âge ─────────────────────────────────────────────── */}
           {stats.byAge.length > 0 && (
-            <Section title="Prix médian par âge du véhicule" icon={Calendar}>
-              <PriceTable rows={stats.byAge.map((r) => ({ ...r, name: r.label }))} firstCol="Année" />
+            <Section title="Median price by vehicle age" icon={Calendar}>
+              <PriceTable rows={stats.byAge.map((r) => ({ ...r, name: r.label }))} firstCol="Year" />
             </Section>
           )}
 
           {/* ── Self-contained ──────────────────────────────────────── */}
           {stats.selfContained && stats.notSelfContained && (
-            <Section title="L'effet du certificat self-contained" icon={TrendingUp}>
+            <Section title="What self-contained certification is worth" icon={TrendingUp}>
               <div className="grid sm:grid-cols-2 gap-4">
                 {[stats.selfContained, stats.notSelfContained].map((s) => (
                   <div key={s.label} className="bg-white rounded-xl border border-slate-200 p-5">
                     <p className="text-sm font-bold text-slate-500 mb-1">{s.label}</p>
                     <p className="text-3xl font-black text-slate-900">{nzd(s.median)}</p>
-                    <p className="text-xs text-slate-400 mt-1">médiane · {s.count} annonces</p>
+                    <p className="text-xs text-slate-400 mt-1">median · {s.count} listings</p>
                   </div>
                 ))}
               </div>
               <p className="mt-4 text-sm text-slate-600 leading-relaxed">
-                La certification self-contained autorise le freedom camping dans de
-                nombreuses zones de Nouvelle-Zélande : c'est l'équipement qui
-                influence le plus la valeur de revente d'un van.
+                Self-contained certification allows freedom camping across many areas of
+                New Zealand — it is the single feature that most affects how much a van
+                is worth when you resell it.
               </p>
             </Section>
           )}
@@ -293,56 +293,56 @@ export default function PriceIndexPage() {
           {/* ── Méthodologie — indispensable pour être crédible/cité ── */}
           <section className="bg-slate-100 rounded-2xl p-6 sm:p-8">
             <h2 className="flex items-center gap-2 text-lg font-black text-slate-900 mb-3">
-              <Info size={18} className="text-slate-500" /> Méthodologie
+              <Info size={18} className="text-slate-500" /> Methodology
             </h2>
             <ul className="space-y-2 text-sm text-slate-600 leading-relaxed list-disc pl-5">
               <li>
-                Calculs effectués en direct sur les <strong>{stats.total} annonces</strong> publiées
-                sur Kiwi Van Market, mises à jour à chaque chargement de la page.
+                Calculated live from the <strong>{stats.total} listings</strong> published on
+                Kiwi Van Market, refreshed every time this page loads.
               </li>
               <li>
-                Il s'agit de <strong>prix demandés</strong> par les vendeurs, pas de prix de vente
-                finaux : le prix négocié est généralement inférieur de 5 à 15&nbsp;%.
+                These are <strong>asking prices</strong> set by sellers, not final sale prices:
+                the negotiated price is typically 5–15% lower.
               </li>
               <li>
-                Nous utilisons la <strong>médiane</strong> plutôt que la moyenne, moins sensible
-                aux annonces extrêmes.
+                We use the <strong>median</strong> rather than the average, because it is far
+                less distorted by a handful of extreme listings.
               </li>
               <li>
-                Les annonces hors fourchette $1,000–$200,000 sont écartées (erreurs de saisie),
-                et un segment n'est affiché qu'à partir de {MIN_SAMPLE} annonces — en dessous,
-                l'échantillon est trop petit pour être significatif.
+                Listings outside the $1,000–$200,000 range are excluded as data-entry errors,
+                and a segment is only published once it holds at least {MIN_SAMPLE} listings —
+                below that, the sample is too small to mean anything.
               </li>
               <li>
-                Chaque van n'est compté que dans <strong>un seul</strong> segment de marque :
-                les effectifs ne se chevauchent pas.
+                Each van is counted in <strong>one brand segment only</strong>, so the listing
+                counts never overlap.
               </li>
             </ul>
             <p className="mt-4 text-xs text-slate-500">
-              Données librement réutilisables avec un lien vers kiwivanmarket.com.
+              Free to reuse and cite, with a link back to kiwivanmarket.com.
             </p>
           </section>
 
           {/* ── CTA ─────────────────────────────────────────────────── */}
           <section className="bg-emerald-600 rounded-2xl p-6 sm:p-8 text-white text-center">
             <h2 className="text-xl sm:text-2xl font-black mb-2">
-              Tu sais maintenant ce que vaut ton van
+              Now you know what your van is worth
             </h2>
             <p className="text-emerald-50 mb-6 text-sm sm:text-base">
-              Publie ton annonce gratuitement, sans commission.
+              List it for free — no commission, ever.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 to="/sell"
                 className="inline-flex items-center justify-center gap-2 bg-white text-emerald-700 px-6 py-3 rounded-xl font-bold hover:bg-emerald-50 transition"
               >
-                Vendre mon van <ArrowRight size={18} />
+                Sell my van <ArrowRight size={18} />
               </Link>
               <Link
                 to="/"
                 className="inline-flex items-center justify-center gap-2 bg-emerald-700/50 border border-white/25 px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition"
               >
-                Voir les vans en vente
+                Browse vans for sale
               </Link>
             </div>
           </section>
@@ -383,9 +383,9 @@ function PriceTable({ rows, firstCol }) {
         <thead>
           <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
             <th className="text-left font-bold px-4 py-3">{firstCol}</th>
-            <th className="text-right font-bold px-4 py-3">Prix médian</th>
-            <th className="text-right font-bold px-4 py-3">Fourchette</th>
-            <th className="text-right font-bold px-4 py-3">Annonces</th>
+            <th className="text-right font-bold px-4 py-3">Median price</th>
+            <th className="text-right font-bold px-4 py-3">Range</th>
+            <th className="text-right font-bold px-4 py-3">Listings</th>
           </tr>
         </thead>
         <tbody>
