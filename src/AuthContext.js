@@ -9,10 +9,19 @@ import {
   onAuthStateChanged,
   sendEmailVerification,
   sendPasswordResetEmail,
-  updateProfile
+  updateProfile,
+  getAdditionalUserInfo
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
+
+// GA — event d'inscription (métrique funnel). Garde gtag pour ne jamais casser
+// l'auth si l'analytics n'est pas chargé (adblock, etc.).
+const trackSignUp = (method) => {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+    window.gtag('event', 'sign_up', { method });
+  }
+};
 
 // Creation du contexte
 const AuthContext = createContext();
@@ -48,7 +57,13 @@ export const AuthProvider = ({ children }) => {
       
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
+
+      // GA — ne compter comme sign_up que les VRAIS nouveaux comptes Google
+      // (isNewUser), pas les reconnexions.
+      try {
+        if (getAdditionalUserInfo(result)?.isNewUser) trackSignUp('google');
+      } catch (_) {}
+
       // Sauvegarder le profil en arriere-plan (ne pas attendre)
       saveUserProfile(user).catch(err => console.error('Erreur sauvegarde profil:', err));
       
@@ -105,7 +120,10 @@ export const AuthProvider = ({ children }) => {
       });
       
       console.log('✅ Email de vérification envoyé à:', email);
-      
+
+      // GA — nouveau compte email
+      trackSignUp('email');
+
       // Sauvegarder le profil avec le nom
       await saveUserProfile(user, displayName);
       
