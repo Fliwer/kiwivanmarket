@@ -145,5 +145,237 @@
     "email": "kiwivanmarket.contact@gmail.com",
     "responseTime": "24 to 48 hours",
     "intro": "Get in touch with the Kiwi Van Market team. We are here to help with your campervan journey in New Zealand — questions about a listing, help selling your van, reporting a problem, or suggesting a guide topic."
+  },
+  "why": {
+    "seoTitle": "Why KiwiVanMarket? + Top 10 Campervans in NZ | KiwiVanMarket",
+    "seoDesc": "Discover why KiwiVanMarket is the safest platform to buy or sell a campervan in New Zealand — and our picks for the Top 10 vans for backpackers.",
+    "h1": "Buy your van safely. No guessing.",
+    "intro": "We built KiwiVanMarket because buying a van off Facebook felt like gambling. Here's how we do it differently — and which van you should actually buy.",
+    "pillarsTitle": "Everything you need to buy safely",
+    "pillarsSubtitle": "We focus on the 3 things that matter most to every backpacker.",
+    "pillars": [
+      {
+        "title": "Transparent Vehicle Info",
+        "desc": "Know exactly what you're buying before you contact the seller. WOF, REGO, mileage — all clearly displayed.",
+        "items": [
+          "WOF expiry date displayed",
+          "REGO validity clearly shown",
+          "Mileage verified via CarJam link",
+          "Self-Contained badge when certified"
+        ]
+      },
+      {
+        "title": "Backpacker-Ready Listings",
+        "desc": "Every listing shows you exactly what equipment is included so you know if it's truly ready from day one.",
+        "items": [
+          "Equipment checklist on every van",
+          "Interior photos required",
+          "Filter by Self-Contained",
+          "Filter by Buy-Back guarantee"
+        ]
+      },
+      {
+        "title": "Direct & Spam-Free",
+        "desc": "No middleman, no algorithm burying your listing. Contact sellers directly. Sell to serious buyers only. Fast.",
+        "items": [
+          "Direct messaging with sellers",
+          "100% free to list your van",
+          "No random spam messages",
+          "Boost option for faster sales"
+        ]
+      }
+    ],
+    "top10Title": "Top 10 Campervans for NZ Backpackers",
+    "top10Subtitle": "Based on reliability, price, availability, and real traveller feedback across New Zealand.",
+    "top10": [
+      {
+        "rank": 1,
+        "name": "Toyota Hiace",
+        "tagline": "The Gold Standard",
+        "priceRange": "$5,000 – $20,000 NZD",
+        "badge": "Best Overall",
+        "bestFor": "Solo travellers & couples",
+        "pros": [
+          "Virtually indestructible engine",
+          "Tons of parts everywhere in NZ",
+          "Best resale value on the market",
+          "Ideal for long-term builds"
+        ]
+      },
+      {
+        "rank": 2,
+        "name": "Nissan Caravan / Homy",
+        "tagline": "The Reliable Workhorse",
+        "priceRange": "$4,000 – $14,000 NZD",
+        "badge": "Best Value",
+        "bestFor": "Budget travellers",
+        "pros": [
+          "Very affordable entry price",
+          "Spacious high-roof interior",
+          "Easy to find used versions",
+          "Strong aftermarket support"
+        ]
+      },
+      {
+        "rank": 3,
+        "name": "Nissan Elgrand",
+        "tagline": "The King of Vans",
+        "priceRange": "$5,000 – $18,000 NZD",
+        "badge": "Most Comfortable",
+        "bestFor": "Comfort seekers",
+        "pros": [
+          "Luxurious interior finish",
+          "Very smooth & quiet ride",
+          "Popular for premium conversions",
+          "Great for couples & families"
+        ]
+      },
+      {
+        "rank": 4,
+        "name": "Mitsubishi Delica",
+        "tagline": "The Off-Road Beast",
+        "priceRange": "$4,000 – $12,000 NZD",
+        "badge": "Best 4WD",
+        "bestFor": "Adventure & off-road trips",
+        "pros": [
+          "4WD capability standard",
+          "Handles gravel & forest roads",
+          "Iconic in NZ backpacker scene",
+          "Very compact and easy to park"
+        ]
+      },
+      {
+        "rank": 5,
+        "name": "Toyota HiAce Diesel",
+        "tagline": "The Fuel Saver",
+        "priceRange": "$6,000 – $22,000 NZD",
+        "badge": "Best for Long Distances",
+        "bestFor": "Long-distance travellers",
+        "pros": [
+          "Incredible fuel economy",
+          "Up to 1000km per tank",
+          "Same legendary Hiace reliability",
+          "Great for South Island road trips"
+        ]
+      },
+      {
+        "rank": 6,
+        "name": "Mazda Bongo",
+        "tagline": "The Compact Expert",
+        "priceRange": "$3,000 – $9,000 NZD",
+        "badge": "Best Budget",
+        "bestFor": "Solo budget travellers",
+        "pros": [
+          "Very cheap entry price",
+          "Easy to drive in cities",
+          "Low fuel consumption",
+          "Small enough for tight campsites"
+        ]
+      },
+      {
+        "rank": 7,
+        "name": "Ford Transit",
+        "tagline": "The Conversion King",
+        "priceRange": "$5,000 – $25,000 NZD",
+        "badge": "Best for Custom Builds",
+        "bestFor": "DIY builders & long stays",
+        "pros": [
+          "Largest interior space",
+          "Perfect for full custom builds",
+          "Good parts availability in NZ",
+          "Very sturdy European build quality"
+        ]
+      },
+      {
+        "rank": 8,
+        "name": "Toyota Camroad",
+        "tagline": "The Cult Classic",
+        "priceRange": "$7,000 – $28,000 NZD",
+        "badge": "Best Pre-Built",
+        "bestFor": "Turnkey buyers",
+        "pros": [
+          "Often comes fully converted",
+          "Very high build quality in Japan",
+          "Self-contained certified common",
+          "Extremely reliable diesel"
+        ]
+      },
+      {
+        "rank": 9,
+        "name": "Mitsubishi Express",
+        "tagline": "The Hidden Gem",
+        "priceRange": "$2,500 – $7,000 NZD",
+        "badge": "Best Underrated Pick",
+        "bestFor": "Short-stay backpackers",
+        "pros": [
+          "Very underrated & affordable",
+          "Decent space for a small van",
+          "Low competition when buying",
+          "Good for short NZ trips (3–4 months)"
+        ]
+      },
+      {
+        "rank": 10,
+        "name": "VW Transporter (T4/T5)",
+        "tagline": "The Lifestyle Van",
+        "priceRange": "$8,000 – $30,000 NZD",
+        "badge": "Most Instagrammable",
+        "bestFor": "Lifestyle & content creators",
+        "pros": [
+          "Iconic & stylish design",
+          "Great community around VW vans",
+          "Good resale value if well-maintained",
+          "Comfortable for long trips"
+        ]
+      }
+    ]
+  },
+  "buyback": {
+    "seoTitle": "Campervan Buyback & Resale Value Calculator NZ | Kiwi Van Market",
+    "seoDesc": "Estimate what your campervan will be worth when you resell it in New Zealand. Free calculator based on brand, age, mileage, self-contained status and season.",
+    "h1": "Campervan Resale Estimate — New Zealand",
+    "intro": "Get a market estimate based on New Zealand vehicle demographics, seasonal demand, and brand reliability.",
+    "explainer": "A buy-back arrangement is common between backpackers in New Zealand: the seller agrees upfront to repurchase the van at a set price once the buyer trip ends. Knowing your likely resale value is what makes that number fair for both sides — and it tells any seller how much a season of vanlife will really cost.",
+    "factorsTitle": "What the estimate is based on",
+    "factors": [
+      {
+        "name": "Brand and model",
+        "text": "Toyota (Hiace, Estima) holds its value best in New Zealand, followed by Mitsubishi (L300, Delica) and Mazda (Bongo). Generic or rare imports lose the most."
+      },
+      {
+        "name": "Self-contained certification",
+        "text": "The green certificate (fixed toilet) is the current standard and adds value. The blue sticker is being phased out and is worth less. No certification is the single biggest deduction."
+      },
+      {
+        "name": "Age and ownership time",
+        "text": "Monthly depreciation runs from roughly 1.6% for newer vans down to 1.0% for vehicles over 20 years old — older backpacker vans have already taken their loss."
+      },
+      {
+        "name": "Mileage driven",
+        "text": "Roughly one point of recovery is lost per 3,500 km added during your ownership."
+      },
+      {
+        "name": "Service history",
+        "text": "A full service history adds value; no history at all costs you several points."
+      },
+      {
+        "name": "Resale season",
+        "text": "Demand peaks in summer when backpackers arrive, and drops in winter. The same van can be worth noticeably more in December than in June."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "What is a buy-back guarantee for a campervan in New Zealand?",
+        "a": "A buy-back guarantee is an agreement where the seller commits upfront to repurchase the van at an agreed price once the buyer trip is over. It is popular with backpackers on a fixed timeline, because it caps how much the trip will cost them and guarantees the seller gets the van back."
+      },
+      {
+        "q": "How much value does a campervan lose in New Zealand?",
+        "a": "Backpacker vans depreciate slowly compared with ordinary cars: roughly 1 to 1.6% per month depending on age, plus wear for the distance driven. A well-kept, self-contained van bought and resold in the right season can lose very little."
+      },
+      {
+        "q": "Is buying a campervan cheaper than renting in New Zealand?",
+        "a": "For trips beyond about a month it usually is. Renting an equivalent campervan costs well over $100 per day, whereas buying and reselling means you only carry the depreciation, the maintenance and the running costs."
+      }
+    ]
   }
 }

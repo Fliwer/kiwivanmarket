@@ -440,12 +440,113 @@ ${faqs.map(({ q, a }) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('\n')}
   };
 }
 
+// ── /why ────────────────────────────────────────────────────────────────────
+function whyPage() {
+  const W = DATA.why;
+
+  const body = `
+<h1>${esc(W.h1)}</h1>
+<p>${esc(W.intro)}</p>
+
+<h2>${esc(W.pillarsTitle)}</h2>
+<p>${esc(W.pillarsSubtitle)}</p>
+${W.pillars.map((p) => `<h3>${esc(p.title)}</h3>
+<p>${esc(p.desc)}</p>
+<ul>${p.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`).join('\n')}
+
+<h2>${esc(W.top10Title)}</h2>
+<p>${esc(W.top10Subtitle)}</p>
+${W.top10.map((v) => `<h3>${v.rank}. ${esc(v.name)} — ${esc(v.tagline)}</h3>
+<p><strong>${esc(v.priceRange)}</strong> · ${esc(v.badge)} · Best for: ${esc(v.bestFor)}</p>
+<ul>${v.pros.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>`).join('\n')}
+
+<h2>Ready to find your van?</h2>
+<p>Browse our listings and filter by model, location, price, or equipment. All vans are listed by real backpackers.</p>
+<ul>
+<li><a href="${ORIGIN}/">Explore available campervans</a></li>
+<li><a href="${ORIGIN}/sell">List your van for free</a></li>
+<li><a href="${ORIGIN}/campervan-prices-nz">What campervans actually sell for in NZ</a></li>
+<li><a href="${ORIGIN}/guide/buying-campervan-nz">How to buy a campervan in New Zealand</a></li>
+</ul>`;
+
+  return {
+    title: W.seoTitle,
+    metaDesc: W.seoDesc,
+    canonical: `${ORIGIN}/why`,
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: W.top10Title,
+        numberOfItems: W.top10.length,
+        itemListElement: W.top10.map((v) => ({
+          '@type': 'ListItem',
+          position: v.rank,
+          name: v.name,
+          description: `${v.tagline} — ${v.badge}. Best for ${v.bestFor}. Typical price ${v.priceRange}.`,
+        })),
+      },
+      breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Why Kiwi Van Market', path: '/why' }]),
+    ],
+    body,
+  };
+}
+
+// ── /buyback-calculator ─────────────────────────────────────────────────────
+function buybackPage() {
+  const B = DATA.buyback;
+
+  const body = `
+<h1>${esc(B.h1)}</h1>
+<p>${esc(B.intro)}</p>
+<p>${esc(B.explainer)}</p>
+<p><a href="${ORIGIN}/buyback-calculator"><strong>Open the resale calculator</strong></a> and enter your van's
+brand, year, mileage, self-contained status and how long you plan to keep it.</p>
+
+<h2>${esc(B.factorsTitle)}</h2>
+${B.factors.map((f) => `<h3>${esc(f.name)}</h3><p>${esc(f.text)}</p>`).join('\n')}
+
+<h2>Frequently asked questions</h2>
+${B.faqs.map(({ q, a }) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('\n')}
+
+<h2>Go further</h2>
+<ul>
+<li><a href="${ORIGIN}/campervan-prices-nz">Real campervan prices in New Zealand</a></li>
+<li><a href="${ORIGIN}/sell">Sell your van for free</a></li>
+<li><a href="${ORIGIN}/guide/selling-campervan-nz">How to sell your campervan in New Zealand</a></li>
+</ul>`;
+
+  return {
+    title: B.seoTitle,
+    metaDesc: B.seoDesc,
+    canonical: `${ORIGIN}/buyback-calculator`,
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebApplication',
+        name: 'Campervan Resale & Buyback Calculator',
+        url: `${ORIGIN}/buyback-calculator`,
+        applicationCategory: 'FinanceApplication',
+        operatingSystem: 'Any',
+        description: B.seoDesc,
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'NZD' },
+        provider: { '@type': 'Organization', name: 'Kiwi Van Market', url: ORIGIN },
+      },
+      faqLd(B.faqs),
+      breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Buyback calculator', path: '/buyback-calculator' }]),
+    ],
+    body,
+  };
+}
+
 const PAGES = {
   sell: sellPage,
   guides: guidesPage,
   faq: faqPage,
   contact: contactPage,
   prices: pricesPage,
+  why: whyPage,
+  buyback: buybackPage,
 };
 
 module.exports = async function handler(req, res) {
