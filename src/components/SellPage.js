@@ -858,14 +858,14 @@ export default function SellPage() {
                 <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {[
-                      { key: 'doubleBed', label: 'Double Bed', emoji: '' },
-                      { key: 'fridge', label: 'Fridge', emoji: '' },
-                      { key: 'gasStove', label: 'Gas Stove', emoji: '' },
-                      { key: 'sink', label: 'Sink', emoji: '' },
-                      { key: 'toilet', label: 'Toilet', emoji: '' },
-                      { key: 'solarPanel', label: 'Solar Panel', emoji: '' },
-                      { key: 'leisureBattery', label: 'Leisure Battery', emoji: '' },
-                      { key: 'heater', label: 'Heater', emoji: '' },
+                      { key: 'doubleBed', label: 'Double Bed', emoji: '🛏️' },
+                      { key: 'fridge', label: 'Fridge', emoji: '🧊' },
+                      { key: 'gasStove', label: 'Gas Stove', emoji: '🔥' },
+                      { key: 'sink', label: 'Sink', emoji: '🚰' },
+                      { key: 'toilet', label: 'Toilet', emoji: '🚽' },
+                      { key: 'solarPanel', label: 'Solar Panel', emoji: '☀️' },
+                      { key: 'leisureBattery', label: 'Leisure Battery', emoji: '🔋' },
+                      { key: 'heater', label: 'Heater', emoji: '🌡️' },
                     ].map(item => (
                       <label key={item.key} className="flex items-center gap-2 p-2 bg-white rounded-lg cursor-pointer hover:bg-emerald-100 transition border border-transparent hover:border-emerald-200">
                         <input
