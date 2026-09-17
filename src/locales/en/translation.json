@@ -339,5 +339,48 @@
             "tag1": "Luxury",
             "tag2": "Powerful"
         }
+    },
+    "seo_pages": {
+        "back": "Back",
+        "back_to_listings": "Back to listings",
+        "links_title": "Smart internal links",
+        "buyer_guide": "Buyer guide",
+        "budget_auckland": "Budget vans in Auckland",
+        "sc_christchurch": "Self-contained in Christchurch",
+        "faq_of": "{{name}} FAQ",
+        "location": {
+            "not_found": "Location not found",
+            "crumb": "Locations",
+            "loading": "Finding vans in {{name}}...",
+            "available_one": "{{count}} Van Available",
+            "available_many": "{{count}} Vans Available",
+            "empty_title": "No vans found in {{name}}",
+            "empty_text": "Try searching in a nearby region or check all listings.",
+            "view_all": "View All Listings",
+            "start_title": "Start your journey in",
+            "pickup": "Meet sellers in person — inspect and test drive before you pay"
+        },
+        "brand": {
+            "not_found": "Brand not found",
+            "crumb": "Brands",
+            "searching": "Searching specialized market...",
+            "available": "{{count}} Vans Available",
+            "loading": "Loading {{name}} listings...",
+            "empty_title": "No {{name}} currently listed",
+            "empty_text": "Try selecting a different brand or checking back soon.",
+            "browse_all": "Browse All Vans",
+            "why_title": "Why choose a",
+            "why_hiace": "The Hiace is New Zealand's cult classic for a reason. Spare parts are available in every small town, and the engines are practically bulletproof. Perfect for long West Coast exploration.",
+            "why_generic": "The {{name}} offers a perfect balance of reliability and comfort for your New Zealand road trip. Known for being spacious and easy to convert.",
+            "read_guide": "Read Buyer's Guide"
+        },
+        "faq": {
+            "badge": "Expert Answers"
+        },
+        "prices": {
+            "badge": "{{year}} market data",
+            "median_listings": "median · {{count}} listings",
+            "browse": "Browse vans for sale"
+        }
     }
 }

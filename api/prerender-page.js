@@ -16,12 +16,12 @@ const {
   faqLd, breadcrumbLd, htmlShell, send404, sendHTML,
 } = require('./_lib/util');
 const { pickLang, pageMeta, langUrl: absLangUrl } = require('./_lib/i18n');
-const COPY = require('./_lib/copy');
+const COPY = require('../src/data/seo/copy');
 
 const GUIDES = require('./_lib/guides-data.json');
 const DATA = {
-  en: require('./_lib/pages-data.json'),
-  fr: require('./_lib/pages-data.fr.json'),
+  en: require('../src/data/seo/pages-data.json'),
+  fr: require('../src/data/seo/pages-data.fr.json'),
 };
 
 // ── /sell ───────────────────────────────────────────────────────────────────

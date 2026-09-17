@@ -1,5 +1,6 @@
 // ============================================================================
-// Textes des pages prérendues, par langue. Les chaînes EN sont celles qui
+// Textes des pages SEO, par langue — SOURCE UNIQUE partagée entre les
+// prerenders (api/, via require relatif) et les composants React (src/). Les chaînes EN sont celles qui
 // étaient écrites en dur dans les handlers (déplacées à l'identique — la
 // sortie anglaise ne doit pas changer d'un octet). Le FR vouvoie, comme
 // src/locales/fr/translation.json, et garde le vocabulaire backpacker
@@ -106,6 +107,7 @@ const en = {
       dunedin: 'Student city of the south — good deals from locals and travellers heading north.',
       hamilton: 'Waikato hub close to Auckland with easier prices than the big city.',
       tauranga: 'Bay of Plenty — popular coastal region for vanlife and surf trips.',
+      nelson: 'Sunniest region of the country and gateway to Abel Tasman — a relaxed market with vans coming off the top of the South Island.',
     },
     title: (n) => `Campervans for Sale in ${n} | Kiwi Van Market`,
     metaDesc: (n, s, count) => `${count} campervans for sale in ${n}, NZ. Prices from ${s.min} (average ${s.avg}). Self-contained vans, WOF & REGO checked, direct from owners.`,
@@ -375,6 +377,7 @@ const fr = {
       dunedin: 'La ville étudiante du Sud — de bonnes affaires auprès des locaux et des voyageurs qui remontent vers le nord.',
       hamilton: 'Hub du Waikato tout près d\'Auckland, avec des prix plus doux que dans la grande ville.',
       tauranga: 'Bay of Plenty — une région côtière prisée pour la vanlife et le surf.',
+      nelson: 'La région la plus ensoleillée du pays et la porte d\'Abel Tasman — un marché tranquille, avec des vans qui arrivent du haut de l\'île du Sud.',
     },
     title: (n) => `Vans à vendre à ${n} | Kiwi Van Market`,
     metaDesc: (n, s, count) => `${count} vans à vendre à ${n}, NZ. Prix à partir de ${s.min} (${s.avg} en moyenne). Vans self-contained, WOF et REGO vérifiés, directement auprès des propriétaires.`,

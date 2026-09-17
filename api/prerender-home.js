@@ -10,7 +10,7 @@ const {
   itemListLd, faqLd, htmlShell, sendHTML, send503,
 } = require('./_lib/util');
 const { pickLang, pageMeta } = require('./_lib/i18n');
-const COPY = require('./_lib/copy');
+const COPY = require('../src/data/seo/copy');
 const GUIDES = require('./_lib/guides-data.json');
 
 const BRANDS = {

@@ -8,6 +8,7 @@ import VanCard from './VanCard';
 import SeoHead from './SeoHead';
 import { useTranslation } from 'react-i18next';
 import { useHideLoader } from '../hooks/useHideLoader';
+import { seoCopy, seoLang, SEO_LANGS, priceStats, nzd } from '../data/seo';
 
 // Configuration des locations avec descriptions SEO
 const LOCATIONS_CONFIG = {
@@ -148,16 +149,18 @@ export default function LocationPage() {
 
   const locationConfig = LOCATIONS_CONFIG[location];
   const url = `https://kiwivanmarket.com/location/${location}`;
-  const locationFaqs = locationConfig ? [
-    {
-      q: `How do I buy a campervan safely in ${locationConfig.name}?`,
-      a: `Check WOF, REGO, self-contained status, and ask for service history. Meet the seller in person and test drive before payment.`,
-    },
-    {
-      q: `What budget should I expect in ${locationConfig.name}?`,
-      a: `Prices vary by season, condition, and equipment. Compare multiple listings and prioritize verified trust signals over low price alone.`,
-    },
-  ] : [];
+  // Textes SEO partagés avec le prerender (src/data/seo), dans la langue courante.
+  const lang = seoLang(i18n.language);
+  const S = seoCopy(i18n.language);
+  const stats = priceStats(vans);
+  const statsFmt = stats && { count: stats.count, min: nzd(stats.min), max: nzd(stats.max), avg: nzd(stats.avg) };
+  const name = locationConfig?.name || '';
+  const seoTitle = lang === 'en' ? locationConfig?.title : S.location.title(name).replace(' | Kiwi Van Market', '');
+  const seoDescription = lang === 'en'
+    ? locationConfig?.description
+    : (statsFmt ? S.location.metaDesc(name, statsFmt, vans.length) : S.location.metaDescNoStats(name));
+  const heroText = lang === 'en' ? locationConfig?.description : S.location.blurbs[location];
+  const locationFaqs = locationConfig ? S.location.faqs(name, statsFmt) : [];
 
   useEffect(() => {
     const fetchVans = async () => {
@@ -208,8 +211,8 @@ export default function LocationPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Location not found</h1>
-          <Link to="/" className="text-emerald-600 hover:underline">Back to listings</Link>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">{t('seo_pages.location.not_found')}</h1>
+          <Link to="/" className="text-emerald-600 hover:underline">{t('seo_pages.back_to_listings')}</Link>
         </div>
       </div>
     );
@@ -218,14 +221,14 @@ export default function LocationPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       <SeoHead
-        title={locationConfig?.title}
-        description={locationConfig?.description}
+        title={seoTitle}
+        description={seoDescription}
         keywords={locationConfig?.keywords}
-        canonicalUrl={url}
+        alternateLangs={SEO_LANGS}
         faqs={locationFaqs}
         breadcrumbs={[
-          { name: 'Home', path: '/' },
-          { name: 'Locations', path: '/guides' },
+          { name: S.common.home, path: '/' },
+          { name: t('seo_pages.location.crumb'), path: '/guides' },
           { name: locationConfig?.name || 'Location', path: `/location/${location}` },
         ]}
       />
@@ -240,7 +243,7 @@ export default function LocationPage() {
             className="flex items-center gap-2 text-emerald-100 hover:text-white transition mb-6"
           >
             <ArrowLeft size={20} />
-            <span>Back</span>
+            <span>{t('seo_pages.back')}</span>
           </button>
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 bg-white/20 rounded-2xl">
@@ -251,7 +254,7 @@ export default function LocationPage() {
             </h1>
           </div>
           <p className="text-emerald-100 text-lg max-w-2xl leading-relaxed">
-            {locationConfig?.description}
+            {heroText}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -268,23 +271,23 @@ export default function LocationPage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-gray-500 font-bold">Finding vans in {locationConfig?.name}...</p>
+            <p className="text-gray-500 font-bold">{t('seo_pages.location.loading', { name })}</p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-800">
-                {vans.length} {vans.length === 1 ? 'Van' : 'Vans'} Available
+                {t(vans.length === 1 ? 'seo_pages.location.available_one' : 'seo_pages.location.available_many', { count: vans.length })}
               </h2>
             </div>
 
             {vans.length === 0 ? (
               <div className="bg-white rounded-3xl p-12 text-center shadow-xl border border-gray-100">
                 <div className="text-6xl mb-6">📍</div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">No vans found in {locationConfig?.name}</h2>
-                <p className="text-gray-500 mb-8">Try searching in a nearby region or check all listings.</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">{t('seo_pages.location.empty_title', { name })}</h2>
+                <p className="text-gray-500 mb-8">{t('seo_pages.location.empty_text')}</p>
                 <Link to="/" className="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold hover:bg-emerald-700 transition shadow-lg">
-                  View All Listings
+                  {t('seo_pages.location.view_all')}
                 </Link>
               </div>
             ) : (
@@ -296,19 +299,19 @@ export default function LocationPage() {
             )}
 
             <div className="mt-10 bg-white rounded-2xl border border-slate-100 p-6">
-              <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">Smart internal links</h3>
+              <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">{t('seo_pages.links_title')}</h3>
               <div className="flex flex-wrap gap-2">
                 <Link to={`/faq/location/${location}`} className="px-4 py-2 rounded-xl bg-blue-50 text-blue-700 font-bold text-sm">
-                  {locationConfig?.name} FAQ
+                  {t('seo_pages.faq_of', { name })}
                 </Link>
                 <Link to="/guide/buying-campervan-nz" className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm">
-                  Buyer guide
+                  {t('seo_pages.buyer_guide')}
                 </Link>
                 <Link to="/search/buy-campervan-in-auckland-under-15000" className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm">
-                  Budget vans in Auckland
+                  {t('seo_pages.budget_auckland')}
                 </Link>
                 <Link to="/search/self-contained-van-christchurch" className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm">
-                  Self-contained in Christchurch
+                  {t('seo_pages.sc_christchurch')}
                 </Link>
               </div>
             </div>
@@ -319,17 +322,17 @@ export default function LocationPage() {
               <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
                 <div>
                   <h2 className="text-3xl md:text-4xl font-black mb-6 leading-tight">
-                    Start your journey in <span className="text-emerald-400">{locationConfig?.name}</span>
+                    {t('seo_pages.location.start_title')} <span className="text-emerald-400">{locationConfig?.name}</span>
                   </h2>
                   <p className="text-gray-400 mb-8 text-lg font-medium leading-relaxed">
-                    Auckland is the gateway to New Zealand. Most travelers start here, which means you'll find the best selection of fully equipped campervans and motorhomes ready for your road trip.
+                    {S.location.blurbs[location] || locationConfig?.description}
                   </p>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400">
                         <MapPin size={20} />
                       </div>
-                      <span className="font-bold">Many pick-up points near the airport</span>
+                      <span className="font-bold">{t('seo_pages.location.pickup')}</span>
                     </div>
                   </div>
                 </div>

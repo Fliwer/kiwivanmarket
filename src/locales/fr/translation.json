@@ -339,5 +339,48 @@
             "tag1": "Luxe & Confort",
             "tag2": "Moteur Puissant"
         }
+    },
+    "seo_pages": {
+        "back": "Retour",
+        "back_to_listings": "Retour aux annonces",
+        "links_title": "Liens utiles",
+        "buyer_guide": "Guide de l'acheteur",
+        "budget_auckland": "Vans pas chers à Auckland",
+        "sc_christchurch": "Self-contained à Christchurch",
+        "faq_of": "FAQ {{name}}",
+        "location": {
+            "not_found": "Ville introuvable",
+            "crumb": "Villes",
+            "loading": "Recherche des vans à {{name}}…",
+            "available_one": "{{count}} van disponible",
+            "available_many": "{{count}} vans disponibles",
+            "empty_title": "Aucun van trouvé à {{name}}",
+            "empty_text": "Essayez une région voisine ou consultez toutes les annonces.",
+            "view_all": "Voir toutes les annonces",
+            "start_title": "Commencez votre voyage à",
+            "pickup": "Rencontrez les vendeurs en personne — inspectez et essayez avant de payer"
+        },
+        "brand": {
+            "not_found": "Marque introuvable",
+            "crumb": "Marques",
+            "searching": "Recherche sur le marché spécialisé…",
+            "available": "{{count}} vans disponibles",
+            "loading": "Chargement des annonces {{name}}…",
+            "empty_title": "Aucun {{name}} en vente pour le moment",
+            "empty_text": "Essayez une autre marque ou revenez bientôt.",
+            "browse_all": "Voir tous les vans",
+            "why_title": "Pourquoi choisir un",
+            "why_hiace": "Le Hiace est le classique culte de la Nouvelle-Zélande, et ce n'est pas pour rien. Les pièces se trouvent dans la moindre petite ville et les moteurs sont quasiment increvables. Parfait pour une longue exploration de la côte Ouest.",
+            "why_generic": "Le {{name}} offre un équilibre parfait entre fiabilité et confort pour votre road trip en Nouvelle-Zélande. Réputé spacieux et facile à aménager.",
+            "read_guide": "Lire le guide de l'acheteur"
+        },
+        "faq": {
+            "badge": "Réponses d'experts"
+        },
+        "prices": {
+            "badge": "Données de marché {{year}}",
+            "median_listings": "médiane · {{count}} annonces",
+            "browse": "Voir les vans à vendre"
+        }
     }
 }

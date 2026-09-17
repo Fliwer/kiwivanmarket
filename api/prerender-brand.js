@@ -9,7 +9,7 @@ const {
   itemListLd, faqLd, breadcrumbLd, htmlShell, send404, sendHTML, send503,
 } = require('./_lib/util');
 const { pickLang, pageMeta } = require('./_lib/i18n');
-const COPY = require('./_lib/copy');
+const COPY = require('../src/data/seo/copy');
 
 // Parité stricte avec BRANDS_CONFIG de src/components/BrandPage.js
 const BRANDS = {

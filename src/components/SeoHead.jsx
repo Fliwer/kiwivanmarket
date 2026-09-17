@@ -214,9 +214,9 @@ export default function SeoHead({
             if (!noindex) {
                 addLink('canonical', finalCanonicalUrl);
                 if (localized) {
-                    addLink('alternate', langHref('en'), 'en');
-                    addLink('alternate', langHref('fr'), 'fr');
-                    addLink('alternate', langHref('es'), 'es');
+                    // Uniquement les langues où la page existe vraiment (liste passée
+                    // par la page), sinon on annonce à Google des versions inexistantes.
+                    alternateLangs.forEach((l) => addLink('alternate', langHref(l), l));
                     addLink('alternate', cleanUrl, 'x-default');
                 } else {
                     addLink('alternate', cleanUrl, 'en');
@@ -253,9 +253,9 @@ export default function SeoHead({
                 {/* ── Hreflang ────────────────────────────────────────── */}
                 {!noindex && localized && (
                     <>
-                        <link rel="alternate" hreflang="en" href={langHref('en')} />
-                        <link rel="alternate" hreflang="fr" href={langHref('fr')} />
-                        <link rel="alternate" hreflang="es" href={langHref('es')} />
+                        {alternateLangs.map((l) => (
+                            <link key={l} rel="alternate" hreflang={l} href={langHref(l)} />
+                        ))}
                         <link rel="alternate" hreflang="x-default" href={cleanUrl} />
                     </>
                 )}
