@@ -1,0 +1,122 @@
+// ============================================================================
+// Pages longue traîne /search/:slug — miroir CommonJS de
+// src/constants/seoLongTailPages.js (même convention que guides-data.json :
+// copie manuelle, à resynchroniser si le générateur change côté React).
+//
+// 126 pages générées : 9 villes × 5 budgets, 9 self-contained, 6 marques ×
+// 4 villes × 3 budgets. La plupart n'ont aucun van : c'est MIN_INDEXABLE qui
+// décide lesquelles méritent l'index (les autres restent en noindex jusqu'à
+// ce que des annonces arrivent).
+// ============================================================================
+
+const CITY_META = [
+  { slug: 'auckland', name: 'Auckland' },
+  { slug: 'christchurch', name: 'Christchurch' },
+  { slug: 'wellington', name: 'Wellington' },
+  { slug: 'queenstown', name: 'Queenstown' },
+  { slug: 'hamilton', name: 'Hamilton' },
+  { slug: 'tauranga', name: 'Tauranga' },
+  { slug: 'rotorua', name: 'Rotorua' },
+  { slug: 'dunedin', name: 'Dunedin' },
+  { slug: 'nelson', name: 'Nelson' },
+];
+
+const BRAND_META = [
+  { slug: 'toyota-hiace', name: 'Toyota Hiace', terms: ['toyota', 'hiace'] },
+  { slug: 'nissan-caravan', name: 'Nissan Caravan', terms: ['nissan', 'caravan'] },
+  { slug: 'mazda-bongo', name: 'Mazda Bongo', terms: ['mazda', 'bongo'] },
+  { slug: 'mitsubishi-delica', name: 'Mitsubishi Delica', terms: ['mitsubishi', 'delica'] },
+  { slug: 'ford-transit', name: 'Ford Transit', terms: ['ford', 'transit'] },
+  { slug: 'mercedes-sprinter', name: 'Mercedes Sprinter', terms: ['mercedes', 'sprinter'] },
+];
+
+const BUDGETS = [8000, 12000, 15000, 18000, 22000];
+const BRAND_CITY_FOCUS = ['auckland', 'christchurch', 'wellington', 'queenstown'];
+const BRAND_BUDGETS = [12000, 18000, 22000];
+
+// En dessous, la page est trop mince pour l'index : elle reste servie (utile
+// à l'humain, et elle bascule en indexable toute seule dès que le stock monte).
+const MIN_INDEXABLE = 3;
+
+function createBudgetPage(city, budget) {
+  return {
+    slug: `buy-campervan-in-${city.slug}-under-${budget}`,
+    title: `Buy Campervan in ${city.name} Under ${budget} NZD`,
+    description: `Browse campervans in ${city.name} under NZ$${budget.toLocaleString()}. Compare trust-first listings with WOF/REGO and direct seller contact.`,
+    heading: `Buy a campervan in ${city.name} under NZ$${budget.toLocaleString()}`,
+    city: city.slug,
+    cityName: city.name,
+    maxPrice: budget,
+    selfContainedOnly: false,
+  };
+}
+
+function createSelfContainedPage(city) {
+  return {
+    slug: `self-contained-van-${city.slug}`,
+    title: `Self-Contained Van ${city.name}`,
+    description: `Find self-contained vans in ${city.name}, New Zealand. Compare listings with trust signals and clear compliance details.`,
+    heading: `Self-contained vans in ${city.name}`,
+    city: city.slug,
+    cityName: city.name,
+    selfContainedOnly: true,
+  };
+}
+
+function createBrandCityBudgetPage(city, brand, budget) {
+  return {
+    slug: `${brand.slug}-${city.slug}-under-${budget}`,
+    title: `${brand.name} in ${city.name} Under ${budget} NZD`,
+    description: `Find ${brand.name} campervans in ${city.name} under NZ$${budget.toLocaleString()}. Compare trusted listings and contact sellers directly.`,
+    heading: `${brand.name} in ${city.name} under NZ$${budget.toLocaleString()}`,
+    city: city.slug,
+    cityName: city.name,
+    maxPrice: budget,
+    selfContainedOnly: false,
+    brandSlug: brand.slug,
+    brandName: brand.name,
+    brandTerms: brand.terms,
+  };
+}
+
+const LONG_TAIL_PAGE_LIST = [];
+CITY_META.forEach((city) => {
+  BUDGETS.forEach((budget) => LONG_TAIL_PAGE_LIST.push(createBudgetPage(city, budget)));
+  LONG_TAIL_PAGE_LIST.push(createSelfContainedPage(city));
+});
+BRAND_META.forEach((brand) => {
+  CITY_META
+    .filter((city) => BRAND_CITY_FOCUS.includes(city.slug))
+    .forEach((city) => {
+      BRAND_BUDGETS.forEach((budget) => LONG_TAIL_PAGE_LIST.push(createBrandCityBudgetPage(city, brand, budget)));
+    });
+});
+
+const LONG_TAIL_PAGE_MAP = Object.fromEntries(LONG_TAIL_PAGE_LIST.map((p) => [p.slug, p]));
+
+// Même filtre que SeoLongTailPage.jsx (ville par inclusion, plafond de prix,
+// self-contained, marque par mots-clés du titre).
+function matchesPage(van, page) {
+  if (!(van.location || '').toLowerCase().includes(page.city)) return false;
+  if (typeof page.maxPrice === 'number' && (van.price || 0) > page.maxPrice) return false;
+  if (page.selfContainedOnly && !van.selfContained) return false;
+  if (page.brandTerms) {
+    const t = (van.title || '').toLowerCase();
+    if (!page.brandTerms.some((k) => t.includes(k))) return false;
+  }
+  return true;
+}
+
+function vansForPage(vans, page) {
+  return vans.filter((v) => matchesPage(v, page)).sort((a, b) => {
+    // Actifs d'abord, puis les plus récents.
+    const s = (a.status === 'sold' ? 1 : 0) - (b.status === 'sold' ? 1 : 0);
+    if (s) return s;
+    return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+  });
+}
+
+module.exports = {
+  CITY_META, BRAND_META, MIN_INDEXABLE,
+  LONG_TAIL_PAGE_LIST, LONG_TAIL_PAGE_MAP, matchesPage, vansForPage,
+};

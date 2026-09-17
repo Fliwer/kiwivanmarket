@@ -135,7 +135,7 @@ const NAV_LINKS = `<nav>
   <a href="${ORIGIN}/faq">FAQ</a>
 </nav>`;
 
-function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogType = 'website', alternates = [], htmlLang = 'en', ogLocale = 'en_NZ' }) {
+function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogType = 'website', alternates = [], htmlLang = 'en', ogLocale = 'en_NZ', noindex = false }) {
   const alternateTags = (alternates || [])
     .map((a) => `<link rel="alternate" hreflang="${a.hreflang}" href="${a.href}">`)
     .join('\n');
@@ -146,7 +146,7 @@ function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogT
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(metaDesc)}">
-<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="robots" content="${noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large'}">
 <link rel="canonical" href="${canonical}">
 ${alternateTags}
 <link rel="icon" type="image/png" sizes="192x192" href="${ORIGIN}/logo192.png">

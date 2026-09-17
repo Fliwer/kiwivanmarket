@@ -16,6 +16,10 @@
       "destination": "/api/sitemap-vehicles"
     },
     {
+      "source": "/sitemap-search.xml",
+      "destination": "/api/sitemap-search"
+    },
+    {
       "source": "/van/:id",
       "has": [
         {
@@ -135,6 +139,28 @@
         }
       ],
       "destination": "/api/prerender-page?page=buyback"
+    },
+    {
+      "source": "/search/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|gptbot|oai-searchbot|chatgpt|claudebot|claude-web|claude-searchbot|anthropic|perplexity|ccbot|amazonbot|bytespider|meta-externalagent|facebookexternalhit|twitterbot|linkedinbot|slackbot|whatsapp|telegrambot|discordbot|pinterestbot|google-extended).*"
+        }
+      ],
+      "destination": "/api/prerender-search?slug=:slug"
+    },
+    {
+      "source": "/faq/:scope/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|gptbot|oai-searchbot|chatgpt|claudebot|claude-web|claude-searchbot|anthropic|perplexity|ccbot|amazonbot|bytespider|meta-externalagent|facebookexternalhit|twitterbot|linkedinbot|slackbot|whatsapp|telegrambot|discordbot|pinterestbot|google-extended).*"
+        }
+      ],
+      "destination": "/api/prerender-faq-topic?scope=:scope&slug=:slug"
     }
   ],
   "headers": [
@@ -152,6 +178,13 @@
       "source": "/((?!embed).*)",
       "headers": [
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    },
+    {
+      "source": "/sitemap-search.xml",
+      "headers": [
+        { "key": "Content-Type", "value": "application/xml" },
+        { "key": "Cache-Control", "value": "s-maxage=3600, stale-while-revalidate=86400" }
       ]
     },
     {

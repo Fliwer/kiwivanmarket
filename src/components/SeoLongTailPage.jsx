@@ -39,6 +39,12 @@ export default function SeoLongTailPage() {
           if (!inCity) return false;
           if (typeof config.maxPrice === 'number' && (van.price || 0) > config.maxPrice) return false;
           if (config.selfContainedOnly && !van.selfContained) return false;
+          // Les pages marque doivent ne montrer que la marque (brandTerms est
+          // dans la config depuis le début mais n'était jamais appliqué).
+          if (config.brandTerms) {
+            const t = (van.title || '').toLowerCase();
+            if (!config.brandTerms.some((k) => t.includes(k))) return false;
+          }
           return true;
         });
 
