@@ -88,10 +88,15 @@ export default function middleware(request) {
     const path = normalizePath(url.pathname);
     const isBot = BOT_RE.test(request.headers.get('user-agent') || '');
 
-    // 1. Home prerendue pour les crawlers (comportement historique).
+    // 1. Home prerendue pour les crawlers (comportement historique). On
+    //    transmet ?lang=fr pour la version francaise (sinon la query serait
+    //    perdue dans le rewrite).
     if (path === '/' && isBot) {
+      const target = new URL('/api/prerender-home', request.url);
+      const lang = url.searchParams.get('lang');
+      if (lang) target.searchParams.set('lang', lang);
       return new Response(null, {
-        headers: { 'x-middleware-rewrite': new URL('/api/prerender-home', request.url).toString() },
+        headers: { 'x-middleware-rewrite': target.toString() },
       });
     }
 

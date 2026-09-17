@@ -7,8 +7,20 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kiwivanmarket.com/location/auckland?lang=fr</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kiwivanmarket.com/location/wellington</loc>
     <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/wellington?lang=fr</loc>
+    <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -19,8 +31,20 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kiwivanmarket.com/location/christchurch?lang=fr</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kiwivanmarket.com/location/queenstown</loc>
     <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/queenstown?lang=fr</loc>
+    <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -31,8 +55,20 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kiwivanmarket.com/location/hamilton?lang=fr</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kiwivanmarket.com/location/tauranga</loc>
     <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/tauranga?lang=fr</loc>
+    <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -43,8 +79,20 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://kiwivanmarket.com/location/dunedin?lang=fr</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://kiwivanmarket.com/location/rotorua</loc>
     <lastmod>2026-07-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://kiwivanmarket.com/location/rotorua?lang=fr</loc>
+    <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

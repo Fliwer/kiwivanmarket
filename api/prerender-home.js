@@ -2,12 +2,15 @@
 // Prerender / (home) pour les crawlers — hub de découverte : annonces
 // récentes (liens crawlables vers /van/:id) + maillage complet vers les
 // pages marques, villes et guides. Schémas Organization + WebSite + FAQ.
+// Localisé : ?lang=fr sert la version française (textes dans _lib/copy.js).
 // ============================================================================
 
 const {
-  ORIGIN, esc, fetchAllVans, priceStats, nzd, vanListHTML,
+  ORIGIN, langUrl, esc, fetchAllVans, priceStats, nzd, vanListHTML,
   itemListLd, faqLd, htmlShell, sendHTML, send503,
 } = require('./_lib/util');
+const { pickLang, pageMeta } = require('./_lib/i18n');
+const COPY = require('./_lib/copy');
 const GUIDES = require('./_lib/guides-data.json');
 
 const BRANDS = {
@@ -22,6 +25,12 @@ const LOCATIONS = {
 };
 
 module.exports = async function handler(req, res) {
+  const lang = pickLang(req);
+  const T = COPY[lang].home;
+  const C = COPY[lang].common;
+  // Les guides existent dans la langue demandée (en/fr/es) ; sinon repli EN.
+  const guides = GUIDES[lang] || GUIDES.en;
+
   let vans;
   try {
     vans = await fetchAllVans();
@@ -34,31 +43,13 @@ module.exports = async function handler(req, res) {
   }
 
   const stats = priceStats(vans);
-  const title = 'Buy and Sell Campervans in New Zealand | Kiwi Van Market';
-  const metaDesc = stats
-    ? `${stats.count} campervans for sale across New Zealand, from ${nzd(stats.min)}. Self-contained vans with CarJam checks, WOF & REGO visibility, buy-back options. Free listings, no commission.`
-    : 'The easiest way to buy and sell campervans in New Zealand. Self-contained vans with CarJam checks, WOF & REGO visibility, buy-back options.';
+  // Montants formatés une fois, pour les gabarits de textes.
+  const S = stats && { count: stats.count, min: nzd(stats.min), max: nzd(stats.max), avg: nzd(stats.avg) };
+  const SE = stats && { count: stats.count, min: esc(nzd(stats.min)), max: esc(nzd(stats.max)), avg: esc(nzd(stats.avg)) };
 
-  const faqs = [
-    {
-      q: 'How much does a campervan cost in New Zealand?',
-      a: stats
-        ? `On Kiwi Van Market right now, campervans range from ${nzd(stats.min)} to ${nzd(stats.max)}, with an average price of ${nzd(stats.avg)} across ${stats.count} active listings.`
-        : 'Backpacker campervans in NZ typically range from $3,000 to $20,000+ NZD depending on model, year and self-contained certification.',
-    },
-    {
-      q: 'What does "self-contained" mean for a campervan in NZ?',
-      a: 'A self-contained certified campervan has a toilet and water systems meeting the NZ standard, shown by a blue or green sticker. It is required for freedom camping in most areas.',
-    },
-    {
-      q: 'Is it free to sell my campervan on Kiwi Van Market?',
-      a: 'Yes — listings are free and there is no commission. Buyers contact you directly through the platform.',
-    },
-    {
-      q: 'What should I check before buying a used campervan in NZ?',
-      a: 'Check the WOF (Warrant of Fitness) and REGO expiry, run a CarJam history check with the plate number, verify the self-contained certificate, and get a pre-purchase mechanical inspection (~$150).',
-    },
-  ];
+  const title = T.title;
+  const metaDesc = S ? T.metaDesc(S) : T.metaDescNoStats;
+  const faqs = T.faqs(S);
 
   const organizationLd = {
     '@context': 'https://schema.org',
@@ -67,7 +58,7 @@ module.exports = async function handler(req, res) {
     name: 'Kiwi Van Market',
     url: ORIGIN,
     logo: { '@type': 'ImageObject', url: `${ORIGIN}/kiwi-van-logo-128.webp` },
-    description: 'The #1 campervan marketplace in New Zealand. Buy or sell campervans, motorhomes, and vans peer-to-peer with zero commission.',
+    description: T.orgDesc,
     areaServed: { '@type': 'Country', name: 'New Zealand' },
     sameAs: ['https://www.facebook.com/kiwivanmarket'],
   };
@@ -81,34 +72,34 @@ module.exports = async function handler(req, res) {
   };
 
   const body = `
-<h1>Buy Your Perfect Campervan in New Zealand</h1>
-<p>Kiwi Van Market is New Zealand's peer-to-peer marketplace for campervans, backpacker vans and motorhomes. Compare Toyota Hiace, Nissan Caravan, Mitsubishi Delica and more — with CarJam checks, WOF &amp; REGO expiry and self-contained certification visible on every listing. Free to list, no commission.</p>
-${stats ? `<p><strong>${stats.count} campervans for sale right now</strong> — from ${esc(nzd(stats.min))}, average ${esc(nzd(stats.avg))}.</p>` : ''}
-<h2>Latest campervans for sale</h2>
-<ul>${vanListHTML(vans, { limit: 24 })}</ul>
-<h2>Browse by brand</h2>
+<h1>${T.h1}</h1>
+<p>${T.intro}</p>
+${SE ? `<p>${T.statsLine(SE)}</p>` : ''}
+<h2>${T.latest}</h2>
+<ul>${vanListHTML(vans, { limit: 24, lang })}</ul>
+<h2>${T.byBrand}</h2>
 <ul>
-${Object.entries(BRANDS).map(([s, n]) => `<li><a href="${ORIGIN}/brand/${s}">${esc(n)} campervans for sale NZ</a></li>`).join('\n')}
+${Object.entries(BRANDS).map(([s, n]) => `<li><a href="${langUrl('/brand/' + s, lang)}">${T.brandLink(esc(n))}</a></li>`).join('\n')}
 </ul>
-<h2>Browse by location</h2>
+<h2>${T.byLocation}</h2>
 <ul>
-${Object.entries(LOCATIONS).map(([s, n]) => `<li><a href="${ORIGIN}/location/${s}">Campervans for sale in ${esc(n)}</a></li>`).join('\n')}
+${Object.entries(LOCATIONS).map(([s, n]) => `<li><a href="${langUrl('/location/' + s, lang)}">${T.locationLink(esc(n))}</a></li>`).join('\n')}
 </ul>
-<h2>Expert guides for buying &amp; selling in NZ</h2>
+<h2>${T.guides}</h2>
 <ul>
-${Object.entries(GUIDES).map(([s, g]) => `<li><a href="${ORIGIN}/guide/${s}">${esc(g.title)}</a></li>`).join('\n')}
+${Object.entries(guides).map(([s, g]) => `<li><a href="${langUrl('/guide/' + s, lang)}">${esc(g.title)}</a></li>`).join('\n')}
 </ul>
-<h2>Frequently asked questions</h2>
+<h2>${C.faqTitle}</h2>
 ${faqs.map(({ q, a }) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('\n')}`;
 
   const html = htmlShell({
     title,
     metaDesc,
-    canonical: `${ORIGIN}/`,
+    ...pageMeta('/', lang),
     jsonLd: [
       organizationLd,
       websiteLd,
-      itemListLd('Latest campervans for sale in New Zealand', vans),
+      itemListLd(T.itemList, vans),
       faqLd(faqs),
     ],
     body,

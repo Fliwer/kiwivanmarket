@@ -4,6 +4,12 @@
 
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'kiwivanmarket';
 const ORIGIN = 'https://kiwivanmarket.com';
+const COPY = require('./copy');
+
+// URL d'une page dans la langue courante (?lang=fr), pour le maillage interne
+// des pages localisées. L'anglais reste sans paramètre.
+const langUrl = (path, lang) =>
+  lang && lang !== 'en' ? `${ORIGIN}${path}${path.includes('?') ? '&' : '?'}lang=${lang}` : `${ORIGIN}${path}`;
 
 // ── Parsing Firestore REST ──────────────────────────────────────────────────
 function fv(field) {
@@ -67,18 +73,19 @@ function priceStats(vans) {
 const nzd = (n) => `$${Number(n).toLocaleString('en-NZ')} NZD`;
 
 // ── Liste de vans (cartes HTML crawlables, liens internes vers /van/:id) ───
-function vanListHTML(vans, { limit = 24 } = {}) {
+function vanListHTML(vans, { limit = 24, lang = 'en' } = {}) {
+  const C = (COPY[lang] || COPY.en).common;
   return vans.slice(0, limit).map((v) => {
     const img = (Array.isArray(v.images) && v.images[0]) || v.imageUrl;
     const bits = [
       v.year, v.mileage ? `${Number(v.mileage).toLocaleString('en-NZ')} km` : null,
-      v.selfContained ? 'Self-contained' : null, v.location,
+      v.selfContained ? C.selfContained : null, v.location,
     ].filter(Boolean).join(' · ');
     return `<li>
-  <a href="${ORIGIN}/van/${esc(v.id)}">
-    ${img ? `<img src="${esc(cdnImg(img, 400))}" alt="${esc(v.title || 'Campervan')}" width="200" loading="lazy">` : ''}
-    <strong>${esc(v.title || 'Campervan')}</strong></a>
-  — ${v.price ? esc(nzd(v.price)) : 'Price on request'}${v.status === 'sold' ? ' (SOLD)' : ''}<br>
+  <a href="${langUrl('/van/' + esc(v.id), lang)}">
+    ${img ? `<img src="${esc(cdnImg(img, 400))}" alt="${esc(v.title || C.campervan)}" width="200" loading="lazy">` : ''}
+    <strong>${esc(v.title || C.campervan)}</strong></a>
+  — ${v.price ? esc(nzd(v.price)) : C.priceOnRequest}${v.status === 'sold' ? ` (${C.sold})` : ''}<br>
   <small>${esc(bits)}</small>
 </li>`;
   }).join('\n');
@@ -128,14 +135,20 @@ function breadcrumbLd(crumbs) {
 }
 
 // ── Enveloppe HTML commune ──────────────────────────────────────────────────
-const NAV_LINKS = `<nav>
-  <a href="${ORIGIN}/">Campervans for sale</a>
-  <a href="${ORIGIN}/guides">Buying guides</a>
-  <a href="${ORIGIN}/sell">Sell your van</a>
-  <a href="${ORIGIN}/faq">FAQ</a>
+const navLinks = (lang) => {
+  const N = (COPY[lang] || COPY.en).shell.nav;
+  return `<nav>
+  <a href="${langUrl('/', lang)}">${N.browse}</a>
+  <a href="${langUrl('/guides', lang)}">${N.guides}</a>
+  <a href="${langUrl('/sell', lang)}">${N.sell}</a>
+  <a href="${langUrl('/faq', lang)}">${N.faq}</a>
 </nav>`;
+};
 
-function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogType = 'website', alternates = [], htmlLang = 'en', ogLocale = 'en_NZ', noindex = false }) {
+function htmlShell({ title, metaDesc, canonical, ogImage, jsonLd = [], body, ogType = 'website', alternates = [], htmlLang = 'en', ogLocale = 'en_NZ', noindex = false, lang = null }) {
+  // Les guides passent htmlLang='fr' sans lang : on aligne le chrome dessus.
+  const L = COPY[lang || htmlLang] ? (lang || htmlLang) : 'en';
+  const S = COPY[L].shell;
   const alternateTags = (alternates || [])
     .map((a) => `<link rel="alternate" hreflang="${a.hreflang}" href="${a.href}">`)
     .join('\n');
@@ -167,14 +180,14 @@ ${jsonLd.map((o) => `<script type="application/ld+json">${JSON.stringify(JSON.pa
 </head>
 <body>
 <header>
-  <p><a href="${ORIGIN}/"><strong>Kiwi Van Market</strong></a> — Buy and Sell Campervans in New Zealand</p>
-  ${NAV_LINKS}
+  <p><a href="${langUrl('/', L)}"><strong>Kiwi Van Market</strong></a> — ${S.tagline}</p>
+  ${navLinks(L)}
 </header>
 <main>
 ${body}
 </main>
 <footer>
-  <p>Kiwi Van Market — New Zealand's peer-to-peer campervan marketplace. Free listings, CarJam checks, WOF/REGO visibility, self-contained filters, buy-back options.</p>
+  <p>${S.footer}</p>
 </footer>
 </body>
 </html>`;
@@ -202,6 +215,6 @@ function send503(res) {
 }
 
 module.exports = {
-  ORIGIN, fv, parseFields, esc, cdnImg, fetchAllVans, priceStats, nzd,
+  ORIGIN, langUrl, fv, parseFields, esc, cdnImg, fetchAllVans, priceStats, nzd,
   vanListHTML, itemListLd, faqLd, breadcrumbLd, htmlShell, send404, sendHTML, send503,
 };

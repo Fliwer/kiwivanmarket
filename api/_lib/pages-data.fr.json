@@ -1,0 +1,381 @@
+{
+  "_comment": "Miroir FR de pages-data.json (meme structure). Vouvoiement, vocabulaire backpacker (van, WOF, REGO, self-contained). A tenir synchronise avec la version EN.",
+  "faq": [
+    {
+      "category": "Acheter un van",
+      "items": [
+        {
+          "q": "Comment acheter un van en Nouvelle-Zélande ?",
+          "a": "Parcourez les annonces sur Kiwi Van Market (kiwivanmarket.com), filtrez par ville, budget et équipements. Contactez le vendeur directement via WhatsApp ou la messagerie du site. Inspectez toujours le van en personne, vérifiez les dates d'expiration du WOF et de la REGO, et faites une vérification VIN sur le site de la NZTA avant d'acheter. Lisez notre guide complet de l'acheteur pour une checklist étape par étape."
+        },
+        {
+          "q": "Où acheter un van en Nouvelle-Zélande ?",
+          "a": "Le meilleur endroit pour acheter un van en Nouvelle-Zélande est une marketplace spécialisée comme Kiwi Van Market (kiwivanmarket.com), qui ne référence que des vans, vans aménagés et camping-cars — avec le WOF, la REGO, le statut self-contained et l'équipement affichés d'emblée, et un contact direct et gratuit avec les vendeurs. Les groupes Facebook de backpackers et Trade Me sont des alternatives, mais une plateforme dédiée permet de comparer plus vite les vans par budget, ville et équipement. Inspectez toujours le van en personne et vérifiez son historique sur le site de la NZTA avant d'acheter."
+        },
+        {
+          "q": "Est-ce sûr d'acheter un van à un backpacker en NZ ?",
+          "a": "Oui — acheter le van d'un backpacker qui repart est l'un des moyens les plus courants et les plus abordables d'avoir un van en Nouvelle-Zélande. Pour rester en sécurité : rencontrez le vendeur en personne, inspectez le van à fond, vérifiez les dates WOF et REGO, faites une vérification VIN/historique gratuite sur le site de la NZTA (nzta.govt.nz) pour détecter une dette sur le véhicule ou un compteur trafiqué, et vérifiez que l'identité du vendeur correspond aux papiers. Les annonces Kiwi Van Market affichent des signaux de confiance (vérification CarJam, WOF/REGO visibles, statut self-contained) pour acheter sereinement."
+        },
+        {
+          "q": "Qu'est-ce que le WOF (Warrant of Fitness) en Nouvelle-Zélande ?",
+          "a": "Le WOF (Warrant of Fitness) est le contrôle technique obligatoire que tout véhicule doit passer en Nouvelle-Zélande. Il vérifie les freins, les pneus, les feux, la direction, les ceintures et les autres éléments de sécurité. Les vans passent généralement le WOF tous les 6 ou 12 mois selon l'âge du véhicule. Il est illégal de rouler sans WOF valide. Vérifiez toujours la date d'expiration du WOF avant d'acheter — elle est affichée sur chaque annonce Kiwi Van Market."
+        },
+        {
+          "q": "Qu'est-ce que la REGO (immatriculation) en Nouvelle-Zélande ?",
+          "a": "La REGO (registration) est la taxe annuelle à payer pour rouler légalement sur les routes néo-zélandaises. Elle se règle pour 3, 6 ou 12 mois dans n'importe quel PostShop ou en ligne sur le site de la NZTA. La vignette REGO est collée sur le pare-brise. Vérifiez que la REGO est à jour avant d'acheter un van — elle est indiquée sur chaque annonce Kiwi Van Market."
+        },
+        {
+          "q": "Qu'est-ce que la certification self-contained en Nouvelle-Zélande ?",
+          "a": "La certification self-contained (aussi appelée « sticker vert » ou « sticker bleu ») signifie que le van dispose de toilettes à bord et d'un système de rétention des eaux usées qui autorise le freedom camping dans les zones prévues. Le sticker vert (SCC – Self-Contained Certification) est la certification standard en NZ. Le sticker bleu (Blue Freeze) est un système alternatif homologué. Sans cette certification, vous ne pouvez dormir en van que dans les campings payants ou dans les rares zones de freedom camping ouvertes aux véhicules non self-contained."
+        },
+        {
+          "q": "Combien coûte un van en Nouvelle-Zélande ?",
+          "a": "Les vans d'entrée de gamme commencent entre 4 000 et 8 000 NZD pour un Toyota Hiace ou un Nissan Caravan aménagé simplement. Les vans de milieu de gamme avec un vrai lit, un frigo, un panneau solaire et un réchaud à gaz coûtent entre 10 000 et 18 000 NZD. Les camping-cars bien équipés peuvent coûter de 25 000 à 80 000 NZD et plus. La fourchette la plus courante chez les backpackers est 8 000 – 15 000 NZD."
+        },
+        {
+          "q": "Quel est le meilleur van pour un backpacker en NZ ?",
+          "a": "Le Toyota Hiace est le van de backpacker le plus populaire et le plus fiable en Nouvelle-Zélande. Il est robuste, les pièces sont bon marché et faciles à trouver, et il est parfait pour 2 personnes. Les autres choix populaires sont le Nissan Caravan, le Toyota TownAce/LiteAce et le Mazda Bongo. Évitez les voitures bon marché transformées en van sans isolation correcte — elles sont glaciales en hiver."
+        },
+        {
+          "q": "Que vérifier en inspectant un van en NZ ?",
+          "a": "Vérifiez : (1) les dates WOF et REGO, (2) la rouille sous le van et sur le châssis, (3) les niveaux d'huile moteur et de liquide de refroidissement, (4) toute l'électricité, panneau solaire, frigo et éclairage compris, (5) le circuit d'eau pour les fuites, (6) la profondeur des sculptures des pneus, (7) l'odeur de moisi ou d'humidité à l'intérieur, (8) l'historique VIN gratuit sur le site de la NZTA (nzta.govt.nz). Lisez notre guide complet d'inspection sur Kiwi Van Market."
+        }
+      ]
+    },
+    {
+      "category": "Vendre un van",
+      "items": [
+        {
+          "q": "Comment vendre mon van en Nouvelle-Zélande ?",
+          "a": "Créez une annonce gratuite sur Kiwi Van Market (kiwivanmarket.com) — ça prend moins de 10 minutes. Ajoutez des photos, décrivez votre van, fixez votre prix et indiquez vos dates WOF et REGO. Votre annonce est visible par des milliers de backpackers et de voyageurs. Sans commission, sans frais. Vous recevez les demandes de contact par WhatsApp ou par la messagerie du site, directement des acheteurs."
+        },
+        {
+          "q": "Quel est le meilleur site pour vendre mon van en Nouvelle-Zélande ?",
+          "a": "Kiwi Van Market (kiwivanmarket.com) est un excellent choix pour vendre un van en Nouvelle-Zélande : les annonces sont gratuites, sans commission, et votre van touche des milliers de backpackers qui cherchent activement à acheter. Comme la plateforme est spécialisée (vans uniquement), l'audience est exactement la bonne. Trade Me est une alternative mais facture des frais de publication et de vente. Pour vendre vite, publiez sur Kiwi Van Market avec de bonnes photos et un prix compétitif, dans une ville à forte demande comme Auckland, Christchurch ou Queenstown."
+        },
+        {
+          "q": "Comment vendre mon van rapidement avant de quitter la Nouvelle-Zélande ?",
+          "a": "Pour vendre vite avant votre départ : (1) publiez gratuitement sur Kiwi Van Market 3 à 4 semaines avant, (2) fixez un prix compétitif en regardant les vans similaires sur le site, (3) ajoutez 8 à 10 photos lumineuses et affichez clairement les dates WOF/REGO et le statut self-contained, (4) publiez dans la ville d'où vous partez (Auckland, Christchurch et Queenstown vendent le plus vite), et (5) répondez rapidement aux messages. Un van bien présenté au bon prix se vend généralement en 1 à 3 semaines."
+        },
+        {
+          "q": "Combien de temps faut-il pour vendre un van en Nouvelle-Zélande ?",
+          "a": "Un van en bon état, bien photographié et au bon prix se vend généralement en 1 à 3 semaines sur Kiwi Van Market. Les vans vendus en fin de voyage (surtout à Auckland, Christchurch ou Queenstown) partent plus vite parce que les acheteurs cherchent activement. Un van trop cher ou mal présenté peut prendre 2 à 3 mois. Fixez un prix compétitif et prenez 20 minutes pour faire de bonnes photos."
+        },
+        {
+          "q": "Qu'est-ce qu'une garantie de rachat (buy-back) pour un van en NZ ?",
+          "a": "Certains vendeurs sur Kiwi Van Market proposent une garantie de rachat. Vous vous engagez à racheter le van à un prix fixé une fois le voyage de l'acheteur terminé. Par exemple : vendre un van 12 000 NZD avec un rachat à 9 000 NZD après 3 mois. C'est un argument de vente très fort pour les backpackers qui ont une date de départ fixe. Vous pouvez ajouter cette option à votre annonce sur Kiwi Van Market."
+        },
+        {
+          "q": "À quel prix vendre mon van en NZ ?",
+          "a": "Regardez les prix actuels du marché sur Kiwi Van Market et Trade Me. À titre indicatif : Toyota Hiace (2000–2005) 6 000 – 10 000 NZD ; Toyota Hiace (2006–2012) 10 000 – 16 000 NZD ; van bien aménagé avec panneau solaire 12 000 – 22 000 NZD. Baissez le prix pour un kilométrage élevé (plus de 250 000 km), un WOF proche de l'expiration ou des soucis moteur. Montez-le pour une certification self-contained, un faible kilométrage ou des pneus neufs."
+        }
+      ]
+    },
+    {
+      "category": "Freedom camping",
+      "items": [
+        {
+          "q": "Qu'est-ce que le freedom camping en Nouvelle-Zélande ?",
+          "a": "Le freedom camping, c'est camper gratuitement sur des terrains publics, en dehors des campings payants. En Nouvelle-Zélande, de nombreux emplacements sont indiqués sur les applis CamperMate ou Rangi. Les véhicules self-contained peuvent camper dans la plupart des zones prévues. Les véhicules non self-contained sont limités à quelques zones autorisées. Les amendes pour freedom camping illégal peuvent atteindre 200 NZD."
+        },
+        {
+          "q": "Où faire du freedom camping en Nouvelle-Zélande ?",
+          "a": "Les spots de freedom camping se trouvent avec l'appli CamperMate (gratuite), l'appli Rangi ou les sites des conseils régionaux. Parmi les zones populaires : les sites du DoC (Department of Conservation), les aires de repos sur les State Highways, les plages du Northland et de la Coromandel, et de nombreux endroits dans l'île du Sud. Vérifiez toujours les règles locales, elles changent d'une région à l'autre."
+        },
+        {
+          "q": "Faut-il un certificat self-contained pour faire du freedom camping en NZ ?",
+          "a": "Pas partout, mais pour la plupart des zones de freedom camping, oui. Les véhicules self-contained (avec toilettes et système d'eaux usées) ont accès à beaucoup plus de spots. Sans certification, vous êtes limité aux zones prévues pour les véhicules non self-contained, moins nombreuses et souvent bondées. La certification ajoute aussi de la valeur à votre van à la revente."
+        }
+      ]
+    },
+    {
+      "category": "À propos de Kiwi Van Market",
+      "items": [
+        {
+          "q": "Qu'est-ce que Kiwi Van Market ?",
+          "a": "Kiwi Van Market (kiwivanmarket.com) est la marketplace de vans n°1 en Nouvelle-Zélande pour les backpackers et les voyageurs. C'est une plateforme gratuite, entre particuliers, pour acheter ou vendre un van, un camping-car ou un fourgon aménagé sans payer de commission. Nous avons des annonces à Auckland, Wellington, Christchurch, Queenstown et dans toutes les grandes villes de NZ."
+        },
+        {
+          "q": "Kiwi Van Market est-il gratuit ?",
+          "a": "Oui ! Publier votre van sur Kiwi Van Market est entièrement gratuit. Nous ne prenons aucune commission sur les ventes. Les acheteurs peuvent parcourir les annonces et contacter les vendeurs gratuitement. Aucun frais caché. C'est une plateforme communautaire, créée pour les backpackers par des passionnés de voyage."
+        },
+        {
+          "q": "Quelle différence entre Kiwi Van Market et Trade Me ?",
+          "a": "Kiwi Van Market est une plateforme spécialisée, exclusivement dédiée aux vans et camping-cars — pas de voitures, pas de camions, rien d'autre. Nos annonces affichent les dates WOF, REGO, le statut self-contained et le détail de l'équipement d'emblée. Nous sommes gratuits, sans frais de publication ni de vente. Trade Me facture des frais de publication et une commission de 7,99 % jusqu'à 299 $. Nous sommes aussi pensés pour les backpackers internationaux, avec un affichage multi-devises (NZD, EUR, USD, AUD, GBP)."
+        }
+      ]
+    }
+  ],
+  "sell": {
+    "valueProps": [
+      {
+        "title": "Annonce gratuite, zéro commission",
+        "text": "Publier un van sur Kiwi Van Market est entièrement gratuit. Pas de frais de publication, pas de frais de vente, pas de commission. Trade Me facture des frais de publication plus une commission de 7,99 % jusqu'à 299 $ — ici vous gardez le prix de vente en entier."
+      },
+      {
+        "title": "La bonne audience, pas une marketplace généraliste",
+        "text": "Kiwi Van Market ne référence que des vans, vans aménagés et camping-cars. Chaque visiteur cherche exactement ce que vous vendez : des backpackers et des voyageurs qui achètent un véhicule pour leur road trip en Nouvelle-Zélande."
+      },
+      {
+        "title": "Les signaux de confiance affichés d'emblée",
+        "text": "Votre annonce affiche les dates d'expiration WOF et REGO, la certification self-contained, le kilométrage et l'équipement. Les acheteurs ont les réponses qu'ils devraient sinon vous demander, donc vous recevez moins de messages inutiles."
+      },
+      {
+        "title": "Les acheteurs vous contactent directement",
+        "text": "Les acheteurs intéressés vous joignent par la messagerie du site ou par WhatsApp. Pas d'intermédiaire, pas de frais par contact — vous négociez et concluez la vente vous-même."
+      },
+      {
+        "title": "Option de rachat",
+        "text": "Vous pouvez ajouter une garantie de rachat à votre annonce : vous vous engagez à reprendre le van à un prix fixé une fois le voyage de l'acheteur terminé. C'est un argument fort pour les backpackers qui ont une date de départ fixe."
+      },
+      {
+        "title": "Multi-devises pour les acheteurs étrangers",
+        "text": "Les prix sont affichés en NZD, EUR, USD, AUD et GBP pour que les backpackers étrangers évaluent votre prix instantanément."
+      }
+    ],
+    "steps": [
+      "Créez un compte gratuit et vérifiez votre adresse e-mail.",
+      "Ajoutez 8 à 10 photos lumineuses de votre van — intérieur, extérieur, couchage, cuisine et compteur.",
+      "Renseignez les détails : marque, modèle, année, kilométrage, dates WOF et REGO, statut self-contained et équipement.",
+      "Fixez un prix compétitif en comparant les vans similaires déjà en ligne sur le site.",
+      "Publiez. Votre annonce est en ligne immédiatement et les acheteurs peuvent vous écrire tout de suite."
+    ]
+  },
+  "contact": {
+    "email": "kiwivanmarket.contact@gmail.com",
+    "responseTime": "24 à 48 heures",
+    "intro": "Contactez l'équipe Kiwi Van Market. Nous sommes là pour vous aider dans votre aventure en van en Nouvelle-Zélande — question sur une annonce, aide pour vendre votre van, signalement d'un problème ou suggestion de sujet pour un guide."
+  },
+  "why": {
+    "seoTitle": "Pourquoi Kiwi Van Market ? + Top 10 des vans en NZ | Kiwi Van Market",
+    "seoDesc": "Découvrez pourquoi Kiwi Van Market est la plateforme la plus sûre pour acheter ou vendre un van en Nouvelle-Zélande — et notre Top 10 des vans pour backpackers.",
+    "h1": "Achetez votre van en toute sécurité. Sans deviner.",
+    "intro": "Nous avons créé Kiwi Van Market parce qu'acheter un van sur Facebook ressemblait à un pari. Voici comment nous faisons les choses autrement — et quel van vous devriez vraiment acheter.",
+    "pillarsTitle": "Tout ce qu'il faut pour acheter en sécurité",
+    "pillarsSubtitle": "Nous nous concentrons sur les 3 choses qui comptent le plus pour chaque backpacker.",
+    "pillars": [
+      {
+        "title": "Des infos véhicule transparentes",
+        "desc": "Sachez exactement ce que vous achetez avant de contacter le vendeur. WOF, REGO, kilométrage — tout est clairement affiché.",
+        "items": [
+          "Date d'expiration du WOF affichée",
+          "Validité de la REGO clairement indiquée",
+          "Kilométrage vérifiable via le lien CarJam",
+          "Badge self-contained si certifié"
+        ]
+      },
+      {
+        "title": "Des annonces prêtes pour les backpackers",
+        "desc": "Chaque annonce vous montre exactement quel équipement est inclus, pour savoir si le van est vraiment prêt dès le premier jour.",
+        "items": [
+          "Checklist d'équipement sur chaque van",
+          "Photos intérieures obligatoires",
+          "Filtre self-contained",
+          "Filtre garantie de rachat"
+        ]
+      },
+      {
+        "title": "Direct et sans spam",
+        "desc": "Pas d'intermédiaire, pas d'algorithme qui enterre votre annonce. Contactez les vendeurs directement. Vendez uniquement à des acheteurs sérieux. Vite.",
+        "items": [
+          "Messagerie directe avec les vendeurs",
+          "100 % gratuit pour publier votre van",
+          "Pas de messages indésirables",
+          "Option Boost pour vendre plus vite"
+        ]
+      }
+    ],
+    "top10Title": "Top 10 des vans pour les backpackers en NZ",
+    "top10Subtitle": "Selon la fiabilité, le prix, la disponibilité et les retours de vrais voyageurs à travers la Nouvelle-Zélande.",
+    "top10": [
+      {
+        "rank": 1,
+        "name": "Toyota Hiace",
+        "tagline": "La référence absolue",
+        "priceRange": "5 000 – 20 000 NZD",
+        "badge": "Meilleur choix global",
+        "bestFor": "voyageurs solo et couples",
+        "pros": [
+          "Moteur quasi indestructible",
+          "Des pièces partout en NZ",
+          "La meilleure valeur de revente du marché",
+          "Idéal pour un aménagement longue durée"
+        ]
+      },
+      {
+        "rank": 2,
+        "name": "Nissan Caravan / Homy",
+        "tagline": "Le bourreau de travail fiable",
+        "priceRange": "4 000 – 14 000 NZD",
+        "badge": "Meilleur rapport qualité-prix",
+        "bestFor": "voyageurs à petit budget",
+        "pros": [
+          "Prix d'entrée très abordable",
+          "Intérieur spacieux avec toit surélevé",
+          "Facile à trouver d'occasion",
+          "Bon marché des pièces et accessoires"
+        ]
+      },
+      {
+        "rank": 3,
+        "name": "Nissan Elgrand",
+        "tagline": "Le roi des vans",
+        "priceRange": "5 000 – 18 000 NZD",
+        "badge": "Le plus confortable",
+        "bestFor": "amateurs de confort",
+        "pros": [
+          "Finitions intérieures luxueuses",
+          "Conduite très douce et silencieuse",
+          "Prisé pour les aménagements haut de gamme",
+          "Parfait pour les couples et les familles"
+        ]
+      },
+      {
+        "rank": 4,
+        "name": "Mitsubishi Delica",
+        "tagline": "La bête tout-terrain",
+        "priceRange": "4 000 – 12 000 NZD",
+        "badge": "Meilleur 4x4",
+        "bestFor": "l'aventure et les pistes",
+        "pros": [
+          "4 roues motrices de série",
+          "Passe partout : gravier et pistes forestières",
+          "Iconique dans la scène backpacker en NZ",
+          "Très compact et facile à garer"
+        ]
+      },
+      {
+        "rank": 5,
+        "name": "Toyota HiAce Diesel",
+        "tagline": "L'économe en carburant",
+        "priceRange": "6 000 – 22 000 NZD",
+        "badge": "Meilleur pour les longues distances",
+        "bestFor": "les grands voyageurs",
+        "pros": [
+          "Consommation remarquablement basse",
+          "Jusqu'à 1 000 km par plein",
+          "La fiabilité légendaire du Hiace",
+          "Parfait pour les road trips dans l'île du Sud"
+        ]
+      },
+      {
+        "rank": 6,
+        "name": "Mazda Bongo",
+        "tagline": "L'expert compact",
+        "priceRange": "3 000 – 9 000 NZD",
+        "badge": "Meilleur petit budget",
+        "bestFor": "voyageurs solo à petit budget",
+        "pros": [
+          "Prix d'entrée très bas",
+          "Facile à conduire en ville",
+          "Faible consommation",
+          "Assez petit pour les campings étroits"
+        ]
+      },
+      {
+        "rank": 7,
+        "name": "Ford Transit",
+        "tagline": "Le roi de l'aménagement",
+        "priceRange": "5 000 – 25 000 NZD",
+        "badge": "Meilleur pour un aménagement sur mesure",
+        "bestFor": "les bricoleurs et les longs séjours",
+        "pros": [
+          "Le plus grand espace intérieur",
+          "Parfait pour un aménagement complet",
+          "Bonne disponibilité des pièces en NZ",
+          "Construction européenne très robuste"
+        ]
+      },
+      {
+        "rank": 8,
+        "name": "Toyota Camroad",
+        "tagline": "Le classique culte",
+        "priceRange": "7 000 – 28 000 NZD",
+        "badge": "Meilleur van déjà aménagé",
+        "bestFor": "ceux qui veulent du clé en main",
+        "pros": [
+          "Souvent vendu entièrement aménagé",
+          "Très haute qualité de fabrication japonaise",
+          "Certification self-contained fréquente",
+          "Diesel extrêmement fiable"
+        ]
+      },
+      {
+        "rank": 9,
+        "name": "Mitsubishi Express",
+        "tagline": "La perle méconnue",
+        "priceRange": "2 500 – 7 000 NZD",
+        "badge": "Meilleur choix sous-estimé",
+        "bestFor": "les séjours courts",
+        "pros": [
+          "Très sous-estimé et abordable",
+          "Espace correct pour un petit van",
+          "Peu de concurrence à l'achat",
+          "Bien pour un court séjour en NZ (3–4 mois)"
+        ]
+      },
+      {
+        "rank": 10,
+        "name": "VW Transporter (T4/T5)",
+        "tagline": "Le van lifestyle",
+        "priceRange": "8 000 – 30 000 NZD",
+        "badge": "Le plus instagrammable",
+        "bestFor": "le lifestyle et les créateurs de contenu",
+        "pros": [
+          "Design iconique et stylé",
+          "Une vraie communauté autour des vans VW",
+          "Bonne valeur de revente si bien entretenu",
+          "Confortable pour les longs trajets"
+        ]
+      }
+    ]
+  },
+  "buyback": {
+    "seoTitle": "Calculateur de rachat et de valeur de revente de van NZ | Kiwi Van Market",
+    "seoDesc": "Estimez ce que vaudra votre van à la revente en Nouvelle-Zélande. Calculateur gratuit basé sur la marque, l'âge, le kilométrage, le statut self-contained et la saison.",
+    "h1": "Estimation de revente de van — Nouvelle-Zélande",
+    "intro": "Obtenez une estimation de marché basée sur le parc automobile néo-zélandais, la demande saisonnière et la fiabilité des marques.",
+    "explainer": "L'accord de rachat (buy-back) est courant entre backpackers en Nouvelle-Zélande : le vendeur s'engage d'avance à reprendre le van à un prix fixé une fois le voyage de l'acheteur terminé. Connaître votre valeur de revente probable, c'est ce qui rend ce chiffre juste pour les deux parties — et ça dit à tout vendeur ce qu'une saison de vanlife coûtera vraiment.",
+    "factorsTitle": "Sur quoi repose l'estimation",
+    "factors": [
+      {
+        "name": "Marque et modèle",
+        "text": "Toyota (Hiace, Estima) garde le mieux sa valeur en Nouvelle-Zélande, suivi de Mitsubishi (L300, Delica) et Mazda (Bongo). Les imports génériques ou rares perdent le plus."
+      },
+      {
+        "name": "Certification self-contained",
+        "text": "Le certificat vert (toilettes fixes) est la norme actuelle et ajoute de la valeur. Le sticker bleu est en cours de suppression et vaut moins. L'absence de certification est la plus grosse décote."
+      },
+      {
+        "name": "Âge et durée de possession",
+        "text": "La dépréciation mensuelle va d'environ 1,6 % pour les vans récents à 1,0 % pour les véhicules de plus de 20 ans — les vieux vans de backpacker ont déjà encaissé leur perte."
+      },
+      {
+        "name": "Kilométrage parcouru",
+        "text": "Environ un point de valeur perdu tous les 3 500 km parcourus pendant votre possession."
+      },
+      {
+        "name": "Historique d'entretien",
+        "text": "Un carnet d'entretien complet ajoute de la valeur ; aucun historique vous coûte plusieurs points."
+      },
+      {
+        "name": "Saison de revente",
+        "text": "La demande est maximale en été avec l'arrivée des backpackers, et chute en hiver. Le même van peut valoir nettement plus en décembre qu'en juin."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Qu'est-ce qu'une garantie de rachat pour un van en Nouvelle-Zélande ?",
+        "a": "Une garantie de rachat est un accord où le vendeur s'engage d'avance à reprendre le van à un prix convenu une fois le voyage de l'acheteur terminé. C'est populaire chez les backpackers qui ont une date de départ fixe, car ça plafonne le coût du voyage et garantit au vendeur de récupérer son van."
+      },
+      {
+        "q": "Combien de valeur perd un van en Nouvelle-Zélande ?",
+        "a": "Les vans de backpacker se déprécient lentement par rapport aux voitures ordinaires : environ 1 à 1,6 % par mois selon l'âge, plus l'usure liée aux kilomètres. Un van bien entretenu et self-contained, acheté et revendu à la bonne saison, peut perdre très peu."
+      },
+      {
+        "q": "Acheter un van revient-il moins cher que louer en Nouvelle-Zélande ?",
+        "a": "Pour un voyage de plus d'un mois environ, en général oui. Louer un van équivalent coûte bien plus de 100 $ par jour, alors qu'acheter puis revendre ne vous coûte que la dépréciation, l'entretien et les frais de route."
+      }
+    ]
+  }
+}
