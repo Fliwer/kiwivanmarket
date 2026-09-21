@@ -309,5 +309,9 @@
             "tag1": "Lujo & Confort",
             "tag2": "Potente"
         }
+    },
+    "van_card": {
+        "confirmed_today": "Disponible · confirmado hoy",
+        "confirmed_days": "Disponible · confirmado hace {{count}} d"
     }
 }

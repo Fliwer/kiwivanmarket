@@ -117,6 +117,9 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
 export default function VanCard({ van, formatPrice, priority = false, setShowAuthModal }) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { t } = useTranslation();
+  // Le vendeur a confirmé la disponibilité (email de cycle de vie) : badge visible 45 jours.
+  const confirmedAtDate = safeDate(van.availabilityConfirmedAt);
+  const confirmedDaysAgo = confirmedAtDate ? Math.max(0, Math.floor((Date.now() - confirmedAtDate.getTime()) / 86400000)) : null;
   const { translatedText: translatedTitle } = useAutoTranslate(van.title);
 
   const images = van.images?.length > 0
@@ -166,6 +169,12 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
 
         {/* Badges container */}
         <div className="absolute top-4 left-4 z-10 flex flex-col items-start gap-2">
+          {confirmedDaysAgo !== null && confirmedDaysAgo <= 45 && (
+            <div className="bg-emerald-600/95 backdrop-blur-md text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/30 flex items-center gap-1.5">
+              <CheckCircle size={12} fill="currentColor" />
+              {confirmedDaysAgo <= 1 ? t("van_card.confirmed_today") : t("van_card.confirmed_days", { count: confirmedDaysAgo })}
+            </div>
+          )}
           {van.featured && (
             <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-[0_4px_15px_rgba(251,191,36,0.5)] border border-white/40 flex items-center gap-1.5 animate-pulse">
               <Star size={12} fill="currentColor" />

@@ -382,5 +382,9 @@
             "median_listings": "médiane · {{count}} annonces",
             "browse": "Voir les vans à vendre"
         }
+    },
+    "van_card": {
+        "confirmed_today": "Disponible · confirmé aujourd'hui",
+        "confirmed_days": "Disponible · confirmé il y a {{count}} j"
     }
 }

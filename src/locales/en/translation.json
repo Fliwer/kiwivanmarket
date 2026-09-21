@@ -382,5 +382,9 @@
             "median_listings": "median · {{count}} listings",
             "browse": "Browse vans for sale"
         }
+    },
+    "van_card": {
+        "confirmed_today": "Available · confirmed today",
+        "confirmed_days": "Available · confirmed {{count}}d ago"
     }
 }

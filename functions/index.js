@@ -1746,3 +1746,221 @@ exports.reportListing = onCall(
     }
   }
 );
+
+
+// ============================================
+// 🧹 LISTING LIFECYCLE — annonces zombies
+// ============================================
+// Un backpacker vend son van avant de quitter le pays et ne revient jamais
+// marquer "vendu" : en sept. 2026, 73 annonces actives sur 80 avaient plus de
+// 3 mois et 61 une REGO expirée. Les acheteurs contactaient des vendeurs
+// partis depuis des mois.
+//
+// Cycle, tous les jours :
+//   J+30 sans signal (création ou dernière confirmation) → email "toujours
+//        disponible ?" avec 2 liens 1-clic (confirmer / vendu), token sur le doc.
+//   J+30 après l'email, sans réponse → annonce mise en pause (status 'paused',
+//        expiredAt renseigné). Le vendeur garde son annonce et la réactive en
+//        1 clic depuis l'email ou depuis son espace (bouton Play existant).
+// Confirmer remet le compteur à zéro : prochain rappel 30 jours plus tard.
+//
+// Les vendeurs qui répondent alimentent "Disponibilité confirmée" (VanCard) et
+// le compteur de ventes réelles.
+
+const crypto = require('crypto');
+
+const LIFECYCLE = {
+  REMIND_AFTER_MS: 30 * 24 * 60 * 60 * 1000,   // silence avant le rappel
+  PAUSE_AFTER_MS: 30 * 24 * 60 * 60 * 1000,    // silence après le rappel
+  MAX_EMAILS_PER_RUN: 80,                      // Resend free : 100/jour
+  SITE: 'https://kiwivanmarket.com',
+  ACTION_URL: 'https://us-central1-kiwivanmarket.cloudfunctions.net/listingAction',
+};
+
+// Timestamp Firestore / Date / ISO → millisecondes (0 si absent)
+const toMs = (x) => {
+  if (!x) return 0;
+  if (typeof x.toMillis === 'function') return x.toMillis();
+  if (typeof x.toDate === 'function') return x.toDate().getTime();
+  if (typeof x.seconds === 'number') return x.seconds * 1000;
+  const t = new Date(x).getTime();
+  return Number.isFinite(t) ? t : 0;
+};
+
+const actionLink = (vanId, token, action) =>
+  `${LIFECYCLE.ACTION_URL}?van=${encodeURIComponent(vanId)}&token=${encodeURIComponent(token)}&action=${action}`;
+
+function availabilityEmailHtml({ sellerName, vanTitle, vanId, token, daysListed }) {
+  const name = escapeHtml(sellerName || 'there');
+  const title = escapeHtml(vanTitle || 'your van');
+  const btn = (href, bg, label) =>
+    `<a href="${href}" style="display:inline-block;background:${bg};color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px;margin:6px 4px;">${label}</a>`;
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+      <div style="background:linear-gradient(135deg,#059669 0%,#0d9488 100%);padding:30px;border-radius:16px 16px 0 0;text-align:center;">
+        <h1 style="color:#fff;margin:0;font-size:22px;">Is your van still for sale?</h1>
+      </div>
+      <div style="background:#f9fafb;padding:30px;border-radius:0 0 16px 16px;">
+        <p style="font-size:16px;color:#374151;">Hi ${name},</p>
+        <p style="font-size:16px;color:#374151;">
+          Your listing <strong>${title}</strong> has been on Kiwi Van Market for ${daysListed} days.
+          Buyers are still contacting sellers from listings like yours — let us know where you're at, it takes one click:
+        </p>
+        <div style="text-align:center;margin:24px 0;">
+          ${btn(actionLink(vanId, token, 'confirm'), '#059669', '✅ Still for sale')}
+          ${btn(actionLink(vanId, token, 'sold'), '#dc2626', '🎉 It\'s sold')}
+        </div>
+        <p style="font-size:14px;color:#6b7280;">
+          Confirming keeps your listing live and shows buyers a <strong>"availability confirmed"</strong> badge.
+          If we don't hear from you within 30 days, the listing is paused (not deleted — you can reactivate it anytime).
+        </p>
+        <p style="font-size:13px;color:#9ca3af;margin-top:24px;">
+          <em>Votre van est-il toujours à vendre ? Cliquez sur « Still for sale » pour le confirmer, ou « It's sold » s'il est vendu. Sans réponse sous 30 jours, l'annonce est mise en pause (réactivable en un clic).</em>
+        </p>
+        <p style="font-size:12px;color:#9ca3af;">Kiwi Van Market — <a href="${LIFECYCLE.SITE}/my-listings" style="color:#059669;">manage your listings</a></p>
+      </div>
+    </div>`;
+}
+
+function pausedEmailHtml({ sellerName, vanTitle, vanId, token }) {
+  const name = escapeHtml(sellerName || 'there');
+  const title = escapeHtml(vanTitle || 'your van');
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+      <div style="background:#334155;padding:30px;border-radius:16px 16px 0 0;text-align:center;">
+        <h1 style="color:#fff;margin:0;font-size:22px;">Your listing has been paused</h1>
+      </div>
+      <div style="background:#f9fafb;padding:30px;border-radius:0 0 16px 16px;">
+        <p style="font-size:16px;color:#374151;">Hi ${name},</p>
+        <p style="font-size:16px;color:#374151;">
+          We didn't hear back about <strong>${title}</strong>, so we paused it to keep the marketplace accurate for buyers.
+          Nothing is deleted — if it's still for sale, bring it back in one click:
+        </p>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${actionLink(vanId, token, 'confirm')}" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px;">🔄 Reactivate my listing</a>
+        </div>
+        <p style="font-size:13px;color:#9ca3af;"><em>Votre annonce a été mise en pause faute de réponse. Si le van est toujours à vendre, réactivez-la en un clic ci-dessus.</em></p>
+      </div>
+    </div>`;
+}
+
+exports.listingLifecycle = onSchedule(
+  {
+    schedule: 'every 24 hours',
+    secrets: [resendApiKey],
+    timeoutSeconds: 300,
+  },
+  async () => {
+    const apiKey = resendApiKey.value();
+    if (!apiKey) {
+      console.error('❌ RESEND_API_KEY not configured');
+      return;
+    }
+    const resend = new Resend(apiKey);
+    const now = Date.now();
+    const stats = { scanned: 0, reminded: 0, paused: 0, skipped: 0, errors: 0 };
+
+    const snap = await db.collection('vans').where('status', '==', 'active').get();
+    // Les plus anciennes d'abord : si on doit plafonner, on traite le pire.
+    const docs = snap.docs.sort((a, b) => toMs(a.data().createdAt) - toMs(b.data().createdAt));
+
+    for (const doc of docs) {
+      const van = doc.data();
+      stats.scanned++;
+      const lastSignal = Math.max(toMs(van.createdAt), toMs(van.availabilityConfirmedAt));
+      const remindedAt = toMs(van.availabilityReminderSentAt);
+      const email = van.seller && van.seller.email;
+      if (!lastSignal || !email) { stats.skipped++; continue; }
+
+      try {
+        // 2. Rappel envoyé, toujours aucune réponse 30 jours plus tard → pause.
+        if (remindedAt && remindedAt > lastSignal && now - remindedAt > LIFECYCLE.PAUSE_AFTER_MS) {
+          const token = van.availabilityToken || crypto.randomBytes(24).toString('hex');
+          await doc.ref.update({
+            status: 'paused',
+            expiredAt: admin.firestore.FieldValue.serverTimestamp(),
+            expiredReason: 'no_confirmation',
+            availabilityToken: token,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          if (stats.reminded + stats.paused < LIFECYCLE.MAX_EMAILS_PER_RUN) {
+            await resend.emails.send({
+              from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+              to: email,
+              subject: `Your listing "${van.title || 'your van'}" has been paused`,
+              html: pausedEmailHtml({ sellerName: van.seller.name, vanTitle: van.title, vanId: doc.id, token }),
+            });
+          }
+          stats.paused++;
+          continue;
+        }
+
+        // 1. 30 jours sans signal et pas encore rappelé pour ce cycle → rappel.
+        if (now - lastSignal > LIFECYCLE.REMIND_AFTER_MS && remindedAt <= lastSignal) {
+          if (stats.reminded + stats.paused >= LIFECYCLE.MAX_EMAILS_PER_RUN) { stats.skipped++; continue; }
+          const token = crypto.randomBytes(24).toString('hex');
+          const daysListed = Math.round((now - toMs(van.createdAt)) / 86400000);
+          await resend.emails.send({
+            from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+            to: email,
+            subject: `Is "${van.title || 'your van'}" still for sale?`,
+            html: availabilityEmailHtml({ sellerName: van.seller.name, vanTitle: van.title, vanId: doc.id, token, daysListed }),
+          });
+          await doc.ref.update({
+            availabilityReminderSentAt: admin.firestore.FieldValue.serverTimestamp(),
+            availabilityToken: token,
+          });
+          stats.reminded++;
+        }
+      } catch (e) {
+        stats.errors++;
+        console.error(`listingLifecycle: van ${doc.id}:`, e.message || e);
+      }
+    }
+    console.log('🧹 listingLifecycle:', JSON.stringify(stats));
+  }
+);
+
+// Liens 1-clic des emails (aucune connexion requise : le token sur le doc fait foi).
+exports.listingAction = onRequest({ cors: false }, async (req, res) => {
+  const vanId = String(req.query.van || '').replace(/[^A-Za-z0-9_-]/g, '');
+  const token = String(req.query.token || '');
+  const action = String(req.query.action || '');
+  const page = (title, body, ok = true) => res.status(ok ? 200 : 400).set('Content-Type', 'text/html; charset=utf-8').send(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>${escapeHtml(title)} | Kiwi Van Market</title>
+<style>body{font-family:system-ui,sans-serif;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;color:#1e293b;text-align:center;padding:24px}h1{font-size:1.6rem;margin:0 0 10px}p{color:#64748b;margin:0 0 22px}a{display:inline-block;margin:6px;padding:12px 20px;border-radius:12px;background:#059669;color:#fff;text-decoration:none;font-weight:700}</style>
+</head><body><main><h1>${escapeHtml(title)}</h1><p>${body}</p><a href="${LIFECYCLE.SITE}/my-listings">My listings</a> <a href="${LIFECYCLE.SITE}/" style="background:#fff;color:#059669;border:2px solid #059669">Browse vans</a></main></body></html>`);
+
+  if (!vanId || !token || !['confirm', 'sold'].includes(action)) {
+    return page('Invalid link', 'This link is incomplete. Open your listings to manage your van.', false);
+  }
+  const ref = db.collection('vans').doc(vanId);
+  const snap = await ref.get();
+  if (!snap.exists) return page('Listing not found', 'This listing no longer exists.', false);
+  const van = snap.data();
+  const expected = String(van.availabilityToken || '');
+  const given = Buffer.from(token);
+  const exp = Buffer.from(expected);
+  if (!expected || given.length !== exp.length || !crypto.timingSafeEqual(given, exp)) {
+    return page('Link expired', 'This link is no longer valid. Sign in to manage your listing.', false);
+  }
+  const ts = admin.firestore.FieldValue.serverTimestamp();
+  if (action === 'sold') {
+    await ref.update({ status: 'sold', soldAt: ts, soldVia: 'availability_email', updatedAt: ts });
+    console.log(`listingAction: ${vanId} marked sold`);
+    return page('Congratulations! 🎉', `<strong>${escapeHtml(van.title || 'Your van')}</strong> is now marked as sold. Safe travels — and thanks for using Kiwi Van Market.`);
+  }
+  // confirm : remet en ligne si en pause, et repart pour 30 jours.
+  const wasPaused = van.status === 'paused';
+  await ref.update({
+    status: van.status === 'sold' ? 'sold' : 'active',
+    availabilityConfirmedAt: ts,
+    expiredAt: admin.firestore.FieldValue.delete(),
+    expiredReason: admin.firestore.FieldValue.delete(),
+    updatedAt: ts,
+  });
+  console.log(`listingAction: ${vanId} confirmed${wasPaused ? ' (reactivated)' : ''}`);
+  return page(wasPaused ? 'Listing reactivated ✅' : 'Thanks, still for sale ✅',
+    `<strong>${escapeHtml(van.title || 'Your van')}</strong> is live${wasPaused ? ' again' : ''} with an <em>availability confirmed</em> badge. We'll check back in 30 days.`);
+});
