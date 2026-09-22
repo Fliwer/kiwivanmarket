@@ -1964,3 +1964,254 @@ exports.listingAction = onRequest({ cors: false }, async (req, res) => {
   return page(wasPaused ? 'Listing reactivated ✅' : 'Thanks, still for sale ✅',
     `<strong>${escapeHtml(van.title || 'Your van')}</strong> is live${wasPaused ? ' again' : ''} with an <em>availability confirmed</em> badge. We'll check back in 30 days.`);
 });
+
+
+// ============================================
+// 🔔 BUYER ALERTS — "préviens-moi quand un van correspond"
+// ============================================
+// 4,5 % des visiteurs reviennent la semaine suivante (GA4, sept. 2026) : un
+// backpacker regarde, repart, et rate le Hiace publié le lendemain. L'alerte
+// est le seul levier sur le retour, et c'est un argument vendeur ("12 acheteurs
+// attendent un van à Auckland").
+//
+// Sans compte : un email + des critères suffisent (un backpacker ne crée pas
+// de compte pour une alerte). La collection `alerts` n'est accessible que
+// côté serveur (règles Firestore : deny par défaut) ; création via createAlert
+// (validation + plafond), gestion via les liens tokenisés des emails.
+//
+// Critères : { location, brand, priceMax, selfContained } — même logique de
+// matching que LocationPage/BrandPage (ville par inclusion, marque par
+// mots-clés du titre).
+
+const ALERT_BRAND_TERMS = {
+  'toyota-hiace': ['toyota', 'hiace'],
+  'nissan-caravan': ['nissan', 'caravan', 'homy'],
+  'mazda-bongo': ['mazda', 'bongo'],
+  'mitsubishi-delica': ['mitsubishi', 'delica'],
+  'ford-transit': ['ford', 'transit'],
+  'mercedes-sprinter': ['mercedes', 'sprinter'],
+};
+const ALERT_MAX_PER_EMAIL = 5;
+const ALERT_ACTION_URL = 'https://us-central1-kiwivanmarket.cloudfunctions.net/alertAction';
+
+const alertCopy = {
+  en: {
+    createdSubject: 'Your Kiwi Van Market alert is active',
+    createdTitle: 'Alert created 🔔',
+    createdBody: (label) => `We'll email you as soon as a van matching <strong>${label}</strong> is listed. Most backpacker vans sell within days, so being first matters.`,
+    matchSubject: (title, price) => `New van: ${title} — ${price}`,
+    matchTitle: 'A van matching your alert was just listed',
+    matchBody: (label) => `New listing matching <strong>${label}</strong>:`,
+    view: 'View the listing',
+    browse: 'Browse all vans',
+    manage: 'Stop this alert',
+    footer: 'You receive this because you created an alert on Kiwi Van Market.',
+    unsubscribed: 'Alert stopped',
+    unsubscribedBody: "You won't receive emails for this alert anymore. You can create a new one anytime.",
+  },
+  fr: {
+    createdSubject: 'Votre alerte Kiwi Van Market est active',
+    createdTitle: 'Alerte créée 🔔',
+    createdBody: (label) => `Nous vous écrirons dès qu'un van correspondant à <strong>${label}</strong> est publié. La plupart des vans de backpacker partent en quelques jours : être le premier compte.`,
+    matchSubject: (title, price) => `Nouveau van : ${title} — ${price}`,
+    matchTitle: 'Un van correspondant à votre alerte vient d\'être publié',
+    matchBody: (label) => `Nouvelle annonce correspondant à <strong>${label}</strong> :`,
+    view: 'Voir l\'annonce',
+    browse: 'Voir tous les vans',
+    manage: 'Arrêter cette alerte',
+    footer: 'Vous recevez cet email parce que vous avez créé une alerte sur Kiwi Van Market.',
+    unsubscribed: 'Alerte arrêtée',
+    unsubscribedBody: 'Vous ne recevrez plus d\'emails pour cette alerte. Vous pouvez en créer une nouvelle à tout moment.',
+  },
+};
+const alertLang = (l) => (alertCopy[l] ? l : 'en');
+
+function normalizeCriteria(raw) {
+  const c = raw && typeof raw === 'object' ? raw : {};
+  const location = String(c.location || '').toLowerCase().replace(/[^a-z-]/g, '').slice(0, 40);
+  const brand = String(c.brand || '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 40);
+  const priceMax = Number(c.priceMax);
+  return {
+    location,
+    brand,
+    priceMax: Number.isFinite(priceMax) && priceMax > 0 ? Math.min(Math.round(priceMax), 500000) : null,
+    selfContained: !!c.selfContained,
+  };
+}
+
+function alertLabel(c, lang) {
+  const parts = [];
+  if (c.brand) parts.push(c.brand.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+  else parts.push(lang === 'fr' ? 'Van' : 'Van');
+  if (c.selfContained) parts.push('self-contained');
+  if (c.location) parts.push((lang === 'fr' ? 'à ' : 'in ') + c.location.charAt(0).toUpperCase() + c.location.slice(1));
+  if (c.priceMax) parts.push((lang === 'fr' ? 'moins de ' : 'under ') + `NZ$${c.priceMax.toLocaleString('en-NZ')}`);
+  return parts.join(' · ');
+}
+
+function vanMatchesAlert(van, c) {
+  if (!van || van.status !== 'active') return false;
+  if (c.location) {
+    const loc = `${van.location || ''} ${van.region || ''}`.toLowerCase();
+    if (!loc.includes(c.location)) return false;
+  }
+  if (c.brand) {
+    const terms = ALERT_BRAND_TERMS[c.brand] || [c.brand];
+    const t = `${van.title || ''}`.toLowerCase();
+    if (!terms.some((k) => t.includes(k))) return false;
+  }
+  if (c.priceMax && Number(van.price || 0) > c.priceMax) return false;
+  if (c.selfContained && !van.selfContained) return false;
+  return true;
+}
+
+const alertEmailShell = (title, inner, lang, footerLinks) => `
+  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+    <div style="background:linear-gradient(135deg,#059669 0%,#0d9488 100%);padding:28px;border-radius:16px 16px 0 0;text-align:center;">
+      <h1 style="color:#fff;margin:0;font-size:22px;">${title}</h1>
+    </div>
+    <div style="background:#f9fafb;padding:28px;border-radius:0 0 16px 16px;">
+      ${inner}
+      <p style="font-size:12px;color:#9ca3af;margin-top:24px;">${alertCopy[lang].footer} ${footerLinks}</p>
+    </div>
+  </div>`;
+
+// Création (sans compte). Plafond par email, validation, email de confirmation.
+exports.createAlert = onCall({ secrets: [resendApiKey] }, async (request) => {
+  const d = request.data || {};
+  const email = String(d.email || '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 200) {
+    throw new HttpsError('invalid-argument', 'A valid email is required.');
+  }
+  const criteria = normalizeCriteria(d.criteria);
+  if (!criteria.location && !criteria.brand && !criteria.priceMax && !criteria.selfContained) {
+    throw new HttpsError('invalid-argument', 'Pick at least one criterion.');
+  }
+  const lang = alertLang(String(d.lang || 'en').slice(0, 2));
+  const label = alertLabel(criteria, lang);
+
+  const existing = await db.collection('alerts').where('email', '==', email).where('active', '==', true).get();
+  if (existing.size >= ALERT_MAX_PER_EMAIL) {
+    throw new HttpsError('resource-exhausted', `Max ${ALERT_MAX_PER_EMAIL} active alerts per email.`);
+  }
+  // Même critères déjà actifs → on ne duplique pas, on renvoie l'existante.
+  const dup = existing.docs.find((x) => JSON.stringify(x.data().criteria) === JSON.stringify(criteria));
+  if (dup) return { ok: true, id: dup.id, label, duplicate: true };
+
+  const token = crypto.randomBytes(24).toString('hex');
+  const ref = await db.collection('alerts').add({
+    email,
+    criteria,
+    label,
+    lang,
+    active: true,
+    token,
+    userId: request.auth ? request.auth.uid : null,
+    source: String(d.source || '').slice(0, 60) || null,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    lastNotifiedAt: null,
+    notifiedCount: 0,
+  });
+
+  try {
+    const T = alertCopy[lang];
+    const stop = `${ALERT_ACTION_URL}?id=${ref.id}&token=${token}&action=unsubscribe`;
+    await new Resend(resendApiKey.value()).emails.send({
+      from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+      to: email,
+      subject: T.createdSubject,
+      html: alertEmailShell(T.createdTitle, `
+        <p style="font-size:16px;color:#374151;">${T.createdBody(escapeHtml(label))}</p>
+        <p style="text-align:center;margin:22px 0;"><a href="https://kiwivanmarket.com/${lang === 'fr' ? '?lang=fr' : ''}" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;font-weight:700;padding:13px 22px;border-radius:12px;">${T.browse}</a></p>`,
+        lang, `<a href="${stop}" style="color:#059669;">${T.manage}</a>`),
+    });
+  } catch (e) {
+    console.error('createAlert: confirmation email failed', e.message || e);
+  }
+  console.log(`🔔 alert created ${ref.id} (${label})`);
+  return { ok: true, id: ref.id, label };
+});
+
+// Nouvelle annonce → email aux alertes qui correspondent (1 email par adresse).
+exports.onVanCreatedNotifyAlerts = onDocumentCreated(
+  { document: 'vans/{vanId}', secrets: [resendApiKey] },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const van = snap.data();
+    const vanId = event.params.vanId;
+    if (!van || van.status !== 'active') return;
+    try {
+      const alertsSnap = await db.collection('alerts').where('active', '==', true).get();
+      if (alertsSnap.empty) return;
+      const sellerEmail = String((van.seller && van.seller.email) || '').toLowerCase();
+      const byEmail = new Map();
+      for (const doc of alertsSnap.docs) {
+        const a = doc.data();
+        if (!a.email || a.email === sellerEmail || byEmail.has(a.email)) continue;
+        if (vanMatchesAlert(van, a.criteria || {})) byEmail.set(a.email, { id: doc.id, ...a });
+      }
+      if (!byEmail.size) return;
+
+      const resend = new Resend(resendApiKey.value());
+      const price = `NZ$${Number(van.price || 0).toLocaleString('en-NZ')}`;
+      const img = (Array.isArray(van.images) && van.images[0]) || van.imageUrl || '';
+      const safeTitle = escapeHtml(van.title || 'Campervan');
+      let sent = 0;
+      for (const [email, a] of byEmail) {
+        const lang = alertLang(a.lang);
+        const T = alertCopy[lang];
+        const vanUrl = `https://kiwivanmarket.com/van/${vanId}${lang === 'fr' ? '?lang=fr' : ''}`;
+        const stop = `${ALERT_ACTION_URL}?id=${a.id}&token=${a.token}&action=unsubscribe`;
+        const { error } = await resend.emails.send({
+          from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+          to: email,
+          subject: T.matchSubject(van.title || 'Campervan', price),
+          html: alertEmailShell(T.matchTitle, `
+            <p style="font-size:16px;color:#374151;">${T.matchBody(escapeHtml(a.label || ''))}</p>
+            ${img ? `<a href="${vanUrl}"><img src="${escapeHtml(img)}" alt="${safeTitle}" style="width:100%;max-height:280px;object-fit:cover;border-radius:12px;margin:12px 0;"></a>` : ''}
+            <h2 style="font-size:20px;color:#111827;margin:8px 0;">${safeTitle}</h2>
+            <p style="font-size:18px;color:#059669;font-weight:700;margin:4px 0;">${price}</p>
+            <p style="font-size:14px;color:#6b7280;margin:4px 0;">${escapeHtml(String(van.year || ''))} · ${escapeHtml(van.location || '')}${van.selfContained ? ' · self-contained' : ''}</p>
+            <p style="text-align:center;margin:22px 0;"><a href="${vanUrl}" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;font-weight:700;padding:13px 22px;border-radius:12px;">${T.view}</a></p>`,
+            lang, `<a href="${stop}" style="color:#059669;">${T.manage}</a>`),
+        });
+        if (error) { console.error('alert email error:', error); continue; }
+        sent++;
+        await db.collection('alerts').doc(a.id).update({
+          lastNotifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+          notifiedCount: admin.firestore.FieldValue.increment(1),
+        }).catch(() => {});
+        await new Promise((r) => setTimeout(r, 120));
+      }
+      console.log(`🔔 van ${vanId}: ${sent} alert email(s) sent`);
+    } catch (e) {
+      console.error('onVanCreatedNotifyAlerts error:', e);
+    }
+  }
+);
+
+// Lien "arrêter cette alerte" des emails.
+exports.alertAction = onRequest({ cors: false }, async (req, res) => {
+  const id = String(req.query.id || '').replace(/[^A-Za-z0-9_-]/g, '');
+  const token = String(req.query.token || '');
+  const action = String(req.query.action || '');
+  const page = (title, body, lang = 'en', ok = true) => res.status(ok ? 200 : 400).set('Content-Type', 'text/html; charset=utf-8').send(`<!DOCTYPE html>
+<html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>${escapeHtml(title)} | Kiwi Van Market</title>
+<style>body{font-family:system-ui,sans-serif;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;color:#1e293b;text-align:center;padding:24px}h1{font-size:1.6rem;margin:0 0 10px}p{color:#64748b;margin:0 0 22px}a{display:inline-block;margin:6px;padding:12px 20px;border-radius:12px;background:#059669;color:#fff;text-decoration:none;font-weight:700}</style>
+</head><body><main><h1>${escapeHtml(title)}</h1><p>${body}</p><a href="https://kiwivanmarket.com/${lang === 'fr' ? '?lang=fr' : ''}">${alertCopy[lang].browse}</a></main></body></html>`);
+
+  if (!id || !token || action !== 'unsubscribe') return page('Invalid link', 'This link is incomplete.', 'en', false);
+  const ref = db.collection('alerts').doc(id);
+  const snap = await ref.get();
+  if (!snap.exists) return page('Not found', 'This alert no longer exists.', 'en', false);
+  const a = snap.data();
+  const given = Buffer.from(token), exp = Buffer.from(String(a.token || ''));
+  if (!exp.length || given.length !== exp.length || !crypto.timingSafeEqual(given, exp)) {
+    return page('Invalid link', 'This link is not valid.', 'en', false);
+  }
+  const lang = alertLang(a.lang);
+  await ref.update({ active: false, unsubscribedAt: admin.firestore.FieldValue.serverTimestamp() });
+  return page(alertCopy[lang].unsubscribed, alertCopy[lang].unsubscribedBody, lang);
+});

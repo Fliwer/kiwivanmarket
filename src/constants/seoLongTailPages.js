@@ -59,6 +59,7 @@ function createBrandCityBudgetPage(city, brand, budget) {
     maxPrice: budget,
     selfContainedOnly: false,
     brandTerms: brand.terms,
+    brandSlug: brand.slug,
   };
 }
 

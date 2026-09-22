@@ -4,6 +4,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import SeoHead from './SeoHead';
 import VanCard from './VanCard';
+import AlertCta from './AlertCta';
 import { useHideLoader } from '../hooks/useHideLoader';
 import { safeDate } from '../utils/dateHelper';
 import { LONG_TAIL_PAGE_LIST, LONG_TAIL_PAGE_MAP } from '../constants/seoLongTailPages';
@@ -145,6 +146,7 @@ export default function SeoLongTailPage() {
           <div className="bg-white rounded-2xl border border-slate-100 p-10 text-center">
             <h2 className="text-xl font-black text-slate-900 mb-2">No exact match right now</h2>
             <p className="text-slate-500 mb-6">Try nearby pages and keep checking as new vans are listed daily.</p>
+            <div className="mb-6"><AlertCta variant="inline" source="search_empty" defaults={{ location: config.city, brand: config.brandSlug || '', priceMax: config.maxPrice || '', selfContained: !!config.selfContainedOnly }} /></div>
             <div className="flex justify-center gap-3 flex-wrap">
               <Link to={`/location/${config.city}`} className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold">
                 Browse {city}
@@ -160,6 +162,7 @@ export default function SeoLongTailPage() {
               {vans.map((van) => <VanCard key={van.id} van={van} />)}
             </div>
             <section className="mt-10 bg-white rounded-2xl border border-slate-100 p-6">
+              <AlertCta variant="banner" source="search" className="mb-8" defaults={{ location: config.city, brand: config.brandSlug || '', priceMax: config.maxPrice || '', selfContained: !!config.selfContainedOnly }} />
               <h2 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">More specific searches in {city}</h2>
               <div className="flex flex-wrap gap-2">
                 {relatedPages.map((page) => (

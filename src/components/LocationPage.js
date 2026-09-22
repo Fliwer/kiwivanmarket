@@ -5,6 +5,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { MapPin, ArrowLeft } from 'lucide-react';
 import VanCard from './VanCard';
+import AlertCta from './AlertCta';
 import SeoHead from './SeoHead';
 import { useTranslation } from 'react-i18next';
 import { useHideLoader } from '../hooks/useHideLoader';
@@ -297,6 +298,8 @@ export default function LocationPage() {
                 ))}
               </div>
             )}
+
+            <AlertCta variant="banner" source="location" className="mt-10" defaults={{ location }} />
 
             <div className="mt-10 bg-white rounded-2xl border border-slate-100 p-6">
               <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">{t('seo_pages.links_title')}</h3>

@@ -386,5 +386,27 @@
     "van_card": {
         "confirmed_today": "Disponible · confirmé aujourd'hui",
         "confirmed_days": "Disponible · confirmé il y a {{count}} j"
+    },
+    "alerts": {
+        "cta": "Créer une alerte",
+        "cta_short": "M'alerter quand un van est publié",
+        "banner_title": "Pas trouvé le bon van ? Laissez-le vous trouver.",
+        "banner_text": "Recevez un email dès qu'un van correspondant est publié — la plupart partent en quelques jours.",
+        "modal_title": "Alerte van",
+        "modal_text": "Sans compte. Un email par nouvelle annonce, désinscription en un clic.",
+        "city": "Ville",
+        "brand": "Modèle",
+        "budget": "Budget max",
+        "any": "Tous",
+        "email": "Votre email",
+        "submit": "M'alerter",
+        "privacy": "Uniquement des vans correspondants. Jamais partagé.",
+        "done_title": "Alerte créée !",
+        "done_text": "Nous vous écrirons pour : {{label}}",
+        "close": "Fermer",
+        "err_criteria": "Choisissez au moins un critère.",
+        "err_email": "Entrez un email valide.",
+        "err_max": "Vous avez déjà 5 alertes actives.",
+        "err_generic": "Une erreur est survenue. Réessayez."
     }
 }

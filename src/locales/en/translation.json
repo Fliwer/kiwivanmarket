@@ -386,5 +386,27 @@
     "van_card": {
         "confirmed_today": "Available · confirmed today",
         "confirmed_days": "Available · confirmed {{count}}d ago"
+    },
+    "alerts": {
+        "cta": "Create an alert",
+        "cta_short": "Alert me when one is listed",
+        "banner_title": "Didn't find the right van? Let it find you.",
+        "banner_text": "Get an email the moment a matching van is listed — most sell within days.",
+        "modal_title": "Van alert",
+        "modal_text": "No account needed. One email per new match, unsubscribe in one click.",
+        "city": "City",
+        "brand": "Model",
+        "budget": "Max budget",
+        "any": "Any",
+        "email": "Your email",
+        "submit": "Alert me",
+        "privacy": "We only email you about matching vans. Never shared.",
+        "done_title": "Alert created!",
+        "done_text": "We'll email you for: {{label}}",
+        "close": "Close",
+        "err_criteria": "Pick at least one criterion.",
+        "err_email": "Please enter a valid email.",
+        "err_max": "You already have 5 active alerts.",
+        "err_generic": "Something went wrong. Please try again."
     }
 }

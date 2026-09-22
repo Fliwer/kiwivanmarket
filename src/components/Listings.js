@@ -5,6 +5,7 @@ import { Search, BookOpen, ArrowRight, ArrowUpDown, ChevronDown } from 'lucide-r
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import VanCard from './VanCard';
+import AlertCta from './AlertCta';
 import { getLongTailSlugsForVan, LONG_TAIL_PAGE_MAP } from '../constants/seoLongTailPages';
 
 const PAGE_SIZE = 24;
@@ -246,6 +247,10 @@ export default function Listings({
                         </div>
                     )}
 
+                    {filteredVans.length > 0 && (
+                        <AlertCta variant="banner" source="home" className="mt-12" />
+                    )}
+
                     {autoLongTailSlugs.length > 0 && (
                         <div className="mt-10 bg-white border border-slate-100 rounded-2xl p-5">
                             <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">
@@ -272,6 +277,7 @@ export default function Listings({
                             </div>
                             <h3 className="text-2xl font-black text-slate-900 mb-2">No vans found</h3>
                             <p className="text-slate-500 max-w-sm mx-auto">Try adjusting your filters or search term to discover more adventures.</p>
+                            <div className="mt-5"><AlertCta variant="inline" source="home_empty" /></div>
                             <button
                                 onClick={() => setSearchTerm('')}
                                 className="mt-8 text-emerald-600 font-bold hover:underline"

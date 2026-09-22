@@ -5,6 +5,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ArrowLeft } from 'lucide-react';
 import VanCard from './VanCard';
+import AlertCta from './AlertCta';
 import SeoHead from './SeoHead';
 import { useHideLoader } from '../hooks/useHideLoader';
 import { useTranslation } from 'react-i18next';
@@ -233,6 +234,8 @@ export default function BrandPage() {
                 ))}
               </div>
             )}
+
+            <AlertCta variant="banner" source="brand" className="mt-10" defaults={{ brand }} />
 
             <div className="mt-10 bg-white rounded-2xl border border-slate-100 p-6">
               <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">{t('seo_pages.links_title')}</h3>

@@ -313,5 +313,27 @@
     "van_card": {
         "confirmed_today": "Disponible · confirmado hoy",
         "confirmed_days": "Disponible · confirmado hace {{count}} d"
+    },
+    "alerts": {
+        "cta": "Crear una alerta",
+        "cta_short": "Avisarme cuando se publique uno",
+        "banner_title": "¿No encontraste la van adecuada? Deja que te encuentre.",
+        "banner_text": "Recibe un email en cuanto se publique una van que coincida — la mayoría se venden en días.",
+        "modal_title": "Alerta de van",
+        "modal_text": "Sin cuenta. Un email por cada nueva coincidencia, baja en un clic.",
+        "city": "Ciudad",
+        "brand": "Modelo",
+        "budget": "Presupuesto máx.",
+        "any": "Cualquiera",
+        "email": "Tu email",
+        "submit": "Avísame",
+        "privacy": "Solo vans que coincidan. Nunca compartido.",
+        "done_title": "¡Alerta creada!",
+        "done_text": "Te escribiremos para: {{label}}",
+        "close": "Cerrar",
+        "err_criteria": "Elige al menos un criterio.",
+        "err_email": "Introduce un email válido.",
+        "err_max": "Ya tienes 5 alertas activas.",
+        "err_generic": "Algo salió mal. Inténtalo de nuevo."
     }
 }
