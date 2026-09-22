@@ -116,7 +116,55 @@ function vansForPage(vans, page) {
   });
 }
 
+// Pages qui méritent l'index, calculées d'un coup pour tout le catalogue.
+// Deux barrières :
+//  1. >= MIN_INDEXABLE vans actifs (page vide = doorway page).
+//  2. Dédup des paliers de budget. "Auckland < 8 000", "< 12 000" … "< 22 000"
+//     sont des sous-ensembles emboîtés : si un palier n'apporte pas au moins
+//     MIN_INDEXABLE vans de plus que le palier indexable précédent, Google le
+//     voit comme un doublon (GSC : « Page en double », « Détectée, non
+//     indexée ») et ça dilue le budget de crawl de tout le site. Idem si le
+//     palier le plus large recouvre quasiment toute la page /location/:city.
+// Les pages exclues restent servies en noindex,follow et reviennent toutes
+// seules dès que le stock le justifie.
+const PARENT_OVERLAP_MAX = 0.9;
+
+function indexableSlugs(vans) {
+  const active = vans.filter((v) => v.status !== 'sold');
+  const keep = new Set();
+  const ladders = new Map();
+  LONG_TAIL_PAGE_LIST.forEach((page) => {
+    const count = vansForPage(active, page).length;
+    if (typeof page.maxPrice !== 'number') {
+      // Self-contained : quasi tout le stock l'est, la page recouvre souvent
+      // /location/:city à 95 %.
+      const cityCount = vansForPage(active, { ...page, selfContainedOnly: false }).length;
+      if (count >= MIN_INDEXABLE && count <= cityCount * PARENT_OVERLAP_MAX) keep.add(page.slug);
+      return;
+    }
+    const key = `${page.city}|${page.brandSlug || ''}`;
+    if (!ladders.has(key)) ladders.set(key, []);
+    ladders.get(key).push({ page, count });
+  });
+  ladders.forEach((tiers) => {
+    tiers.sort((a, b) => a.page.maxPrice - b.page.maxPrice);
+    // Sans plafond = ce que montre déjà /location/:city ; un palier qui
+    // recouvre presque tout n'apporte rien de plus à l'index.
+    const parent = { ...tiers[0].page, maxPrice: undefined };
+    const parentCount = vansForPage(active, parent).length;
+    let prevKept = 0;
+    tiers.forEach(({ page, count }) => {
+      if (count < MIN_INDEXABLE) return;
+      if (count - prevKept < MIN_INDEXABLE) return;
+      if (!page.brandSlug && count > parentCount * PARENT_OVERLAP_MAX) return;
+      keep.add(page.slug);
+      prevKept = count;
+    });
+  });
+  return keep;
+}
+
 module.exports = {
   CITY_META, BRAND_META, MIN_INDEXABLE,
-  LONG_TAIL_PAGE_LIST, LONG_TAIL_PAGE_MAP, matchesPage, vansForPage,
+  LONG_TAIL_PAGE_LIST, LONG_TAIL_PAGE_MAP, matchesPage, vansForPage, indexableSlugs,
 };

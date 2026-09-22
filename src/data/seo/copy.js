@@ -43,6 +43,11 @@ const en = {
     byLocation: 'Browse by location',
     locationLink: (n) => `Campervans for sale in ${n}`,
     guides: 'Expert guides for buying &amp; selling in NZ',
+    byBudget: 'Browse by budget',
+    tools: 'Prices, tools and how it works',
+    pricesLink: 'Campervan prices in New Zealand (live market data)',
+    buybackLink: 'Resale &amp; buyback calculator',
+    whyLink: 'Why buy or sell on Kiwi Van Market',
     itemList: 'Latest campervans for sale in New Zealand',
     orgDesc: 'The #1 campervan marketplace in New Zealand. Buy or sell campervans, motorhomes, and vans peer-to-peer with zero commission.',
     faqs: (s) => [
@@ -313,6 +318,11 @@ const fr = {
     byLocation: 'Parcourir par ville',
     locationLink: (n) => `Vans à vendre à ${n}`,
     guides: "Guides d'experts pour acheter et vendre en NZ",
+    byBudget: 'Parcourir par budget',
+    tools: 'Prix, outils et fonctionnement',
+    pricesLink: 'Prix des vans en Nouvelle-Zélande (données réelles)',
+    buybackLink: 'Calculateur de revente et de rachat',
+    whyLink: 'Pourquoi acheter ou vendre sur Kiwi Van Market',
     itemList: 'Derniers vans à vendre en Nouvelle-Zélande',
     orgDesc: 'La marketplace de vans n°1 en Nouvelle-Zélande. Achetez ou vendez un van, un van aménagé ou un camping-car entre particuliers, sans commission.',
     faqs: (s) => [

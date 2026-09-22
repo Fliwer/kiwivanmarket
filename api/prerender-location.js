@@ -14,7 +14,7 @@ const COPY = require('../src/data/seo/copy');
 const LOCATIONS = {
   auckland: 'Auckland', christchurch: 'Christchurch', wellington: 'Wellington',
   queenstown: 'Queenstown', rotorua: 'Rotorua', dunedin: 'Dunedin',
-  hamilton: 'Hamilton', tauranga: 'Tauranga',
+  hamilton: 'Hamilton', tauranga: 'Tauranga', nelson: 'Nelson',
 };
 
 module.exports = async function handler(req, res) {
@@ -69,6 +69,9 @@ ${Object.entries(LOCATIONS).filter(([s]) => s !== slug).map(([s, n]) => `<li><a 
     title,
     metaDesc,
     ...pageMeta(`/location/${slug}`, lang),
+    // Sans annonce, la page se résume au blurb : Google la classe en soft 404.
+    // noindex,follow jusqu'à ce qu'un van arrive (le maillage reste utile).
+    noindex: !vans.length,
     ogImage: (vans[0] && ((vans[0].images || [])[0] || vans[0].imageUrl)) || undefined,
     jsonLd: [
       itemListLd(T.itemList(name), vans),

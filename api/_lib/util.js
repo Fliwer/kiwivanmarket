@@ -59,6 +59,15 @@ async function fetchAllVans() {
     .filter((v) => !v.status || v.status === 'active' || v.status === 'sold');
 }
 
+// ── lastmod sitemap : dernière modification de contenu d'un lot de vans ────
+// updatedAt/createdAt (posés par l'app) plutôt que doc.updateTime, qui bouge à
+// chaque incrément de vues et rendrait le lastmod inutile pour Google.
+const isoDay = (v) => (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0, 10) : null);
+function latestUpdate(vans) {
+  const days = vans.map((v) => isoDay(v.updatedAt) || isoDay(v.createdAt)).filter(Boolean).sort();
+  return days.length ? days[days.length - 1] : new Date().toISOString().slice(0, 10);
+}
+
 // ── Stats de prix (pages marques / lieux — contenu unique calculé) ─────────
 function priceStats(vans) {
   const prices = vans.filter((v) => v.status !== 'sold' && v.price > 0).map((v) => v.price);
@@ -215,6 +224,6 @@ function send503(res) {
 }
 
 module.exports = {
-  ORIGIN, langUrl, fv, parseFields, esc, cdnImg, fetchAllVans, priceStats, nzd,
+  ORIGIN, langUrl, fv, parseFields, esc, cdnImg, fetchAllVans, latestUpdate, priceStats, nzd,
   vanListHTML, itemListLd, faqLd, breadcrumbLd, htmlShell, send404, sendHTML, send503,
 };
