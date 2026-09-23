@@ -73,6 +73,9 @@ ${Object.entries(BRANDS).filter(([s]) => s !== slug).map(([s, b]) => `<li><a hre
     title,
     metaDesc,
     ...pageMeta(`/brand/${slug}`, lang),
+    // Sans annonce, la page se résume au blurb : Google la classe en soft 404.
+    // noindex,follow jusqu'à ce qu'un van arrive (le maillage reste utile).
+    noindex: !vans.length,
     ogImage: (vans[0] && ((vans[0].images || [])[0] || vans[0].imageUrl)) || undefined,
     jsonLd: [
       itemListLd(T.itemList(n), vans),

@@ -9,45 +9,15 @@
 // riches sur les réseaux (OG), et lisibilité par les moteurs IA (GEO).
 // ============================================================================
 
-const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'kiwivanmarket';
-const ORIGIN = 'https://kiwivanmarket.com';
-
-// ── Parsing Firestore REST ──────────────────────────────────────────────────
-function fv(field) {
-  if (!field || typeof field !== 'object') return undefined;
-  if ('stringValue' in field) return field.stringValue;
-  if ('integerValue' in field) return Number(field.integerValue);
-  if ('doubleValue' in field) return Number(field.doubleValue);
-  if ('booleanValue' in field) return field.booleanValue;
-  if ('timestampValue' in field) return field.timestampValue;
-  if ('nullValue' in field) return null;
-  if ('arrayValue' in field) return (field.arrayValue.values || []).map(fv);
-  if ('mapValue' in field) return parseFields(field.mapValue.fields || {});
-  return undefined;
-}
-function parseFields(fields) {
-  const out = {};
-  for (const k of Object.keys(fields)) out[k] = fv(fields[k]);
-  return out;
-}
-
-// ── Sécurité : tout contenu utilisateur est échappé avant insertion HTML ────
-const esc = (s) =>
-  String(s ?? '').replace(/[&<>"']/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
-  );
-
-// ── Images Cloudinary optimisées ────────────────────────────────────────────
-const cdnImg = (url, w) =>
-  typeof url === 'string' && url.includes('/upload/')
-    ? url.replace('/upload/', `/upload/w_${w},c_limit,q_auto,f_auto/`)
-    : url;
+const { ORIGIN, esc, cdnImg, fetchAllVans } = require('./_lib/util');
 
 // ── Maillage interne (liens uniquement vers des pages qui existent) ─────────
+// Même liste que prerender-location.js : un lien vers /location/napier alors
+// que la page n'existe pas = une 404 de plus dans GSC.
 const LOCATION_SLUGS = {
   auckland: 'Auckland', wellington: 'Wellington', christchurch: 'Christchurch',
   queenstown: 'Queenstown', rotorua: 'Rotorua', dunedin: 'Dunedin',
-  hamilton: 'Hamilton', tauranga: 'Tauranga', nelson: 'Nelson', napier: 'Napier',
+  hamilton: 'Hamilton', tauranga: 'Tauranga', nelson: 'Nelson',
 };
 const BRAND_PAGES = [
   { slug: 'toyota-hiace', label: 'Toyota Hiace', kw: ['hiace'] },
@@ -79,19 +49,19 @@ module.exports = async function handler(req, res) {
     return res.send(page404());
   }
 
-  let van;
+  // Un seul appel Firestore pour l'annonce ET les annonces similaires (le
+  // maillage entre /van/:id est ce qui fait crawler le catalogue : sans lui,
+  // une annonce n'est atteignable que depuis la home, sa ville ou son
+  // sitemap).
+  let van; let all;
   try {
-    const r = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/vans/${id}`
-    );
-    if (r.status === 404) {
+    all = await fetchAllVans();
+    van = all.find((v) => v.id === id);
+    if (!van) {
       res.status(404).setHeader('Content-Type', 'text/html; charset=utf-8');
       res.setHeader('Cache-Control', 's-maxage=3600');
       return res.send(page404());
     }
-    if (!r.ok) throw new Error(`Firestore ${r.status}`);
-    const doc = await r.json();
-    van = parseFields(doc.fields || {});
   } catch (e) {
     // En cas d'erreur amont, ne pas indexer une page cassée.
     res.status(503).setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -130,6 +100,16 @@ module.exports = async function handler(req, res) {
     ? String(van.location).toLowerCase() : null;
   const titleLc = String(van.title || '').toLowerCase();
   const brand = BRAND_PAGES.find((b) => b.kw.some((k) => titleLc.includes(k)));
+
+  // Annonces similaires : même ville d'abord, puis même marque, puis les plus
+  // récentes. Actives uniquement, 4 max.
+  const sameCity = (v) => van.location && v.location === van.location;
+  const sameBrand = (v) => brand && brand.kw.some((k) => String(v.title || '').toLowerCase().includes(k));
+  const similar = all
+    .filter((v) => v.id !== id && v.status !== 'sold')
+    .sort((a, b) => (Number(sameCity(b)) + Number(sameBrand(b))) - (Number(sameCity(a)) + Number(sameBrand(a)))
+      || String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+    .slice(0, 4);
 
   // ── JSON-LD : parité avec VanSeo.jsx ──────────────────────────────────────
   const vehicleLd = {
@@ -238,6 +218,8 @@ ${images[0] ? `<meta name="twitter:image" content="${esc(cdnImg(images[0], 1200)
   <h2>Seller</h2>
   <p>${esc((van.seller && van.seller.name) || 'Private seller')} — contact via the listing page on Kiwi Van Market.</p>
   <p><a href="${url}">View this listing and contact the seller →</a></p>
+  ${similar.length ? `<h2>Similar campervans for sale</h2>
+  <ul>${similar.map((v) => `<li><a href="${ORIGIN}/van/${esc(v.id)}">${esc(`${v.year ? v.year + ' ' : ''}${v.title || 'Campervan'}`)}</a> — ${v.price ? `$${Number(v.price).toLocaleString('en-NZ')} NZD` : 'Price on request'}${v.location ? `, ${esc(v.location)}` : ''}</li>`).join('\n  ')}</ul>` : ''}
 </main>
 <footer>
   <p>Kiwi Van Market — New Zealand's peer-to-peer campervan marketplace. Free listings, CarJam checks, WOF/REGO visibility, self-contained filters.</p>

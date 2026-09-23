@@ -1,7 +1,10 @@
 // ============================================================================
 // Prerender / (home) pour les crawlers — hub de découverte : annonces
 // récentes (liens crawlables vers /van/:id) + maillage complet vers les
-// pages marques, villes et guides. Schémas Organization + WebSite + FAQ.
+// pages marques, villes, budgets (pages /search indexables), guides, prix,
+// calculateur et why. Sans ces liens depuis la home, la moitié du site n'est
+// atteignable que par sitemap et Google la laisse en « détectée, non
+// indexée ». Schémas Organization + WebSite + FAQ.
 // Localisé : ?lang=fr sert la version française (textes dans _lib/copy.js).
 // ============================================================================
 
@@ -12,6 +15,7 @@ const {
 const { pickLang, pageMeta } = require('./_lib/i18n');
 const COPY = require('../src/data/seo/copy');
 const GUIDES = require('./_lib/guides-data.json');
+const { LONG_TAIL_PAGE_LIST, indexableSlugs } = require('./_lib/long-tail');
 
 const BRANDS = {
   'toyota-hiace': 'Toyota Hiace', 'nissan-caravan': 'Nissan Caravan',
@@ -41,6 +45,10 @@ module.exports = async function handler(req, res) {
   } catch (e) {
     return send503(res);
   }
+
+  // Pages budget qui méritent l'index (même barrière que le sitemap).
+  const keep = indexableSlugs(vans);
+  const budgetPages = LONG_TAIL_PAGE_LIST.filter((p) => keep.has(p.slug));
 
   const stats = priceStats(vans);
   // Montants formatés une fois, pour les gabarits de textes.
@@ -85,9 +93,19 @@ ${Object.entries(BRANDS).map(([s, n]) => `<li><a href="${langUrl('/brand/' + s, 
 <ul>
 ${Object.entries(LOCATIONS).map(([s, n]) => `<li><a href="${langUrl('/location/' + s, lang)}">${T.locationLink(esc(n))}</a></li>`).join('\n')}
 </ul>
+${budgetPages.length ? `<h2>${T.byBudget}</h2>
+<ul>
+${budgetPages.map((p) => `<li><a href="${ORIGIN}/search/${esc(p.slug)}">${esc(p.heading)}</a></li>`).join('\n')}
+</ul>` : ''}
 <h2>${T.guides}</h2>
 <ul>
 ${Object.entries(guides).map(([s, g]) => `<li><a href="${langUrl('/guide/' + s, lang)}">${esc(g.title)}</a></li>`).join('\n')}
+</ul>
+<h2>${T.tools}</h2>
+<ul>
+<li><a href="${langUrl('/campervan-prices-nz', lang)}">${T.pricesLink}</a></li>
+<li><a href="${langUrl('/buyback-calculator', lang)}">${T.buybackLink}</a></li>
+<li><a href="${langUrl('/why', lang)}">${T.whyLink}</a></li>
 </ul>
 <h2>${C.faqTitle}</h2>
 ${faqs.map(({ q, a }) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('\n')}`;

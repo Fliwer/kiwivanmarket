@@ -10,21 +10,23 @@ const {
   ORIGIN, esc, fetchAllVans, priceStats, nzd, vanListHTML,
   itemListLd, faqLd, breadcrumbLd, htmlShell, send404, sendHTML, send503,
 } = require('./_lib/util');
-const { LONG_TAIL_PAGE_LIST, LONG_TAIL_PAGE_MAP, MIN_INDEXABLE, vansForPage } = require('./_lib/long-tail');
+const { LONG_TAIL_PAGE_LIST, LONG_TAIL_PAGE_MAP, indexableSlugs, vansForPage } = require('./_lib/long-tail');
 
 module.exports = async function handler(req, res) {
   const slug = String(req.query.slug || '').toLowerCase();
   const page = LONG_TAIL_PAGE_MAP[slug];
   if (!page) return send404(res, 'This search page does not exist');
 
-  let vans;
+  let vans; let keep;
   try {
-    vans = vansForPage(await fetchAllVans(), page);
+    const all = await fetchAllVans();
+    vans = vansForPage(all, page);
+    keep = indexableSlugs(all);
   } catch (e) {
     return send503(res);
   }
 
-  const indexable = vans.length >= MIN_INDEXABLE;
+  const indexable = keep.has(slug);
   const stats = priceStats(vans);
   const url = `${ORIGIN}/search/${slug}`;
   const city = page.cityName;
@@ -47,8 +49,10 @@ module.exports = async function handler(req, res) {
     },
   ];
 
+  // Maillage : uniquement vers des pages indexables, sinon on envoie le
+  // crawler sur des noindex.
   const related = LONG_TAIL_PAGE_LIST
-    .filter((p) => p.city === page.city && p.slug !== slug)
+    .filter((p) => p.city === page.city && p.slug !== slug && keep.has(p.slug))
     .slice(0, 6);
 
   const body = `
