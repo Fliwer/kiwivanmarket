@@ -21,8 +21,11 @@ export default function BottomNavigation({
 
     if (isVanPage) return null;
 
+    // Fond opaque sans backdrop-blur : cette barre `fixed` couvre toute la
+    // largeur, et un backdrop-filter la faisait reflouter le contenu qui
+    // defile dessous a chaque frame (scroll saccade sur mobile).
     return (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 px-6 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-6 py-3 pb-[calc(1rem+env(safe-area-inset-bottom))] z-50 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
             <div className="flex items-center justify-between max-w-md mx-auto relative">
                 
                 {/* Explore / Home */}

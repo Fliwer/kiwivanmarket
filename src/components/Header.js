@@ -70,8 +70,12 @@ export default function Header({
     }, []);
     const headerHidden = hideOnScroll && !showMobileMenu;
 
+    // Pas de backdrop-blur ici : une barre `fixed` pleine largeur avec
+    // backdrop-filter force le GPU a reflouter tout le contenu qui defile
+    // dessous A CHAQUE FRAME — principale cause de scroll saccade sur mobile.
+    // Le fond etait deja opaque a 95%, le flou ne se voyait pas.
     return (
-        <header className={`fixed top-0 left-0 right-0 z-50 w-full md:sticky bg-white/95 backdrop-blur-xl border-b border-slate-200/60 shadow-sm transition-transform duration-300 ${headerHidden ? '-translate-y-full' : 'translate-y-0'}`}>
+        <header className={`fixed top-0 left-0 right-0 z-50 w-full md:sticky bg-white border-b border-slate-200/60 shadow-sm transition-transform duration-300 ${headerHidden ? '-translate-y-full' : 'translate-y-0'}`}>
             <div className="max-w-7xl mx-auto px-3 md:px-6 py-1.5 md:py-2">
                 <div className="flex items-center justify-between h-10 md:h-14">
 

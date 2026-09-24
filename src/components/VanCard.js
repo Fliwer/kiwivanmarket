@@ -15,6 +15,7 @@ const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
 const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStart = useRef(null);
+  const didSwipe = useRef(false);
 
   const allImages = images?.length > 0
     ? images
@@ -35,16 +36,35 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
   // Simple swipe logic
   const onTouchStart = (e) => {
     touchStart.current = e.targetTouches[0].clientX;
+    didSwipe.current = false;
   };
 
   const onTouchEnd = (e) => {
-    if (!touchStart.current) return;
+    // `=== null` et non `!touchStart.current` : un geste demarre a x=0 est
+    // falsy et serait ignore.
+    if (touchStart.current === null) return;
     const touchEnd = e.changedTouches[0].clientX;
     const diff = touchStart.current - touchEnd;
 
-    if (diff > 50) goNext(); // Swipe left
-    if (diff < -50) goPrev(); // Swipe right
+    if (Math.abs(diff) > 50) {
+      // La carte entiere est un <Link>. Sans preventDefault, le navigateur
+      // synthetise un click a la fin du geste : la photo change puis la fiche
+      // du van s'ouvre par-dessus, et le swipe semble ne pas marcher.
+      e.preventDefault();
+      didSwipe.current = true;
+      if (diff > 0) goNext(); // Swipe left
+      else goPrev(); // Swipe right
+    }
     touchStart.current = null;
+  };
+
+  // Filet de securite : si un navigateur emet quand meme le click, on l'avale
+  // en phase de capture avant qu'il n'atteigne le <Link>.
+  const onClickCapture = (e) => {
+    if (!didSwipe.current) return;
+    e.preventDefault();
+    e.stopPropagation();
+    didSwipe.current = false;
   };
 
   return (
@@ -52,6 +72,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
       className="relative group overflow-hidden h-64"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
+      onClickCapture={onClickCapture}
     >
       {/* Background for images while loading */}
       <div className="absolute inset-0 bg-slate-100 z-0" />
