@@ -11,6 +11,9 @@ export const useHideLoader = () => {
       loader.classList.add('fade-out');
       setTimeout(() => loader.remove(), 500);
     }
-    window.scrollTo(0, 0);
+    // Pas de window.scrollTo(0, 0) ici : ce hook ne doit que masquer le loader.
+    // MainApp le rappelle a chaque retour sur '/', ce qui ecrasait la position
+    // restauree par Listings. Le scroll de navigation est gere par ScrollToTop
+    // (App.js), qui lui respecte les retours arriere (POP).
   }, []);
 };

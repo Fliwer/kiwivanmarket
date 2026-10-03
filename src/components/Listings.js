@@ -132,17 +132,29 @@ export default function Listings({
         window.sessionStorage.removeItem(RETURN_PATH_KEY);
         restoredScrollRef.current = true;
 
-        // Les photos des cartes sont en lazy-load sans dimensions : au premier
-        // frame le document peut etre plus court que la position visee et le
-        // navigateur tronque le scroll. On re-affirme jusqu'a y arriver.
-        let tries = 0;
+        // Le Footer appartient au gabarit global : il est donc deja en place
+        // alors que les cartes ne sont pas encore mises en page. Si on scrolle
+        // a ce moment-la, le navigateur TRONQUE la position au bas du document
+        // et on voit le footer une demi-seconde avant que la liste n'apparaisse.
+        // On attend donc que la position visee soit reellement atteignable :
+        // mieux vaut rester en haut un instant que montrer le mauvais endroit.
+        // Timer plutot que requestAnimationFrame : rAF est suspendu des que
+        // l'onglet ne compose plus de frames (arriere-plan, fenetre masquee),
+        // et la position ne serait alors jamais restauree.
+        const deadline = Date.now() + 2000;
+        let timer = null;
         const settle = () => {
-            window.scrollTo({ top: savedScroll, behavior: 'auto' });
-            if (Math.abs(window.scrollY - savedScroll) > 4 && tries++ < 30) {
-                requestAnimationFrame(settle);
+            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+            if (maxScroll >= savedScroll) {
+                window.scrollTo({ top: savedScroll, behavior: 'auto' });
+                if (Math.abs(window.scrollY - savedScroll) <= 4) return;
             }
+            // Au-dela du budget on abandonne en laissant l'acheteur en haut de
+            // liste, ce qui reste preferable a un saut vers le footer.
+            if (Date.now() < deadline) timer = setTimeout(settle, 16);
         };
-        requestAnimationFrame(settle);
+        settle();
+        return () => clearTimeout(timer);
     }, [loading, filteredVans.length, currentPage]);
 
     return (
