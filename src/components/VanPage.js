@@ -544,7 +544,15 @@ ${shareUrl}
         <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-3 pb-1 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => {
+                // Un vrai retour (POP) plutot que navigate('/') : le ScrollToTop
+                // de App.js ne remet en haut que sur PUSH, et on retrouve donc
+                // la position + les filtres de la liste. Repli sur '/' quand on
+                // arrive directement sur la fiche (lien partage, resultat Google).
+                const idx = window.history.state && window.history.state.idx;
+                if (typeof idx === 'number' && idx > 0) navigate(-1);
+                else navigate('/');
+              }}
               className="p-2.5 bg-white border border-slate-200 hover:bg-emerald-50 text-slate-600 hover:text-emerald-600 rounded-xl transition-all flex-shrink-0 shadow-sm"
               title={t('van_page.back')}
             >

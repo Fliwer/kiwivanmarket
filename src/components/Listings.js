@@ -8,7 +8,9 @@ import VanCard from './VanCard';
 import AlertCta from './AlertCta';
 import { getLongTailSlugsForVan, LONG_TAIL_PAGE_MAP } from '../constants/seoLongTailPages';
 
-const PAGE_SIZE = 24;
+// 12 et non 24 : sur mobile une page de 24 vans faisait ~22 000 px de haut,
+// soit ~27 ecrans a parcourir avant la pagination.
+const PAGE_SIZE = 12;
 const LISTINGS_PAGE_KEY = 'kiwiVanMarket_listingsPage';
 const RETURN_SCROLL_KEY = 'kiwiVanMarket_returnScrollY';
 const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
@@ -111,22 +113,36 @@ export default function Listings({
         }
     }, [currentPage]);
 
+    // Retour depuis une fiche van : on remet l'acheteur exactement ou il etait.
+    // Sans ca il doit re-parcourir toute la liste, ce qui le fait abandonner.
     useEffect(() => {
         if (loading || restoredScrollRef.current || typeof window === 'undefined') return;
-        const returnPath = window.sessionStorage.getItem(RETURN_PATH_KEY);
+
+        const savedPath = window.sessionStorage.getItem(RETURN_PATH_KEY);
         const savedScroll = Number(window.sessionStorage.getItem(RETURN_SCROLL_KEY));
+        // On compare a l'URL courante complete : l'ancien test `=== '/'` ratait
+        // tous les retours vers une liste filtree (/?search=..., ?lang=fr...).
+        const here = `${window.location.pathname}${window.location.search}`;
 
-        if (returnPath === '/' && Number.isFinite(savedScroll) && savedScroll >= 0) {
-            requestAnimationFrame(() => {
-                window.scrollTo({ top: savedScroll, behavior: 'auto' });
-                window.sessionStorage.removeItem(RETURN_SCROLL_KEY);
-                window.sessionStorage.removeItem(RETURN_PATH_KEY);
-                restoredScrollRef.current = true;
-            });
-            return;
-        }
+        if (savedPath !== here || !Number.isFinite(savedScroll) || savedScroll <= 0) return;
 
+        // Consomme les cles tout de suite : elles servent de verrou, la
+        // restauration ne doit pas se rejouer aux rendus suivants.
+        window.sessionStorage.removeItem(RETURN_SCROLL_KEY);
+        window.sessionStorage.removeItem(RETURN_PATH_KEY);
         restoredScrollRef.current = true;
+
+        // Les photos des cartes sont en lazy-load sans dimensions : au premier
+        // frame le document peut etre plus court que la position visee et le
+        // navigateur tronque le scroll. On re-affirme jusqu'a y arriver.
+        let tries = 0;
+        const settle = () => {
+            window.scrollTo({ top: savedScroll, behavior: 'auto' });
+            if (Math.abs(window.scrollY - savedScroll) > 4 && tries++ < 30) {
+                requestAnimationFrame(settle);
+            }
+        };
+        requestAnimationFrame(settle);
     }, [loading, filteredVans.length, currentPage]);
 
     return (
