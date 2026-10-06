@@ -156,6 +156,20 @@ export default function MessagingPage({ onBack }) {
         setConversations(convos);
         setLoading(false);
 
+        // Lien direct depuis un email de notification : /messages?c=<id>.
+        // Sans ca le vendeur atterrit sur la liste et doit retrouver la bonne
+        // conversation a la main — une marche de plus avant de repondre.
+        const wantedId = new URLSearchParams(window.location.search).get('c');
+        if (wantedId) {
+          const wanted = convos.find((c) => c.id === wantedId);
+          if (wanted) {
+            setSelectedConversation((prev) => prev || wanted);
+            // Sur mobile la liste masque le fil : on ouvre directement le chat.
+            if (window.innerWidth < 768) setMobileView('chat');
+            return;
+          }
+        }
+
         // Auto-select first conversation on desktop
         if (window.innerWidth >= 768 && convos.length > 0) {
           setSelectedConversation((prev) => prev || convos[0]);

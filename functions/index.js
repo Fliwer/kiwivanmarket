@@ -158,7 +158,7 @@ exports.onNewConversation = onDocumentCreated(
               </div>
             ` : ''}
 
-            <a href="https://kiwivanmarket.com" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
+            <a href="https://kiwivanmarket.com/messages?c=${conversationId}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
               → Reply now
             </a>
 
@@ -293,7 +293,7 @@ exports.onNewMessage = onDocumentCreated(
                   <p style="color: #374151; font-size: 15px; margin: 0; font-style: italic;">"${safeMessagePreview}"</p>
                 </div>
               ` : ''}
-              <a href="https://kiwivanmarket.com" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
+              <a href="https://kiwivanmarket.com/messages?c=${conversationId}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
                 Reply now
               </a>
               <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
@@ -350,9 +350,17 @@ exports.sendReminderEmails = onSchedule(
       }
       const resend = new Resend(apiKey);
 
-      // Find conversations with recent messages (last 24h) that may need reminders
-      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      // Fenetre de relance : 72h et non 24h. A 24h un vendeur qui ratait
+      // l'unique rappel n'etait plus jamais relance — l'acheteur restait sans
+      // reponse pour de bon. L'espacement de 12h entre deux rappels (plus bas)
+      // limite a ~2 relances par conversation sur la fenetre.
+      const cutoff = new Date(Date.now() - 72 * 60 * 60 * 1000);
       const reminderThreshold = new Date(Date.now() - 6 * 60 * 60 * 1000); // 6 hours ago
+
+      // Garde-fou : le plan Resend est limite en envois/jour et cette fonction
+      // tourne toutes les 3h, en partageant le quota avec les notifications de
+      // message et le cycle de vie des annonces.
+      const MAX_REMINDERS_PER_RUN = 15;
 
       const convsSnapshot = await db.collection('conversations')
         .where('lastMessageAt', '>=', cutoff)
@@ -361,6 +369,10 @@ exports.sendReminderEmails = onSchedule(
       let remindersSent = 0;
 
       for (const convDoc of convsSnapshot.docs) {
+        if (remindersSent >= MAX_REMINDERS_PER_RUN) {
+          console.log(`⏰ Plafond de ${MAX_REMINDERS_PER_RUN} relances atteint, suite au prochain passage`);
+          break;
+        }
         const conv = convDoc.data();
 
         // Skip if reminder already sent for this round
@@ -422,7 +434,7 @@ exports.sendReminderEmails = onSchedule(
                 <p style="font-size: 16px; color: #374151;">
                   Responding quickly increases your chances of closing the deal!
                 </p>
-                <a href="https://kiwivanmarket.com" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
+                <a href="https://kiwivanmarket.com/messages?c=${convDoc.id}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
                   Reply now
                 </a>
                 <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
