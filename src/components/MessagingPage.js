@@ -97,6 +97,11 @@ export default function MessagingPage({ onBack }) {
   const [otherUserLastSeen, setOtherUserLastSeen] = useState(null);
 
   const messagesEndRef = useRef(null);
+  // Le lien profond ne doit s'appliquer qu'une fois : ce bloc vit dans le
+  // callback onSnapshot, donc il rejoue a chaque nouveau message. Sans ce
+  // garde, un utilisateur mobile revenu a la liste serait ramene de force
+  // dans le fil des qu'un message arrive.
+  const deepLinkDoneRef = useRef(false);
   const inputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const isTypingActiveRef = useRef(false); // Track if we already sent a typing=true
@@ -160,9 +165,10 @@ export default function MessagingPage({ onBack }) {
         // Sans ca le vendeur atterrit sur la liste et doit retrouver la bonne
         // conversation a la main — une marche de plus avant de repondre.
         const wantedId = new URLSearchParams(window.location.search).get('c');
-        if (wantedId) {
+        if (wantedId && !deepLinkDoneRef.current) {
           const wanted = convos.find((c) => c.id === wantedId);
           if (wanted) {
+            deepLinkDoneRef.current = true;
             setSelectedConversation((prev) => prev || wanted);
             // Sur mobile la liste masque le fil : on ouvre directement le chat.
             if (window.innerWidth < 768) setMobileView('chat');
@@ -505,6 +511,12 @@ export default function MessagingPage({ onBack }) {
                       onClick={() => {
                         setSelectedConversation(conv);
                         setMobileView('chat');
+                        // L'URL reflete la conversation ouverte : le fil devient
+                        // partageable et rechargeable, et c'est exactement le
+                        // format `?c=` qu'emploient les emails de notification.
+                        // `replace` pour ne pas empiler une entree d'historique
+                        // a chaque conversation consultee.
+                        navigate(`/messages?c=${conv.id}`, { replace: true });
                       }}
                       className={`p-3 rounded-2xl cursor-pointer transition-all border ${isSelected
                         ? 'bg-emerald-50 border-emerald-200 shadow-sm'
