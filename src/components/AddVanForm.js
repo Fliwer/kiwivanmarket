@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { collection, addDoc, doc, updateDoc, getDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, updateDoc, getDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions, auth } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -507,16 +507,21 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           customFeatures: sanitizeText(formData.customFeatures || ''),
           imageUrl: imageUrls[0],
           images: imageUrls,
-          seller: {
-            ...van.seller,
-            whatsapp: sanitizeString(formData.sellerWhatsApp || ''),
-            phone: sanitizeString(formData.sellerPhone || '')
-          },
+          // Aucune coordonnee dans le document public : il est lisible par
+          // tous et Firestore ne protege qu'un document, pas un champ.
+          seller: { ...van.seller, whatsapp: null, phone: null, email: null },
           plateNumber: sanitizeString(formData.plateNumber || ''),
           updatedAt: new Date()
         };
 
         await updateDoc(doc(db, 'vans', van.id), updateData);
+
+        // Les coordonnees vont dans le sous-document reserve aux comptes verifies.
+        await setDoc(doc(db, 'vans', van.id, 'private', 'contact'), {
+          email: currentUser.email || null,
+          phone: sanitizeString(formData.sellerPhone || '') || null,
+          whatsapp: sanitizeString(formData.sellerWhatsApp || '') || null,
+        }, { merge: true });
 
         localStorage.removeItem('kiwiVanMarket_vans');
         localStorage.removeItem('kiwiVanMarket_timestamp');
@@ -556,12 +561,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           customFeatures: sanitizeText(formData.customFeatures || ''),
           imageUrl: imageUrls[0],
           images: imageUrls,
+          // Document public : pas de coordonnees ici (voir sous-document prive).
           seller: {
             uid: currentUser.uid,
             name: sanitizeString(currentUser.displayName || 'Anonymous'),
-            email: currentUser.email,
-            whatsapp: sanitizeString(formData.sellerWhatsApp || ''),
-            phone: sanitizeString(formData.sellerPhone || '')
           },
           // Aligné sur SellPage : le quota anti-spam (20 vans) et d'autres
           // requêtes filtrent sur userId — sans lui, les vans créés ici
@@ -581,7 +584,14 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           try { await auth.currentUser.getIdToken(true); } catch (_) {}
         }
 
-        await addDoc(collection(db, 'vans'), newVanData);
+        const createdRef = await addDoc(collection(db, 'vans'), newVanData);
+
+        // Coordonnees hors du document public, dans le sous-document protege.
+        await setDoc(doc(db, 'vans', createdRef.id, 'private', 'contact'), {
+          email: currentUser.email || null,
+          phone: sanitizeString(formData.sellerPhone || '') || null,
+          whatsapp: sanitizeString(formData.sellerWhatsApp || '') || null,
+        });
 
         localStorage.removeItem('kiwiVanMarket_vans');
         localStorage.removeItem('kiwiVanMarket_timestamp');

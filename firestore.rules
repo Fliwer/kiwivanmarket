@@ -207,7 +207,19 @@ service cloud.firestore {
     
     match /vans/{vanId} {
       allow read: if true;
-      
+
+      // Coordonnees du vendeur, sorties du document public.
+      // Firestore ne sait proteger qu'un DOCUMENT, jamais un champ : tant que
+      // le telephone et l'email vivaient dans vans/{vanId} — lisible par tous,
+      // ce qui est indispensable au SEO et a la navigation anonyme — ils
+      // etaient aspirables en une requete. Le verrou "connexion requise" pose
+      // sur la fiche van n'etait donc que cosmetique.
+      match /private/{docId} {
+        allow read: if hasVerifiedEmail();
+        allow write: if isAuthenticated() &&
+                        currentUserId() == get(/databases/$(database)/documents/vans/$(vanId)).data.seller.uid;
+      }
+
       allow create: if hasVerifiedEmail() &&
                       request.resource.data.seller.uid == currentUserId() &&
                       request.resource.data.keys().hasAll([

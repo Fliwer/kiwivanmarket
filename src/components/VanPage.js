@@ -323,6 +323,27 @@ export default function VanPage() {
             }
           }
 
+          // Coordonnees du vendeur : elles ont quitte le document public, qui
+          // est lisible par tous (SEO, navigation anonyme) et exposait donc
+          // email et telephone a qui les demandait. Elles vivent desormais
+          // dans un sous-document que les regles reservent aux comptes
+          // verifies. Lecture silencieuse : un visiteur anonyme est refuse par
+          // les regles, ce qui est exactement le comportement voulu.
+          try {
+            const contactSnap = await getDoc(doc(db, 'vans', vanSnap.id, 'private', 'contact'));
+            if (contactSnap.exists()) {
+              const c = contactSnap.data() || {};
+              vanData.seller = {
+                ...vanData.seller,
+                email: c.email || vanData.seller?.email || null,
+                phone: c.phone || vanData.seller?.phone || null,
+                whatsapp: c.whatsapp || vanData.seller?.whatsapp || null,
+              };
+            }
+          } catch (contactErr) {
+            // Non connecte ou non verifie : pas de coordonnees, pas d'erreur.
+          }
+
           setVan(vanData);
 
           // Incrémenter le compteur de vues + GA van_view (1× par session/van — M1 anti-doublon StrictMode)

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions, auth } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -271,12 +271,13 @@ export default function SellPage() {
         customFeatures: formData.customFeatures || '',
         imageUrl: imageUrls[0],
         images: imageUrls,
+        // Le document van est PUBLIC (SEO, navigation anonyme) et Firestore ne
+        // sait proteger qu'un document, jamais un champ : aucune coordonnee ne
+        // doit y figurer. Email, telephone et WhatsApp sont ecrits juste apres
+        // dans vans/{id}/private/contact, reserve aux comptes verifies.
         seller: {
           uid: currentUser.uid,
           name: currentUser.displayName || 'Anonymous',
-          email: currentUser.email,
-          whatsapp: formData.sellerWhatsApp || '',
-          phone: formData.sellerPhone || ''
         },
         userId: currentUser.uid,
         views: 0,
@@ -295,6 +296,13 @@ export default function SellPage() {
 
       const docRef = await addDoc(collection(db, 'vans'), newVanData);
       setNewVanId(docRef.id);
+
+      // Coordonnees dans le sous-document protege par les regles.
+      await setDoc(doc(db, 'vans', docRef.id, 'private', 'contact'), {
+        email: currentUser.email || null,
+        phone: formData.sellerPhone || null,
+        whatsapp: formData.sellerWhatsApp || null,
+      });
 
       // GA — métrique d'offre : un van a été publié (funnel vendeur)
       if (typeof window !== 'undefined' && typeof window.gtag === 'function') {

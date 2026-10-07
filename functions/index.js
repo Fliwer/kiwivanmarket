@@ -1856,6 +1856,23 @@ function pausedEmailHtml({ sellerName, vanTitle, vanId, token }) {
     </div>`;
 }
 
+// Les coordonnees vendeur ont quitte le document public (aspirable par tous)
+// pour vans/{id}/private/contact. Repli sur l'ancien emplacement tant que la
+// migration n'est pas passee, pour ne rien casser pendant la transition.
+async function getSellerContact(vanRef, vanData) {
+  const legacy = (vanData && vanData.seller) || {};
+  if (legacy.email || legacy.phone || legacy.whatsapp) {
+    return { email: legacy.email || null, phone: legacy.phone || null, whatsapp: legacy.whatsapp || null };
+  }
+  try {
+    const snap = await vanRef.collection('private').doc('contact').get();
+    return snap.exists ? (snap.data() || {}) : {};
+  } catch (e) {
+    console.error('getSellerContact:', e.message || e);
+    return {};
+  }
+}
+
 exports.listingLifecycle = onSchedule(
   {
     schedule: 'every 24 hours',
@@ -1881,7 +1898,7 @@ exports.listingLifecycle = onSchedule(
       stats.scanned++;
       const lastSignal = Math.max(toMs(van.createdAt), toMs(van.availabilityConfirmedAt));
       const remindedAt = toMs(van.availabilityReminderSentAt);
-      const email = van.seller && van.seller.email;
+      const email = (await getSellerContact(doc.ref, van)).email;
       if (!lastSignal || !email) { stats.skipped++; continue; }
 
       try {
@@ -2156,7 +2173,7 @@ exports.onVanCreatedNotifyAlerts = onDocumentCreated(
     try {
       const alertsSnap = await db.collection('alerts').where('active', '==', true).get();
       if (alertsSnap.empty) return;
-      const sellerEmail = String((van.seller && van.seller.email) || '').toLowerCase();
+      const sellerEmail = String((await getSellerContact(snap.ref, van)).email || '').toLowerCase();
       const byEmail = new Map();
       for (const doc of alertsSnap.docs) {
         const a = doc.data();
@@ -2226,4 +2243,67 @@ exports.alertAction = onRequest({ cors: false }, async (req, res) => {
   const lang = alertLang(a.lang);
   await ref.update({ active: false, unsubscribedAt: admin.firestore.FieldValue.serverTimestamp() });
   return page(alertCopy[lang].unsubscribed, alertCopy[lang].unsubscribedBody, lang);
+});
+
+
+// ============================================
+// 🔐 MIGRATION PONCTUELLE — sortir les coordonnees du document public
+// ============================================
+// Les documents `vans` sont lisibles par tous (indispensable au SEO et a la
+// navigation anonyme), et Firestore ne sait proteger qu'un DOCUMENT, jamais un
+// champ. Email, telephone et WhatsApp des vendeurs etaient donc aspirables en
+// une requete anonyme — le verrou "connexion requise" de la fiche van ne
+// masquait que l'affichage.
+//
+// Cette fonction deplace ces champs vers vans/{id}/private/contact, protege par
+// les regles. Elle est IDEMPOTENTE : relancable sans risque. A supprimer une
+// fois la migration faite et verifiee.
+exports.migrateSellerContacts = onCall(async (request) => {
+  if (request.auth?.token?.admin !== true) {
+    throw new HttpsError('permission-denied', 'Admin uniquement.');
+  }
+  const dryRun = request.data?.dryRun !== false; // sec par defaut
+  const stats = { scanned: 0, copied: 0, stripped: 0, alreadyClean: 0, errors: 0 };
+  const snap = await db.collection('vans').get();
+
+  for (const doc of snap.docs) {
+    stats.scanned++;
+    try {
+      const van = doc.data();
+      const seller = van.seller || {};
+      const contact = {
+        email: seller.email || van.email || null,
+        phone: seller.phone || van.phone || null,
+        whatsapp: seller.whatsapp || van.whatsapp || null,
+      };
+      const hasPublicContact =
+        seller.email != null || seller.phone != null || seller.whatsapp != null ||
+        van.phone != null || van.whatsapp != null;
+
+      if (!hasPublicContact) { stats.alreadyClean++; continue; }
+      if (dryRun) { stats.copied++; continue; }
+
+      // 1. On ecrit d'abord la copie protegee : si l'etape 2 echoue, aucune
+      //    donnee n'est perdue et la relance reprend proprement.
+      await doc.ref.collection('private').doc('contact').set(contact, { merge: true });
+      stats.copied++;
+
+      // 2. Puis seulement on purge le document public.
+      const FV = admin.firestore.FieldValue;
+      await doc.ref.update({
+        'seller.email': FV.delete(),
+        'seller.phone': FV.delete(),
+        'seller.whatsapp': FV.delete(),
+        phone: FV.delete(),
+        whatsapp: FV.delete(),
+        email: FV.delete(),
+      });
+      stats.stripped++;
+    } catch (e) {
+      stats.errors++;
+      console.error(`migrateSellerContacts: van ${doc.id}:`, e.message || e);
+    }
+  }
+  console.log('🔐 migrateSellerContacts:', JSON.stringify({ dryRun, ...stats }));
+  return { dryRun, ...stats };
 });
