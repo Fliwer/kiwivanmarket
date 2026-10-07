@@ -27,6 +27,16 @@ import { useToast } from '../components/ToastProvider';
 
 export default function MessagingPage({ onBack }) {
   useHideLoader();
+
+  // La messagerie s'ouvre en haut de page. useHideLoader le faisait avant,
+  // mais son scrollTo(0,0) global a ete retire : il ecrasait la position
+  // restauree sur la liste des vans. On le refait donc ici uniquement, pour
+  // couvrir l'arrivee directe sur /messages?c=<id> depuis un email, ou le
+  // navigateur peut restaurer une ancienne position de defilement.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const { currentUser } = useAuth();
   const { checkAndRecord } = useRateLimit(currentUser?.uid);
   const navigate = useNavigate();
@@ -97,6 +107,7 @@ export default function MessagingPage({ onBack }) {
   const [otherUserLastSeen, setOtherUserLastSeen] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const messagesScrollRef = useRef(null);
   // Le lien profond ne doit s'appliquer qu'une fois : ce bloc vit dans le
   // callback onSnapshot, donc il rejoue a chaque nouveau message. Sans ce
   // garde, un utilisateur mobile revenu a la liste serait ramene de force
@@ -269,9 +280,14 @@ export default function MessagingPage({ onBack }) {
     };
   }, [selectedConversation, currentUser]);
 
-  // Auto scroll
+  // Auto scroll — on fait defiler le CONTENEUR des messages, pas la fenetre.
+  // scrollIntoView() fait defiler TOUS les ancetres scrollables, window
+  // comprise : a l'ouverture d'une conversation la page entiere partait
+  // jusqu'au footer, surtout en arrivant par un lien /messages?c=<id>.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const scroller = messagesScrollRef.current;
+    if (!scroller) return;
+    scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
   // Send message
@@ -649,7 +665,7 @@ export default function MessagingPage({ onBack }) {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-50 to-emerald-50/40">
+              <div ref={messagesScrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-slate-50 to-emerald-50/40">
                 {messages.length === 0 && (
                   <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-3 text-center">Quick replies:</p>
