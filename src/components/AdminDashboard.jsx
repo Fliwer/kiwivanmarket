@@ -30,6 +30,8 @@ const normalizeVehicleType = (type) => {
 export default function AdminDashboard({ onClose, onEditVan }) {
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  // Migration ponctuelle des coordonnees vendeur hors du document public.
+  const [migrating, setMigrating] = useState(false);
   const [vans, setVans] = useState([]);
   const [users, setUsers] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -468,6 +470,40 @@ export default function AdminDashboard({ onClose, onEditVan }) {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* Migration ponctuelle : sort email/telephone/WhatsApp du document
+              van, qui est public. Passage a blanc impose avant toute purge. */}
+          <button
+            onClick={async () => {
+              setMigrating(true);
+              try {
+                const fn = httpsCallable(functions, 'migrateSellerContacts');
+                const dry = (await fn({ dryRun: true })).data;
+                const ok = window.confirm(
+                  `Passage à blanc :\n\n` +
+                  `• ${dry.scanned} annonces analysées\n` +
+                  `• ${dry.copied} contiennent des coordonnées à déplacer\n` +
+                  `• ${dry.alreadyClean} déjà propres\n` +
+                  `• ${dry.errors} erreurs\n\n` +
+                  `Lancer la migration réelle ? Les coordonnées seront copiées ` +
+                  `dans le sous-document protégé PUIS supprimées du document public.`
+                );
+                if (!ok) { toast.success('Migration annulée (rien n’a été modifié)'); return; }
+                const res = (await fn({ dryRun: false })).data;
+                toast.success(`Migration terminée : ${res.stripped} annonces nettoyées, ${res.errors} erreurs`);
+                await loadAllData();
+              } catch (e) {
+                toast.error(`Migration impossible : ${e?.message || e}`);
+              } finally {
+                setMigrating(false);
+              }
+            }}
+            disabled={migrating}
+            className="flex items-center gap-2 px-3 py-2 bg-amber-600 hover:bg-amber-700 rounded-xl transition text-sm font-medium disabled:opacity-60"
+            title="Déplacer les coordonnées vendeur hors du document public"
+          >
+            <Settings className="w-4 h-4" />
+            <span>{migrating ? 'Migration…' : 'Migrer contacts'}</span>
+          </button>
           <button
             onClick={handleSendCarJamCampaign}
             disabled={sendingCarJamCampaign}
