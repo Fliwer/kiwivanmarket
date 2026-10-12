@@ -323,27 +323,6 @@ export default function VanPage() {
             }
           }
 
-          // Coordonnees du vendeur : elles ont quitte le document public, qui
-          // est lisible par tous (SEO, navigation anonyme) et exposait donc
-          // email et telephone a qui les demandait. Elles vivent desormais
-          // dans un sous-document que les regles reservent aux comptes
-          // verifies. Lecture silencieuse : un visiteur anonyme est refuse par
-          // les regles, ce qui est exactement le comportement voulu.
-          try {
-            const contactSnap = await getDoc(doc(db, 'vans', vanSnap.id, 'private', 'contact'));
-            if (contactSnap.exists()) {
-              const c = contactSnap.data() || {};
-              vanData.seller = {
-                ...vanData.seller,
-                email: c.email || vanData.seller?.email || null,
-                phone: c.phone || vanData.seller?.phone || null,
-                whatsapp: c.whatsapp || vanData.seller?.whatsapp || null,
-              };
-            }
-          } catch (contactErr) {
-            // Non connecte ou non verifie : pas de coordonnees, pas d'erreur.
-          }
-
           setVan(vanData);
 
           // Incrémenter le compteur de vues + GA van_view (1× par session/van — M1 anti-doublon StrictMode)
@@ -376,6 +355,40 @@ export default function VanPage() {
 
     if (id) fetchVan();
   }, [id]);
+
+  // Coordonnees du vendeur : elles ont quitte le document van (public, donc
+  // aspirable) pour un sous-document que les regles reservent aux comptes
+  // verifies.
+  //
+  // Effet SEPARE, dependant de currentUser, et non melange au chargement du
+  // van : celui-ci ne depend que de [id] et part donc au tout premier rendu,
+  // avant que Firebase Auth n'ait restaure la session. La requete serait alors
+  // anonyme, refusee par les regles, et JAMAIS rejouee puisque l'id ne change
+  // pas. C'est ce qui faisait disparaitre les boutons WhatsApp et Appeler sur
+  // mobile, ou la session met plus longtemps a se restaurer.
+  useEffect(() => {
+    if (!id || !currentUser) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await getDoc(doc(db, 'vans', id, 'private', 'contact'));
+        if (cancelled || !snap.exists()) return;
+        const c = snap.data() || {};
+        setVan((prev) => (prev ? {
+          ...prev,
+          seller: {
+            ...prev.seller,
+            email: c.email || prev.seller?.email || null,
+            phone: c.phone || prev.seller?.phone || null,
+            whatsapp: c.whatsapp || prev.seller?.whatsapp || null,
+          },
+        } : prev));
+      } catch (e) {
+        // Compte non verifie ou refuse par les regles : pas de coordonnees.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id, currentUser]);
 
   // Navigation images
   const images = van?.images?.length > 0
