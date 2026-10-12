@@ -279,6 +279,10 @@ export default function SellPage() {
           uid: currentUser.uid,
           name: currentUser.displayName || 'Anonymous',
         },
+        // Drapeau public, sans donnee personnelle : il permet a la fiche van
+        // d'afficher "Voir le contact" a un visiteur anonyme. Les coordonnees
+        // elles-memes vivent dans le sous-document protege.
+        hasDirectContact: !!(formData.sellerPhone || formData.sellerWhatsApp),
         userId: currentUser.uid,
         views: 0,
         status: 'active',

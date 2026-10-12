@@ -2317,7 +2317,7 @@ exports.migrateSellerContacts = onCall(async (request) => {
     throw new HttpsError('permission-denied', 'Admin uniquement.');
   }
   const dryRun = request.data?.dryRun !== false; // sec par defaut
-  const stats = { scanned: 0, copied: 0, stripped: 0, alreadyClean: 0, errors: 0 };
+  const stats = { scanned: 0, copied: 0, stripped: 0, alreadyClean: 0, flagged: 0, errors: 0 };
   const snap = await db.collection('vans').get();
 
   for (const doc of snap.docs) {
@@ -2334,7 +2334,21 @@ exports.migrateSellerContacts = onCall(async (request) => {
         seller.email != null || seller.phone != null || seller.whatsapp != null ||
         van.phone != null || van.whatsapp != null;
 
-      if (!hasPublicContact) { stats.alreadyClean++; continue; }
+      // Drapeau PUBLIC, sans donnee personnelle : il permet a la fiche van
+      // d'afficher "Voir le contact" a un visiteur anonyme. Sans lui, le bloc
+      // disparaissait entierement et on perdait l'incitation a s'inscrire.
+      const flag = !!(contact.email || contact.phone || contact.whatsapp);
+
+      if (!hasPublicContact) {
+        stats.alreadyClean++;
+        if (!dryRun && van.hasDirectContact === undefined) {
+          const priv = await doc.ref.collection('private').doc('contact').get();
+          const p = priv.exists ? (priv.data() || {}) : {};
+          await doc.ref.update({ hasDirectContact: !!(p.email || p.phone || p.whatsapp) });
+          stats.flagged++;
+        }
+        continue;
+      }
       if (dryRun) { stats.copied++; continue; }
 
       // 1. On ecrit d'abord la copie protegee : si l'etape 2 echoue, aucune
@@ -2351,6 +2365,7 @@ exports.migrateSellerContacts = onCall(async (request) => {
         phone: FV.delete(),
         whatsapp: FV.delete(),
         email: FV.delete(),
+        hasDirectContact: flag,
       });
       stats.stripped++;
     } catch (e) {

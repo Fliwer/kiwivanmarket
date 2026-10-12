@@ -1220,7 +1220,7 @@ ${shareUrl}
                   )}
 
                   <div className="mt-5 space-y-2.5">
-                    {(seller.whatsapp || seller.phone) && (
+                    {(seller.whatsapp || seller.phone || (!currentUser && van.hasDirectContact)) && (
                       <button
                         onClick={() => {
                           if (!currentUser) { setShowAuthModal(true); return; }
@@ -1268,7 +1268,7 @@ ${shareUrl}
                     </button>
                   </div>
 
-                  {!currentUser && (seller.whatsapp || seller.phone) && (
+                  {!currentUser && (seller.whatsapp || seller.phone || (!currentUser && van.hasDirectContact)) && (
                     <p className="mt-3 text-center text-xs text-slate-400">
                       {i18n.language.startsWith('fr') ? 'Connexion requise pour contacter le vendeur' : 'Sign in to contact the seller'}
                     </p>
@@ -1577,7 +1577,7 @@ ${shareUrl}
               </div>
 
               <div className="flex gap-2">
-                {(seller.whatsapp || seller.phone) && (
+                {(seller.whatsapp || seller.phone || (!currentUser && van.hasDirectContact)) && (
                   <button
                     onClick={() => {
                       // Contact protégé : connexion requise pour révéler le numéro

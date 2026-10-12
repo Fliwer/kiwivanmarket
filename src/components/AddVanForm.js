@@ -510,6 +510,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           // Aucune coordonnee dans le document public : il est lisible par
           // tous et Firestore ne protege qu'un document, pas un champ.
           seller: { ...van.seller, whatsapp: null, phone: null, email: null },
+          // Drapeau public sans donnee personnelle (voir sous-document prive).
+          hasDirectContact: !!(sanitizeString(formData.sellerPhone || '') || sanitizeString(formData.sellerWhatsApp || '')),
           plateNumber: sanitizeString(formData.plateNumber || ''),
           updatedAt: new Date()
         };
@@ -571,6 +573,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           // échappaient au comptage.
           userId: currentUser.uid,
           plateNumber: sanitizeString(formData.plateNumber || ''),
+          // Drapeau public sans donnee personnelle (voir sous-document prive).
+          hasDirectContact: !!(sanitizeString(formData.sellerPhone || '') || sanitizeString(formData.sellerWhatsApp || '')),
           views: 0,
           status: 'active',
           createdAt: serverTimestamp(),
