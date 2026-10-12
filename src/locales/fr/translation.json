@@ -1,5 +1,6 @@
 {
     "auth_google": {
+        "account_access_denied": "L’accès à votre compte Kiwi Van Market est refusé. Contactez l’assistance pour vérifier le statut de votre compte.",
         "continue": "Continuer avec Google",
         "loading": "Connexion en cours…",
         "account_hint": "Déjà inscrit ? Vous serez connecté. Sinon, votre compte gratuit sera créé automatiquement avec Google.",

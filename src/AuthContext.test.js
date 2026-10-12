@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, getAdditionalUserInfo, signOut } from 'firebase/auth';
-import { getDoc, runTransaction } from 'firebase/firestore/lite';
+import { getDoc, runTransaction } from 'firebase/firestore';
 import { auth } from './firebase';
 import { AuthProvider, useAuth } from './AuthContext';
 
@@ -11,7 +11,7 @@ jest.mock('firebase/auth', () => ({
   signInWithPopup: jest.fn(), signOut: jest.fn(), onAuthStateChanged: jest.fn(),
   signInWithRedirect: jest.fn(), getRedirectResult: jest.fn(), getAdditionalUserInfo: jest.fn(),
 }));
-jest.mock('firebase/firestore/lite', () => ({ doc: jest.fn(), getDoc: jest.fn(), getFirestore: jest.fn(() => ({ transport: 'http' })), runTransaction: jest.fn() }));
+jest.mock('firebase/firestore', () => ({ doc: jest.fn(), getDoc: jest.fn(), runTransaction: jest.fn() }));
 
 const originalAgent = navigator.userAgent;
 let transaction;
@@ -99,6 +99,16 @@ test('profile write failure is reported instead of silent success', async () => 
   render(<AuthProvider><SignInTest /></AuthProvider>);
   fireEvent.click(screen.getByText('Google'));
   await waitFor(() => expect(screen.getByText('auth/profile-unavailable')).toBeTruthy());
+  expect(screen.queryByText('success')).toBeNull();
+});
+
+test('a denied profile reports an account access error rather than suggesting a failed registration', async () => {
+  auth.currentUser = googleUser;
+  signInWithPopup.mockResolvedValue({ user: googleUser });
+  runTransaction.mockRejectedValue({ code: 'permission-denied' });
+  render(<AuthProvider><SignInTest /></AuthProvider>);
+  fireEvent.click(screen.getByText('Google'));
+  await waitFor(() => expect(screen.getByText('auth/profile-access-denied')).toBeTruthy());
   expect(screen.queryByText('success')).toBeNull();
 });
 

@@ -1,5 +1,6 @@
 {
     "auth_google": {
+        "account_access_denied": "Access to your Kiwi Van Market account was denied. Contact support to check your account status.",
         "continue": "Continue with Google",
         "loading": "Signing in…",
         "account_hint": "Already registered? You will be signed in. Otherwise, Google will automatically create your free account.",

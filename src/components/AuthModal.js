@@ -10,6 +10,8 @@ const GOOGLE_ERROR_KEYS = {
   'auth/network-request-failed': 'network_error',
   'auth/timeout': 'timeout',
   'auth/profile-unavailable': 'profile_error',
+  'auth/profile-access-denied': 'account_access_denied',
+  'auth/user-disabled': 'account_access_denied',
   'auth/redirect-incomplete': 'redirect_error',
   'auth/session-changed': 'session_changed',
 };

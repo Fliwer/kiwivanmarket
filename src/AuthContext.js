@@ -14,12 +14,8 @@ import {
   updateProfile,
   getAdditionalUserInfo
 } from 'firebase/auth';
-import { doc, getDoc, getFirestore, runTransaction } from 'firebase/firestore/lite';
-import { auth } from './firebase';
-
-// Profiles need confirmed HTTP reads/writes, not live listeners or an offline
-// cache. Keep this transport separate from the marketplace's realtime client.
-const profileDb = getFirestore(auth.app);
+import { doc, getDoc, runTransaction } from 'firebase/firestore';
+import { auth, db } from './firebase';
 
 // GA — event d'inscription (métrique funnel). Garde gtag pour ne jamais casser
 // l'auth si l'analytics n'est pas chargé (adblock, etc.).
@@ -62,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     } catch (cause) {
       console.error('Google profile persistence failed:', cause?.code || 'unknown');
       const error = new Error('Could not complete the account profile', { cause });
-      error.code = 'auth/profile-unavailable';
+      error.code = cause?.code === 'permission-denied' ? 'auth/profile-access-denied' : 'auth/profile-unavailable';
       throw error;
     }
     if (auth.currentUser?.uid !== user.uid) {
@@ -301,9 +297,9 @@ export const AuthProvider = ({ children }) => {
 
   // Sauvegarder le profil utilisateur dans Firestore
   const saveUserProfile = async (user, displayName = null) => {
-    const userRef = doc(profileDb, 'users', user.uid);
+    const userRef = doc(db, 'users', user.uid);
     
-    await runTransaction(profileDb, async (transaction) => {
+    await runTransaction(db, async (transaction) => {
       const userSnap = await transaction.get(userRef);
       if (!userSnap.exists()) {
         transaction.set(userRef, {
@@ -339,7 +335,7 @@ export const AuthProvider = ({ children }) => {
           const tokenResult = await user.getIdTokenResult();
           const isAdmin = tokenResult.claims.admin === true;
 
-          const userRef = doc(profileDb, 'users', user.uid);
+          const userRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userRef);
           if (!active || currentRevision !== revision || auth.currentUser?.uid !== user.uid) return;
 
