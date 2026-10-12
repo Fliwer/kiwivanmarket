@@ -27,7 +27,7 @@ Périmètre : code React, routes Vercel et pré-rendu HTML, Firebase Functions, 
 - Quotas persistants par compte/IP et plafonds globaux pour contact, signalement, alertes, génération IA, CarJam, Checkout et onboarding ; plafonnement du fan-out des nouvelles annonces. Limites d'instances sur les formulaires publics. Les limitations côté navigateur ne sont pas considérées comme une protection serveur.
 - Réglages privés réservés à l'administration ; seul `settings/public` est public. Champs de notification email réservés au serveur, secrets de cycle d'annonce non modifiables par le propriétaire côté client.
 - Suppression du journal complet des conversations ; erreurs webhook et génération IA moins bavardes. Prix des emails converti en nombre et paramètres des liens de messagerie encodés pour empêcher des insertions HTML. Coordonnées privées illisibles après suppression de l'annonce parente.
-- Ajout des routes et réécritures de retour Stripe, dont les deux URL renvoyaient 404 avant correction. Aucun statut de paiement n'est établi par une page de retour.
+- Ajout des routes, réécritures et autorisations du middleware de retour Stripe, dont les deux URL renvoyaient 404 avant correction. Aucun statut de paiement n'est établi par une page de retour.
 - CSP minimale (`base-uri`, `object-src`) et protection des frames sur Firebase Hosting ; une politique stricte de scripts reste à construire et à tester avec Firebase Auth, Stripe et les analytics.
 - Exclusion Git des environnements, dépendances imbriquées et nouveaux journaux de débogage. Les fichiers déjà présents dans l'historique ne sont pas effacés par `.gitignore`.
 
@@ -45,7 +45,7 @@ Ces nombres incluent les dépendances transitives et leurs parents : ils ne repr
 
 ## Vérifications
 
-- 7 tests Node : retours de phishing, refus de clés live, webhook falsifié/mauvaise devise/montant exact, récupération du transfert au remboursement, quotas persistants, injection JSON-LD dans les deux rendus.
+- 8 tests Node : retours de phishing, refus de clés live, webhook falsifié/mauvaise devise/montant exact, récupération du transfert au remboursement, quotas persistants, injection JSON-LD dans les deux rendus et routage du middleware de retour de paiement.
 - 26 tests de règles Firestore avec documents synthétiques et mocks, via l'API Firebase Rules : parcours autorisés et refus d'accès, fausse adresse email, élévation admin, falsification de paiement, annulation contournée, secrets privés, identité de conversation et refus de réintroduire des coordonnées publiques. Aucune écriture de document par ces tests.
 - Compilation des règles Firestore et Storage par Firebase ; quatre tests React existants ; build de production réussi.
 - En production avant modification : accès anonymes à `users`, `reservations`, `stripeAccounts`, `securityRateLimits` refusés (403). Pages accueil, vente, profil et sitemaps : 200. Retours de paiement : 404 avant correction.

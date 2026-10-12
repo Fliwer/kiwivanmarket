@@ -5,6 +5,16 @@ const { consumeRateLimit } = require('../functions/abuseProtection');
 const { htmlShell } = require('../api/_lib/util');
 const prerenderVan = require('../api/prerender-van');
 
+test('edge middleware admits payment returns and keeps unknown routes at 404', async () => {
+  const source = require('node:fs').readFileSync(require('node:path').join(__dirname, '../middleware.js'), 'utf8');
+  const { default: middleware } = await import(`data:text/javascript,${encodeURIComponent(source)}`);
+  for (const path of ['/reservation-success?id=res', '/reservation-cancelled?id=res', '/Reservation-Success/']) {
+    const response = middleware(new Request(`https://kiwivanmarket.com${path}`));
+    assert.equal(response.headers.get('x-middleware-next'), '1');
+  }
+  assert.equal(middleware(new Request('https://kiwivanmarket.com/unknown-page')).status, 404);
+});
+
 test('checkout rejects phishing, credentials, non-HTTPS and production localhost returns', () => {
   for (const url of ['https://kiwivanmarket.com.attacker.test/pay', 'javascript:alert(1)',
     'https://kiwivanmarket.com@attacker.test/', 'https://name:password@kiwivanmarket.com/',

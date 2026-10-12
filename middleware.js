@@ -38,6 +38,8 @@ const KNOWN_ROUTES = [
   /^\/messages$/,
   /^\/my-listings$/,
   /^\/profile$/,
+  /^\/reservation-success$/,
+  /^\/reservation-cancelled$/,
   /^\/embed\/buyback-calculator$/,
   /^\/van\/[^/]+$/,
   /^\/brand\/[^/]+$/,
