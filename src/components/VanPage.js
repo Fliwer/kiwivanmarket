@@ -8,6 +8,7 @@ import { httpsCallable } from 'firebase/functions';
 import { useAuth } from '../AuthContext';
 import { useFavorites } from '../hooks/useFavorites';
 import { useHideLoader } from '../hooks/useHideLoader';
+import useVanContact from '../hooks/useVanContact';
 import { safeDate } from '../utils/dateHelper';
 import { getLargeImage, getThumbnail } from '../utils/imageOptimizer';
 import { formatMileage, formatWhatsAppNumber } from '../utils/formatHelper';
@@ -220,6 +221,7 @@ export default function VanPage() {
   const { t, i18n } = useTranslation();
 
   const [van, setVan] = useState(null);
+  const privateContact = useVanContact(id, currentUser);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -355,40 +357,6 @@ export default function VanPage() {
 
     if (id) fetchVan();
   }, [id]);
-
-  // Coordonnees du vendeur : elles ont quitte le document van (public, donc
-  // aspirable) pour un sous-document que les regles reservent aux comptes
-  // verifies.
-  //
-  // Effet SEPARE, dependant de currentUser, et non melange au chargement du
-  // van : celui-ci ne depend que de [id] et part donc au tout premier rendu,
-  // avant que Firebase Auth n'ait restaure la session. La requete serait alors
-  // anonyme, refusee par les regles, et JAMAIS rejouee puisque l'id ne change
-  // pas. C'est ce qui faisait disparaitre les boutons WhatsApp et Appeler sur
-  // mobile, ou la session met plus longtemps a se restaurer.
-  useEffect(() => {
-    if (!id || !currentUser) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const snap = await getDoc(doc(db, 'vans', id, 'private', 'contact'));
-        if (cancelled || !snap.exists()) return;
-        const c = snap.data() || {};
-        setVan((prev) => (prev ? {
-          ...prev,
-          seller: {
-            ...prev.seller,
-            email: c.email || prev.seller?.email || null,
-            phone: c.phone || prev.seller?.phone || null,
-            whatsapp: c.whatsapp || prev.seller?.whatsapp || null,
-          },
-        } : prev));
-      } catch (e) {
-        // Compte non verifie ou refuse par les regles : pas de coordonnees.
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [id, currentUser]);
 
   // Navigation images
   const images = van?.images?.length > 0
@@ -556,7 +524,9 @@ ${shareUrl}
     );
   }
 
-  const seller = van.seller || { name: 'Unknown' };
+  const seller = { ...(van.seller || { name: 'Unknown' }), ...(privateContact || {}) };
+  // Keep the sign-in invitation for older listings without an availability flag.
+  const canRevealContact = !!(seller.whatsapp || seller.phone || (!currentUser && van.hasDirectContact !== false));
   const hasRating = seller.rating !== undefined && seller.rating !== null && seller.reviewCount > 0;
   const isOwner = currentUser && (currentUser.uid === seller.uid || currentUser.uid === van.userId);
   const locationSlug = (van.location || '').toLowerCase().trim().replace(/\s+/g, '-');
@@ -1220,7 +1190,7 @@ ${shareUrl}
                   )}
 
                   <div className="mt-5 space-y-2.5">
-                    {(seller.whatsapp || seller.phone || (!currentUser && van.hasDirectContact)) && (
+                    {canRevealContact && (
                       <button
                         onClick={() => {
                           if (!currentUser) { setShowAuthModal(true); return; }
@@ -1234,7 +1204,7 @@ ${shareUrl}
                         className="w-full flex items-center justify-center gap-2.5 bg-[#25D366] hover:bg-[#20bd5c] text-white py-3.5 rounded-xl font-semibold transition active:scale-[0.98]"
                       >
                         {currentUser ? <MessageCircle size={19} /> : <Lock size={17} />}
-                        {currentUser ? 'WhatsApp' : (i18n.language.startsWith('fr') ? 'Voir le contact' : 'Reveal contact')}
+                        {currentUser ? 'WhatsApp' : t('van_page.whatsapp_sign_in')}
                       </button>
                     )}
                     {seller.phone && (
@@ -1268,9 +1238,9 @@ ${shareUrl}
                     </button>
                   </div>
 
-                  {!currentUser && (seller.whatsapp || seller.phone || (!currentUser && van.hasDirectContact)) && (
+                  {!currentUser && canRevealContact && (
                     <p className="mt-3 text-center text-xs text-slate-400">
-                      {i18n.language.startsWith('fr') ? 'Connexion requise pour contacter le vendeur' : 'Sign in to contact the seller'}
+                      {t('van_page.whatsapp_account_hint')}
                     </p>
                   )}
 
@@ -1565,7 +1535,7 @@ ${shareUrl}
             <motion.div
               initial={{ y: 100 }}
               animate={{ y: 0 }}
-              className="bg-white/95 backdrop-blur-xl border border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-[2.5rem] p-3 flex items-center gap-3 pointer-events-auto max-w-md mx-auto"
+              className="bg-white/95 backdrop-blur-xl border border-slate-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] rounded-[2.5rem] p-3 flex flex-wrap items-center gap-3 pointer-events-auto max-w-md mx-auto"
             >
               <div className="flex-1 min-w-0 pl-3">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
@@ -1576,8 +1546,8 @@ ${shareUrl}
                 </p>
               </div>
 
-              <div className="flex gap-2">
-                {(seller.whatsapp || seller.phone || (!currentUser && van.hasDirectContact)) && (
+              <div className="flex w-full gap-2">
+                {canRevealContact && (
                   <button
                     onClick={() => {
                       // Contact protégé : connexion requise pour révéler le numéro
@@ -1589,10 +1559,11 @@ ${shareUrl}
                       }
                       window.open(`https://wa.me/${formatWhatsAppNumber(whatsappTarget)}?text=${waText}`, '_blank', 'noopener,noreferrer');
                     }}
-                    className="w-14 h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform"
-                    title={currentUser ? 'WhatsApp' : 'Sign in to contact'}
+                    className={`${currentUser ? 'w-14 shrink-0' : 'flex-1 min-w-0 px-3 gap-2 text-xs font-semibold'} h-14 bg-[#25D366] text-white rounded-2xl flex items-center justify-center shadow-lg active:scale-95 transition-transform`}
+                    title={currentUser ? 'WhatsApp' : t('van_page.sign_in_contact')}
+                    aria-label={currentUser ? 'WhatsApp' : t('van_page.whatsapp_sign_in')}
                   >
-                    {currentUser ? <MessageCircle size={24} fill="currentColor" /> : <Lock size={22} />}
+                    {currentUser ? <MessageCircle size={24} fill="currentColor" /> : <><Lock size={18} className="shrink-0" /><span>{t('van_page.whatsapp_sign_in')}</span></>}
                   </button>
                 )}
                 {seller.phone && currentUser && (
@@ -1620,12 +1591,15 @@ ${shareUrl}
                       setTimeout(() => messageBox.classList.remove('ring-4', 'ring-emerald-500/20'), 2000);
                     }
                   }}
-                  className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-8 h-14 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+                  className="flex-1 min-w-0 bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-3 h-14 rounded-2xl font-black text-sm shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <MessageCircle size={20} />
                   {i18n.language.startsWith('fr') ? 'Contacter' : 'Message'}
                 </button>
               </div>
+              {!currentUser && canRevealContact && (
+                <p className="w-full px-2 text-center text-xs text-slate-600">{t('van_page.whatsapp_account_hint')}</p>
+              )}
             </motion.div>
           </div>
         )}
