@@ -126,8 +126,10 @@ test('same-origin mobile sign-in redirects and creates the profile on return', a
   first.unmount();
   auth.currentUser = googleUser;
   getRedirectResult.mockResolvedValue({ user: googleUser });
-  render(<AuthProvider><SignInTest /></AuthProvider>);
+  render(<React.StrictMode><AuthProvider><SignInTest /></AuthProvider></React.StrictMode>);
   await waitFor(() => expect(screen.getByText('google-user')).toBeTruthy());
+  expect(getRedirectResult).toHaveBeenCalledTimes(1);
+  expect(runTransaction).toHaveBeenCalledTimes(1);
   expect(transaction.set.mock.calls[0][1]).toMatchObject({ uid: googleUser.uid });
   expect(sessionStorage.getItem('kiwivan.googleRedirect')).toBeNull();
 });
