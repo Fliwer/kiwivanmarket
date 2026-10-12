@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { X, Mail, Lock, User, AlertCircle, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../AuthContext';
+import { useTranslation } from 'react-i18next';
 
 export default function AuthModal({ isOpen, onClose }) {
+  const { t } = useTranslation();
   const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, resendVerificationEmail } = useAuth();
   const [mode, setMode] = useState('signin'); // 'signin' ou 'signup'
   const [email, setEmail] = useState('');
@@ -24,7 +26,13 @@ export default function AuthModal({ isOpen, onClose }) {
       onClose();
     } catch (err) {
       console.error('Google Sign In Error:', err);
-      setError(err.message || 'Failed to sign in with Google');
+      const errorKey = {
+        'auth/popup-closed-by-user': 'popup_closed',
+        'auth/popup-blocked': 'popup_blocked',
+        'auth/cancelled-popup-request': 'popup_pending',
+        'auth/network-request-failed': 'network_error',
+      }[err.code] || 'google_error';
+      setError(t(`auth_google.${errorKey}`));
     } finally {
       setLoading(false);
     }

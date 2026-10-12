@@ -50,11 +50,9 @@ export const AuthProvider = ({ children }) => {
     });
     
     try {
-      // Deconnecter l'utilisateur actuel AVANT de connecter le nouveau
-      if (auth.currentUser) {
-        await signOut(auth);
-      }
-      
+      // Open directly from the click: awaiting signOut can lose the browser's
+      // user gesture. Firebase replaces the session after a successful sign-in;
+      // a closed or blocked popup must leave the existing session intact.
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 

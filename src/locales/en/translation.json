@@ -1,4 +1,11 @@
 {
+    "auth_google": {
+        "popup_closed": "Google sign-in ended before confirmation. Try again and keep the Google window open. If this happens again, open Kiwi Van Market directly in Chrome or Safari, or use your email and password.",
+        "popup_blocked": "Your browser blocked the Google window. Allow pop-ups for this site and try again, or sign in with your email and password.",
+        "popup_pending": "Google sign-in is already in progress. Finish in the open window before trying again.",
+        "network_error": "Google sign-in failed because of a network problem. Check your Internet connection and try again.",
+        "google_error": "Google sign-in did not complete. Try again, or use your email and password."
+    },
     "header": {
         "subtitle": "Buy & Sell Campervans 🇳🇿",
         "guides": "Guides",

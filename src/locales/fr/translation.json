@@ -1,4 +1,11 @@
 {
+    "auth_google": {
+        "popup_closed": "La connexion Google a été interrompue avant confirmation. Réessayez en gardant la fenêtre Google ouverte. Si cela se reproduit, ouvrez Kiwi Van Market directement dans Chrome ou Safari, ou utilisez votre e-mail et votre mot de passe.",
+        "popup_blocked": "Votre navigateur a bloqué la fenêtre Google. Autorisez les fenêtres pop-up pour ce site et réessayez, ou connectez-vous avec votre e-mail et votre mot de passe.",
+        "popup_pending": "Une connexion Google est déjà en cours. Terminez-la dans la fenêtre ouverte avant de réessayer.",
+        "network_error": "La connexion Google a échoué à cause du réseau. Vérifiez votre connexion Internet et réessayez.",
+        "google_error": "La connexion Google n’a pas abouti. Réessayez, ou utilisez votre e-mail et votre mot de passe."
+    },
     "header": {
         "subtitle": "Achat & Vente de Vans 🇳🇿",
         "guides": "Guides",
