@@ -210,7 +210,8 @@ service cloud.firestore {
       // etaient aspirables en une requete. Le verrou "connexion requise" pose
       // sur la fiche van n'etait donc que cosmetique.
       match /private/{docId} {
-        allow read: if docId == 'contact' && hasVerifiedEmail();
+        allow read: if docId == 'contact' && hasVerifiedEmail() &&
+                       exists(/databases/$(database)/documents/vans/$(vanId));
         allow write: if docId == 'contact' && hasVerifiedEmail() &&
                         request.resource.data.keys().hasOnly(['email', 'phone', 'whatsapp']) &&
                         request.resource.data.email == request.auth.token.email &&

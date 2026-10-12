@@ -26,7 +26,7 @@ Périmètre : code React, routes Vercel et pré-rendu HTML, Firebase Functions, 
 - Création de comptes Connect idempotente. Contrôle de compte banni pour Firestore et les endpoints soumis aux quotas.
 - Quotas persistants par compte/IP et plafonds globaux pour contact, signalement, alertes, génération IA, CarJam, Checkout et onboarding ; plafonnement du fan-out des nouvelles annonces. Limites d'instances sur les formulaires publics. Les limitations côté navigateur ne sont pas considérées comme une protection serveur.
 - Réglages privés réservés à l'administration ; seul `settings/public` est public. Champs de notification email réservés au serveur, secrets de cycle d'annonce non modifiables par le propriétaire côté client.
-- Suppression du journal complet des conversations ; erreurs webhook et génération IA moins bavardes.
+- Suppression du journal complet des conversations ; erreurs webhook et génération IA moins bavardes. Prix des emails converti en nombre et paramètres des liens de messagerie encodés pour empêcher des insertions HTML. Coordonnées privées illisibles après suppression de l'annonce parente.
 - Ajout des routes et réécritures de retour Stripe, dont les deux URL renvoyaient 404 avant correction. Aucun statut de paiement n'est établi par une page de retour.
 - CSP minimale (`base-uri`, `object-src`) et protection des frames sur Firebase Hosting ; une politique stricte de scripts reste à construire et à tester avec Firebase Auth, Stripe et les analytics.
 - Exclusion Git des environnements, dépendances imbriquées et nouveaux journaux de débogage. Les fichiers déjà présents dans l'historique ne sont pas effacés par `.gitignore`.

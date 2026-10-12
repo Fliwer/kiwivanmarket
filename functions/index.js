@@ -163,7 +163,7 @@ exports.onNewConversation = onDocumentCreated(
             </p>
 
             <p style="font-size: 16px; color: #374151; margin-bottom: 20px;">
-              Great news! <strong>${safeBuyerName}</strong> is interested in your <strong>${safeVanTitle}</strong> (NZ$${van.price?.toLocaleString() || 'N/A'}).
+              Great news! <strong>${safeBuyerName}</strong> is interested in your <strong>${safeVanTitle}</strong> (NZ$${Number(van.price || 0).toLocaleString('en-NZ')}).
             </p>
 
             ${safeMessagePreview ? `
@@ -173,7 +173,7 @@ exports.onNewConversation = onDocumentCreated(
               </div>
             ` : ''}
 
-            <a href="https://kiwivanmarket.com/messages?c=${conversationId}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
+            <a href="https://kiwivanmarket.com/messages?c=${encodeURIComponent(conversationId)}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
               → Reply now
             </a>
 
@@ -308,7 +308,7 @@ exports.onNewMessage = onDocumentCreated(
                   <p style="color: #374151; font-size: 15px; margin: 0; font-style: italic;">"${safeMessagePreview}"</p>
                 </div>
               ` : ''}
-              <a href="https://kiwivanmarket.com/messages?c=${conversationId}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
+              <a href="https://kiwivanmarket.com/messages?c=${encodeURIComponent(conversationId)}" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
                 Reply now
               </a>
               <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
@@ -449,7 +449,7 @@ exports.sendReminderEmails = onSchedule(
                 <p style="font-size: 16px; color: #374151;">
                   Responding quickly increases your chances of closing the deal!
                 </p>
-                <a href="https://kiwivanmarket.com/messages?c=${convDoc.id}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
+                <a href="https://kiwivanmarket.com/messages?c=${encodeURIComponent(convDoc.id)}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 20px 0;">
                   Reply now
                 </a>
                 <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">
