@@ -46,7 +46,7 @@ Ces nombres incluent les dépendances transitives et leurs parents : ils ne repr
 ## Vérifications
 
 - 8 tests Node : retours de phishing, refus de clés live, webhook falsifié/mauvaise devise/montant exact, récupération du transfert au remboursement, quotas persistants, injection JSON-LD dans les deux rendus et routage du middleware de retour de paiement.
-- 26 tests de règles Firestore avec documents synthétiques et mocks, via l'API Firebase Rules : parcours autorisés et refus d'accès, fausse adresse email, élévation admin, falsification de paiement, annulation contournée, secrets privés, identité de conversation et refus de réintroduire des coordonnées publiques. Aucune écriture de document par ces tests.
+- 29 tests de règles Firestore avec documents synthétiques et mocks, via l'API Firebase Rules : parcours autorisés et refus d'accès, édition et marquage vendu par le propriétaire, fausse adresse email, élévation admin, falsification de paiement, annulation contournée, secrets privés, identité de conversation et refus de réintroduire des coordonnées publiques. Aucune écriture de document par ces tests.
 - Compilation des règles Firestore et Storage par Firebase ; quatre tests React existants ; build de production réussi.
 - En production avant modification : accès anonymes à `users`, `reservations`, `stripeAccounts`, `securityRateLimits` refusés (403). Pages accueil, vente, profil et sitemaps : 200. Retours de paiement : 404 avant correction.
 - Migration : parcours des 91 annonces sans pagination restante ; vérification anonyme après migration, zéro champ de coordonnées ou jeton exposé. Les règles Storage publiées ont été comparées au fichier local.

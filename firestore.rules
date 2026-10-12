@@ -247,7 +247,9 @@ service cloud.firestore {
                         // whatsapp inclus : le formulaire d'édition permet de le
                         // modifier — sans lui, tout update touchant le WhatsApp
                         // était refusé.
-                        request.resource.data.seller.diff(resource.data.seller).affectedKeys().hasOnly(['phone', 'facebook', 'whatsapp'])
+                        // Le formulaire remet les anciennes coordonnees a null.
+                        // hasNoPublicContact impose que email/phone/whatsapp restent null.
+                        request.resource.data.seller.diff(resource.data.seller).affectedKeys().hasOnly(['phone', 'facebook', 'whatsapp', 'email'])
                       )) &&
                       (fieldUnchanged('price') || isValidPrice(request.resource.data.price)) &&
                       (fieldUnchanged('title') || isValidString(request.resource.data.title, 3, 200)) &&

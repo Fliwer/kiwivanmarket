@@ -21,6 +21,10 @@ const listing = { title: 'Toyota Hiace', price: 10000, description: 'A maintaine
   seller: { uid: 'seller', name: 'Seller' }, views: 0, createdAt: 'today', status: 'active' };
 const firestore = [
   firestoreCase('normal listing creation allowed', 'ALLOW', 'vans/van', 'create', authenticated('seller'), {}, listing),
+  firestoreCase('seller edit form with null contact placeholders allowed', 'ALLOW', 'vans/van', 'update', authenticated('seller'), listing,
+    { ...listing, price: 12000, description: 'Updated maintained campervan', seller: { ...listing.seller, email: null, phone: null, whatsapp: null } }),
+  firestoreCase('seller can mark listing sold', 'ALLOW', 'vans/van', 'update', authenticated('seller'), listing, { ...listing, status: 'sold' }),
+  firestoreCase('another user cannot edit listing', 'DENY', 'vans/van', 'update', authenticated(), listing, { ...listing, price: 1 }),
   firestoreCase('public contact creation denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, seller: { ...listing.seller, email: 'seller@example.test' } }),
   firestoreCase('public token creation denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, availabilityToken: 'token' }),
   firestoreCase('public contact reintroduction denied', 'DENY', 'vans/van', 'update', authenticated('seller'), listing, { ...listing, phone: '0211234567' }),
