@@ -108,7 +108,7 @@ service cloud.firestore {
     }
     
     function fieldUnchanged(field) {
-      return request.resource.data[field] == resource.data[field];
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([field]);
     }
     
     function fieldsUnchanged(fields) {

@@ -56,6 +56,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await saveUserProfile(user);
     } catch (cause) {
+      console.error('Google profile persistence failed:', cause?.code || 'unknown');
       const error = new Error('Could not complete the account profile', { cause });
       error.code = 'auth/profile-unavailable';
       throw error;
