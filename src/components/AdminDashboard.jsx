@@ -32,6 +32,7 @@ export default function AdminDashboard({ onClose, onEditVan }) {
   const [activeTab, setActiveTab] = useState('overview');
   // Migration ponctuelle des coordonnees vendeur hors du document public.
   const [migrating, setMigrating] = useState(false);
+  const [sendingFinalNotices, setSendingFinalNotices] = useState(false);
   const [vans, setVans] = useState([]);
   const [users, setUsers] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -503,6 +504,28 @@ export default function AdminDashboard({ onClose, onEditVan }) {
           >
             <Settings className="w-4 h-4" />
             <span>{migrating ? 'Migration…' : 'Migrer contacts'}</span>
+          </button>
+          {/* Dernier rappel avant extinction des annonces. Declenchement
+              manuel : la version planifiee ne part qu'une fois par 24h. */}
+          <button
+            onClick={async () => {
+              setSendingFinalNotices(true);
+              try {
+                const fn = httpsCallable(functions, 'sendFinalNoticesNow');
+                const r = (await fn({})).data;
+                toast.success(`Derniers rappels : ${r.sent} envoyés, ${r.skipped} ignorés, ${r.errors} erreurs`);
+              } catch (e) {
+                toast.error(`Envoi impossible : ${e?.message || e}`);
+              } finally {
+                setSendingFinalNotices(false);
+              }
+            }}
+            disabled={sendingFinalNotices}
+            className="flex items-center gap-2 px-3 py-2 bg-orange-600 hover:bg-orange-700 rounded-xl transition text-sm font-medium disabled:opacity-60"
+            title="Envoyer le dernier rappel aux annonces qui vont s'éteindre"
+          >
+            <Mail className="w-4 h-4" />
+            <span>{sendingFinalNotices ? 'Envoi…' : 'Derniers rappels'}</span>
           </button>
           <button
             onClick={handleSendCarJamCampaign}

@@ -2376,3 +2376,128 @@ exports.migrateSellerContacts = onCall(async (request) => {
   console.log('🔐 migrateSellerContacts:', JSON.stringify({ dryRun, ...stats }));
   return { dryRun, ...stats };
 });
+
+
+// ============================================
+// ⏳ DERNIER RAPPEL AVANT MISE EN PAUSE
+// ============================================
+// Le premier rappel ("Is your van still for sale?") n'a obtenu que 4% de
+// reponses : il POSE UNE QUESTION, facile a remettre a plus tard. Celui-ci
+// annonce une PERTE imminente et datee, ce a quoi on reagit beaucoup plus.
+// Il part dans les 7 derniers jours avant l'extinction, une seule fois.
+const FINAL_NOTICE_WINDOW_DAYS = 14;
+const FINAL_NOTICE_MAX_PER_RUN = 40; // partage le quota d'envois quotidien
+
+function finalNoticeEmailHtml({ sellerName, vanTitle, vanId, token, daysLeft }) {
+  const name = escapeHtml(sellerName || 'there');
+  const title = escapeHtml(vanTitle || 'your van');
+  const when = daysLeft <= 1 ? 'tomorrow' : `in ${daysLeft} days`;
+  const btn = (href, bg, label) =>
+    `<a href="${href}" style="display:inline-block;background:${bg};color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px;margin:6px 4px;">${label}</a>`;
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+      <div style="background:linear-gradient(135deg,#d97706 0%,#b45309 100%);padding:30px;border-radius:16px 16px 0 0;text-align:center;">
+        <h1 style="color:#fff;margin:0;font-size:22px;">Your listing comes down ${when}</h1>
+      </div>
+      <div style="background:#f9fafb;padding:30px;border-radius:0 0 16px 16px;">
+        <p style="font-size:16px;color:#374151;">Hi ${name},</p>
+        <p style="font-size:16px;color:#374151;">
+          <strong>${title}</strong> will be removed from Kiwi Van Market ${when}, because we
+          haven't heard from you. Buyers won't see it any more.
+        </p>
+        <p style="font-size:16px;color:#374151;">One click is all it takes:</p>
+        <div style="text-align:center;margin:24px 0;">
+          ${btn(actionLink(vanId, token, 'confirm'), '#059669', '✅ Keep it online')}
+          ${btn(actionLink(vanId, token, 'sold'), '#dc2626', '🎉 It\'s sold')}
+        </div>
+        <p style="font-size:14px;color:#6b7280;">
+          Already sold or left New Zealand? Hit <strong>"It's sold"</strong> — it helps the next
+          backpacker avoid writing to a van that's gone. Listing and relisting are always free.
+        </p>
+        <p style="font-size:13px;color:#9ca3af;margin-top:24px;">
+          <em>Votre annonce sera retiree ${daysLeft <= 1 ? 'demain' : `dans ${daysLeft} jours`}.
+          Un clic sur « Keep it online » la conserve, « It's sold » si le van est vendu.</em>
+        </p>
+        <p style="font-size:12px;color:#9ca3af;">Kiwi Van Market — <a href="${LIFECYCLE.SITE}/my-listings" style="color:#059669;">manage your listings</a></p>
+      </div>
+    </div>`;
+}
+
+async function runFinalNotices() {
+  {
+    const apiKey = resendApiKey.value();
+    if (!apiKey) { console.error('❌ RESEND_API_KEY not configured'); return; }
+    const resend = new Resend(apiKey);
+    const now = Date.now();
+    const DAY = 24 * 60 * 60 * 1000;
+    const stats = { scanned: 0, sent: 0, skipped: 0, errors: 0 };
+
+    const snap = await db.collection('vans').where('status', '==', 'active').get();
+    for (const doc of snap.docs) {
+      if (stats.sent >= FINAL_NOTICE_MAX_PER_RUN) break;
+      const van = doc.data();
+      stats.scanned++;
+      try {
+        if (van.finalNoticeSentAt) { stats.skipped++; continue; }
+
+        const lastSignal = Math.max(toMs(van.createdAt), toMs(van.availabilityConfirmedAt));
+        const remindedAt = toMs(van.availabilityReminderSentAt);
+        // Pas encore relance, ou le vendeur a confirme depuis : rien a faire.
+        if (!remindedAt || remindedAt <= lastSignal) { stats.skipped++; continue; }
+
+        const daysLeft = Math.ceil((remindedAt + LIFECYCLE.PAUSE_AFTER_MS - now) / DAY);
+        if (daysLeft > FINAL_NOTICE_WINDOW_DAYS || daysLeft < 0) { stats.skipped++; continue; }
+
+        const contact = await getSellerContact(doc.ref, van);
+        if (!contact.email) { stats.skipped++; continue; }
+
+        // Le jeton pose par le premier rappel reste valable ; on en cree un
+        // seulement s'il manque, sinon les liens deja envoyes seraient casses.
+        let token = van.availabilityToken;
+        if (!token) {
+          token = crypto.randomBytes(24).toString('hex');
+          await doc.ref.update({ availabilityToken: token });
+        }
+
+        await resend.emails.send({
+          from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
+          to: contact.email,
+          reply_to: 'kiwivanmarket.contact@gmail.com',
+          subject: `${van.title || 'Your van'} comes down ${daysLeft <= 1 ? 'tomorrow' : `in ${daysLeft} days`}`,
+          html: finalNoticeEmailHtml({
+            sellerName: van.seller && van.seller.name,
+            vanTitle: van.title,
+            vanId: doc.id,
+            token,
+            daysLeft: Math.max(1, daysLeft),
+          }),
+        });
+        await doc.ref.update({ finalNoticeSentAt: admin.firestore.FieldValue.serverTimestamp() });
+        stats.sent++;
+      } catch (e) {
+        stats.errors++;
+        console.error(`sendFinalAvailabilityNotice: van ${doc.id}:`, e.message || e);
+      }
+    }
+    console.log('⏳ sendFinalAvailabilityNotice:', JSON.stringify(stats));
+    return stats;
+  }
+}
+
+exports.sendFinalAvailabilityNotice = onSchedule(
+  { schedule: 'every 24 hours', secrets: [resendApiKey], timeoutSeconds: 300 },
+  async () => { await runFinalNotices(); }
+);
+
+// Declenchement manuel depuis le dashboard admin : la version planifiee ne
+// part qu'une fois par 24h, or les annonces s'eteignent dans 11 jours et
+// chaque jour compte pour laisser au vendeur le temps de reagir.
+exports.sendFinalNoticesNow = onCall(
+  { secrets: [resendApiKey], timeoutSeconds: 300 },
+  async (request) => {
+    if (request.auth?.token?.admin !== true) {
+      throw new HttpsError('permission-denied', 'Admin uniquement.');
+    }
+    return await runFinalNotices();
+  }
+);
