@@ -83,9 +83,9 @@ export const AuthProvider = ({ children }) => {
       prompt: 'select_account'
     });
 
-    // Redirect only with same-origin helpers; cross-origin storage breaks this
-    // flow on modern mobile browsers. Desktop retains the account-picker popup.
-    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && auth.config.authDomain === window.location.hostname) {
+    // Use the same full-page flow on every device when helpers share the app
+    // origin. Retain popup sign-in for local/preview configurations only.
+    if (auth.config.authDomain === window.location.hostname) {
       sessionStorage.setItem(GOOGLE_REDIRECT_KEY, 'pending');
       const redirect = signInWithRedirect(auth, provider)
         .then(() => ({ redirecting: true }))
