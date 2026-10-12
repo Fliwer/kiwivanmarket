@@ -59,6 +59,7 @@ module.exports = async function handler(req, res) {
     '@type': 'Organization',
     '@id': `${ORIGIN}/#organization`,
     name: 'Kiwi Van Market',
+    alternateName: ['KiwiVanMarket', 'kiwivanmarket.com'],
     url: ORIGIN,
     logo: { '@type': 'ImageObject', url: `${ORIGIN}/kiwi-van-logo-128.webp` },
     description: T.orgDesc,
@@ -72,6 +73,7 @@ module.exports = async function handler(req, res) {
     '@id': `${ORIGIN}/#website`,
     url: ORIGIN,
     name: 'Kiwi Van Market',
+    alternateName: ['KiwiVanMarket', 'kiwivanmarket.com'],
     publisher: { '@id': `${ORIGIN}/#organization` },
   };
 

@@ -13,6 +13,7 @@ function OrganizationSchema() {
         "@type": "Organization",
         "@id": `${ORIGIN}/#organization`,
         "name": "Kiwi Van Market",
+        "alternateName": ["KiwiVanMarket", "kiwivanmarket.com"],
         "url": ORIGIN,
         "logo": {
             "@type": "ImageObject",
@@ -40,6 +41,7 @@ function WebSiteSchema() {
         "@id": `${ORIGIN}/#website`,
         "url": ORIGIN,
         "name": "Kiwi Van Market",
+        "alternateName": ["KiwiVanMarket", "kiwivanmarket.com"],
         "description": "Buy and sell campervans in New Zealand — Free listings, no commissions.",
         "publisher": { "@id": `${ORIGIN}/#organization` },
         "potentialAction": {
