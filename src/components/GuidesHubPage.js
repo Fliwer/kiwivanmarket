@@ -6,6 +6,7 @@ import SeoHead from './SeoHead';
 import ExpertBadge from './guides/ExpertBadge';
 import { GUIDES } from '../constants/guides';
 import { useHideLoader } from '../hooks/useHideLoader';
+import { SEO_LANGS, seoCopy } from '../data/seo';
 
 // Guide mis en avant en tête du hub (le plus stratégique).
 const FEATURED_SLUG = 'buying-campervan-nz';
@@ -43,6 +44,7 @@ export default function GuidesHubPage() {
     useHideLoader();
     const { t, i18n } = useTranslation();
     const currentLang = (i18n.language || 'en').split('-')[0];
+    const guideSeo = seoCopy(i18n.language).guides;
     const langSuffix = currentLang === 'en' ? '' : `?lang=${currentLang}`;
     const catLabel = (c) => c.label[currentLang] || c.label.en;
 
@@ -59,8 +61,9 @@ export default function GuidesHubPage() {
     return (
         <div className="min-h-screen bg-white pb-24">
             <SeoHead
-                title={t('guides.hub.seo_title')}
-                description={t('guides.hub.seo_description')}
+                title={guideSeo.title.replace(' | Kiwi Van Market', '')}
+                description={guideSeo.metaDesc}
+                alternateLangs={SEO_LANGS}
                 type="website"
             />
 
@@ -77,7 +80,7 @@ export default function GuidesHubPage() {
                         item: {
                             '@type': 'Article',
                             headline: guides[slug].title,
-                            url: `https://kiwivanmarket.com/guide/${slug}`,
+                            url: `https://kiwivanmarket.com/guide/${slug}${langSuffix}`,
                             image: guides[slug].heroImage,
                             author: { '@type': 'Organization', name: 'Kiwi Van Market' },
                         },

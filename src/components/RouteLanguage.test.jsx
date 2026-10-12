@@ -4,6 +4,8 @@ import { MemoryRouter, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
 import RouteLanguage from './RouteLanguage';
+import { HelmetProvider } from 'react-helmet-async';
+import GuidesHubPage from './GuidesHubPage';
 
 // CRA's Jest resolver predates package exports; use the same router's core
 // exports rather than resolving react-router/dom through the DOM shim.
@@ -50,4 +52,12 @@ test('history restores the English URL and its language', async () => {
   await waitFor(() => expect(screen.getByText('fr')).toBeTruthy());
   fireEvent.click(screen.getByText('Back'));
   await waitFor(() => expect(screen.getByText('en')).toBeTruthy());
+});
+
+test('French guides keep a French canonical after JavaScript renders the page', async () => {
+  await act(async () => i18n.changeLanguage('fr'));
+  render(<MemoryRouter initialEntries={['/guides?lang=fr']}><HelmetProvider><GuidesHubPage /></HelmetProvider></MemoryRouter>);
+  await waitFor(() => expect(document.querySelector('link[rel="canonical"]').href)
+    .toBe('https://kiwivanmarket.com/guides?lang=fr'));
+  expect(document.title.match(/Kiwi Van Market/g)).toHaveLength(1);
 });
