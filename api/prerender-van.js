@@ -9,6 +9,7 @@
 // riches sur les réseaux (OG), et lisibilité par les moteurs IA (GEO).
 // ============================================================================
 
+const { BRANDS, matchesBrand } = require('./_lib/taxonomy');
 const { ORIGIN, esc, cdnImg, fetchAllVans } = require('./_lib/util');
 
 // ── Maillage interne (liens uniquement vers des pages qui existent) ─────────
@@ -19,13 +20,7 @@ const LOCATION_SLUGS = {
   queenstown: 'Queenstown', rotorua: 'Rotorua', dunedin: 'Dunedin',
   hamilton: 'Hamilton', tauranga: 'Tauranga', nelson: 'Nelson',
 };
-const BRAND_PAGES = [
-  { slug: 'toyota-hiace', label: 'Toyota Hiace', kw: ['hiace'] },
-  { slug: 'nissan-caravan', label: 'Nissan Caravan', kw: ['caravan', 'nissan'] },
-  { slug: 'mitsubishi-delica', label: 'Mitsubishi Delica', kw: ['delica', 'l300', 'mitsubishi'] },
-  { slug: 'mazda-bongo', label: 'Mazda Bongo', kw: ['bongo', 'mazda'] },
-  { slug: 'ford-transit', label: 'Ford Transit', kw: ['transit', 'ford'] },
-];
+const BRAND_PAGES = Object.entries(BRANDS).map(([slug, brand]) => ({ slug, label: brand.name }));
 
 const label = (k) =>
   k.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()).trim();
@@ -98,13 +93,12 @@ module.exports = async function handler(req, res) {
 
   const locSlug = van.location && LOCATION_SLUGS[String(van.location).toLowerCase()]
     ? String(van.location).toLowerCase() : null;
-  const titleLc = String(van.title || '').toLowerCase();
-  const brand = BRAND_PAGES.find((b) => b.kw.some((k) => titleLc.includes(k)));
+  const brand = BRAND_PAGES.find((b) => matchesBrand(van, b.slug));
 
   // Annonces similaires : même ville d'abord, puis même marque, puis les plus
   // récentes. Actives uniquement, 4 max.
   const sameCity = (v) => van.location && v.location === van.location;
-  const sameBrand = (v) => brand && brand.kw.some((k) => String(v.title || '').toLowerCase().includes(k));
+  const sameBrand = (v) => brand && matchesBrand(v, brand.slug);
   const similar = all
     .filter((v) => v.id !== id && v.status !== 'sold')
     .sort((a, b) => (Number(sameCity(b)) + Number(sameBrand(b))) - (Number(sameCity(a)) + Number(sameBrand(a)))

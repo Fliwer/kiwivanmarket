@@ -1,3 +1,4 @@
+import taxonomy from './taxonomy';
 // ============================================================================
 // Shared catalogue, filtering and indexability for React and prerenders.
 const CITY_META = [
@@ -12,14 +13,9 @@ const CITY_META = [
   { slug: 'nelson', name: 'Nelson' },
 ];
 
-const BRAND_META = [
-  { slug: 'toyota-hiace', name: 'Toyota Hiace', terms: ['toyota', 'hiace'] },
-  { slug: 'nissan-caravan', name: 'Nissan Caravan', terms: ['nissan', 'caravan'] },
-  { slug: 'mazda-bongo', name: 'Mazda Bongo', terms: ['mazda', 'bongo'] },
-  { slug: 'mitsubishi-delica', name: 'Mitsubishi Delica', terms: ['mitsubishi', 'delica'] },
-  { slug: 'ford-transit', name: 'Ford Transit', terms: ['ford', 'transit'] },
-  { slug: 'mercedes-sprinter', name: 'Mercedes Sprinter', terms: ['mercedes', 'sprinter'] },
-];
+const BRAND_META = Object.entries(taxonomy.BRANDS).map(([slug, brand]) => ({
+  slug, name: brand.name, terms: brand.searchTerms,
+}));
 
 const BUDGETS = [8000, 12000, 15000, 18000, 22000];
 const BRAND_CITY_FOCUS = ['auckland', 'christchurch', 'wellington', 'queenstown'];
@@ -93,10 +89,7 @@ function matchesPage(van, page) {
   if (!(van.location || '').toLowerCase().includes(page.city)) return false;
   if (typeof page.maxPrice === 'number' && (van.price || 0) > page.maxPrice) return false;
   if (page.selfContainedOnly && !van.selfContained) return false;
-  if (page.brandTerms) {
-    const t = (van.title || '').toLowerCase();
-    if (!page.brandTerms.some((k) => t.includes(k))) return false;
-  }
+  if (page.brandSlug && !taxonomy.matchesBrand(van, page.brandSlug)) return false;
   return true;
 }
 

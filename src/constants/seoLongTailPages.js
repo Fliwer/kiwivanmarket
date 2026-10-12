@@ -1,4 +1,5 @@
 import catalog from '../data/seo/long-tail';
+import taxonomy from '../data/seo/taxonomy';
 
 const { CITY_META, BRAND_META, LONG_TAIL_PAGE_LIST, LONG_TAIL_PAGE_MAP } = catalog;
 const BUDGETS = [8000, 12000, 15000, 18000, 22000];
@@ -20,9 +21,8 @@ function slugifyLocation(location = '') {
   return location.toLowerCase().trim().replace(/\s+/g, '-');
 }
 
-function inferBrandFromTitle(title = '') {
-  const t = title.toLowerCase();
-  return BRAND_META.find((brand) => brand.terms.some((term) => t.includes(term))) || null;
+function inferBrandForVan(van) {
+  return BRAND_META.find((brand) => taxonomy.matchesBrand(van, brand.slug)) || null;
 }
 
 function closestBudgetCeiling(price = 0) {
@@ -39,7 +39,7 @@ export function getLongTailSlugsForVan(van) {
   const budget = closestBudgetCeiling(Number(van?.price || 0));
   const slugs = [`buy-campervan-in-${city}-under-${budget}`];
   if (van?.selfContained) slugs.push(`self-contained-van-${city}`);
-  const brand = inferBrandFromTitle(van?.title || '');
+  const brand = inferBrandForVan(van);
   if (brand) slugs.push(`${brand.slug}-${city}-under-${budget}`);
   return slugs.filter((slug) => LONG_TAIL_PAGE_MAP[slug]);
 }

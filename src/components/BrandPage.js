@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import VanCard from './VanCard';
 import AlertCta from './AlertCta';
 import SeoHead from './SeoHead';
+import taxonomy from '../data/seo/taxonomy';
 import { useHideLoader } from '../hooks/useHideLoader';
 import { useTranslation } from 'react-i18next';
 import { seoCopy, seoLang, SEO_LANGS, priceStats, nzd } from '../data/seo';
@@ -17,42 +18,36 @@ const BRANDS_CONFIG = {
     title: 'Toyota Hiace Campervans for Sale in New Zealand',
     description: 'Browse Toyota Hiace campervans for sale in New Zealand. The Hiace is the most popular campervan choice for backpackers - reliable, fuel-efficient, and easy to maintain. Find self-contained Toyota Hiace vans with valid WOF.',
     keywords: ['Toyota Hiace', 'Hiace campervan', 'Toyota van NZ'],
-    searchTerms: ['toyota', 'hiace'],
   },
   'nissan-caravan': {
     name: 'Nissan Caravan',
     title: 'Nissan Caravan Campervans for Sale in New Zealand',
     description: 'Find Nissan Caravan campervans for sale in NZ. Spacious and affordable, the Caravan offers excellent value for backpackers. Browse self-contained Nissan vans with buy-back options.',
     keywords: ['Nissan Caravan', 'Nissan campervan', 'Caravan van NZ'],
-    searchTerms: ['nissan', 'caravan'],
   },
   'mazda-bongo': {
     name: 'Mazda Bongo',
     title: 'Mazda Bongo Campervans for Sale in New Zealand',
     description: 'Discover Mazda Bongo campervans for sale in New Zealand. Compact, fuel-efficient, and perfect for couples. Many Bongos feature pop-top roofs and self-contained certification.',
     keywords: ['Mazda Bongo', 'Bongo campervan', 'Mazda van NZ'],
-    searchTerms: ['mazda', 'bongo'],
   },
   'mitsubishi-delica': {
     name: 'Mitsubishi Delica',
     title: 'Mitsubishi Delica Campervans for Sale in New Zealand',
     description: 'Shop Mitsubishi Delica campervans in NZ. The Delica offers 4WD capability perfect for exploring New Zealand\'s rugged terrain. Find self-contained Delicas ready for adventure.',
     keywords: ['Mitsubishi Delica', 'Delica 4WD', 'Delica campervan NZ'],
-    searchTerms: ['mitsubishi', 'delica'],
   },
   'ford-transit': {
     name: 'Ford Transit',
     title: 'Ford Transit Campervans for Sale in New Zealand',
     description: 'Browse Ford Transit campervans for sale in New Zealand. Large, versatile, and perfect for full-time van life. Find converted Ford Transit vans with all amenities.',
     keywords: ['Ford Transit', 'Transit campervan', 'Ford van NZ'],
-    searchTerms: ['ford', 'transit'],
   },
   'mercedes-sprinter': {
     name: 'Mercedes Sprinter',
     title: 'Mercedes Sprinter Campervans for Sale in New Zealand',
     description: 'Find Mercedes Sprinter campervans in NZ. Premium quality, spacious interiors, and built to last. Browse luxury Sprinter conversions for the ultimate road trip.',
     keywords: ['Mercedes Sprinter', 'Sprinter campervan', 'Mercedes van NZ'],
-    searchTerms: ['mercedes', 'sprinter'],
   },
 };
 
@@ -125,11 +120,8 @@ export default function BrandPage() {
         const allVans = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
         // Filtrer par marque (active and sold vans)
-        const filtered = allVans.filter(van => {
-          if (van.status && van.status !== 'active' && van.status !== 'sold') return false;
-          const title = (van.title || '').toLowerCase();
-          return brandConfig?.searchTerms.some(term => title.includes(term));
-        });
+        const visible = allVans.filter((van) => !van.status || ['active', 'sold'].includes(van.status));
+        const filtered = taxonomy.vansForTaxonomy(visible, 'brands', brand);
 
         // Tri : Actifs en premier, puis les Vendus (plus récents en premier dans chaque groupe)
         filtered.sort((a, b) => {

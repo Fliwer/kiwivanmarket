@@ -11,6 +11,27 @@ function response() {
     send(body) { this.body = body; return this; } };
 }
 
+test('model pages exclude other models and competitor names in descriptions', () => {
+  const { matchesBrand, vansForTaxonomy } = require('../api/_lib/taxonomy');
+  const fixtures = [
+    { id: 'hiace', title: 'TOYOTA HIACE High Roof', location: 'Auckland', price: 7000 },
+    { id: 'estima', title: 'Toyota Estima', description: 'Cheaper than a Toyota Hiace', location: 'Auckland', price: 6000 },
+    { id: 'mpv', title: 'Mazda MPV', description: 'Comparable with a Bongo', location: 'Auckland', price: 5000 },
+    { id: 'serena', title: 'Nissan Serena', description: 'Alternative to a Caravan', location: 'Auckland', price: 5000 },
+    { id: 'trader', title: 'Ford Trader', description: 'Alternative to a Transit', location: 'Auckland', price: 5000 },
+  ];
+  assert.deepEqual(vansForTaxonomy(fixtures, 'brands', 'toyota-hiace').map(v => v.id), ['hiace']);
+  for (const slug of ['mazda-bongo', 'nissan-caravan', 'ford-transit']) {
+    assert.equal(vansForTaxonomy(fixtures, 'brands', slug).length, 0);
+  }
+  assert.equal(matchesBrand({ title: 'Campervan', model: 'Hiace' }, 'toyota-hiace'), true);
+  assert.equal(matchesBrand({ title: 'Hiacelike conversion' }, 'toyota-hiace'), false);
+  assert.equal(matchesBrand({ title: 'Mitsubishi L300' }, 'mitsubishi-delica'), true);
+  const catalog = require('../src/data/seo/long-tail.cjs');
+  const page = catalog.LONG_TAIL_PAGE_MAP['toyota-hiace-auckland-under-12000'];
+  assert.deepEqual(catalog.vansForPage(fixtures, page).map(v => v.id), ['hiace']);
+});
+
 test('category sitemaps and prerenders agree, including FR, empty stock and hidden listings', async () => {
   const originalFetch = global.fetch;
   global.fetch = async () => ({ ok: true, json: async () => ({ documents: [
