@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, getAdditionalUserInfo, signOut } from 'firebase/auth';
-import { getDoc, runTransaction } from 'firebase/firestore';
+import { getDoc, runTransaction } from 'firebase/firestore/lite';
 import { auth } from './firebase';
 import { AuthProvider, useAuth } from './AuthContext';
 
@@ -11,7 +11,7 @@ jest.mock('firebase/auth', () => ({
   signInWithPopup: jest.fn(), signOut: jest.fn(), onAuthStateChanged: jest.fn(),
   signInWithRedirect: jest.fn(), getRedirectResult: jest.fn(), getAdditionalUserInfo: jest.fn(),
 }));
-jest.mock('firebase/firestore', () => ({ doc: jest.fn(), getDoc: jest.fn(), runTransaction: jest.fn() }));
+jest.mock('firebase/firestore/lite', () => ({ doc: jest.fn(), getDoc: jest.fn(), getFirestore: jest.fn(() => ({ transport: 'http' })), runTransaction: jest.fn() }));
 
 const originalAgent = navigator.userAgent;
 let transaction;

@@ -14,8 +14,12 @@ import {
   updateProfile,
   getAdditionalUserInfo
 } from 'firebase/auth';
-import { doc, getDoc, runTransaction } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { doc, getDoc, getFirestore, runTransaction } from 'firebase/firestore/lite';
+import { auth } from './firebase';
+
+// Profiles need confirmed HTTP reads/writes, not live listeners or an offline
+// cache. Keep this transport separate from the marketplace's realtime client.
+const profileDb = getFirestore(auth.app);
 
 // GA — event d'inscription (métrique funnel). Garde gtag pour ne jamais casser
 // l'auth si l'analytics n'est pas chargé (adblock, etc.).
@@ -297,9 +301,9 @@ export const AuthProvider = ({ children }) => {
 
   // Sauvegarder le profil utilisateur dans Firestore
   const saveUserProfile = async (user, displayName = null) => {
-    const userRef = doc(db, 'users', user.uid);
+    const userRef = doc(profileDb, 'users', user.uid);
     
-    await runTransaction(db, async (transaction) => {
+    await runTransaction(profileDb, async (transaction) => {
       const userSnap = await transaction.get(userRef);
       if (!userSnap.exists()) {
         transaction.set(userRef, {
@@ -335,7 +339,7 @@ export const AuthProvider = ({ children }) => {
           const tokenResult = await user.getIdTokenResult();
           const isAdmin = tokenResult.claims.admin === true;
 
-          const userRef = doc(db, 'users', user.uid);
+          const userRef = doc(profileDb, 'users', user.uid);
           const userSnap = await getDoc(userRef);
           if (!active || currentRevision !== revision || auth.currentUser?.uid !== user.uid) return;
 
