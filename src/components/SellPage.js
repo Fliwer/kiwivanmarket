@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { collection, addDoc, doc, setDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
@@ -18,6 +18,26 @@ export default function SellPage() {
   const [resendingEmail, setResendingEmail] = useState(false);
   const [images, setImages] = useState([]);
   const [uploadingIndex, setUploadingIndex] = useState(null);
+
+  // Chiffres lus dans le cache deja rempli par la liste d'annonces : aucune
+  // requete supplementaire. Ils rendent la page credible pour un vendeur qui
+  // hesite (combien de vans, a quel prix) la ou il n'y avait qu'un mur de
+  // connexion. Masques si l'echantillon est trop maigre pour etre honnete.
+  const sellStats = useMemo(() => {
+    try {
+      const raw = window.localStorage.getItem('kiwiVanMarket_vans');
+      if (!raw) return null;
+      const prices = JSON.parse(raw)
+        .filter((v) => v && v.status !== 'sold')
+        .map((v) => Number(v.price))
+        .filter((p) => Number.isFinite(p) && p >= 1000 && p <= 200000)
+        .sort((a, b) => a - b);
+      if (prices.length < 5) return null;
+      return { count: prices.length, median: prices[Math.floor(prices.length / 2)] };
+    } catch (e) {
+      return null;
+    }
+  }, []);
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [newVanId, setNewVanId] = useState(null);
@@ -429,24 +449,72 @@ export default function SellPage() {
           title="Sell Your Campervan"
           description="List your campervan for FREE on New Zealand's #1 campervan marketplace. Reach thousands of backpackers looking to buy."
         />
-        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center">
-            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Camera size={40} className="text-emerald-600" />
+        {/* Le prerender servi a Googlebot presente l'argumentaire complet
+            (gratuit, sans commission, prix du marche, 5 etapes). Un humain
+            n'avait droit qu'a une carte "Sign in to Sell" : il cliquait sur un
+            resultat convaincant et tombait sur un mur de connexion. On lui
+            montre donc la meme chose, la connexion devenant une etape et non
+            une barriere. */}
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 px-4 py-10">
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                <Camera size={32} className="text-emerald-600" />
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-3">
+                Sell your campervan — free, no commission
+              </h1>
+              <p className="text-gray-600 text-lg">
+                Reach thousands of backpackers looking for their adventure vehicle.
+                No listing fee, no success fee. Your van goes live in under 10 minutes.
+              </p>
             </div>
-            <h1 className="text-2xl font-black text-gray-900 mb-3">Sign in to Sell</h1>
-            <p className="text-gray-600 mb-6">
-              Create a free account to list your campervan and reach thousands of buyers.
-            </p>
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all"
-            >
-              Sign In / Register
-            </button>
-            <Link to="/" className="block mt-4 text-gray-500 hover:text-gray-700 transition">
-              Back to listings
-            </Link>
+
+            {sellStats && (
+              <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="bg-white rounded-2xl p-4 text-center shadow-sm">
+                  <p className="text-2xl font-black text-emerald-600">{sellStats.count}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mt-1">Vans listed</p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 text-center shadow-sm">
+                  <p className="text-2xl font-black text-emerald-600">${sellStats.median.toLocaleString('en-NZ')}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mt-1">Median price</p>
+                </div>
+                <div className="bg-white rounded-2xl p-4 text-center shadow-sm">
+                  <p className="text-2xl font-black text-emerald-600">0%</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500 mt-1">Commission</p>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
+              <h2 className="font-black text-gray-900 mb-4">What you'll need</h2>
+              <ul className="space-y-3 mb-7 text-sm text-slate-600">
+                {[
+                  '8–10 bright photos: inside, outside, bed, kitchen, odometer',
+                  'Make, model, year, mileage',
+                  'WOF and REGO expiry dates, self-contained status',
+                  'Your price — check the median above to stay competitive',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="text-emerald-500 font-black mt-0.5">✓</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-4 rounded-xl font-bold text-lg hover:from-emerald-700 hover:to-teal-700 shadow-lg transition-all"
+              >
+                Start my free listing
+              </button>
+              <p className="text-center text-xs text-slate-400 mt-3">
+                A free account is created along the way — it's how buyers reach you.
+              </p>
+              <Link to="/" className="block mt-5 text-center text-gray-500 hover:text-gray-700 transition text-sm">
+                Browse vans for sale instead
+              </Link>
+            </div>
           </div>
         </div>
 
