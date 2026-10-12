@@ -113,16 +113,8 @@ function itemListLd(name, vans, limit = 15) {
     itemListElement: vans.slice(0, limit).map((v, i) => ({
       '@type': 'ListItem',
       position: i + 1,
-      item: {
-        '@type': 'Vehicle',
-        name: v.title || 'Campervan',
-        url: `${ORIGIN}/van/${v.id}`,
-        image: (Array.isArray(v.images) && v.images[0]) || v.imageUrl || undefined,
-        offers: v.price ? {
-          '@type': 'Offer', price: String(v.price), priceCurrency: 'NZD',
-          availability: v.status === 'sold' ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
-        } : undefined,
-      },
+      name: v.title || 'Campervan',
+      url: `${ORIGIN}/van/${v.id}`,
     })),
   };
 }

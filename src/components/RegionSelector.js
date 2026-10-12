@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, RefreshCw, Check } from 'lucide-react';
 import safeStorage from '../utils/safeStorage';
+import { useNavigate } from 'react-router-dom';
 import { CURRENCY_META, CURRENCIES, fetchLiveRates } from './CurrencySelector';
 
 // ============================================================================
@@ -20,6 +21,7 @@ const LANGUAGES = [
 ];
 
 export default function RegionSelector() {
+  const navigate = useNavigate();
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [currentCurrency, setCurrentCurrency] = useState('NZD');
@@ -49,12 +51,10 @@ export default function RegionSelector() {
   };
 
   const changeLanguage = (code) => {
-    i18n.changeLanguage(code);
-    safeStorage.setItem('preferredLang', code);
     const u = new URL(window.location);
     if (code === 'en') u.searchParams.delete('lang');
     else u.searchParams.set('lang', code);
-    window.history.pushState({}, '', u);
+    navigate(u.pathname + u.search + u.hash, { replace: true });
   };
 
   const curr = CURRENCY_META[currentCurrency] || CURRENCY_META.NZD;

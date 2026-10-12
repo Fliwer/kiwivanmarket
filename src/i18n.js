@@ -34,11 +34,13 @@ i18n
         // au chargement. Nécessaire pour que les URLs hreflang FR/ES rendent
         // la bonne langue pour un visiteur arrivant depuis Google.
         detection: {
-            order: ['querystring', 'cookie', 'localStorage', 'navigator', 'htmlTag'],
+            // A bare URL is the English version, including after a French
+            // visit. The URL must identify the same content for every visitor.
+            order: ['querystring'],
             lookupQuerystring: 'lang',
             lookupCookie: 'i18next',
             lookupLocalStorage: 'i18nextLng',
-            caches: ['localStorage', 'cookie'],
+            caches: [],
         },
 
         interpolation: {

@@ -35,6 +35,7 @@ import VanCard from './components/VanCard';
 import GuidePreviewSection from './components/GuidePreviewSection';
 import HeroGuideCard from './components/HeroGuideCard';
 import HomeSeoSection from './components/HomeSeoSection';
+import RouteLanguage from './components/RouteLanguage';
 import BottomNavigation from './components/BottomNavigation';
 import { seoCopy, SEO_LANGS, priceStats, nzd } from './data/seo';
 import { LONG_TAIL_PAGE_LIST, indexableSlugs } from './constants/seoLongTailPages';
@@ -567,6 +568,7 @@ export default function KiwiVanMarket() {
         <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
           <div className={`min-h-screen ${embedMode ? 'bg-white' : 'bg-slate-50 pt-14 md:pt-0'}`}>
             <ScrollToTop />
+            <RouteLanguage />
             {!embedMode && <Header {...headerProps} />}
             <Routes>
               <Route path="/" element={<MainApp {...sharedProps} />} />

@@ -15,9 +15,6 @@ export default function GuideLanguageSelector() {
     const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
 
     const handleLanguageChange = (langCode) => {
-        // Change language in i18next
-        i18n.changeLanguage(langCode);
-
         // Update URL with ?lang= parameter for SEO consistency
         const searchParams = new URLSearchParams(location.search);
         if (langCode === 'en') {

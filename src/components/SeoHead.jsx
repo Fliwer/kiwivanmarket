@@ -54,7 +54,7 @@ function WebSiteSchema() {
     return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
 }
 
-function WebPageSchema({ name, description, canonicalUrl }) {
+function WebPageSchema({ name, description, canonicalUrl, language }) {
     const schema = {
         "@context": "https://schema.org",
         "@type": "WebPage",
@@ -63,7 +63,7 @@ function WebPageSchema({ name, description, canonicalUrl }) {
         "name": name,
         "description": description,
         "isPartOf": { "@id": `${ORIGIN}/#website` },
-        "inLanguage": ["en", "fr", "es"]
+        "inLanguage": language
     };
     return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
 }
@@ -273,7 +273,7 @@ export default function SeoHead({
             {/* ── Schema.org structured data ───────────────────────── */}
             {isHomepage && <OrganizationSchema />}
             {isHomepage && <WebSiteSchema />}
-            {!noindex && <WebPageSchema name={fullTitle} description={metaDesc} canonicalUrl={finalCanonicalUrl} />}
+            {!noindex && <WebPageSchema name={fullTitle} description={metaDesc} canonicalUrl={finalCanonicalUrl} language={currentLang} />}
             {faqs && faqs.length > 0 && <FAQSchema faqs={faqs} />}
             {breadcrumbs && breadcrumbs.length > 0 && <BreadcrumbSchema breadcrumbs={breadcrumbs} />}
         </>

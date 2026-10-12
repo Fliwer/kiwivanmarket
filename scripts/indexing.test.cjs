@@ -125,6 +125,15 @@ test('budget search pages share stock rules, French content and reciprocal langu
   } finally { global.fetch = originalFetch; }
 });
 
+test('category structured data links to listings without declaring each one a product on the category page', () => {
+  const { itemListLd } = require('../api/_lib/util');
+  const schema = itemListLd('Toyota Hiace', [{ id: 'hiace', title: 'Toyota Hiace', price: 10000 }]);
+  assert.equal(schema['@type'], 'ItemList');
+  assert.equal(schema.itemListElement[0].url, 'https://kiwivanmarket.com/van/hiace');
+  assert.equal(schema.itemListElement[0].name, 'Toyota Hiace');
+  assert.equal(schema.itemListElement[0].item, undefined);
+});
+
 test('homepage exposes the same reviewed facts and sources to crawlers in EN and FR', async () => {
   const originalFetch = global.fetch;
   global.fetch = async () => ({ ok: true, json: async () => ({ documents: [] }) });

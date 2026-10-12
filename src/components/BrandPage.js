@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ArrowLeft } from 'lucide-react';
@@ -15,79 +14,46 @@ import { seoCopy, seoLang, SEO_LANGS, priceStats, nzd } from '../data/seo';
 const BRANDS_CONFIG = {
   'toyota-hiace': {
     name: 'Toyota Hiace',
-    title: 'Toyota Hiace Campervans for Sale in New Zealand',
-    description: 'Browse Toyota Hiace campervans for sale in New Zealand. The Hiace is the most popular campervan choice for backpackers - reliable, fuel-efficient, and easy to maintain. Find self-contained Toyota Hiace vans with valid WOF.',
     keywords: ['Toyota Hiace', 'Hiace campervan', 'Toyota van NZ'],
   },
   'nissan-caravan': {
     name: 'Nissan Caravan',
-    title: 'Nissan Caravan Campervans for Sale in New Zealand',
-    description: 'Find Nissan Caravan campervans for sale in NZ. Spacious and affordable, the Caravan offers excellent value for backpackers. Browse self-contained Nissan vans with buy-back options.',
     keywords: ['Nissan Caravan', 'Nissan campervan', 'Caravan van NZ'],
   },
   'mazda-bongo': {
     name: 'Mazda Bongo',
-    title: 'Mazda Bongo Campervans for Sale in New Zealand',
-    description: 'Discover Mazda Bongo campervans for sale in New Zealand. Compact, fuel-efficient, and perfect for couples. Many Bongos feature pop-top roofs and self-contained certification.',
     keywords: ['Mazda Bongo', 'Bongo campervan', 'Mazda van NZ'],
   },
   'mitsubishi-delica': {
     name: 'Mitsubishi Delica',
-    title: 'Mitsubishi Delica Campervans for Sale in New Zealand',
-    description: 'Shop Mitsubishi Delica campervans in NZ. The Delica offers 4WD capability perfect for exploring New Zealand\'s rugged terrain. Find self-contained Delicas ready for adventure.',
     keywords: ['Mitsubishi Delica', 'Delica 4WD', 'Delica campervan NZ'],
   },
   'ford-transit': {
     name: 'Ford Transit',
-    title: 'Ford Transit Campervans for Sale in New Zealand',
-    description: 'Browse Ford Transit campervans for sale in New Zealand. Large, versatile, and perfect for full-time van life. Find converted Ford Transit vans with all amenities.',
     keywords: ['Ford Transit', 'Transit campervan', 'Ford van NZ'],
   },
   'mercedes-sprinter': {
     name: 'Mercedes Sprinter',
-    title: 'Mercedes Sprinter Campervans for Sale in New Zealand',
-    description: 'Find Mercedes Sprinter campervans in NZ. Premium quality, spacious interiors, and built to last. Browse luxury Sprinter conversions for the ultimate road trip.',
     keywords: ['Mercedes Sprinter', 'Sprinter campervan', 'Mercedes van NZ'],
   },
 };
 
 // Schema.org pour la page de marque
 const BrandSchema = ({ brand, vans, url }) => {
+  const language = new URL(url).searchParams.get('lang');
   const schema = {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": brand.title,
-    "description": brand.description,
-    "url": url,
-    "numberOfItems": vans.length,
-    "itemListElement": vans.slice(0, 12).map((van, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "item": {
-        "@type": "Car",
-        "name": van.title,
-        "url": `https://kiwivanmarket.com/van/${van.id}`,
-        "image": van.images?.[0] || van.imageUrl,
-        "offers": {
-          "@type": "Offer",
-          "price": van.price,
-          "priceCurrency": "NZD",
-          "availability": van.status === 'sold' ? "https://schema.org/SoldOut" : "https://schema.org/InStock"
-        },
-        "brand": {
-          "@type": "Brand",
-          "name": brand.name
-        },
-        "itemCondition": "https://schema.org/UsedCondition"
-      }
-    }))
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: brand.title,
+    url,
+    numberOfItems: vans.length,
+    itemListElement: vans.map((van, index) => ({
+      '@type': 'ListItem', position: index + 1,
+      name: van.title,
+      url: `https://kiwivanmarket.com/van/${van.id}${language ? '?lang=' + language : ''}`,
+    })),
   };
-
-  return (
-    <script type="application/ld+json">
-      {JSON.stringify(schema)}
-    </script>
-  );
+  return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
 };
 
 export default function BrandPage() {
@@ -107,10 +73,8 @@ export default function BrandPage() {
   const stats = priceStats(vans);
   const statsFmt = stats && { count: stats.count, min: nzd(stats.min), max: nzd(stats.max), avg: nzd(stats.avg) };
   const name = brandConfig?.name || '';
-  const seoTitle = lang === 'en' ? brandConfig?.title : S.brand.title(name).replace(' | Kiwi Van Market', '');
-  const seoDescription = lang === 'en'
-    ? brandConfig?.description
-    : (statsFmt ? S.brand.metaDesc(name, statsFmt, vans.length) : S.brand.metaDescNoStats(name));
+  const seoTitle = S.brand.title(name).replace(' | Kiwi Van Market', '');
+  const seoDescription = statsFmt ? S.brand.metaDesc(name, statsFmt, vans.length) : S.brand.metaDescNoStats(name);
   const brandFaqs = brandConfig ? S.brand.faqs(name, statsFmt) : [];
 
   useEffect(() => {
@@ -178,7 +142,7 @@ export default function BrandPage() {
         ]}
       />
 
-      {brandConfig && <BrandSchema brand={brandConfig} vans={vans} url={url} />}
+      {brandConfig && <BrandSchema brand={{ title: seoTitle }} vans={vans} url={lang === 'en' ? url : `${url}?lang=${lang}`} />}
 
       {/* Hero Section */}
       <div className="bg-emerald-600 text-white pt-24 pb-12 px-4 shadow-lg">
@@ -191,7 +155,7 @@ export default function BrandPage() {
             <span>{t('seo_pages.back')}</span>
           </button>
           <h1 className="text-4xl md:text-5xl font-black mb-4">
-            {brandConfig?.name}
+            {S.brand.h1(name)}
           </h1>
           <p className="text-emerald-100 text-lg max-w-2xl leading-relaxed">
             {seoDescription}

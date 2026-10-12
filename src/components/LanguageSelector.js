@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown } from 'lucide-react';
-import safeStorage from '../utils/safeStorage';
+import { useNavigate } from 'react-router-dom';
 
 export default function LanguageSelector() {
+    const navigate = useNavigate();
     const { i18n } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
 
@@ -15,9 +16,7 @@ export default function LanguageSelector() {
     ];
 
     const changeLanguage = (langCode) => {
-        i18n.changeLanguage(langCode);
         setIsOpen(false);
-        safeStorage.setItem('preferredLang', langCode);
 
         // Update URL param for SEO
         const url = new URL(window.location);
@@ -26,7 +25,7 @@ export default function LanguageSelector() {
         } else {
             url.searchParams.set('lang', langCode);
         }
-        window.history.pushState({}, '', url);
+        navigate(url.pathname + url.search + url.hash, { replace: true });
     };
 
     const currentLang = i18n.language || 'en';
