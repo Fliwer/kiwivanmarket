@@ -1,5 +1,12 @@
 {
     "auth_google": {
+        "continue": "Continuer avec Google",
+        "loading": "Connexion en cours…",
+        "account_hint": "Déjà inscrit ? Vous serez connecté. Sinon, votre compte gratuit sera créé automatiquement avec Google.",
+        "timeout": "La connexion prend trop de temps. Réessayez : aucun succès n’a été confirmé.",
+        "profile_error": "Google vous a authentifié, mais votre profil Kiwi Van Market n’a pas pu être enregistré. Réessayez pour terminer la création ou la mise à jour du profil.",
+        "redirect_error": "Le retour de connexion Google n’a pas abouti. Réessayez depuis ce navigateur.",
+        "session_changed": "Le compte connecté a changé pendant la connexion. Réessayez avec le compte souhaité.",
         "popup_closed": "La connexion Google a été interrompue avant confirmation. Réessayez en gardant la fenêtre Google ouverte. Si cela se reproduit, ouvrez Kiwi Van Market directement dans Chrome ou Safari, ou utilisez votre e-mail et votre mot de passe.",
         "popup_blocked": "Votre navigateur a bloqué la fenêtre Google. Autorisez les fenêtres pop-up pour ce site et réessayez, ou connectez-vous avec votre e-mail et votre mot de passe.",
         "popup_pending": "Une connexion Google est déjà en cours. Terminez-la dans la fenêtre ouverte avant de réessayer.",

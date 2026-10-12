@@ -18,7 +18,7 @@
 // Exclus du middleware : les fonctions api/, les internes Vercel, et tout
 // chemin avec une extension (assets, sitemaps, robots.txt, .html...).
 export const config = {
-  matcher: ['/((?!api/|_vercel/|_next/|.*\\..*).*)'],
+  matcher: ['/((?!api/|_vercel/|_next/|__/auth/|.*\\..*).*)'],
 };
 
 const BOT_RE = /(googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|gptbot|oai-searchbot|chatgpt|claudebot|claude-web|claude-searchbot|anthropic|perplexity|ccbot|amazonbot|bytespider|meta-externalagent|facebookexternalhit|twitterbot|linkedinbot|slackbot|whatsapp|telegrambot|discordbot|pinterestbot|google-extended)/i;

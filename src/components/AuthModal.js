@@ -3,9 +3,20 @@ import { X, Mail, Lock, User, AlertCircle, Loader2, CheckCircle } from 'lucide-r
 import { useAuth } from '../AuthContext';
 import { useTranslation } from 'react-i18next';
 
+const GOOGLE_ERROR_KEYS = {
+  'auth/popup-closed-by-user': 'popup_closed',
+  'auth/popup-blocked': 'popup_blocked',
+  'auth/cancelled-popup-request': 'popup_pending',
+  'auth/network-request-failed': 'network_error',
+  'auth/timeout': 'timeout',
+  'auth/profile-unavailable': 'profile_error',
+  'auth/redirect-incomplete': 'redirect_error',
+  'auth/session-changed': 'session_changed',
+};
+
 export default function AuthModal({ isOpen, onClose }) {
   const { t } = useTranslation();
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, resendVerificationEmail } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, resetPassword, resendVerificationEmail, googleSignInError, clearGoogleSignInError } = useAuth();
   const [mode, setMode] = useState('signin'); // 'signin' ou 'signup'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,23 +26,20 @@ export default function AuthModal({ isOpen, onClose }) {
   const [loading, setLoading] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const visibleError = error || (googleSignInError && t(`auth_google.${GOOGLE_ERROR_KEYS[googleSignInError] || 'google_error'}`));
 
   if (!isOpen) return null;
 
   const handleGoogleSignIn = async () => {
     setError('');
+    clearGoogleSignInError();
     setLoading(true);
     try {
-      await signInWithGoogle();
-      onClose();
+      const result = await signInWithGoogle();
+      if (!result?.redirecting) onClose();
     } catch (err) {
       console.error('Google Sign In Error:', err);
-      const errorKey = {
-        'auth/popup-closed-by-user': 'popup_closed',
-        'auth/popup-blocked': 'popup_blocked',
-        'auth/cancelled-popup-request': 'popup_pending',
-        'auth/network-request-failed': 'network_error',
-      }[err.code] || 'google_error';
+      const errorKey = GOOGLE_ERROR_KEYS[err.code] || 'google_error';
       setError(t(`auth_google.${errorKey}`));
     } finally {
       setLoading(false);
@@ -201,10 +209,10 @@ export default function AuthModal({ isOpen, onClose }) {
             </p>
           </div>
 
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+          {visibleError && (
+            <div role="alert" className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
               <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm text-red-700">{visibleError}</p>
             </div>
           )}
 
@@ -432,8 +440,9 @@ export default function AuthModal({ isOpen, onClose }) {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                {loading ? 'Please wait...' : 'Google'}
+                {loading ? t('auth_google.loading') : t('auth_google.continue')}
               </button>
+              <p className="mt-3 text-center text-xs text-gray-600">{t('auth_google.account_hint')}</p>
 
               <div className="mt-6 text-center">
                 <button

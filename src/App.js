@@ -525,7 +525,7 @@ function ScrollToTop() {
 }
 
 export default function KiwiVanMarket() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, googleSignInError } = useAuth();
   const { count: favoritesCount } = useFavorites();
   const { t } = useTranslation();
   const isAdmin = currentUser?.isAdmin === true;
@@ -533,6 +533,9 @@ export default function KiwiVanMarket() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavorites, setShowFavorites] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  useEffect(() => {
+    if (googleSignInError) setShowAuthModal(true);
+  }, [googleSignInError]);
   const [showMessagingPage, setShowMessagingPage] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);

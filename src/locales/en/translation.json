@@ -1,5 +1,12 @@
 {
     "auth_google": {
+        "continue": "Continue with Google",
+        "loading": "Signing in…",
+        "account_hint": "Already registered? You will be signed in. Otherwise, Google will automatically create your free account.",
+        "timeout": "Sign-in is taking too long. Please try again: success has not been confirmed.",
+        "profile_error": "Google authenticated you, but your Kiwi Van Market profile could not be saved. Try again to finish creating or updating your profile.",
+        "redirect_error": "Google sign-in did not complete on return. Try again from this browser.",
+        "session_changed": "The signed-in account changed during sign-in. Try again with the account you want to use.",
         "popup_closed": "Google sign-in ended before confirmation. Try again and keep the Google window open. If this happens again, open Kiwi Van Market directly in Chrome or Safari, or use your email and password.",
         "popup_blocked": "Your browser blocked the Google window. Allow pop-ups for this site and try again, or sign in with your email and password.",
         "popup_pending": "Google sign-in is already in progress. Finish in the open window before trying again.",

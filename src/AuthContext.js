@@ -1,8 +1,10 @@
 // Import des fonctions Firebase necessaires
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useRef } from 'react';
 import { 
   GoogleAuthProvider, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -12,7 +14,7 @@ import {
   updateProfile,
   getAdditionalUserInfo
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, runTransaction } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 // GA — event d'inscription (métrique funnel). Garde gtag pour ne jamais casser
@@ -25,6 +27,7 @@ const trackSignUp = (method) => {
 
 // Creation du contexte
 const AuthContext = createContext();
+const GOOGLE_REDIRECT_KEY = 'kiwivan.googleRedirect';
 
 // Hook personnalise pour utiliser le contexte facilement
 export const useAuth = () => {
@@ -39,38 +42,96 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const googleSignInRef = useRef(null);
+  const redirectResultRef = useRef(null);
+  const [googleSignInError, setGoogleSignInError] = useState(null);
+
+  const finishGoogleSignIn = async (result) => {
+    const user = result?.user;
+    if (!user) {
+      const error = new Error('Google did not return a user');
+      error.code = 'auth/redirect-incomplete';
+      throw error;
+    }
+    try {
+      await saveUserProfile(user);
+    } catch (cause) {
+      const error = new Error('Could not complete the account profile', { cause });
+      error.code = 'auth/profile-unavailable';
+      throw error;
+    }
+    if (auth.currentUser?.uid !== user.uid) {
+      const error = new Error('Google session changed before sign-in completed');
+      error.code = 'auth/session-changed';
+      throw error;
+    }
+    setCurrentUser((previous) => previous?.uid === user.uid ? previous : user);
+    try {
+      if (getAdditionalUserInfo(result)?.isNewUser) trackSignUp('google');
+    } catch (_) {}
+    return user;
+  };
 
   // Connexion avec Google (email automatiquement vérifié par Google)
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = () => {
+    if (googleSignInRef.current) return googleSignInRef.current;
+    setGoogleSignInError(null);
     const provider = new GoogleAuthProvider();
     
     // Forcer Google a TOUJOURS afficher le selecteur de compte
     provider.setCustomParameters({
       prompt: 'select_account'
     });
-    
-    try {
-      // Open directly from the click: awaiting signOut can lose the browser's
-      // user gesture. Firebase replaces the session after a successful sign-in;
-      // a closed or blocked popup must leave the existing session intact.
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
 
-      // GA — ne compter comme sign_up que les VRAIS nouveaux comptes Google
-      // (isNewUser), pas les reconnexions.
-      try {
-        if (getAdditionalUserInfo(result)?.isNewUser) trackSignUp('google');
-      } catch (_) {}
-
-      // Sauvegarder le profil en arriere-plan (ne pas attendre)
-      saveUserProfile(user).catch(err => console.error('Erreur sauvegarde profil:', err));
-      
-      return user;
-    } catch (error) {
-      console.error('Erreur connexion Google:', error);
-      throw error;
+    // Redirect only with same-origin helpers; cross-origin storage breaks this
+    // flow on modern mobile browsers. Desktop retains the account-picker popup.
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && auth.config.authDomain === window.location.hostname) {
+      sessionStorage.setItem(GOOGLE_REDIRECT_KEY, 'pending');
+      const redirect = signInWithRedirect(auth, provider)
+        .then(() => ({ redirecting: true }))
+        .catch((error) => { sessionStorage.removeItem(GOOGLE_REDIRECT_KEY); throw error; })
+        .finally(() => { googleSignInRef.current = null; });
+      googleSignInRef.current = redirect;
+      return redirect;
     }
+
+    // Firebase creates a Google account on first sign-in. Complete the app
+    // profile before reporting success, without replacing an existing profile.
+    let timeoutId;
+    const timeout = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => {
+        const error = new Error('Google sign-in timed out');
+        error.code = 'auth/timeout';
+        reject(error);
+      }, 90000);
+    });
+    const completeSignIn = signInWithPopup(auth, provider).then(finishGoogleSignIn);
+    const attempt = Promise.race([completeSignIn, timeout]).finally(() => {
+      clearTimeout(timeoutId);
+      googleSignInRef.current = null;
+    });
+    googleSignInRef.current = attempt;
+    return attempt;
   };
+
+  useEffect(() => {
+    try {
+      if (!sessionStorage.getItem(GOOGLE_REDIRECT_KEY)) return;
+    } catch (_) { return; }
+    let active = true;
+    if (!redirectResultRef.current) redirectResultRef.current = getRedirectResult(auth);
+    redirectResultRef.current.then(async (result) => {
+      if (!active) return;
+      await finishGoogleSignIn(result);
+    }).catch((error) => {
+      if (active) setGoogleSignInError(error.code || 'auth/redirect-incomplete');
+    }).finally(() => {
+      if (active) sessionStorage.removeItem(GOOGLE_REDIRECT_KEY);
+    });
+    return () => { active = false; };
+    // Process the redirect once, including React StrictMode's effect replay.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Connexion avec Email/Password
   // ✅ Bloque si l'email n'est pas vérifié
@@ -224,35 +285,31 @@ export const AuthProvider = ({ children }) => {
   const saveUserProfile = async (user, displayName = null) => {
     const userRef = doc(db, 'users', user.uid);
     
-    // Verifier si le profil existe deja
-    const userSnap = await getDoc(userRef);
-    
-    if (!userSnap.exists()) {
-      // Creer un nouveau profil
-      await setDoc(userRef, {
-        uid: user.uid,
-        email: user.email,
-        displayName: displayName || user.displayName || 'Anonymous',
-        photoURL: user.photoURL || null,
-        emailVerified: user.emailVerified || false,
-        createdAt: new Date(),
-        lastLogin: new Date()
-      });
-    } else {
-      // Mettre a jour la derniere connexion.
-      // ⚠️ Ne PAS écrire emailVerified ici : les règles Firestore
-      // (onlyUpdating) ne l'autorisent pas sur ce chemin → l'update entier
-      // était refusé en silence et lastLogin ne se mettait jamais à jour.
-      // La source de vérité pour emailVerified reste Firebase Auth (token).
-      await setDoc(userRef, {
-        lastLogin: new Date()
-      }, { merge: true });
-    }
+    await runTransaction(db, async (transaction) => {
+      const userSnap = await transaction.get(userRef);
+      if (!userSnap.exists()) {
+        transaction.set(userRef, {
+          uid: user.uid,
+          email: user.email,
+          displayName: (displayName || user.displayName || 'Anonymous').slice(0, 100),
+          photoURL: user.photoURL || null,
+          emailVerified: user.emailVerified || false,
+          createdAt: new Date(),
+          lastLogin: new Date()
+        });
+      } else {
+        // Preserve existing profile fields; verification remains sourced from Auth.
+        transaction.set(userRef, { lastLogin: new Date() }, { merge: true });
+      }
+    });
   };
 
   // Ecouter les changements d'etat d'authentification
   useEffect(() => {
+    let active = true;
+    let revision = 0;
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      const currentRevision = ++revision;
       if (user) {
         // ✅ OPTIMISATION: Connecter l'utilisateur IMMEDIATEMENT avec les infos Firebase Auth
         setCurrentUser(user);
@@ -266,21 +323,24 @@ export const AuthProvider = ({ children }) => {
 
           const userRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userRef);
+          if (!active || currentRevision !== revision || auth.currentUser?.uid !== user.uid) return;
 
           if (userSnap.exists()) {
             // Fusionner les donnees Firestore avec l'user Firebase Auth
-            setCurrentUser(prev => ({
+            setCurrentUser(prev => prev?.uid === user.uid ? ({
               ...prev,
               ...userSnap.data(),
+              uid: user.uid,
+              email: user.email,
               // ✅ S'assurer que emailVerified vient de Firebase Auth (source de vérité)
               emailVerified: user.emailVerified,
               isAdmin
-            }));
+            }) : prev);
           } else {
-            setCurrentUser(prev => ({
+            setCurrentUser(prev => prev?.uid === user.uid ? ({
               ...prev,
               isAdmin
-            }));
+            }) : prev);
           }
         } catch (error) {
           console.error('Erreur chargement profil Firestore:', error);
@@ -291,7 +351,7 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    return unsubscribe;
+    return () => { active = false; ++revision; unsubscribe(); };
   }, []);
 
   // ✅ Détection AUTOMATIQUE de la vérification e-mail.
@@ -345,6 +405,8 @@ export const AuthProvider = ({ children }) => {
     signUpWithEmail,
     logout,
     loading,
+    googleSignInError,
+    clearGoogleSignInError: () => setGoogleSignInError(null),
     // ✅ Nouvelles fonctions pour la vérification email
     resendVerificationEmail,
     refreshEmailVerification,
