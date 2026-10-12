@@ -1,6 +1,6 @@
 import market from './data/seo/market';
 import searchCopy from './data/seo/search-copy';
-import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Routes, Route, useNavigate, Link, useLocation, useNavigationType } from 'react-router-dom';
@@ -34,6 +34,7 @@ import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
 import GuidePreviewSection from './components/GuidePreviewSection';
 import HeroGuideCard from './components/HeroGuideCard';
+import HomeSeoSection from './components/HomeSeoSection';
 import BottomNavigation from './components/BottomNavigation';
 import { seoCopy, SEO_LANGS, priceStats, nzd } from './data/seo';
 import { LONG_TAIL_PAGE_LIST, indexableSlugs } from './constants/seoLongTailPages';
@@ -49,7 +50,6 @@ const BuybackCalculator = lazyWithReload(() => import('./components/BuybackCalcu
 const UserProfile = lazyWithReload(() => import('./components/UserProfile'));
 const AdminDashboard = lazyWithReload(() => import('./components/AdminDashboard'));
 const TermsOfServiceModal = lazyWithReload(() => import('./components/TermsOfService').then(m => ({ default: m.TermsOfServiceModal })));
-const HomeSeoSection = lazyWithReload(() => import('./components/HomeSeoSection'));
 const QuickMessageBox = lazyWithReload(() => import('./components/QuickMessageBox'));
 const VanPage = lazyWithReload(() => import('./components/VanPage'));
 const BrandPage = lazyWithReload(() => import('./components/BrandPage'));
@@ -510,7 +510,7 @@ function MainApp({
           </div>
         </section>
       </main>
-      <Suspense fallback={null}><HomeSeoSection vans={vans} /></Suspense>
+      <HomeSeoSection vans={vans} />
       {selectedVan && <VanDetailsModal van={selectedVan} />}
     </div>
   );

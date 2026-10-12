@@ -66,7 +66,9 @@ export const AuthProvider = ({ children }) => {
       error.code = 'auth/session-changed';
       throw error;
     }
-    setCurrentUser((previous) => previous?.uid === user.uid ? previous : user);
+    setCurrentUser((previous) => previous?.uid === user.uid
+      ? { ...previous, email: user.email, emailVerified: user.emailVerified }
+      : user);
     try {
       if (getAdditionalUserInfo(result)?.isNewUser) trackSignUp('google');
     } catch (_) {}
@@ -116,20 +118,31 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    // A browser Back action can restore the pre-login page from bfcache with
+    // its old pending promise. Reload once to process/cancel the stored return.
+    const resume = (event) => {
+      try {
+        if (event.persisted && sessionStorage.getItem(GOOGLE_REDIRECT_KEY)) window.location.reload();
+      } catch (_) {}
+    };
+    window.addEventListener('pageshow', resume);
+    let pending = false;
     try {
-      if (!sessionStorage.getItem(GOOGLE_REDIRECT_KEY)) return;
-    } catch (_) { return; }
+      pending = !!sessionStorage.getItem(GOOGLE_REDIRECT_KEY);
+    } catch (_) {}
     let active = true;
-    if (!redirectResultRef.current) redirectResultRef.current = getRedirectResult(auth);
-    redirectResultRef.current.then(async (result) => {
-      if (!active) return;
-      await finishGoogleSignIn(result);
-    }).catch((error) => {
-      if (active) setGoogleSignInError(error.code || 'auth/redirect-incomplete');
-    }).finally(() => {
-      if (active) sessionStorage.removeItem(GOOGLE_REDIRECT_KEY);
-    });
-    return () => { active = false; };
+    if (pending) {
+      if (!redirectResultRef.current) redirectResultRef.current = getRedirectResult(auth);
+      redirectResultRef.current.then(async (result) => {
+        if (!active) return;
+        await finishGoogleSignIn(result);
+      }).catch((error) => {
+        if (active) setGoogleSignInError(error.code || 'auth/redirect-incomplete');
+      }).finally(() => {
+        if (active) sessionStorage.removeItem(GOOGLE_REDIRECT_KEY);
+      });
+    }
+    return () => { active = false; window.removeEventListener('pageshow', resume); };
     // Process the redirect once, including React StrictMode's effect replay.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

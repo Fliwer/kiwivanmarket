@@ -1,7 +1,7 @@
 // Import des fonctions Firebase nécessaires
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { initializeFirestore } from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import { getFunctions } from 'firebase/functions';
 
@@ -20,7 +20,6 @@ const app = initializeApp(firebaseConfig);
 
 // Exporter les services
 export const auth = getAuth(app);
-// Avoid indefinitely buffered WebChannel responses on mobile/proxied networks.
-export const db = initializeFirestore(app, { experimentalForceLongPolling: true });
+export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const functions = getFunctions(app);

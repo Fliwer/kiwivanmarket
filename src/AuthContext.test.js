@@ -39,7 +39,7 @@ afterEach(() => { errorLog.mockRestore(); jest.useRealTimers(); });
 function SignInTest() {
   const { currentUser, signInWithGoogle, googleSignInError } = useAuth();
   const [outcome, setOutcome] = React.useState('idle');
-  return <><span>{currentUser?.uid || 'anonymous'}</span><span>{outcome}</span><span>{googleSignInError}</span>
+  return <><span>{currentUser?.uid || 'anonymous'}</span><span>{currentUser?.emailVerified ? 'verified' : 'unverified'}</span><span>{outcome}</span><span>{googleSignInError}</span>
     <button onClick={() => signInWithGoogle().then((result) => setOutcome(result.redirecting ? 'redirecting' : 'success')).catch((error) => setOutcome(error.code))}>Google</button></>;
 }
 
@@ -102,6 +102,19 @@ test('profile write failure is reported instead of silent success', async () => 
   expect(screen.queryByText('success')).toBeNull();
 });
 
+test('Google refreshes verification for an existing email account even when the UID stays the same', async () => {
+  const oldUser = { ...googleUser, emailVerified: false };
+  auth.currentUser = oldUser;
+  profileExists = true;
+  onAuthStateChanged.mockImplementation((_, callback) => { callback(oldUser); return () => {}; });
+  signInWithPopup.mockImplementation(async () => { auth.currentUser = googleUser; return { user: googleUser }; });
+  render(<AuthProvider><SignInTest /></AuthProvider>);
+  expect(screen.getByText('unverified')).toBeTruthy();
+  fireEvent.click(screen.getByText('Google'));
+  await waitFor(() => expect(screen.getByText('success')).toBeTruthy());
+  expect(screen.getByText('verified')).toBeTruthy();
+});
+
 test('a delayed profile from the previous account cannot overwrite the selected account or resurrect a logged-out session', async () => {
   let observer, resolveProfile;
   onAuthStateChanged.mockImplementation((_, callback) => { observer = callback; callback(null); return () => {}; });
@@ -149,4 +162,24 @@ test('an unresolved Google popup stops showing pending after the timeout', async
   fireEvent.click(screen.getByText('Google'));
   await act(async () => jest.advanceTimersByTime(90000));
   expect(screen.getByText('auth/timeout')).toBeTruthy();
+});
+
+test('browser Back from Google resets the cached pending page without a reload loop', () => {
+  const descriptor = Object.getOwnPropertyDescriptor(window, 'location');
+  const reload = jest.fn();
+  Object.defineProperty(window, 'location', { configurable: true, value: { hostname: 'localhost', reload } });
+  try {
+    render(<AuthProvider><SignInTest /></AuthProvider>);
+    sessionStorage.setItem('kiwivan.googleRedirect', 'pending');
+    const cachedReturn = new Event('pageshow');
+    Object.defineProperty(cachedReturn, 'persisted', { value: true });
+    fireEvent(window, cachedReturn);
+    expect(reload).toHaveBeenCalledTimes(1);
+    fireEvent(window, new Event('pageshow'));
+    sessionStorage.removeItem('kiwivan.googleRedirect');
+    fireEvent(window, cachedReturn);
+    expect(reload).toHaveBeenCalledTimes(1);
+  } finally {
+    Object.defineProperty(window, 'location', descriptor);
+  }
 });
