@@ -6,7 +6,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import VanCard from './VanCard';
 import AlertCta from './AlertCta';
-import { getLongTailSlugsForVan, LONG_TAIL_PAGE_MAP } from '../constants/seoLongTailPages';
+import searchCopy from '../data/seo/search-copy';
+import { getLongTailSlugsForVan, LONG_TAIL_PAGE_MAP, indexableSlugs } from '../constants/seoLongTailPages';
 
 // 12 et non 24 : sur mobile une page de 24 vans faisait ~22 000 px de haut,
 // soit ~27 ecrans a parcourir avant la pagination.
@@ -32,6 +33,7 @@ function getPageNumbers(current, total) {
 export default function Listings({
     loading,
     filteredVans,
+    allVans = filteredVans,
     searchTerm,
     setSearchTerm,
     sortBy,
@@ -40,7 +42,9 @@ export default function Listings({
     setShowAuthModal,
     onPageChange
 }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const lang = searchCopy.searchLang(i18n.language);
+    const keep = indexableSlugs(allVans);
     const { currentUser } = useAuth();
     const restoredScrollRef = useRef(false);
     const [currentPage, setCurrentPage] = useState(() => {
@@ -74,7 +78,7 @@ export default function Listings({
     };
     const autoLongTailSlugs = Array.from(
         new Set(filteredVans.slice(0, 24).flatMap((van) => getLongTailSlugsForVan(van)))
-    ).slice(0, 8);
+    ).filter((slug) => keep.has(slug)).slice(0, 8);
     const totalPages = Math.max(1, Math.ceil(filteredVans.length / PAGE_SIZE));
     const pageStart = (currentPage - 1) * PAGE_SIZE;
     const pageEnd = pageStart + PAGE_SIZE;
@@ -282,16 +286,16 @@ export default function Listings({
                     {autoLongTailSlugs.length > 0 && (
                         <div className="mt-10 bg-white border border-slate-100 rounded-2xl p-5">
                             <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">
-                                More precise searches from current listings
+                                {t('seo_market.byBudget')}
                             </h3>
                             <div className="flex flex-wrap gap-2">
                                 {autoLongTailSlugs.map((slug) => (
                                     <Link
                                         key={slug}
-                                        to={`/search/${slug}`}
+                                        to={`/search/${slug}${lang === 'fr' ? '?lang=fr' : ''}`}
                                         className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-sm hover:bg-slate-200 transition"
                                     >
-                                        {LONG_TAIL_PAGE_MAP[slug]?.heading || slug}
+                                        {searchCopy.localizePage(LONG_TAIL_PAGE_MAP[slug], lang).heading}
                                     </Link>
                                 ))}
                             </div>

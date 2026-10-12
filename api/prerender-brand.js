@@ -9,17 +9,10 @@ const {
   itemListLd, faqLd, breadcrumbLd, htmlShell, send404, sendHTML, send503,
 } = require('./_lib/util');
 const { pickLang, pageMeta } = require('./_lib/i18n');
-const COPY = require('../src/data/seo/copy');
+const COPY = require('../src/data/seo/copy.cjs');
 
 // Parité stricte avec BRANDS_CONFIG de src/components/BrandPage.js
-const BRANDS = {
-  'toyota-hiace': { name: 'Toyota Hiace', searchTerms: ['toyota', 'hiace'] },
-  'nissan-caravan': { name: 'Nissan Caravan', searchTerms: ['nissan', 'caravan'] },
-  'mazda-bongo': { name: 'Mazda Bongo', searchTerms: ['mazda', 'bongo'] },
-  'mitsubishi-delica': { name: 'Mitsubishi Delica', searchTerms: ['mitsubishi', 'delica'] },
-  'ford-transit': { name: 'Ford Transit', searchTerms: ['ford', 'transit'] },
-  'mercedes-sprinter': { name: 'Mercedes Sprinter', searchTerms: ['mercedes', 'sprinter'] },
-};
+const { BRANDS, vansForTaxonomy } = require('./_lib/taxonomy');
 
 module.exports = async function handler(req, res) {
   const slug = String(req.query.slug || '').toLowerCase();
@@ -33,10 +26,7 @@ module.exports = async function handler(req, res) {
   let vans;
   try {
     const all = await fetchAllVans();
-    vans = all.filter((v) => {
-      const t = `${v.title || ''} ${v.description || ''}`.toLowerCase();
-      return brand.searchTerms.some((term) => t.includes(term));
-    });
+    vans = vansForTaxonomy(all, 'brands', slug);
   } catch (e) {
     return send503(res);
   }

@@ -114,7 +114,7 @@ module.exports = async function handler(req, res) {
   // ── JSON-LD : parité avec VanSeo.jsx ──────────────────────────────────────
   const vehicleLd = {
     '@context': 'https://schema.org',
-    '@type': 'Vehicle',
+    '@type': ['Vehicle', 'Product'],
     '@id': url,
     name: van.title || 'Campervan',
     description: String(van.description || metaDesc).slice(0, 5000),
@@ -131,6 +131,7 @@ module.exports = async function handler(req, res) {
       '@type': 'Offer',
       price: van.price ? String(van.price) : undefined,
       priceCurrency: 'NZD',
+      url: url,
       availability: sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/UsedCondition',
       seller: { '@type': 'Person', name: (van.seller && van.seller.name) || 'Private Seller' },

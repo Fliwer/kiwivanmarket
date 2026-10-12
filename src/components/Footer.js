@@ -91,7 +91,8 @@ export function FAQModal({ isOpen, onClose }) {
 
 // Footer principal avec disclaimer
 export default function Footer({ onOpenFAQ, onOpenTerms }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const localHref = (path) => (i18n.language || '').startsWith('fr') ? `${path}?lang=fr` : path;
 
   return (
     <footer className="bg-gray-900 text-white mt-16">
@@ -100,8 +101,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
         <div className="max-w-7xl mx-auto flex items-start gap-3">
           <AlertTriangle size={20} className="flex-shrink-0 mt-0.5" />
           <p className="text-sm">
-            <strong>Disclaimer:</strong> Kiwi Van Market is a listing platform only. We do not verify listings, guarantee vehicle conditions, or handle transactions.
-            All sales are between buyers and sellers directly. Always inspect vehicles in person before purchasing.
+            <strong>{t('seo_footer.noticeLabel')}</strong> {t('seo_footer.notice')}
           </p>
         </div>
       </div>
@@ -126,7 +126,7 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
               </div>
               <div>
                 <span className="text-xl font-bold block">Kiwi Van Market</span>
-                <span className="text-emerald-400 text-sm">NZ's #1 Campervan Marketplace</span>
+                <span className="text-emerald-400 text-sm">{t('seo_footer.tagline')}</span>
               </div>
             </div>
             <p className="text-gray-300 text-sm mb-6 leading-relaxed">
@@ -139,27 +139,27 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
             <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">{t('footer.quick_links')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <button onClick={onOpenFAQ} className="text-gray-300 hover:text-white transition">
-                  FAQ & How It Works
-                </button>
+                <Link to={localHref('/faq')} className="text-gray-300 hover:text-white transition">
+                  {t('seo_footer.faq')}
+                </Link>
               </li>
               <li>
                 <button onClick={onOpenTerms} className="text-gray-300 hover:text-white transition">
-                  Terms of Use
+                  {t('seo_footer.terms')}
                 </button>
               </li>
               <li>
-                <Link to="/buyback-calculator" className="text-gray-300 hover:text-white transition">
-                  Resale estimate
+                <Link to={localHref('/buyback-calculator')} className="text-gray-300 hover:text-white transition">
+                  {t('seo_footer.resale')}
                 </Link>
               </li>
               <li>
-                <Link to="/campervan-prices-nz" className="text-gray-300 hover:text-white transition">
-                  Campervan prices NZ
+                <Link to={localHref('/campervan-prices-nz')} className="text-gray-300 hover:text-white transition">
+                  {t('seo_footer.prices')}
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-gray-300 hover:text-white transition">
+                <Link to={localHref('/contact')} className="text-gray-300 hover:text-white transition">
                   {t('footer.contact')}
                 </Link>
               </li>
@@ -167,23 +167,23 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
             <h3 className="font-bold mb-3 mt-6 text-emerald-400 text-sm uppercase tracking-wider">{t('header.guides')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/guides" className="text-white font-semibold hover:text-emerald-400 transition flex items-center gap-2">
-                  <BookOpen size={16} /> Browse All Guides
+                <Link to={localHref('/guides')} className="text-white font-semibold hover:text-emerald-400 transition flex items-center gap-2">
+                  <BookOpen size={16} /> {t('seo_footer.guides')}
                 </Link>
               </li>
               <li>
-                <Link to="/guide/buying-campervan-nz" className="text-gray-300 hover:text-white transition">
-                  Buying a Campervan
+                <Link to={localHref('/guide/buying-campervan-nz')} className="text-gray-300 hover:text-white transition">
+                  {t('seo_footer.buy')}
                 </Link>
               </li>
               <li>
-                <Link to="/guide/selling-campervan-nz" className="text-gray-400 hover:text-white transition">
-                  Selling Your Van
+                <Link to={localHref('/guide/selling-campervan-nz')} className="text-gray-400 hover:text-white transition">
+                  {t('seo_footer.sell')}
                 </Link>
               </li>
               <li>
-                <Link to="/guide/freedom-camping-nz" className="text-gray-400 hover:text-white transition">
-                  Freedom Camping
+                <Link to={localHref('/guide/freedom-camping-nz')} className="text-gray-400 hover:text-white transition">
+                  {t('seo_footer.camp')}
                 </Link>
               </li>
             </ul>
@@ -191,57 +191,57 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
 
           {/* Safety Tips */}
           <div>
-            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Safety Tips</h3>
+            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">{t('seo_footer.safety')}</h3>
             <ul className="space-y-2 text-sm text-gray-300">
               <li className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-1">✓</span>
-                Always meet sellers in person
+                {t('seo_footer.meet')}
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-1">✓</span>
-                Inspect vehicles before buying
+                {t('seo_footer.inspect')}
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-1">✓</span>
-                Verify WOF & REGO documents
+                {t('seo_footer.documents')}
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-emerald-500 mt-1">✓</span>
-                Never pay without seeing the van
+                {t('seo_footer.payment')}
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-amber-500 mt-1">⚠</span>
-                Report suspicious listings
+                {t('seo_footer.report')}
               </li>
             </ul>
           </div>
 
           {/* Popular Brands */}
           <div>
-            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Popular Brands</h3>
+            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">{t('seo_footer.brands')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/brand/toyota-hiace" className="text-gray-300 hover:text-white transition">
+                <Link to={localHref('/brand/toyota-hiace')} className="text-gray-300 hover:text-white transition">
                   Toyota Hiace
                 </Link>
               </li>
               <li>
-                <Link to="/brand/nissan-caravan" className="text-gray-400 hover:text-white transition">
+                <Link to={localHref('/brand/nissan-caravan')} className="text-gray-400 hover:text-white transition">
                   Nissan Caravan
                 </Link>
               </li>
               <li>
-                <Link to="/brand/mitsubishi-delica" className="text-gray-400 hover:text-white transition">
+                <Link to={localHref('/brand/mitsubishi-delica')} className="text-gray-400 hover:text-white transition">
                   Mitsubishi Delica
                 </Link>
               </li>
               <li>
-                <Link to="/brand/mazda-bongo" className="text-gray-400 hover:text-white transition">
+                <Link to={localHref('/brand/mazda-bongo')} className="text-gray-400 hover:text-white transition">
                   Mazda Bongo
                 </Link>
               </li>
               <li>
-                <Link to="/brand/ford-transit" className="text-gray-400 hover:text-white transition">
+                <Link to={localHref('/brand/ford-transit')} className="text-gray-400 hover:text-white transition">
                   Ford Transit
                 </Link>
               </li>
@@ -250,30 +250,30 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
 
           {/* Popular Locations */}
           <div>
-            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">Popular Locations</h3>
+            <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">{t('seo_footer.cities')}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/location/auckland" className="text-gray-300 hover:text-white transition">
+                <Link to={localHref('/location/auckland')} className="text-gray-300 hover:text-white transition">
                   Auckland
                 </Link>
               </li>
               <li>
-                <Link to="/location/wellington" className="text-gray-400 hover:text-white transition">
+                <Link to={localHref('/location/wellington')} className="text-gray-400 hover:text-white transition">
                   Wellington
                 </Link>
               </li>
               <li>
-                <Link to="/location/christchurch" className="text-gray-400 hover:text-white transition">
+                <Link to={localHref('/location/christchurch')} className="text-gray-400 hover:text-white transition">
                   Christchurch
                 </Link>
               </li>
               <li>
-                <Link to="/location/queenstown" className="text-gray-400 hover:text-white transition">
+                <Link to={localHref('/location/queenstown')} className="text-gray-400 hover:text-white transition">
                   Queenstown
                 </Link>
               </li>
               <li>
-                <Link to="/location/rotorua" className="text-gray-400 hover:text-white transition">
+                <Link to={localHref('/location/rotorua')} className="text-gray-400 hover:text-white transition">
                   Rotorua
                 </Link>
               </li>

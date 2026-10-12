@@ -2,13 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://kiwivanmarket.com/</loc>
-    <lastmod>2026-07-22</lastmod>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kiwivanmarket.com/?lang=fr</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-10-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -36,4 +36,14 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url><loc>https://kiwivanmarket.com/faq</loc></url>
+  <url><loc>https://kiwivanmarket.com/faq?lang=fr</loc></url>
+  <url><loc>https://kiwivanmarket.com/contact</loc></url>
+  <url><loc>https://kiwivanmarket.com/contact?lang=fr</loc></url>
+  <url><loc>https://kiwivanmarket.com/why</loc></url>
+  <url><loc>https://kiwivanmarket.com/why?lang=fr</loc></url>
+  <url><loc>https://kiwivanmarket.com/campervan-prices-nz</loc></url>
+  <url><loc>https://kiwivanmarket.com/campervan-prices-nz?lang=fr</loc></url>
+  <url><loc>https://kiwivanmarket.com/buyback-calculator</loc></url>
+  <url><loc>https://kiwivanmarket.com/buyback-calculator?lang=fr</loc></url>
 </urlset>

@@ -9,7 +9,8 @@
 // lastmod qui bouge à chaque requête finit ignoré par Google.
 // ============================================================================
 
-const { ORIGIN, fetchAllVans, latestUpdate } = require('./_lib/util');
+const { fetchAllVans, latestUpdate, esc } = require('./_lib/util');
+const { langUrl, SUPPORTED } = require('./_lib/i18n');
 const { LONG_TAIL_PAGE_LIST, indexableSlugs, vansForPage } = require('./_lib/long-tail');
 
 module.exports = async function handler(req, res) {
@@ -24,12 +25,12 @@ module.exports = async function handler(req, res) {
   const keep = indexableSlugs(vans);
   const urls = LONG_TAIL_PAGE_LIST
     .filter((page) => keep.has(page.slug))
-    .map((page) => `  <url>
-    <loc>${ORIGIN}/search/${page.slug}</loc>
+    .flatMap((page) => SUPPORTED.map((lang) => `  <url>
+    <loc>${esc(langUrl(`/search/${page.slug}`, lang))}</loc>
     <lastmod>${latestUpdate(vansForPage(vans, page))}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
-  </url>`);
+  </url>`));
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

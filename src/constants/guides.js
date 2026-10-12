@@ -43,7 +43,7 @@ export const GUIDES = {
                                     ],
                                     [
                                         "Self-contained",
-                                        "Certified with toilet + water tanks (green or blue sticker)",
+                                        "Certified under the current green-warrant system; verify the vehicle certificate",
                                         "Required for most freedom camping"
                                     ],
                                     [
@@ -334,7 +334,7 @@ export const GUIDES = {
                             },
                             {
                                 "title": "What the sticker actually means",
-                                "text": "A certified self-contained van carries fresh water, a grey-water tank and a toilet. Since the rule change, new certifications (green sticker) require a fixed toilet — older blue-sticker certifications are being phased out as they expire. The certificate belongs to the vehicle and has an expiry date."
+                                "text": "A certified self-contained van has compliant water systems and a fixed toilet. The blue-warrant transition ended on 7 June 2026. Check the valid green warrant and vehicle certificate, including the registration plate and expiry date. Camping permission still depends on local restrictions."
                             },
                             {
                                 "title": "Why it's worth real money",
@@ -1079,7 +1079,7 @@ export const GUIDES = {
                 warnings: [
                     'NEVER buy a van without a pre-purchase inspection from an independent mechanic ($140-180)',
                     'Check the VIN on CarJam.co.nz to ensure there is no money owing (debt) on the vehicle',
-                    'Verify the Self-Containment blue card matches the van\'s plate and is current',
+                    'Verify the valid self-containment green warrant matches the van\'s plate and is current',
                 ],
                 cta: {
                     title: 'Found a Good One?',
@@ -1322,7 +1322,7 @@ export const GUIDES = {
                                     ],
                                     [
                                         "Self-contained",
-                                        "Certifié avec toilettes + réservoirs d'eau (macaron vert ou bleu)",
+                                        "Certifié selon le système green warrant actuel ; vérifiez le certificat du véhicule",
                                         "Exigé pour la plupart du freedom camping"
                                     ],
                                     [
@@ -1613,7 +1613,7 @@ export const GUIDES = {
                             },
                             {
                                 "title": "Ce que le macaron veut vraiment dire",
-                                "text": "Un van certifié self-contained embarque de l'eau propre, un réservoir d'eaux grises et des toilettes. Depuis le changement de règle, les nouvelles certifications (macaron vert) exigent des toilettes fixes — les anciennes certifications à macaron bleu disparaissent au fil de leur expiration. Le certificat appartient au véhicule et a une date d'échéance."
+                                "text": "Un van certifié self-contained possède des systèmes d’eau conformes et des toilettes fixes. La transition des blue warrants a pris fin le 7 juin 2026. Vérifiez le green warrant valide et le certificat du véhicule, notamment la plaque et la date d’expiration. Le camping reste soumis aux restrictions locales."
                             },
                             {
                                 "title": "Pourquoi ça vaut de l'argent réel",
@@ -2358,7 +2358,7 @@ export const GUIDES = {
                 warnings: [
                     'N\'achetez JAMAIS sans un check mécanique indépendant ($140-180)',
                     'Vérifiez le numéro VIN sur CarJam.co.nz pour confirmer l\'absence de dettes',
-                    'Vérifiez que la carte bleue self-contained correspond bien à la plaque du van',
+                    'Vérifiez que le green warrant self-contained est valide et correspond à la plaque du van',
                 ],
                 cta: {
                     title: 'Prêt pour l\'Inspection ?',

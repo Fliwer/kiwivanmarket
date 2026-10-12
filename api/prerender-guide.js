@@ -91,6 +91,8 @@ module.exports = async function handler(req, res) {
     '@type': 'Article',
     '@id': `${canonical}#article`,
     headline: guide.title,
+    datePublished: guide.datePublished || undefined,
+    dateModified: guide.dateModified || undefined,
     description: guide.description,
     image: guide.heroImage ? [absUrl(guide.heroImage)] : undefined,
     url: canonical,

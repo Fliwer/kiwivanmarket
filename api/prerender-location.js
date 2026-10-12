@@ -9,13 +9,9 @@ const {
   itemListLd, faqLd, breadcrumbLd, htmlShell, send404, sendHTML, send503,
 } = require('./_lib/util');
 const { pickLang, pageMeta } = require('./_lib/i18n');
-const COPY = require('../src/data/seo/copy');
+const COPY = require('../src/data/seo/copy.cjs');
 
-const LOCATIONS = {
-  auckland: 'Auckland', christchurch: 'Christchurch', wellington: 'Wellington',
-  queenstown: 'Queenstown', rotorua: 'Rotorua', dunedin: 'Dunedin',
-  hamilton: 'Hamilton', tauranga: 'Tauranga', nelson: 'Nelson',
-};
+const { LOCATIONS, vansForTaxonomy } = require('./_lib/taxonomy');
 
 module.exports = async function handler(req, res) {
   const slug = String(req.query.slug || '').toLowerCase();
@@ -29,12 +25,7 @@ module.exports = async function handler(req, res) {
   let vans;
   try {
     const all = await fetchAllVans();
-    const term = slug;
-    vans = all.filter((v) => {
-      const vanLocation = (v.location || '').toLowerCase();
-      const vanRegion = (v.region || '').toLowerCase();
-      return vanLocation.includes(term) || vanRegion.includes(term);
-    });
+    vans = vansForTaxonomy(all, 'locations', slug);
   } catch (e) {
     return send503(res);
   }

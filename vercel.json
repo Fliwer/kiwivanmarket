@@ -11,6 +11,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/sitemap-brands.xml", "destination": "/api/sitemap-taxonomy?kind=brands" },
+    { "source": "/sitemap-locations.xml", "destination": "/api/sitemap-taxonomy?kind=locations" },
     { "source": "/reservation-success", "destination": "/index.html" },
     { "source": "/reservation-cancelled", "destination": "/index.html" },
     {

@@ -92,6 +92,7 @@ export default function SeoTopicFaqPage() {
     <div className="min-h-screen bg-slate-50">
       <SeoHead
         title={title}
+        noindex={true}
         description={description}
         faqs={faqs}
         breadcrumbs={[

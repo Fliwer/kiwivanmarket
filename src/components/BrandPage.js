@@ -176,6 +176,7 @@ export default function BrandPage() {
         title={seoTitle}
         description={seoDescription}
         keywords={brandConfig?.keywords}
+        noindex={!loading && !vans.length}
         alternateLangs={SEO_LANGS}
         faqs={brandFaqs}
         breadcrumbs={[

@@ -13,20 +13,14 @@ const {
   itemListLd, faqLd, htmlShell, sendHTML, send503,
 } = require('./_lib/util');
 const { pickLang, pageMeta } = require('./_lib/i18n');
-const COPY = require('../src/data/seo/copy');
+const COPY = require('../src/data/seo/copy.cjs');
+const { COPY: MARKET, SOURCES } = require('../src/data/seo/market.cjs');
+const { localizePage } = require('../src/data/seo/search-copy.cjs');
 const GUIDES = require('./_lib/guides-data.json');
 const { LONG_TAIL_PAGE_LIST, indexableSlugs } = require('./_lib/long-tail');
 
-const BRANDS = {
-  'toyota-hiace': 'Toyota Hiace', 'nissan-caravan': 'Nissan Caravan',
-  'mazda-bongo': 'Mazda Bongo', 'mitsubishi-delica': 'Mitsubishi Delica',
-  'ford-transit': 'Ford Transit', 'mercedes-sprinter': 'Mercedes Sprinter',
-};
-const LOCATIONS = {
-  auckland: 'Auckland', christchurch: 'Christchurch', wellington: 'Wellington',
-  queenstown: 'Queenstown', rotorua: 'Rotorua', dunedin: 'Dunedin',
-  hamilton: 'Hamilton', tauranga: 'Tauranga',
-};
+const { BRANDS: BRAND_CONFIG, LOCATIONS } = require('./_lib/taxonomy');
+const BRANDS = Object.fromEntries(Object.entries(BRAND_CONFIG).map(([slug, brand]) => [slug, brand.name]));
 
 module.exports = async function handler(req, res) {
   const lang = pickLang(req);
@@ -48,7 +42,8 @@ module.exports = async function handler(req, res) {
 
   // Pages budget qui méritent l'index (même barrière que le sitemap).
   const keep = indexableSlugs(vans);
-  const budgetPages = LONG_TAIL_PAGE_LIST.filter((p) => keep.has(p.slug));
+  const budgetPages = LONG_TAIL_PAGE_LIST.filter((p) => keep.has(p.slug)).map((p) => localizePage(p, lang));
+  const M = MARKET[lang];
 
   const stats = priceStats(vans);
   // Montants formatés une fois, pour les gabarits de textes.
@@ -57,7 +52,7 @@ module.exports = async function handler(req, res) {
 
   const title = T.title;
   const metaDesc = S ? T.metaDesc(S) : T.metaDescNoStats;
-  const faqs = T.faqs(S);
+  const faqs = [...T.faqs(S), ...M.faqs];
 
   const organizationLd = {
     '@context': 'https://schema.org',
@@ -68,6 +63,7 @@ module.exports = async function handler(req, res) {
     logo: { '@type': 'ImageObject', url: `${ORIGIN}/kiwi-van-logo-128.webp` },
     description: T.orgDesc,
     areaServed: { '@type': 'Country', name: 'New Zealand' },
+    contactPoint: { '@type': 'ContactPoint', email: 'kiwivanmarket.contact@gmail.com', contactType: 'customer service', availableLanguage: ['English', 'French'] },
     sameAs: ['https://www.facebook.com/kiwivanmarket'],
   };
   const websiteLd = {
@@ -95,7 +91,7 @@ ${Object.entries(LOCATIONS).map(([s, n]) => `<li><a href="${langUrl('/location/'
 </ul>
 ${budgetPages.length ? `<h2>${T.byBudget}</h2>
 <ul>
-${budgetPages.map((p) => `<li><a href="${ORIGIN}/search/${esc(p.slug)}">${esc(p.heading)}</a></li>`).join('\n')}
+${budgetPages.map((p) => `<li><a href="${langUrl(`/search/${p.slug}`, lang)}">${esc(p.heading)}</a></li>`).join('\n')}
 </ul>` : ''}
 <h2>${T.guides}</h2>
 <ul>
@@ -108,7 +104,16 @@ ${Object.entries(guides).map(([s, g]) => `<li><a href="${langUrl('/guide/' + s, 
 <li><a href="${langUrl('/why', lang)}">${T.whyLink}</a></li>
 </ul>
 <h2>${C.faqTitle}</h2>
-${faqs.map(({ q, a }) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('\n')}`;
+${faqs.map(({ q, a }) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('\n')}
+<h2>${esc(M.title)}</h2><p>${esc(M.intro)}</p>
+<h2>${esc(M.buyersTitle)}</h2>
+${M.buyers.map((item) => `<h3>${esc(item.title)}</h3><p>${esc(item.text)}</p>`).join('\n')}
+<h2>${esc(M.sellersTitle)}</h2>
+${M.sellers.map((item) => `<h3>${esc(item.title)}</h3><p>${esc(item.text)}</p>`).join('\n')}
+<h2>${esc(M.methodTitle)}</h2><p>${esc(M.method)}</p>
+<h2>${esc(M.sourcesTitle)}</h2>
+<ul>${SOURCES.map((source) => `<li><a href="${esc(source.url)}">${esc(source.name)}</a></li>`).join('\n')}</ul>
+<p>${esc(M.reviewed)}</p>`;
 
   const html = htmlShell({
     title,

@@ -16,7 +16,7 @@ const {
   faqLd, breadcrumbLd, htmlShell, send404, sendHTML,
 } = require('./_lib/util');
 const { pickLang, pageMeta, langUrl: absLangUrl } = require('./_lib/i18n');
-const COPY = require('../src/data/seo/copy');
+const COPY = require('../src/data/seo/copy.cjs');
 
 const GUIDES = require('./_lib/guides-data.json');
 const DATA = {

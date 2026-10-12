@@ -31,8 +31,8 @@ const GuideSchema = ({ guide, url }) => {
       name: 'Kiwi Van Market',
       logo: { '@type': 'ImageObject', url: 'https://kiwivanmarket.com/kiwi-van-logo-128.webp' },
     },
-    datePublished: '2025-01-01',
-    dateModified: new Date().toISOString().split('T')[0],
+    datePublished: guide.datePublished || undefined,
+    dateModified: guide.dateModified || undefined,
   };
   return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
 };
@@ -254,7 +254,7 @@ export default function GuidePage() {
   }
 
   const { content } = guide;
-  const updatedLabel = new Date().toLocaleDateString(tri('fr-FR', 'es-ES', 'en-NZ'), { month: 'long', year: 'numeric' });
+  const updatedLabel = guide.dateModified ? new Date(guide.dateModified).toLocaleDateString(tri('fr-FR', 'es-ES', 'en-NZ'), { month: 'long', year: 'numeric' }) : null;
 
   const guideFaqs = (content.sections || [])
     .flatMap((s) => s.items || [])
@@ -319,7 +319,7 @@ export default function GuidePage() {
                 <Clock size={14} />
                 {t('guides.hub.min_read', { count: readingTime })}
               </span>
-              <span className="text-slate-400">{tri('Mis à jour', 'Actualizado', 'Updated')} {updatedLabel}</span>
+              {updatedLabel && <span className="text-slate-400">{tri('Mis à jour', 'Actualizado', 'Updated')} {updatedLabel}</span>}
             </div>
 
             <img

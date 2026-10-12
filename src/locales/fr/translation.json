@@ -110,7 +110,7 @@
     },
     "footer": {
         "about": "À propos de Kiwi Van Market",
-        "about_desc": "Le n°1 de l'achat/vente de vans en Nouvelle-Zélande. Créé par des voyageurs, pour les voyageurs.",
+        "about_desc": "Une plateforme dédiée à l’achat et à la vente de vans en Nouvelle-Zélande. Créée par des voyageurs, pour les voyageurs.",
         "quick_links": "Liens Rapides",
         "legal": "Légal",
         "contact": "Contactez-nous",
@@ -408,5 +408,118 @@
         "err_email": "Entrez un email valide.",
         "err_max": "Vous avez déjà 5 alertes actives.",
         "err_generic": "Une erreur est survenue. Réessayez."
-    }
+    },
+
+  "seo_search": {
+    "budgetTitle": "Vans à {{city}} à moins de {{budget}} NZD",
+    "budgetHeading": "Acheter un van à {{city}} à moins de {{budget}} NZD",
+    "budgetDesc": "Comparez les vans à vendre à {{city}} à moins de {{budget}} NZD. Vérifiez WOF, rego, équipements et informations du vendeur avant une inspection.",
+    "brandTitle": "{{brand}} à {{city}} à moins de {{budget}} NZD",
+    "brandHeading": "Vans {{brand}} à {{city}} à moins de {{budget}} NZD",
+    "brandDesc": "Trouvez un van {{brand}} à {{city}} à moins de {{budget}} NZD. Comparez prix demandés, historique d’entretien et aménagement, puis contactez le vendeur.",
+    "scTitle": "Vans self-contained à {{city}}, Nouvelle-Zélande",
+    "scHeading": "Vans self-contained à {{city}}",
+    "scDesc": "Comparez les vans annoncés self-contained à {{city}}. Vérifiez le green warrant valide et les règles locales de camping avant l’achat.",
+    "allCity": "Tous les vans à {{city}}",
+    "brandLink": "Toutes les annonces {{brand}}",
+    "buyerGuide": "Lire le guide d’achat",
+    "faqTitle": "Questions fréquentes",
+    "related": "Autres recherches à {{city}}",
+    "loading": "Chargement des annonces…",
+    "emptyTitle": "Aucun van correspondant pour le moment",
+    "emptyText": "Consultez les annonces de la ville ou créez une alerte pour les nouveaux vans dans votre budget.",
+    "allListings": "Voir tous les vans",
+    "notFound": "Page introuvable",
+    "backHome": "Retour à l’accueil",
+    "home": "Accueil",
+    "stats": "{{count}} annonces, prix demandés de {{min}} à {{max}} (moyenne {{avg}}).",
+    "safetyQuestion": "Comment acheter un van à {{city}} en sécurité ?",
+    "safetyAnswer": "Comparez les dates du WOF et de la rego, les factures d’entretien et les informations du vendeur. Voyez le véhicule, organisez une inspection indépendante et convenez d’une vente écrite avant de payer.",
+    "budgetQuestion": "Que couvre ce budget à {{city}} ?",
+    "budgetAnswer": "Cette page compare les prix affichés des véhicules. Prévoyez séparément inspection, assurance, entretien, road user charges si applicables et frais de camping.",
+    "scQuestion": "Que vérifier pour un van self-contained ?",
+    "scAnswer": "Vérifiez le green warrant valide et le certificat du véhicule plutôt que le seul badge de l’annonce. La transition des blue warrants a pris fin le 7 juin 2026. La certification ne permet pas de camper partout : vérifiez les restrictions locales."
+  },
+  "seo_market": {
+    "title": "Acheter et vendre un van en Nouvelle-Zélande",
+    "intro": "Kiwi Van Market met en relation acheteurs et vendeurs de vans en Nouvelle-Zélande. Comparez prix affichés, villes, équipements et informations fournies par les vendeurs ; contactez directement les propriétaires et inspectez le véhicule avant de convenir d’un achat.",
+    "byLocation": "Trouver un van par ville",
+    "byBrand": "Comparer les modèles de vans",
+    "byBudget": "Comparer les vans dans votre budget",
+    "buyersTitle": "Acheter un van : les vérifications essentielles",
+    "sellersTitle": "Vendre un van : préparer une annonce transparente",
+    "sourcesTitle": "Consulter les sources officielles",
+    "reviewed": "Informations vérifiées le 12 octobre 2026",
+    "methodTitle": "Comment lire nos données de prix",
+    "method": "Les prix sont les montants demandés dans les annonces Kiwi Van Market, en NZD. Ce ne sont ni des prix de ventes conclues ni une estimation indépendante de l’ensemble du marché néo-zélandais. Modèle, entretien, kilométrage, qualité de l’aménagement et ville influencent la valeur. Les badges déclarés par les vendeurs constituent un point de départ pour vos vérifications.",
+    "buyLink": "Guide complet pour acheter un van",
+    "sellLink": "Publier votre annonce de van gratuite",
+    "inspectLink": "Checklist d’inspection mécanique",
+    "pricesLink": "Prix actuellement affichés des vans",
+    "faqTitle": "Réponses avant d’acheter ou de vendre",
+    "buyers": [
+      {
+        "title": "Inspecter la mécanique et l’aménagement",
+        "text": "Commencez moteur froid : recherchez fuites, état du liquide de refroidissement, corrosion du châssis et du pare-brise, usure des pneus et factures d’entretien. Testez boîte de vitesses et freins sur route. Contrôlez ventilation, câblage des batteries, installation gaz et infiltrations ; une inspection indépendante aide à évaluer les défauts invisibles dans une annonce."
+      },
+      {
+        "title": "Vérifier séparément WOF et rego",
+        "text": "Le WOF concerne la sécurité du véhicule au moment du contrôle ; la rego correspond à sa licence de circulation. Demandez les dates et comparez la plaque avec le véhicule. Un WOF valide ne remplace pas une inspection mécanique et ne prouve pas que le vendeur est propriétaire."
+      },
+      {
+        "title": "Vérifier la certification self-contained",
+        "text": "La transition des blue warrants a pris fin le 7 juin 2026. Contrôlez le green warrant valide et le certificat du véhicule pour les sites réservés aux véhicules certifiés self-contained. La certification ne permet pas de camper partout : consultez les restrictions municipales et les panneaux sur place."
+      },
+      {
+        "title": "Formaliser la vente et prévenir NZTA",
+        "text": "Rencontrez le vendeur et inspectez le véhicule avant de payer. Notez par écrit les informations du véhicule, le prix convenu et les défauts déclarés. Acheteur et vendeur doivent chacun informer NZTA du changement de personne enregistrée ; suivez la procédure officielle et conservez les documents de vente."
+      }
+    ],
+    "sellers": [
+      {
+        "title": "Montrer le véhicule en détail",
+        "text": "Photographiez extérieur, intérieur, couchage, équipements, compartiment moteur et dommages éventuels. Indiquez modèle, année, kilométrage, prix demandé, ville de remise, dates du WOF et de la rego, entretien et documents de certification disponibles."
+      },
+      {
+        "title": "Décrire l’état et les conditions du buy-back",
+        "text": "Déclarez clairement les défauts connus et les réparations récentes. Comparez les prix de vans similaires avant de fixer le vôtre. Si vous proposez un rachat, précisez par écrit date, montant, limites de kilométrage et conditions ; une estimation de calculateur ne garantit pas le prix de revente."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Où acheter un van en Nouvelle-Zélande ?",
+        "a": "Consultez les annonces de particuliers sur Kiwi Van Market par ville, modèle et budget. Comparez les informations du véhicule, puis organisez une visite et une inspection indépendante avant l’achat."
+      },
+      {
+        "q": "Peut-on vendre son van sans frais d’annonce ?",
+        "a": "Kiwi Van Market propose des annonces de vans gratuites, sans commission sur la vente. Ajoutez des photos claires et les informations du véhicule pour permettre aux acheteurs de comparer et de vous contacter directement."
+      },
+      {
+        "q": "Les prix affichés correspondent-ils à des ventes conclues ?",
+        "a": "Non. Les pages de prix présentent les montants demandés dans les annonces Kiwi Van Market. Les prix négociés et le marché néo-zélandais dans son ensemble peuvent être différents."
+      }
+    ]
+  },
+
+  "seo_footer": {
+    "tagline": "Annonces de vans en Nouvelle-Zélande",
+    "noticeLabel": "Avant d’acheter :",
+    "notice": "Les annonces contiennent des informations déclarées par les vendeurs. Vérifiez les documents du véhicule et organisez une inspection avant de convenir d’une vente.",
+    "faq": "FAQ et fonctionnement",
+    "terms": "Conditions d’utilisation",
+    "resale": "Estimation de revente",
+    "prices": "Prix des vans en Nouvelle-Zélande",
+    "guides": "Voir tous les guides",
+    "buy": "Acheter un van",
+    "sell": "Vendre son van",
+    "camp": "Freedom camping",
+    "safety": "Conseils de sécurité",
+    "brands": "Modèles populaires",
+    "cities": "Explorer par ville",
+    "meet": "Rencontrez les vendeurs en personne",
+    "inspect": "Inspectez le véhicule avant d’acheter",
+    "documents": "Vérifiez les documents WOF et rego",
+    "payment": "Voyez le van avant de payer",
+    "report": "Signalez les annonces suspectes"
+  }
 }

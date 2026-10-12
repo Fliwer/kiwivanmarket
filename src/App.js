@@ -1,3 +1,5 @@
+import market from './data/seo/market';
+import searchCopy from './data/seo/search-copy';
 import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +35,9 @@ import VanCard from './components/VanCard';
 import GuidePreviewSection from './components/GuidePreviewSection';
 import HeroGuideCard from './components/HeroGuideCard';
 import BottomNavigation from './components/BottomNavigation';
-import { FEATURED_LONG_TAIL_SLUGS, LONG_TAIL_PAGE_MAP } from './constants/seoLongTailPages';
+import { seoCopy, SEO_LANGS, priceStats, nzd } from './data/seo';
+import { LONG_TAIL_PAGE_LIST, indexableSlugs } from './constants/seoLongTailPages';
+
 
 // ✅ LAZY LOADING
 const SellPage = lazyWithReload(() => import('./components/SellPage'));
@@ -143,7 +147,10 @@ function MainApp({
 }) {
   useHideLoader();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const seo = seoCopy(i18n.language).home;
+  const seoLanguage = searchCopy.searchLang(i18n.language);
+  const seoHref = (path) => seoLanguage === 'fr' ? `${path}?lang=fr` : path;
   const { currentUser } = useAuth();
   
   // Synchronous initial loading from session/local storage for instant scroll restoration!
@@ -188,10 +195,12 @@ function MainApp({
   const [infoModals, setInfoModals] = useState({
     buyBack: false, wof: false, rego: false, selfContained: false
   });
-  const featuredSearchPages = FEATURED_LONG_TAIL_SLUGS
-    .map((slug) => LONG_TAIL_PAGE_MAP[slug])
-    .filter(Boolean)
-    .slice(0, 6);
+  const keepSearch = indexableSlugs(vans);
+  const featuredSearchPages = LONG_TAIL_PAGE_LIST.filter((page) => keepSearch.has(page.slug))
+    .slice(0, 12).map((page) => searchCopy.localizePage(page, seoLanguage));
+  const stats = priceStats(vans);
+  const seoStats = stats && { count: stats.count, min: nzd(stats.min), max: nzd(stats.max), avg: nzd(stats.avg) };
+  const homeFaqs = [...seo.faqs(seoStats), ...market.COPY[seoLanguage].faqs];
 
   useEffect(() => {
     const savedCurrency = safeStorage.getItem('kiwivanmarket_currency') || 'NZD';
@@ -394,8 +403,10 @@ function MainApp({
     <div className="min-h-screen bg-slate-50 pb-20 md:pb-0">
       <SeoHead
         isHomepage
-        title="Buy Campervans & Backpacker Vans NZ"
-        description="The easiest way to buy self-contained campervans in New Zealand. Compare Toyota Hiace, Nissan Caravan & more."
+        title={seo.title.replace(' | Kiwi Van Market', '')}
+        alternateLangs={SEO_LANGS}
+        faqs={homeFaqs}
+        description={seoStats ? seo.metaDesc(seoStats) : seo.metaDescNoStats}
       />
 
       {/* Hero Section — visible uniquement sur la 1re page des annonces */}
@@ -474,7 +485,7 @@ function MainApp({
           showWofInfo={infoModals.wof} setShowWofInfo={v => setInfoModals(p => ({ ...p, wof: v }))}
         />
         <Listings
-          loading={loading} filteredVans={filteredVans}
+          loading={loading} filteredVans={filteredVans} allVans={vans}
           searchTerm={searchTerm} setSearchTerm={setSearchTerm}
           sortBy={sortBy} setSortBy={setSortBy}
           formatPrice={formatPrice}
@@ -484,12 +495,12 @@ function MainApp({
         />
         <section className="max-w-7xl mx-auto px-4 pb-10">
           <div className="bg-white border border-slate-100 rounded-2xl p-5">
-            <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">Popular high-intent searches</h2>
+            <h2 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-3">{market.COPY[seoLanguage].byBudget}</h2>
             <div className="flex flex-wrap gap-2">
               {featuredSearchPages.map((page) => (
                 <Link
                   key={page.slug}
-                  to={`/search/${page.slug}`}
+                  to={seoHref(`/search/${page.slug}`)}
                   className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition"
                 >
                   {page.heading}
@@ -499,6 +510,7 @@ function MainApp({
           </div>
         </section>
       </main>
+      <Suspense fallback={null}><HomeSeoSection vans={vans} /></Suspense>
       {selectedVan && <VanDetailsModal van={selectedVan} />}
     </div>
   );

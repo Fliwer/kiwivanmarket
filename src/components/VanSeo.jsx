@@ -69,7 +69,7 @@ export default function VanSeo({ van }) {
   // Structured Data - Vehicle/Product
   const vehicleJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Vehicle',
+    '@type': ['Vehicle', 'Product'],
     '@id': canonicalUrl,
     name: van.title || `${van.year || ''} ${van.brand || ''} ${van.model || 'Campervan'}`.trim(),
     description: van.description || description,
@@ -105,7 +105,8 @@ export default function VanSeo({ van }) {
       '@type': 'Offer',
       price: van.price ? String(van.price) : undefined,
       priceCurrency: 'NZD',
-      availability: 'https://schema.org/InStock',
+      url: canonicalUrl,
+      availability: van.status === 'sold' ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/UsedCondition',
       seller: van.seller ? {
         '@type': 'Person',
@@ -134,7 +135,7 @@ export default function VanSeo({ van }) {
       van.selfContained ? {
         '@type': 'PropertyValue',
         name: 'Self-Contained',
-        value: 'Yes - Freedom camping certified'
+        value: 'Yes (seller-provided; verify current certificate)'
       } : null,
       van.wofExpiry ? {
         '@type': 'PropertyValue',

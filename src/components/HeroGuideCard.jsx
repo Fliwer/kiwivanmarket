@@ -20,7 +20,7 @@ export default function HeroGuideCard({ className = '' }) {
 
     return (
         <Link
-            to="/guides"
+            to={`/guide/${FEATURED_SLUG}${lang === 'fr' ? '?lang=fr' : lang === 'es' ? '?lang=es' : ''}`}
             className={`group flex items-stretch gap-3 rounded-3xl bg-white border border-slate-200 shadow-lg shadow-slate-200/50 overflow-hidden active:scale-[0.98] transition-transform ${className}`}
             aria-label={guide.title}
         >

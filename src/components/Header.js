@@ -51,7 +51,8 @@ export default function Header({
     NotificationBellComp,
     MessageBadgeComp
 }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const localHref = (path) => (i18n.language || '').startsWith('fr') ? `${path}?lang=fr` : path;
     const navigate = useNavigate();
     const [showUserMenuDropdown, setShowUserMenuDropdown] = useState(false);
 
@@ -80,7 +81,7 @@ export default function Header({
                 <div className="flex items-center justify-between h-10 md:h-14">
 
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2 group">
+                    <Link to={localHref('/')} className="flex items-center gap-2 group">
                         <div className="w-8 h-8 rounded-xl flex items-center justify-center shadow-lg bg-[#f7eedd] overflow-hidden transition-transform group-hover:scale-110">
                             <img src="/kiwi-van-logo-48.webp" alt="Kiwi Van Market" className="w-6 h-6 object-contain" width="24" height="24" />
                         </div>
@@ -93,7 +94,7 @@ export default function Header({
                     {/* Navigation - Desktop Central */}
                     <nav className="hidden md:flex items-center gap-1 ml-6">
                         <Link
-                            to="/guides"
+                            to={localHref('/guides')}
                             className="px-4 py-2 bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 rounded-xl transition-all flex items-center gap-2 text-sm border border-emerald-200/50 hover:border-emerald-300"
                         >
                             <BookOpen size={15} className="text-emerald-600" />
@@ -101,7 +102,7 @@ export default function Header({
                         </Link>
 
                         <Link
-                            to="/buyback-calculator"
+                            to={localHref('/buyback-calculator')}
                             className="px-4 py-2 text-slate-600 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all flex items-center gap-2 text-sm"
                         >
                             <Tag size={16} />
@@ -249,7 +250,7 @@ export default function Header({
                     <div className="md:hidden fixed inset-0 z-[70] bg-white flex flex-col animate-in fade-in slide-in-from-right-4 duration-200">
                         {/* Barre du haut : logo + fermer */}
                         <div className="flex items-center justify-between px-5 h-16 border-b border-slate-100 flex-shrink-0">
-                            <Link to="/" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-2">
+                            <Link to={localHref('/')} onClick={() => setShowMobileMenu(false)} className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-[#f7eedd] overflow-hidden">
                                     <img src="/kiwi-van-logo-48.webp" alt="KiwiVan Market" className="w-6 h-6 object-contain" />
                                 </div>
@@ -269,15 +270,15 @@ export default function Header({
 
                             {/* EXPLORER */}
                             <p className="text-xs font-black uppercase tracking-wider text-slate-400 mt-6 mb-1">Explorer</p>
-                            <Link to="/" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
+                            <Link to={localHref('/')} onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
                                 <span>Acheter un van</span>
                                 <ChevronRight size={20} className="text-slate-300" />
                             </Link>
-                            <Link to="/guides" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
+                            <Link to={localHref('/guides')} onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
                                 <span>{t('header.guides', 'Guides')}</span>
                                 <ChevronRight size={20} className="text-slate-300" />
                             </Link>
-                            <Link to="/buyback-calculator" onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
+                            <Link to={localHref('/buyback-calculator')} onClick={() => setShowMobileMenu(false)} className="flex items-center justify-between py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
                                 <span>{t('header.calculator', 'Estimation de revente')}</span>
                                 <ChevronRight size={20} className="text-slate-300" />
                             </Link>
@@ -328,7 +329,7 @@ export default function Header({
 
                             {/* AIDE */}
                             <p className="text-xs font-black uppercase tracking-wider text-slate-400 mt-7 mb-1">Aide</p>
-                            <Link to="/contact" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
+                            <Link to={localHref('/contact')} onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 py-4 border-b border-slate-100 text-[17px] font-bold text-slate-800 active:text-emerald-600">
                                 <HelpCircle size={20} className="text-emerald-600 flex-shrink-0" />
                                 <span>{t('header.help', "Centre d'aide")}</span>
                                 <ChevronRight size={20} className="text-slate-300 ml-auto" />

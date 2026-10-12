@@ -49,7 +49,7 @@ const en = {
     buybackLink: 'Resale &amp; buyback calculator',
     whyLink: 'Why buy or sell on Kiwi Van Market',
     itemList: 'Latest campervans for sale in New Zealand',
-    orgDesc: 'The #1 campervan marketplace in New Zealand. Buy or sell campervans, motorhomes, and vans peer-to-peer with zero commission.',
+    orgDesc: 'A specialist campervan marketplace in New Zealand. Buy or sell campervans, motorhomes, and vans peer-to-peer with zero commission.',
     faqs: (s) => [
       {
         q: 'How much does a campervan cost in New Zealand?',
@@ -59,7 +59,7 @@ const en = {
       },
       {
         q: 'What does "self-contained" mean for a campervan in NZ?',
-        a: 'A self-contained certified campervan has a toilet and water systems meeting the NZ standard, shown by a blue or green sticker. It is required for freedom camping in most areas.',
+        a: 'Check a current green warrant and the vehicle certificate for camping sites requiring self-contained certification. The blue-warrant transition ended on 7 June 2026. Always check local camping restrictions.',
       },
       {
         q: 'Is it free to sell my campervan on Kiwi Van Market?',
@@ -324,7 +324,7 @@ const fr = {
     buybackLink: 'Calculateur de revente et de rachat',
     whyLink: 'Pourquoi acheter ou vendre sur Kiwi Van Market',
     itemList: 'Derniers vans à vendre en Nouvelle-Zélande',
-    orgDesc: 'La marketplace de vans n°1 en Nouvelle-Zélande. Achetez ou vendez un van, un van aménagé ou un camping-car entre particuliers, sans commission.',
+    orgDesc: 'Une marketplace spécialisée dans les vans en Nouvelle-Zélande. Achetez ou vendez un van, un van aménagé ou un camping-car entre particuliers, sans commission.',
     faqs: (s) => [
       {
         q: 'Combien coûte un van en Nouvelle-Zélande ?',
@@ -334,7 +334,7 @@ const fr = {
       },
       {
         q: 'Que veut dire « self-contained » pour un van en NZ ?',
-        a: 'Un van certifié self-contained dispose de toilettes et d\'un système d\'eau conformes à la norme néo-zélandaise, signalés par un autocollant bleu ou vert. C\'est obligatoire pour le freedom camping dans la plupart des zones.',
+        a: 'Vérifiez le green warrant valide et le certificat du véhicule pour les sites exigeant la certification self-contained. La transition des blue warrants a pris fin le 7 juin 2026. Consultez toujours les restrictions locales de camping.',
       },
       {
         q: 'Vendre mon van sur Kiwi Van Market est-il gratuit ?',
@@ -559,4 +559,4 @@ const fr = {
   },
 };
 
-module.exports = { en, fr };
+export default { en, fr };

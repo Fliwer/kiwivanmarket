@@ -225,6 +225,7 @@ export default function LocationPage() {
         title={seoTitle}
         description={seoDescription}
         keywords={locationConfig?.keywords}
+        noindex={!loading && !vans.length}
         alternateLangs={SEO_LANGS}
         faqs={locationFaqs}
         breadcrumbs={[

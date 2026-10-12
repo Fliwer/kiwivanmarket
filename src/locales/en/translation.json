@@ -110,7 +110,7 @@
     },
     "footer": {
         "about": "About Kiwi Van Market",
-        "about_desc": "The #1 marketplace for buying and selling campervans in New Zealand. Built by travelers, for travelers.",
+        "about_desc": "A specialist marketplace for buying and selling campervans in New Zealand. Built by travellers, for travellers.",
         "quick_links": "Quick Links",
         "legal": "Legal",
         "contact": "Contact Us",
@@ -408,5 +408,118 @@
         "err_email": "Please enter a valid email.",
         "err_max": "You already have 5 active alerts.",
         "err_generic": "Something went wrong. Please try again."
-    }
+    },
+
+  "seo_search": {
+    "budgetTitle": "Campervans in {{city}} Under {{budget}} NZD",
+    "budgetHeading": "Buy a campervan in {{city}} under {{budget}} NZD",
+    "budgetDesc": "Compare campervans for sale in {{city}} under {{budget}} NZD. Check WOF, rego, equipment and seller details before arranging an inspection.",
+    "brandTitle": "{{brand}} in {{city}} Under {{budget}} NZD",
+    "brandHeading": "{{brand}} campervans in {{city}} under {{budget}} NZD",
+    "brandDesc": "Browse {{brand}} campervans in {{city}} under {{budget}} NZD. Compare asking prices, service history and conversion details, then contact the seller.",
+    "scTitle": "Self-Contained Vans in {{city}}, New Zealand",
+    "scHeading": "Self-contained vans in {{city}}",
+    "scDesc": "Compare vans listed as self-contained in {{city}}. Verify the current green warrant and local camping rules before buying.",
+    "allCity": "All campervans in {{city}}",
+    "brandLink": "All {{brand}} listings",
+    "buyerGuide": "Read the buyer guide",
+    "faqTitle": "Frequently asked questions",
+    "related": "More searches in {{city}}",
+    "loading": "Loading listings…",
+    "emptyTitle": "No matching campervan right now",
+    "emptyText": "Browse the city listings or set an alert for new vans matching your budget.",
+    "allListings": "Browse all campervans",
+    "notFound": "Page not found",
+    "backHome": "Back to home",
+    "home": "Home",
+    "stats": "{{count}} listings, asking prices from {{min}} to {{max}} (average {{avg}}).",
+    "safetyQuestion": "How can I buy a campervan in {{city}} safely?",
+    "safetyAnswer": "Compare the WOF and rego dates, service records and seller details. View the vehicle, arrange an independent inspection and agree a written sale before paying.",
+    "budgetQuestion": "What does this budget cover in {{city}}?",
+    "budgetAnswer": "This page compares advertised vehicle prices. Allow separately for inspection, insurance, servicing, road user charges if applicable and camping costs.",
+    "scQuestion": "What should I check for a self-contained van?",
+    "scAnswer": "Check the current green warrant and vehicle certificate rather than relying on a listing badge. The blue-warrant transition ended on 7 June 2026. Certification does not allow camping everywhere: check local restrictions."
+  },
+  "seo_market": {
+    "title": "Buy and sell a campervan in New Zealand",
+    "intro": "Kiwi Van Market connects campervan buyers and sellers in New Zealand. Compare advertised prices, locations, equipment and seller-provided vehicle details; contact owners directly and inspect the vehicle before agreeing a purchase.",
+    "byLocation": "Find a campervan by city",
+    "byBrand": "Compare campervan models",
+    "byBudget": "Compare vans within your budget",
+    "buyersTitle": "Buying a van: the checks that matter",
+    "sellersTitle": "Selling a van: prepare a transparent listing",
+    "sourcesTitle": "Check the official sources",
+    "reviewed": "Information reviewed on 12 October 2026",
+    "methodTitle": "How to read our campervan price data",
+    "method": "Prices are asking prices from listings on Kiwi Van Market, in NZD. They are not completed sale prices or an independent valuation of the whole New Zealand market. Model, maintenance, mileage, conversion quality and location all affect value. Treat seller-provided badges as starting points for verification.",
+    "buyLink": "Complete campervan buying guide",
+    "sellLink": "Create your free van listing",
+    "inspectLink": "Mechanical inspection checklist",
+    "pricesLink": "Current advertised campervan prices",
+    "faqTitle": "Answers before you buy or sell",
+    "buyers": [
+      {
+        "title": "Inspect the mechanics and conversion",
+        "text": "Start with a cold engine, then check fluid leaks, coolant condition, rust around the chassis and windscreen, tyre wear and service records. Test the gearbox and brakes on a road test. Check ventilation, battery wiring, gas installation and water leaks; an independent inspection helps assess faults a listing cannot show."
+      },
+      {
+        "title": "Check WOF and rego separately",
+        "text": "A WOF concerns vehicle safety at the time of inspection; rego is vehicle licensing. Ask to see their dates and compare the registration plate with the vehicle. A current WOF does not replace a mechanical inspection or prove the seller owns the vehicle."
+      },
+      {
+        "title": "Verify self-contained certification",
+        "text": "The transition from blue warrants ended on 7 June 2026. Check a valid green warrant and the vehicle certificate for sites requiring certified self-contained vehicles. Certification alone does not permit camping at every location: read council restrictions and site signs."
+      },
+      {
+        "title": "Agree the sale and update registration records",
+        "text": "Meet the seller and inspect the vehicle before paying. Record the vehicle details, agreed price and disclosed faults in writing. Both buyer and seller must notify NZTA of the change of registered person; check the official process and keep the sale records."
+      }
+    ],
+    "sellers": [
+      {
+        "title": "Show the full vehicle",
+        "text": "Photograph the exterior, interior, sleeping layout, equipment, engine bay and any damage. Include the model, year, mileage, asking price, pickup city, WOF and rego dates, servicing and certification documents where available."
+      },
+      {
+        "title": "Explain condition and any buy-back agreement",
+        "text": "Describe known faults and recent repairs clearly. Compare similar advertised vans when setting your price. If you offer buy-back, put the timing, repurchase amount, mileage limits and conditions in writing; a calculator estimate is not a guaranteed resale price."
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Where can I buy a campervan in New Zealand?",
+        "a": "Browse owner listings on Kiwi Van Market by city, model and budget. Compare the vehicle details and arrange a viewing and independent inspection before buying."
+      },
+      {
+        "q": "Can I sell my van without a listing fee?",
+        "a": "Kiwi Van Market offers free campervan listings with no sales commission. Add clear photos and vehicle details so buyers can compare your van and contact you directly."
+      },
+      {
+        "q": "Are campervan prices on this site actual sale prices?",
+        "a": "No. The price pages describe advertised asking prices on Kiwi Van Market. Negotiated sale prices and the wider New Zealand market may differ."
+      }
+    ]
+  },
+
+  "seo_footer": {
+    "tagline": "Campervan marketplace in New Zealand",
+    "noticeLabel": "Before you buy:",
+    "notice": "Listings contain seller-provided information. Check vehicle documents and arrange an inspection before agreeing a sale.",
+    "faq": "FAQ and how it works",
+    "terms": "Terms of use",
+    "resale": "Resale estimate",
+    "prices": "Campervan prices in NZ",
+    "guides": "Browse all guides",
+    "buy": "Buying a campervan",
+    "sell": "Selling your van",
+    "camp": "Freedom camping",
+    "safety": "Safety tips",
+    "brands": "Popular models",
+    "cities": "Browse by city",
+    "meet": "Meet sellers in person",
+    "inspect": "Inspect the vehicle before buying",
+    "documents": "Verify WOF and rego documents",
+    "payment": "See the van before paying",
+    "report": "Report suspicious listings"
+  }
 }

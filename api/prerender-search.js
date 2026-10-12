@@ -7,15 +7,20 @@
 // ============================================================================
 
 const {
-  ORIGIN, esc, fetchAllVans, priceStats, nzd, vanListHTML,
+  esc, fetchAllVans, priceStats, nzd, vanListHTML,
   itemListLd, faqLd, breadcrumbLd, htmlShell, send404, sendHTML, send503,
 } = require('./_lib/util');
+const { pickLang, pageMeta, langUrl } = require('./_lib/i18n');
+const { localizePage, searchText, searchFaqs } = require('../src/data/seo/search-copy.cjs');
 const { LONG_TAIL_PAGE_LIST, LONG_TAIL_PAGE_MAP, indexableSlugs, vansForPage } = require('./_lib/long-tail');
 
 module.exports = async function handler(req, res) {
   const slug = String(req.query.slug || '').toLowerCase();
-  const page = LONG_TAIL_PAGE_MAP[slug];
-  if (!page) return send404(res, 'This search page does not exist');
+  const lang = pickLang(req);
+  const sourcePage = LONG_TAIL_PAGE_MAP[slug];
+  if (!sourcePage) return send404(res, 'This search page does not exist');
+  const page = localizePage(sourcePage, lang);
+  const text = (key, values) => searchText(lang, key, { city: page.cityName, ...values });
 
   let vans; let keep;
   try {
@@ -28,70 +33,49 @@ module.exports = async function handler(req, res) {
 
   const indexable = keep.has(slug);
   const stats = priceStats(vans);
-  const url = `${ORIGIN}/search/${slug}`;
   const city = page.cityName;
 
-  // Mêmes FAQ que le composant React.
-  const faqs = [
-    {
-      q: `How to buy a campervan in ${city} safely?`,
-      a: 'Use listing trust signals first: WOF, REGO, self-contained status, and CarJam access when a plate is provided. Then inspect in person and test drive before payment.',
-    },
-    {
-      q: `What budget is realistic for ${city}?`,
-      a: typeof page.maxPrice === 'number'
-        ? `For this page, we focus on listings up to NZ$${page.maxPrice.toLocaleString()}. You can compare similarly priced vans and contact sellers directly.`
-        : 'Prices vary by season and equipment. Compare current listings and prioritize condition, service history, and compliance.',
-    },
-    {
-      q: 'Is self-contained important in New Zealand?',
-      a: 'Yes, self-contained certification is a major trust and usability signal for freedom camping. It usually increases resale potential and buyer confidence.',
-    },
-  ];
+  const faqs = searchFaqs(page, lang);
 
   // Maillage : uniquement vers des pages indexables, sinon on envoie le
   // crawler sur des noindex.
   const related = LONG_TAIL_PAGE_LIST
     .filter((p) => p.city === page.city && p.slug !== slug && keep.has(p.slug))
-    .slice(0, 6);
+    .slice(0, 6).map((p) => localizePage(p, lang));
 
   const body = `
 <h1>${esc(page.heading)}</h1>
 <p>${esc(page.description)}</p>
 <p>
-  <a href="${ORIGIN}/location/${esc(page.city)}">View all vans in ${esc(city)}</a> ·
-  ${page.brandSlug ? `<a href="${ORIGIN}/brand/${esc(page.brandSlug)}">All ${esc(page.brandName)} listings</a> · ` : ''}
-  <a href="${ORIGIN}/guide/buying-campervan-nz">Read the buyer guide</a>
+  <a href="${langUrl(`/location/${page.city}`, lang)}">${esc(text('allCity'))}</a> ·
+  ${page.brandSlug ? `<a href="${langUrl(`/brand/${page.brandSlug}`, lang)}">${esc(text('brandLink', { brand: page.brandName }))}</a> · ` : ''}
+  <a href="${langUrl('/guide/buying-campervan-nz', lang)}">${esc(text('buyerGuide'))}</a>
 </p>
 ${vans.length ? `
-${stats ? `<p><strong>${vans.length} listing${vans.length > 1 ? 's' : ''}</strong> right now, from ${esc(nzd(stats.min))} to ${esc(nzd(stats.max))} (average ${esc(nzd(stats.avg))}).</p>` : `<p><strong>${vans.length} listing${vans.length > 1 ? 's' : ''}</strong> right now.</p>`}
-<ul>${vanListHTML(vans)}</ul>` : `
-<h2>No exact match right now</h2>
-<p>Try nearby pages and keep checking as new vans are listed daily.
-<a href="${ORIGIN}/location/${esc(page.city)}">Browse ${esc(city)}</a> or
-<a href="${ORIGIN}/">browse all listings</a>.</p>`}
-<h2>Frequently asked questions</h2>
+${stats ? `<p>${esc(text('stats', { count: vans.length, min: nzd(stats.min), max: nzd(stats.max), avg: nzd(stats.avg) }))}</p>` : ''}
+<ul>${vanListHTML(vans, { lang })}</ul>` : `
+<h2>${esc(text('emptyTitle'))}</h2>
+<p>${esc(text('emptyText'))} <a href="${langUrl('/', lang)}">${esc(text('allListings'))}</a>.</p>`}
+<h2>${esc(text('faqTitle'))}</h2>
 ${faqs.map(({ q, a }) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('\n')}
-<h2>More specific searches in ${esc(city)}</h2>
+<h2>${esc(text('related'))}</h2>
 <ul>
-${related.map((p) => `<li><a href="${ORIGIN}/search/${esc(p.slug)}">${esc(p.heading)}</a></li>`).join('\n')}
+${related.map((p) => `<li><a href="${langUrl(`/search/${p.slug}`, lang)}">${esc(p.heading)}</a></li>`).join('\n')}
 </ul>`;
 
   const html = htmlShell({
     title: `${page.title} | Kiwi Van Market`,
-    metaDesc: stats
-      ? `${vans.length} campervans in ${city}${page.maxPrice ? ` under NZ$${page.maxPrice.toLocaleString()}` : ''}, from ${nzd(stats.min)}. WOF/REGO shown, direct seller contact.`
-      : page.description,
-    canonical: url,
+    metaDesc: page.description,
+    ...pageMeta(`/search/${slug}`, lang),
     noindex: !indexable,
     ogImage: (vans[0] && ((vans[0].images || [])[0] || vans[0].imageUrl)) || undefined,
     jsonLd: [
       itemListLd(page.heading, vans),
       faqLd(faqs),
       breadcrumbLd([
-        { name: 'Home', path: '/' },
-        { name: `Campervans in ${city}`, path: `/location/${page.city}` },
-        { name: page.heading, path: `/search/${slug}` },
+        { name: text('home'), path: lang === 'fr' ? '/?lang=fr' : '/' },
+        { name: text('allCity'), path: `/location/${page.city}${lang === 'fr' ? '?lang=fr' : ''}` },
+        { name: page.heading, path: `/search/${slug}${lang === 'fr' ? '?lang=fr' : ''}` },
       ]),
     ],
     body,
