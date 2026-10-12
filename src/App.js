@@ -53,6 +53,8 @@ const LocationPage = lazyWithReload(() => import('./components/LocationPage'));
 const GuidePage = lazyWithReload(() => import('./components/GuidePage'));
 const ContactPage = lazyWithReload(() => import('./components/ContactPage'));
 const ProfilePage = lazyWithReload(() => import('./components/ProfilePage'));
+const ReservationSuccess = lazyWithReload(() => import('./components/ReservationSuccess'));
+const ReservationCancelled = lazyWithReload(() => import('./components/ReservationCancelled'));
 const MyListingsPage = lazyWithReload(() => import('./components/MyListingsPage'));
 const GuidesHubPage = lazyWithReload(() => import('./components/GuidesHubPage'));
 const FaqPage = lazyWithReload(() => import('./components/FaqPage'));
@@ -565,6 +567,8 @@ export default function KiwiVanMarket() {
               <Route path="/guide/:slug" element={<Suspense fallback={<PageLoader />}><GuidePage /></Suspense>} />
               <Route path="/sell" element={<Suspense fallback={<PageLoader />}><SellPage /></Suspense>} />
               <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
+              <Route path="/reservation-success" element={<Suspense fallback={<PageLoader />}><ReservationSuccess /></Suspense>} />
+              <Route path="/reservation-cancelled" element={<Suspense fallback={<PageLoader />}><ReservationCancelled /></Suspense>} />
               <Route path="/my-listings" element={<Suspense fallback={<PageLoader />}><MyListingsPage /></Suspense>} />
               <Route path="/buyback-calculator" element={<Suspense fallback={<PageLoader />}><BuybackCalculator /></Suspense>} />
               <Route path="/embed/buyback-calculator" element={<Suspense fallback={<PageLoader />}><BuybackCalculator isEmbedded={true} /></Suspense>} />

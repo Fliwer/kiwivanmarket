@@ -9,7 +9,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { CheckCircle, Clock, AlertCircle, Home, MessageCircle, Loader2, Shield } from 'lucide-react';
 

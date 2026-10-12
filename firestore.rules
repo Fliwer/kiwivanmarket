@@ -18,7 +18,9 @@ service cloud.firestore {
     // ═══════════════════════════════════════════════════════════════════
     
     function isAuthenticated() {
-      return request.auth != null;
+      return request.auth != null &&
+        (!exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('banned', false) != true);
     }
     
     function isOwner(userId) {
@@ -52,14 +54,6 @@ service cloud.firestore {
       return field is string && field.size() > 0;
     }
     
-    function isPositiveNumber(field) {
-      return field is number && field > 0;
-    }
-    
-    function isNonNegativeNumber(field) {
-      return field is number && field >= 0;
-    }
-    
     function isValidPrice(price) {
       return price is number && price >= 1 && price <= 500000;
     }
@@ -74,12 +68,6 @@ service cloud.firestore {
     
     function isValidRating(rating) {
       return rating is number && rating >= 1 && rating <= 5;
-    }
-    
-    function isValidImageUrl(url) {
-      return url is string && 
-             (url.matches('https://res\\.cloudinary\\.com/.*') || 
-              url.matches('https://firebasestorage\\.googleapis\\.com/.*'));
     }
     
     function hasValidImages(images) {
@@ -100,6 +88,15 @@ service cloud.firestore {
              phone.size() >= 8 &&
              phone.size() <= 15;
     }
+
+    function hasNoPublicContact(data) {
+      return data.get('email', null) == null &&
+             data.get('phone', null) == null &&
+             data.get('whatsapp', null) == null &&
+             data.seller.get('email', null) == null &&
+             data.seller.get('phone', null) == null &&
+             data.seller.get('whatsapp', null) == null;
+    }
     
     
     // ═══════════════════════════════════════════════════════════════════
@@ -116,10 +113,6 @@ service cloud.firestore {
     
     function fieldsUnchanged(fields) {
       return request.resource.data.diff(resource.data).affectedKeys().hasAny(fields) == false;
-    }
-    
-    function docExists(collection, docId) {
-      return exists(/databases/$(database)/documents/$(collection)/$(docId));
     }
     
     
@@ -150,7 +143,7 @@ service cloud.firestore {
              request.resource.data.vanPrice is number &&
              request.resource.data.vanPrice == vanDoc.data.price &&
              request.resource.data.sellerId == vanDoc.data.seller.uid &&
-             vanDoc.data.status in ['active', 'sold'] &&
+             vanDoc.data.status == 'active' &&
              request.resource.data.depositAmount is number &&
              request.resource.data.depositAmount >= 500 &&
              request.resource.data.depositAmount <= request.resource.data.vanPrice &&
@@ -176,9 +169,11 @@ service cloud.firestore {
                       request.resource.data.keys().hasAll(['uid', 'email', 'displayName', 'createdAt']) &&
                       request.resource.data.uid == userId &&
                       isValidEmail(request.resource.data.email) &&
+                      request.resource.data.email == request.auth.token.email &&
                       isValidString(request.resource.data.displayName, 1, 100) &&
                       request.resource.data.get('isAdmin', false) == false &&
-                      request.resource.data.get('banned', false) == false;
+                      request.resource.data.get('banned', false) == false &&
+                      !request.resource.data.keys().hasAny(['stripeAccountId', 'balance', 'payoutsEnabled', 'role', 'roles']);
       
       allow update: if isOwner(userId) &&
                       onlyUpdating(['displayName', 'photoURL', 'phone', 'location', 'bio', 'lastLogin', 'updatedAt']) &&
@@ -215,12 +210,17 @@ service cloud.firestore {
       // etaient aspirables en une requete. Le verrou "connexion requise" pose
       // sur la fiche van n'etait donc que cosmetique.
       match /private/{docId} {
-        allow read: if hasVerifiedEmail();
-        allow write: if isAuthenticated() &&
+        allow read: if docId == 'contact' && hasVerifiedEmail();
+        allow write: if docId == 'contact' && hasVerifiedEmail() &&
+                        request.resource.data.keys().hasOnly(['email', 'phone', 'whatsapp']) &&
+                        request.resource.data.email == request.auth.token.email &&
                         currentUserId() == get(/databases/$(database)/documents/vans/$(vanId)).data.seller.uid;
       }
 
       allow create: if hasVerifiedEmail() &&
+                      hasNoPublicContact(request.resource.data) &&
+                      request.resource.data.get('userId', currentUserId()) == currentUserId() &&
+                      !request.resource.data.keys().hasAny(['availabilityToken', 'availabilityConfirmedAt', 'availabilityReminderSentAt', 'expiredAt', 'expiredReason', 'paymentIntentId', 'stripeAccountId', 'reservedBy', 'reservationId']) &&
                       request.resource.data.seller.uid == currentUserId() &&
                       request.resource.data.keys().hasAll([
                         'title', 'price', 'description', 'location', 
@@ -239,7 +239,8 @@ service cloud.firestore {
       
       allow update: if isAuthenticated() && 
                       currentUserId() == resource.data.seller.uid &&
-                      fieldsUnchanged(['views', 'createdAt']) &&
+                      hasNoPublicContact(request.resource.data) &&
+                      fieldsUnchanged(['views', 'createdAt', 'userId', 'availabilityToken', 'availabilityReminderSentAt', 'availabilityConfirmedAt', 'expiredAt', 'expiredReason', 'paymentIntentId', 'stripeAccountId', 'reservedBy', 'reservationId']) &&
                       (fieldUnchanged('seller') || (
                         request.resource.data.seller.uid == resource.data.seller.uid &&
                         // whatsapp inclus : le formulaire d'édition permet de le
@@ -287,15 +288,14 @@ service cloud.firestore {
     match /conversations/{conversationId} {
       allow read: if (isAuthenticated() && currentUserId() in resource.data.participants) || isAdmin();
       
-      allow create: if isAuthenticated() && 
+      allow create: if hasVerifiedEmail() &&
                       request.resource.data.keys().hasOnly([
                         'participants', 'createdAt', 'vanId',
                         'sellerId', 'buyerId', 'buyerName',
                         'participantNames', 'participantEmails',
                         'van', 'status', 'lastMessage', 'lastMessageAt',
                         'lastMessageSenderId', 'unreadCount', 'typing',
-                        'emailNotificationSent', 'emailNotificationSentAt',
-                        'lastEmailNotification', 'reminderSentAt', 'updatedAt'
+                        'updatedAt'
                       ]) &&
                       currentUserId() in request.resource.data.participants &&
                       request.resource.data.participants.size() == 2 &&
@@ -303,6 +303,9 @@ service cloud.firestore {
                       request.resource.data.buyerId in request.resource.data.participants &&
                       request.resource.data.sellerId in request.resource.data.participants &&
                       request.resource.data.buyerId != request.resource.data.sellerId &&
+                      request.resource.data.buyerId == currentUserId() &&
+                      exists(/databases/$(database)/documents/vans/$(request.resource.data.vanId)) &&
+                      request.resource.data.sellerId == get(/databases/$(database)/documents/vans/$(request.resource.data.vanId)).data.seller.uid &&
                       request.resource.data.keys().hasAll(['participants', 'createdAt', 'vanId']);
       
       allow update: if isAuthenticated() &&
@@ -313,9 +316,7 @@ service cloud.firestore {
                       (fieldUnchanged('status') || request.resource.data.status in ['new', 'active', 'archived', 'closed']) &&
                       request.resource.data.diff(resource.data).affectedKeys().hasOnly([
                         'lastMessage', 'lastMessageAt', 'lastMessageSenderId',
-                        'status', 'unreadCount', 'typing', 'updatedAt',
-                        'lastEmailNotification', 'emailNotificationSent', 'emailNotificationSentAt',
-                        'reminderSentAt'
+                        'status', 'unreadCount', 'typing', 'updatedAt'
                       ]);
       
       allow delete: if isAdmin();
@@ -376,7 +377,7 @@ service cloud.firestore {
                      currentUserId() == resource.data.sellerId ||
                      isAdmin());
       
-      allow create: if isAuthenticated() &&
+      allow create: if hasVerifiedEmail() &&
                       exists(/databases/$(database)/documents/vans/$(request.resource.data.vanId)) &&
                       isValidReservationCreate(get(/databases/$(database)/documents/vans/$(request.resource.data.vanId)));
       
@@ -384,7 +385,8 @@ service cloud.firestore {
                       currentUserId() == resource.data.buyerId &&
                       (
                         (
-                          resource.data.status in ['pending', 'paid'] &&
+                          resource.data.status == 'pending' &&
+                          !('checkoutSessionId' in resource.data) &&
                           resource.data.buyerConfirmed != true &&
                           request.resource.data.status == 'cancelled' &&
                           onlyUpdating(['status', 'cancelledAt', 'cancelledBy', 'cancellationReason', 'updatedAt']) &&
@@ -416,7 +418,8 @@ service cloud.firestore {
                       currentUserId() == resource.data.sellerId &&
                       (
                         (
-                          resource.data.status in ['pending', 'paid'] &&
+                          resource.data.status == 'pending' &&
+                          !('checkoutSessionId' in resource.data) &&
                           resource.data.buyerConfirmed != true &&
                           request.resource.data.status == 'cancelled' &&
                           onlyUpdating(['status', 'cancelledAt', 'cancelledBy', 'cancellationReason', 'updatedAt']) &&
@@ -501,7 +504,7 @@ service cloud.firestore {
     // ═══════════════════════════════════════════════════════════════════
     
     match /settings/{settingId} {
-      allow read: if true;
+      allow read: if settingId == 'public' || isAdmin();
       allow create, update, delete: if isAdmin();
     }
     

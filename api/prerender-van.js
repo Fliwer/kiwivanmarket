@@ -154,7 +154,7 @@ module.exports = async function handler(req, res) {
       { '@type': 'ListItem', position: locSlug ? 3 : 2, name: van.title || 'Campervan', item: url },
     ].filter(Boolean),
   };
-  const cleanLd = (o) => JSON.parse(JSON.stringify(o));
+  const cleanLd = (o) => JSON.stringify(o).replace(/</g, '\\u003c');
 
   const specRows = [
     ['Price', price + (sold ? ' — SOLD' : '')],
@@ -190,8 +190,8 @@ ${van.price ? `<meta property="product:price:amount" content="${esc(van.price)}"
 <meta name="twitter:title" content="${esc(title)} | Kiwi Van Market">
 <meta name="twitter:description" content="${esc(metaDesc)}">
 ${images[0] ? `<meta name="twitter:image" content="${esc(cdnImg(images[0], 1200))}">` : ''}
-<script type="application/ld+json">${JSON.stringify(cleanLd(vehicleLd))}</script>
-<script type="application/ld+json">${JSON.stringify(cleanLd(breadcrumbLd))}</script>
+<script type="application/ld+json">${cleanLd(vehicleLd)}</script>
+<script type="application/ld+json">${cleanLd(breadcrumbLd)}</script>
 <style>body{font-family:system-ui,sans-serif;max-width:760px;margin:0 auto;padding:16px;color:#1e293b;line-height:1.6}img{max-width:100%;height:auto;border-radius:8px}table{border-collapse:collapse;width:100%}td{padding:6px 10px;border-bottom:1px solid #e2e8f0}td:first-child{font-weight:600;width:40%}.price{font-size:1.5rem;font-weight:800;color:#059669}.sold{color:#dc2626}nav a{margin-right:12px}</style>
 </head>
 <body>

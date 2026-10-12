@@ -29,6 +29,22 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 // Initialiser Firebase Admin
 admin.initializeApp();
 const db = admin.firestore();
+const { consumeRateLimit } = require('./abuseProtection');
+
+async function enforceRateLimit(request, action, limit) {
+  if (request.auth) {
+    const profile = await db.collection('users').doc(request.auth.uid).get();
+    if (profile.data()?.banned === true) throw new HttpsError('permission-denied', 'Account disabled.');
+  }
+  // rawRequest.ip is supplied by the managed HTTP runtime; never trust a client payload IP.
+  const identity = request.auth?.uid || request.rawRequest?.ip || 'unknown';
+  if (!await consumeRateLimit(db, action, 'global-budget', limit * 20)) {
+    throw new HttpsError('resource-exhausted', 'Service quota reached. Please try again later.');
+  }
+  if (!await consumeRateLimit(db, action, identity, limit)) {
+    throw new HttpsError('resource-exhausted', 'Too many requests. Please try again later.');
+  }
+}
 
 // Escape HTML to prevent XSS in email templates
 function escapeHtml(str) {
@@ -61,7 +77,6 @@ exports.onNewConversation = onDocumentCreated(
     const conversationId = event.params.conversationId;
 
     console.log(`📧 New conversation created: ${conversationId}`);
-    console.log('📝 Conversation data:', JSON.stringify(conversation, null, 2));
 
     // ✅ Support multiple ways to get sellerId (backward compatibility)
     const sellerId = conversation.sellerId ||
@@ -82,11 +97,11 @@ exports.onNewConversation = onDocumentCreated(
       }
       const resend = new Resend(apiKey);
 
-      // ✅ D'abord essayer de récupérer l'email depuis participantEmails (plus fiable)
-      let sellerEmail = conversation.participantEmails?.[sellerId];
+      // Email comes from the protected user profile, never from client conversation data.
+      let sellerEmail;
       let sellerName = conversation.participantNames?.[sellerId] || 'there';
 
-      // Si pas d'email dans la conversation, chercher dans users
+      // Read the recipient profile written with an authenticated email.
       if (!sellerEmail) {
         const sellerDoc = await db.collection('users').doc(sellerId).get();
         if (!sellerDoc.exists) {
@@ -245,7 +260,7 @@ exports.onNewMessage = onDocumentCreated(
       }
 
       // Get recipient email
-      let recipientEmail = conv.participantEmails?.[recipientId];
+      let recipientEmail;
       let recipientName = conv.participantNames?.[recipientId] || 'there';
 
       if (!recipientEmail) {
@@ -397,7 +412,7 @@ exports.sendReminderEmails = onSchedule(
         if (!recipientId) continue;
 
         // Get recipient email
-        let recipientEmail = conv.participantEmails?.[recipientId];
+        let recipientEmail;
         let recipientName = conv.participantNames?.[recipientId] || 'there';
 
         if (!recipientEmail) {
@@ -956,8 +971,9 @@ exports.fetchCarJamData = onCall(
       throw new HttpsError('unauthenticated', 'You must be logged in to fetch vehicle data.');
     }
 
-    const { plate } = request.data;
-    if (!plate || plate.trim() === '') {
+    await enforceRateLimit(request, 'carjam', 10);
+    const plate = request.data?.plate;
+    if (typeof plate !== 'string' || !/^[A-Za-z0-9 -]{1,12}$/.test(plate)) {
       throw new HttpsError('invalid-argument', 'License plate is required.');
     }
 
@@ -1021,8 +1037,10 @@ exports.generateVanDescription = onCall(
       throw new HttpsError('unauthenticated', 'You must be logged in to use AI Assistant.');
     }
 
+    await enforceRateLimit(request, 'description', 10);
     const vanData = request.data;
-    if (!vanData || !vanData.title) {
+    if (!vanData || typeof vanData.title !== 'string' || vanData.title.length > 200 ||
+        !vanData.title.trim() || JSON.stringify(vanData).length > 12000) {
       throw new HttpsError('invalid-argument', 'Van title and basic info are required.');
     }
 
@@ -1076,7 +1094,7 @@ exports.generateVanDescription = onCall(
       };
     } catch (error) {
       console.error('❌ AI Generation error:', error);
-      throw new HttpsError('internal', 'Failed to generate description: ' + error.message);
+      throw new HttpsError('internal', 'Failed to generate description.');
     }
   }
 );
@@ -1085,6 +1103,13 @@ exports.generateVanDescription = onCall(
 // 💳 STRIPE PAYMENTS - Production Grade
 // ============================================
 const Stripe = require('stripe');
+const { isSafeReturnUrl, isTestPaymentKey, sessionMatchesReservation, refundParameters } = require('./paymentSecurity');
+
+function requireTestPayments() {
+  if (!isTestPaymentKey(stripeSecretKey.value())) {
+    throw new HttpsError('failed-precondition', 'Real payments are disabled pending security validation. Use Stripe test mode.');
+  }
+}
 
 const ALLOWED_ORIGINS = [
   'https://kiwivanmarket.com',
@@ -1147,7 +1172,7 @@ async function verifyAuthToken(req) {
     throw new HttpsError('unauthenticated', 'Invalid authentication token');
   }
   try {
-    return await admin.auth().verifyIdToken(idToken);
+    return await admin.auth().verifyIdToken(idToken, true);
   } catch (error) {
     console.error('❌ Invalid token:', error.message);
     throw new HttpsError('unauthenticated', 'Invalid authentication token');
@@ -1186,9 +1211,12 @@ async function refreshStripeAccountSnapshot(stripe, uid) {
 exports.createStripeConnectAccount = onCall(
   { secrets: [stripeSecretKey], timeoutSeconds: 60 },
   async (request) => {
+    requireTestPayments();
     if (!request.auth) {
       throw new HttpsError('unauthenticated', 'Authentication required.');
     }
+    if (!request.auth.token.email_verified) throw new HttpsError('permission-denied', 'Verified email required.');
+    await enforceRateLimit(request, 'connect', 10);
 
     const uid = request.auth.uid;
     const email = request.auth.token.email || null;
@@ -1211,7 +1239,7 @@ exports.createStripeConnectAccount = onCall(
           userId: uid,
           source: 'kiwivanmarket',
         },
-      });
+      }, { idempotencyKey: `connect_account_${uid}` });
       accountId = account.id;
       await stripeRef.set(
         {
@@ -1295,6 +1323,9 @@ exports.createCheckoutSession = onRequest(
 
     try {
       const decoded = await verifyAuthToken(req);
+      if (!decoded.email_verified) return res.status(403).json({ error: 'Verified email required.' });
+      requireTestPayments();
+      await enforceRateLimit({ auth: { uid: decoded.uid } }, 'checkout', 10);
       const reservationId = String(req.body?.reservationId || '').trim();
       const vanId = String(req.body?.vanId || '').trim();
       const successUrl = String(req.body?.successUrl || '').trim();
@@ -1302,6 +1333,11 @@ exports.createCheckoutSession = onRequest(
 
       if (!reservationId || !vanId || !successUrl || !cancelUrl) {
         return res.status(400).json({ error: 'Missing required payload.' });
+      }
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(reservationId) || !/^[A-Za-z0-9_-]{1,128}$/.test(vanId) ||
+          !isSafeReturnUrl(successUrl, process.env.FUNCTIONS_EMULATOR === 'true') ||
+          !isSafeReturnUrl(cancelUrl, process.env.FUNCTIONS_EMULATOR === 'true')) {
+        return res.status(400).json({ error: 'Invalid reference or return URL.' });
       }
 
       const reservationRef = db.collection('reservations').doc(reservationId);
@@ -1328,8 +1364,9 @@ exports.createCheckoutSession = onRequest(
       const vanDoc = await db.collection('vans').doc(vanId).get();
       if (!vanDoc.exists) return res.status(404).json({ error: 'Van not found.' });
       const van = vanDoc.data();
+      if (van.status !== 'active') return res.status(409).json({ error: 'Listing is not available.' });
       const sellerId = van?.seller?.uid;
-      if (!sellerId || reservation.sellerId !== sellerId) {
+      if (!sellerId || reservation.sellerId !== sellerId || sellerId === decoded.uid) {
         return res.status(400).json({ error: 'Seller mismatch.' });
       }
 
@@ -1340,8 +1377,8 @@ exports.createCheckoutSession = onRequest(
         return res.status(409).json({ error: 'Seller payment account is not ready yet.' });
       }
 
-      const vanPrice = Number(van?.price || reservation.vanPrice || 0);
-      if (!Number.isFinite(vanPrice) || vanPrice <= 0) {
+      const vanPrice = Number(van.price);
+      if (!Number.isFinite(vanPrice) || vanPrice < PAYMENT_CONFIG.MIN_DEPOSIT || vanPrice > 500000) {
         return res.status(400).json({ error: 'Invalid van price.' });
       }
 
@@ -1413,6 +1450,7 @@ exports.createCheckoutSession = onRequest(
           platformFee,
           sellerPayout,
           remainingBalance,
+          vanPrice,
           currency: PAYMENT_CONFIG.CURRENCY.toUpperCase(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         },
@@ -1423,7 +1461,7 @@ exports.createCheckoutSession = onRequest(
     } catch (error) {
       console.error('❌ createCheckoutSession error:', error);
       const message = error instanceof HttpsError ? error.message : 'Failed to create checkout session';
-      return res.status(500).json({ error: message });
+      return res.status(error.code === 'unauthenticated' ? 401 : error.code === 'failed-precondition' ? 409 : 500).json({ error: message });
     }
   }
 );
@@ -1433,25 +1471,16 @@ async function markReservationPaidFromSession(session) {
   if (!reservationId) return;
 
   const reservationRef = db.collection('reservations').doc(reservationId);
-  const reservationDoc = await reservationRef.get();
-  if (!reservationDoc.exists) return;
-  const reservation = reservationDoc.data();
-
-  if (['paid', 'buyer_confirmed', 'completed', 'cancelled', 'expired'].includes(reservation.status)) {
-    return;
-  }
-
-  const vanDoc = await db.collection('vans').doc(reservation.vanId).get();
-  const vanPrice = Number(vanDoc.data()?.price || reservation.vanPrice || 0);
-  const expectedDeposit = calculateDepositFromPrice(vanPrice);
-  const amountPaid = Number(session.amount_total || 0) / 100;
-  if (Math.round(amountPaid) !== Math.round(expectedDeposit)) {
-    console.error('❌ Amount mismatch in Stripe webhook', { reservationId, amountPaid, expectedDeposit });
-    return;
-  }
-
-  await reservationRef.set(
-    {
+  await db.runTransaction(async (transaction) => {
+    const reservationDoc = await transaction.get(reservationRef);
+    if (!reservationDoc.exists) throw new Error('Payment reservation missing');
+    const reservation = reservationDoc.data();
+    if (!sessionMatchesReservation(session, reservation, reservationId)) {
+      throw new Error('Payment session does not match reservation');
+    }
+    if (['paid', 'confirmed', 'buyer_confirmed', 'completed'].includes(reservation.status)) return;
+    if (reservation.status !== 'pending') throw new Error('Payment requires manual reconciliation');
+    transaction.update(reservationRef, {
       status: 'paid',
       paidAt: admin.firestore.FieldValue.serverTimestamp(),
       paymentIntentId: session.payment_intent || null,
@@ -1459,9 +1488,8 @@ async function markReservationPaidFromSession(session) {
       checkoutUrl: admin.firestore.FieldValue.delete(),
       sellerResponseDeadline: new Date(Date.now() + PAYMENT_CONFIG.SELLER_RESPONSE_HOURS * 60 * 60 * 1000),
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    },
-    { merge: true }
-  );
+    });
+  });
 }
 
 exports.stripeWebhook = onRequest(
@@ -1484,7 +1512,7 @@ exports.stripeWebhook = onRequest(
         return res.status(200).json({ received: true, duplicate: true });
       }
 
-      if (event.type === 'checkout.session.completed') {
+      if (['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type)) {
         await markReservationPaidFromSession(event.data.object);
       }
 
@@ -1496,7 +1524,8 @@ exports.stripeWebhook = onRequest(
       return res.status(200).json({ received: true });
     } catch (error) {
       console.error('❌ Stripe webhook error:', error);
-      return res.status(400).send(`Webhook Error: ${error.message}`);
+      // Non-2xx triggers Stripe retries; do not disclose internal error details.
+      return res.status(500).send('Webhook processing failed');
     }
   }
 );
@@ -1579,22 +1608,34 @@ exports.cancelReservation = onCall(
     if (!isParticipant && request.auth.token.admin !== true) {
       throw new HttpsError('permission-denied', 'Access denied.');
     }
-    if (['completed', 'cancelled', 'expired'].includes(reservation.status)) {
+    if (!['pending', 'paid', 'confirmed'].includes(reservation.status)) {
       throw new HttpsError('failed-precondition', 'Reservation cannot be cancelled anymore.');
     }
 
     let refundId = null;
-    if (reservation.status === 'paid' && reservation.paymentIntentId) {
+    let refundStatus = null;
+    if (reservation.status === 'pending' && reservation.checkoutSessionId) {
       const stripe = getStripeClient();
-      const refund = await stripe.refunds.create({
-        payment_intent: reservation.paymentIntentId,
-        reason: 'requested_by_customer',
-        metadata: {
-          reservationId,
-          cancelledBy: request.auth.uid,
-        },
-      });
+      const session = await stripe.checkout.sessions.retrieve(reservation.checkoutSessionId);
+      if (session.status === 'complete') {
+        throw new HttpsError('failed-precondition', 'Payment is being reconciled. Please retry after payment confirmation.');
+      }
+      if (session.status === 'open') await stripe.checkout.sessions.expire(session.id);
+    }
+    if (['paid', 'confirmed'].includes(reservation.status) && !reservation.paymentIntentId) {
+      throw new HttpsError('failed-precondition', 'Payment reference missing; manual reconciliation required.');
+    }
+    if (['paid', 'confirmed'].includes(reservation.status) && reservation.paymentIntentId) {
+      const stripe = getStripeClient();
+      const refund = await stripe.refunds.create(
+        refundParameters(reservation, reservationId, request.auth.uid),
+        { idempotencyKey: `reservation_refund_${reservationId}` }
+      );
+      if (!['succeeded', 'pending'].includes(refund.status)) {
+        throw new HttpsError('failed-precondition', 'Refund failed; reservation has not been cancelled.');
+      }
       refundId = refund.id;
+      refundStatus = refund.status;
     }
 
     await ref.set(
@@ -1604,6 +1645,7 @@ exports.cancelReservation = onCall(
         cancelledBy: request.auth.uid,
         cancellationReason: reason || null,
         refundId,
+        refundStatus,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
@@ -1621,7 +1663,7 @@ exports.cancelReservation = onCall(
 const CONTACT_RECIPIENT = 'kiwivanmarket.contact@gmail.com';
 
 exports.sendContactMessage = onCall(
-  { secrets: [resendApiKey] },
+  { secrets: [resendApiKey], maxInstances: 3 },
   async (request) => {
     const data = request.data || {};
     const name = String(data.name || '').trim().slice(0, 100);
@@ -1641,6 +1683,7 @@ exports.sendContactMessage = onCall(
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new HttpsError('invalid-argument', 'Please enter a valid email address.');
     }
+    await enforceRateLimit(request, 'contact', 5);
 
     const apiKey = resendApiKey.value();
     if (!apiKey) {
@@ -1692,7 +1735,7 @@ exports.sendContactMessage = onCall(
 // 🚩 REPORT LISTING — acheteur signale un van vendu / sans reponse
 // ============================================
 exports.reportListing = onCall(
-  { secrets: [resendApiKey] },
+  { secrets: [resendApiKey], maxInstances: 3 },
   async (request) => {
     const data = request.data || {};
     const vanId = String(data.vanId || '').trim().slice(0, 100);
@@ -1706,6 +1749,7 @@ exports.reportListing = onCall(
     if (!vanId) {
       throw new HttpsError('invalid-argument', 'Missing listing reference.');
     }
+    await enforceRateLimit(request, 'report', 5);
     const REASONS = {
       sold: 'Already sold',
       no_response: 'Seller not responding',
@@ -1904,12 +1948,13 @@ exports.listingLifecycle = onSchedule(
       try {
         // 2. Rappel envoyé, toujours aucune réponse 30 jours plus tard → pause.
         if (remindedAt && remindedAt > lastSignal && now - remindedAt > LIFECYCLE.PAUSE_AFTER_MS) {
-          const token = van.availabilityToken || crypto.randomBytes(24).toString('hex');
+          const token = crypto.randomBytes(24).toString('hex');
+          await doc.ref.collection('private').doc('lifecycle').set({ availabilityToken: token });
           await doc.ref.update({
             status: 'paused',
             expiredAt: admin.firestore.FieldValue.serverTimestamp(),
             expiredReason: 'no_confirmation',
-            availabilityToken: token,
+            availabilityToken: admin.firestore.FieldValue.delete(),
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           });
           if (stats.reminded + stats.paused < LIFECYCLE.MAX_EMAILS_PER_RUN) {
@@ -1928,6 +1973,7 @@ exports.listingLifecycle = onSchedule(
         if (now - lastSignal > LIFECYCLE.REMIND_AFTER_MS && remindedAt <= lastSignal) {
           if (stats.reminded + stats.paused >= LIFECYCLE.MAX_EMAILS_PER_RUN) { stats.skipped++; continue; }
           const token = crypto.randomBytes(24).toString('hex');
+          await doc.ref.collection('private').doc('lifecycle').set({ availabilityToken: token });
           const daysListed = Math.round((now - toMs(van.createdAt)) / 86400000);
           await resend.emails.send({
             from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
@@ -1937,7 +1983,7 @@ exports.listingLifecycle = onSchedule(
           });
           await doc.ref.update({
             availabilityReminderSentAt: admin.firestore.FieldValue.serverTimestamp(),
-            availabilityToken: token,
+            availabilityToken: admin.firestore.FieldValue.delete(),
           });
           stats.reminded++;
         }
@@ -1968,7 +2014,9 @@ exports.listingAction = onRequest({ cors: false }, async (req, res) => {
   const snap = await ref.get();
   if (!snap.exists) return page('Listing not found', 'This listing no longer exists.', false);
   const van = snap.data();
-  const expected = String(van.availabilityToken || '');
+  // Never accept a legacy token from the public listing: it must be treated as leaked.
+  const lifecycle = await ref.collection('private').doc('lifecycle').get();
+  const expected = String(lifecycle.data()?.availabilityToken || '');
   const given = Buffer.from(token);
   const exp = Buffer.from(expected);
   if (!expected || given.length !== exp.length || !crypto.timingSafeEqual(given, exp)) {
@@ -2106,7 +2154,7 @@ const alertEmailShell = (title, inner, lang, footerLinks) => `
   </div>`;
 
 // Création (sans compte). Plafond par email, validation, email de confirmation.
-exports.createAlert = onCall({ secrets: [resendApiKey] }, async (request) => {
+exports.createAlert = onCall({ secrets: [resendApiKey], maxInstances: 3 }, async (request) => {
   const d = request.data || {};
   const email = String(d.email || '').trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 200) {
@@ -2115,6 +2163,10 @@ exports.createAlert = onCall({ secrets: [resendApiKey] }, async (request) => {
   const criteria = normalizeCriteria(d.criteria);
   if (!criteria.location && !criteria.brand && !criteria.priceMax && !criteria.selfContained) {
     throw new HttpsError('invalid-argument', 'Pick at least one criterion.');
+  }
+  await enforceRateLimit(request, 'alert', 5);
+  if (!await consumeRateLimit(db, 'alert-email', email, 5)) {
+    throw new HttpsError('resource-exhausted', 'Too many alerts for this email.');
   }
   const lang = alertLang(String(d.lang || 'en').slice(0, 2));
   const label = alertLabel(criteria, lang);
@@ -2188,6 +2240,8 @@ exports.onVanCreatedNotifyAlerts = onDocumentCreated(
       const safeTitle = escapeHtml(van.title || 'Campervan');
       let sent = 0;
       for (const [email, a] of byEmail) {
+        // Cap fan-out even when a verified account creates many fake listings.
+        if (!await consumeRateLimit(db, 'listing-alert-delivery', 'global', 50)) break;
         const lang = alertLang(a.lang);
         const T = alertCopy[lang];
         const vanUrl = `https://kiwivanmarket.com/van/${vanId}${lang === 'fr' ? '?lang=fr' : ''}`;

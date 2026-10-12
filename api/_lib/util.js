@@ -36,6 +36,9 @@ const esc = (s) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
   );
 
+// HTML parsers terminate a script at </script>, even inside a JSON string.
+const jsonForHtml = (value) => JSON.stringify(value).replace(/</g, '\\u003c');
+
 // ── Images Cloudinary optimisées ────────────────────────────────────────────
 const cdnImg = (url, w) =>
   typeof url === 'string' && url.includes('/upload/')
@@ -184,7 +187,7 @@ ${alternateTags}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(metaDesc)}">
-${jsonLd.map((o) => `<script type="application/ld+json">${JSON.stringify(JSON.parse(JSON.stringify(o)))}</script>`).join('\n')}
+${jsonLd.map((o) => `<script type="application/ld+json">${jsonForHtml(o)}</script>`).join('\n')}
 <style>body{font-family:system-ui,sans-serif;max-width:820px;margin:0 auto;padding:16px;color:#1e293b;line-height:1.6}img{max-width:100%;height:auto;border-radius:8px}ul{padding-left:20px}li{margin-bottom:12px}nav a{margin-right:12px}blockquote{border-left:3px solid #059669;margin:12px 0;padding:6px 14px;background:#f0fdf4}.stats td{padding:6px 12px;border-bottom:1px solid #e2e8f0}</style>
 </head>
 <body>

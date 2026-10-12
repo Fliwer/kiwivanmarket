@@ -26,6 +26,13 @@ yarn-debug.log*
 yarn-error.log*
 .env
 functions/.env
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules/
+firebase-debug*.log
+firestore-debug*.log
+reports-security-*.json
 serviceAccountKey.json
 serviceAccountKey.json.json
 nul
