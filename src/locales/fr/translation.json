@@ -281,6 +281,15 @@
         "plate_tooltip_desc": "Ajouter votre plaque permet aux acheteurs de vérifier l'historique de votre van sur CarJam (WOF, REGO, kilométrage). Cela augmente considérablement la confiance et l'intérêt !"
     },
     "listings": {
+        "loading": "Chargement des annonces…",
+        "page_range": "Annonces {{start}}–{{end}} sur {{count}}",
+        "previous_page": "Page précédente",
+        "next_page": "Page suivante",
+        "include_sold": "Inclure les vans vendus",
+        "results_available_one": "{{count}} van proposé à la vente",
+        "results_available_other": "{{count}} vans proposés à la vente",
+        "results_all_one": "{{count}} annonce, vans vendus inclus",
+        "results_all_other": "{{count}} annonces, vans vendus inclus",
         "recently_added": "Annonces récentes",
         "recently_added_highlight": "de vans",
         "fresh_listings": "Nouvelles annonces publiées par des backpackers en Nouvelle-Zélande",

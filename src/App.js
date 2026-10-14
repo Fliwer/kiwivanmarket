@@ -169,6 +169,7 @@ function MainApp({
   const [currency, setCurrency] = useState('NZD');
   const [loading, setLoading] = useState(initializedVans.length === 0);
   const [sortBy, setSortBy] = useState('newest');
+  const [includeSold, setIncludeSold] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [listingsPage, setListingsPage] = useState(1);
@@ -270,6 +271,7 @@ function MainApp({
     const brandKw = filters.brand && filters.brand !== 'all' ? (BRAND_KEYWORDS[filters.brand] || [filters.brand]) : null;
     let filtered = vans.filter(van => {
       if (van.status && van.status !== 'active' && van.status !== 'sold') return false;
+      if (!includeSold && van.status === 'sold') return false;
       const matchSearch = !searchTerm || [van.title, van.location, van.description].some(s => s?.toLowerCase().includes(searchTerm.toLowerCase()));
       const price = van.price || 0;
       const matchPrice = price >= filters.priceMin && price <= filters.priceMax;
@@ -303,7 +305,7 @@ function MainApp({
     });
 
     setFilteredVans(filtered);
-  }, [searchTerm, filters, vans, sortBy]);
+  }, [searchTerm, filters, vans, sortBy, includeSold]);
 
   const formatPrice = (price) => {
     const curr = CURRENCIES[currency] || CURRENCIES.NZD;
@@ -489,6 +491,7 @@ function MainApp({
           loading={loading} filteredVans={filteredVans} allVans={vans}
           searchTerm={searchTerm} setSearchTerm={setSearchTerm}
           sortBy={sortBy} setSortBy={setSortBy}
+          includeSold={includeSold} setIncludeSold={setIncludeSold}
           formatPrice={formatPrice}
           onSelectVan={setSelectedVan}
           setShowAuthModal={setShowAuthModal}

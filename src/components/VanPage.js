@@ -1530,7 +1530,7 @@ ${shareUrl}
         </AnimatePresence>
 
         {/* Sticky Mobile Action Bar - HIGH CONVERSION TOOL */}
-        {!isOwner && van.status !== 'sold' && (
+        {!isOwner && !showAuthModal && van.status !== 'sold' && (
           <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[150] p-4 safe-bottom pointer-events-none">
             <motion.div
               initial={{ y: 100 }}

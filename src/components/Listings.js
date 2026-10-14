@@ -38,6 +38,8 @@ export default function Listings({
     setSearchTerm,
     sortBy,
     setSortBy,
+    includeSold = false,
+    setIncludeSold,
     formatPrice,
     setShowAuthModal,
     onPageChange
@@ -176,8 +178,19 @@ export default function Listings({
                             {t('listings.recently_added')} <span className="text-emerald-600">{t('listings.recently_added_highlight')}</span>
                         </h2>
                         <p className="text-slate-500 font-medium mt-1">
-                            {filteredVans.length} {filteredVans.length === 1 ? 'exceptional van' : 'exceptional vans'} found
+                            {t(includeSold ? 'listings.results_all' : 'listings.results_available', { count: filteredVans.length })}
                         </p>
+                        {setIncludeSold && (
+                            <label className="mt-3 inline-flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={includeSold}
+                                    onChange={(event) => { setIncludeSold(event.target.checked); setCurrentPage(1); }}
+                                    className="w-4 h-4 accent-emerald-600"
+                                />
+                                {t('listings.include_sold')}
+                            </label>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -214,7 +227,7 @@ export default function Listings({
                         <div className="w-16 h-16 border-4 border-emerald-100 rounded-full"></div>
                         <div className="absolute top-0 left-0 w-16 h-16 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
                     </div>
-                    <p className="text-xl text-slate-600 font-bold mt-6">Searching the best vans...</p>
+                    <p className="text-xl text-slate-600 font-bold mt-6">{t('listings.loading')}</p>
                 </div>
             ) : (
                 <>
@@ -240,13 +253,13 @@ export default function Listings({
                     {totalPages > 1 && (
                         <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
                             <p className="text-sm text-slate-500 font-medium">
-                                Showing {Math.min(pageStart + 1, filteredVans.length)}-{Math.min(pageEnd, filteredVans.length)} of {filteredVans.length} vans
+                                {t('listings.page_range', { start: Math.min(pageStart + 1, filteredVans.length), end: Math.min(pageEnd, filteredVans.length), count: filteredVans.length })}
                             </p>
                             <div className="flex items-center gap-1.5 flex-wrap justify-center">
                                 <button
                                     onClick={() => goToPage(currentPage - 1)}
                                     disabled={currentPage === 1}
-                                    aria-label="Previous page"
+                                    aria-label={t('listings.previous_page')}
                                     className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-black text-base leading-none disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition"
                                 >
                                     ‹
@@ -270,7 +283,7 @@ export default function Listings({
                                 <button
                                     onClick={() => goToPage(currentPage + 1)}
                                     disabled={currentPage === totalPages}
-                                    aria-label="Next page"
+                                    aria-label={t('listings.next_page')}
                                     className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-black text-base leading-none disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition"
                                 >
                                     ›
@@ -307,14 +320,14 @@ export default function Listings({
                             <div className="w-20 h-20 bg-white rounded-3xl shadow-xl flex items-center justify-center mx-auto mb-6 text-slate-300">
                                 <Search size={40} />
                             </div>
-                            <h3 className="text-2xl font-black text-slate-900 mb-2">No vans found</h3>
-                            <p className="text-slate-500 max-w-sm mx-auto">Try adjusting your filters or search term to discover more adventures.</p>
+                            <h3 className="text-2xl font-black text-slate-900 mb-2">{t('filters.no_results')}</h3>
+                            <p className="text-slate-500 max-w-sm mx-auto">{t('filters.no_results_desc')}</p>
                             <div className="mt-5"><AlertCta variant="inline" source="home_empty" /></div>
                             <button
                                 onClick={() => setSearchTerm('')}
                                 className="mt-8 text-emerald-600 font-bold hover:underline"
                             >
-                                Reset all filters
+                                {t('filters.clear_search')}
                             </button>
                         </div>
                     )}

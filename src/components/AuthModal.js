@@ -181,7 +181,7 @@ export default function AuthModal({ isOpen, onClose }) {
         onClick={onClose}
       >
         <div
-          className="bg-white rounded-3xl max-w-md w-full p-8 relative shadow-2xl transform transition-all"
+          className="bg-white rounded-3xl max-w-md w-full max-h-[calc(100dvh-2rem)] overflow-y-auto p-8 relative shadow-2xl transform transition-all"
           onClick={(e) => e.stopPropagation()}
         >
           <button
