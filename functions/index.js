@@ -2488,7 +2488,7 @@ async function runFinalNotices() {
       const van = doc.data();
       stats.scanned++;
       try {
-        if (van.finalNoticeSentAt) { stats.skipped++; continue; }
+        if (van.finalNoticeSentAt || boostIsActive(van, now)) { stats.skipped++; continue; }
 
         const lastSignal = Math.max(toMs(van.createdAt), toMs(van.availabilityConfirmedAt));
         const remindedAt = toMs(van.availabilityReminderSentAt);
@@ -2501,13 +2501,10 @@ async function runFinalNotices() {
         const contact = await getSellerContact(doc.ref, van);
         if (!contact.email) { stats.skipped++; continue; }
 
-        // Le jeton pose par le premier rappel reste valable ; on en cree un
-        // seulement s'il manque, sinon les liens deja envoyes seraient casses.
-        let token = van.availabilityToken;
-        if (!token) {
-          token = crypto.randomBytes(24).toString('hex');
-          await doc.ref.update({ availabilityToken: token });
-        }
+        const { ensurePrivateLifecycleToken } = require('./lifecycleToken');
+        const token = await ensurePrivateLifecycleToken(db, doc.ref,
+          () => crypto.randomBytes(24).toString('hex'),
+          () => admin.firestore.FieldValue.delete());
 
         await resend.emails.send({
           from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',

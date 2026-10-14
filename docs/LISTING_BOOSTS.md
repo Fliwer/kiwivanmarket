@@ -44,7 +44,7 @@ Après ces validations seulement, définir `BOOST_PAYMENTS_LIVE_ENABLED=true` da
 Commandes :
 
 ```text
-node --test scripts/boost.test.cjs scripts/security.test.cjs
+node --test scripts/boost.test.cjs scripts/security.test.cjs scripts/lifecycle-token.test.cjs
 npm test -- --watchAll=false --runInBand --silent
 node scripts/security-firebase-checks.cjs
 node scripts/check-boost-stripe.cjs
@@ -53,3 +53,5 @@ node scripts/check-boost-stripe.cjs
 Le script Stripe affiche seulement les états de configuration. `--verify-checkout` crée puis expire les sessions de validation **uniquement en test**. `--configure-test-webhook` ajoute les événements nécessaires au seul endpoint existant du site, sans remplacer son secret de signature et sans modifier de webhook live.
 
 L'encaissement et le rendu d'un paiement complet sur le site connecté restent à valider avec le propriétaire dans le sandbox. Les tests automatisés des services utilisent des doubles de Stripe/Firestore ; ils ne prouvent pas à eux seuls tout le parcours hébergé.
+
+Le dernier rappel de disponibilité utilise aussi `private/lifecycle`, conserve uniquement les jetons privés et ignore les boosts actifs. Les jetons publics réintroduits par l'ancien rappel ont été retirés ; ils ne sont jamais repris comme jetons privés valides. Les anciens liens concernés nécessitent une connexion via Mes annonces.
