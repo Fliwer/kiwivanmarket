@@ -148,11 +148,12 @@ function createBoostService({ db, stripe, getKey, liveEnabled, FV, HttpsError, r
         const oldSnap = await tx.get(oldRef);
         const old = oldSnap.data();
         // An existing checkout must be reconciled/expired before creating another one.
-        if (old?.status === 'pending' && (old.checkoutSessionId || millis(old.checkoutExpiresAt) > now())) {
+        if (old?.ownerId === uid && old.vanId === vanId && old.status === 'pending' &&
+            (old.checkoutSessionId || millis(old.checkoutExpiresAt) > now())) {
           if (old.planId !== plan.id) fail('failed-precondition', 'Complete or cancel the pending checkout first.', { orderId: oldSnap.id });
           return { id: oldSnap.id, order: old };
         }
-        if (old?.status === 'pending') tx.update(oldRef, { status: 'expired', updatedAt: FV.serverTimestamp() });
+        if (old?.ownerId === uid && old.status === 'pending') tx.update(oldRef, { status: 'expired', updatedAt: FV.serverTimestamp() });
       }
       const order = { ownerId: uid, vanId, planId: plan.id, days: plan.days,
         amountCents: plan.amountCents, currency: plan.currency, livemode: state.mode === 'live',

@@ -94,6 +94,15 @@ test('concurrent checkout requests reuse one order and one Stripe session', asyn
   await assert.rejects(f.service.checkout(f.request('month')));
 });
 
+test('a leftover lock from another owner cannot disclose or reuse their Checkout', async () => {
+  const f = fixture();
+  f.data.set('vans/van/private/boostLock', { orderId: 'foreign' });
+  f.data.set('boostOrders/foreign', { ownerId: 'other', vanId: 'van', status: 'pending', planId: 'fortnight', checkoutSessionId: 'cs_foreign' });
+  const result = await f.service.checkout(f.request());
+  assert.notEqual(result.orderId, 'foreign');
+  assert.equal(f.data.get('boostOrders/foreign').status, 'pending');
+});
+
 test('non-admin users cannot buy or advertise free test boosts', async () => {
   const f = fixture(); const request = f.request(); request.auth.token.admin = false;
   assert.equal((await f.service.catalog(request)).available, false);
