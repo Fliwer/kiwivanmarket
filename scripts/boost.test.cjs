@@ -214,5 +214,7 @@ test('live payments require an explicit opt-in and catalog duration/price stay f
   assert.equal(keyState('sk_live_fixture', false).available, false);
   assert.equal(keyState('sk_live_fixture', true).available, true);
   assert.equal(keyState('', true).available, false);
+  assert.equal(keyState('\n sk_test_fixture \r\n', false).available, true);
+  assert.equal(keyState('\n sk_live_fixture \r\n', false).available, false);
   assert.deepEqual(Object.values(PLANS).map((p) => [p.days, p.amountCents]), [[14, 3000], [28, 5000]]);
 });

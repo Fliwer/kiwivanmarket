@@ -11,6 +11,7 @@ const millis = (value) => value?.toMillis ? value.toMillis() : value?.seconds !=
 const activeBoost = (van, now = Date.now()) => van?.status === 'active' && van.boostState === 'active' && millis(van.boostExpiresAt) > now;
 
 function keyState(key, liveEnabled) {
+  key = typeof key === 'string' ? key.trim() : key;
   if (typeof key !== 'string' || !/^(sk|rk)_(test|live)_/.test(key)) return { available: false, mode: 'test', reason: 'setup' };
   const mode = key.includes('_live_') ? 'live' : 'test';
   if (createHash('sha256').update(key).digest('hex') === LEAKED_KEY_HASH) return { available: false, mode, reason: 'key_rotation' };

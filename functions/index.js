@@ -1169,7 +1169,7 @@ const PAYMENT_CONFIG = {
 };
 
 function getStripeClient() {
-  const key = stripeSecretKey.value();
+  const key = stripeSecretKey.value().trim();
   if (!key) {
     throw new HttpsError('failed-precondition', 'STRIPE_SECRET_KEY is not configured.');
   }
@@ -1542,7 +1542,7 @@ exports.stripeWebhook = onRequest(
 
     try {
       const stripe = getStripeClient();
-      const webhookSecret = stripeWebhookSecret.value();
+      const webhookSecret = stripeWebhookSecret.value().trim();
       if (!webhookSecret) {
         return res.status(500).send('Webhook secret not configured');
       }
