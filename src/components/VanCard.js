@@ -190,7 +190,7 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
 
         {/* Badges container */}
         <div className="absolute top-4 left-4 z-10 flex flex-col items-start gap-2">
-          {confirmedDaysAgo !== null && confirmedDaysAgo <= 45 && (
+          {(!van.status || van.status === 'active') && confirmedDaysAgo !== null && confirmedDaysAgo <= 45 && (
             <div className="bg-emerald-600/95 backdrop-blur-md text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-lg border border-white/30 flex items-center gap-1.5">
               <CheckCircle size={12} fill="currentColor" />
               {confirmedDaysAgo <= 1 ? t("van_card.confirmed_today") : t("van_card.confirmed_days", { count: confirmedDaysAgo })}
@@ -257,11 +257,11 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
         {(van.wofExpiry || van.regoExpiry || van.selfContained) && (
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {van.wofExpiry && (
-              <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
-                <CheckCircle size={11} className="text-emerald-600" />
+              <span className="inline-flex items-center gap-1 bg-slate-50 border border-slate-200 text-slate-700 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
+                <Calendar size={11} className="text-slate-500" />
                 WOF
-                <span className="font-semibold normal-case tracking-normal text-emerald-600 ml-0.5">
-                  · {safeDate(van.wofExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || '✓'}
+                <span className="font-semibold normal-case tracking-normal text-slate-500 ml-0.5">
+                  · {safeDate(van.wofExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || '—'}
                 </span>
               </span>
             )}
@@ -270,7 +270,7 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
                 <Calendar size={11} className="text-blue-600" />
                 REGO
                 <span className="font-semibold normal-case tracking-normal text-blue-600 ml-0.5">
-                  · {safeDate(van.regoExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || '✓'}
+                  · {safeDate(van.regoExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || '—'}
                 </span>
               </span>
             )}
