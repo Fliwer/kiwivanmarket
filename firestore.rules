@@ -194,6 +194,11 @@ service cloud.firestore {
       allow read: if isOwner(userId) || isAdmin();
       allow create, update, delete: if false;
     }
+
+    match /boostOrders/{orderId} {
+      allow read: if isAuthenticated() && (resource.data.ownerId == currentUserId() || isAdmin());
+      allow create, update, delete: if false;
+    }
     
     
     // ═══════════════════════════════════════════════════════════════════
@@ -221,7 +226,8 @@ service cloud.firestore {
       allow create: if hasVerifiedEmail() &&
                       hasNoPublicContact(request.resource.data) &&
                       request.resource.data.get('userId', currentUserId()) == currentUserId() &&
-                      !request.resource.data.keys().hasAny(['availabilityToken', 'availabilityConfirmedAt', 'availabilityReminderSentAt', 'expiredAt', 'expiredReason', 'paymentIntentId', 'stripeAccountId', 'reservedBy', 'reservationId']) &&
+                      !request.resource.data.keys().hasAny(['availabilityToken', 'availabilityConfirmedAt', 'availabilityReminderSentAt', 'expiredAt', 'expiredReason', 'paymentIntentId', 'stripeAccountId', 'reservedBy', 'reservationId', 'boostState', 'boostStartedAt', 'boostExpiresAt', 'boostOrderId', 'boostLivemode']) &&
+                      request.resource.data.get('featured', false) == false &&
                       request.resource.data.seller.uid == currentUserId() &&
                       request.resource.data.keys().hasAll([
                         'title', 'price', 'description', 'location', 
@@ -241,7 +247,7 @@ service cloud.firestore {
       allow update: if isAuthenticated() && 
                       currentUserId() == resource.data.seller.uid &&
                       hasNoPublicContact(request.resource.data) &&
-                      fieldsUnchanged(['views', 'createdAt', 'userId', 'availabilityToken', 'availabilityReminderSentAt', 'availabilityConfirmedAt', 'expiredAt', 'expiredReason', 'paymentIntentId', 'stripeAccountId', 'reservedBy', 'reservationId']) &&
+                      fieldsUnchanged(['views', 'createdAt', 'userId', 'availabilityToken', 'availabilityReminderSentAt', 'availabilityConfirmedAt', 'expiredAt', 'expiredReason', 'paymentIntentId', 'stripeAccountId', 'reservedBy', 'reservationId', 'boostState', 'boostStartedAt', 'boostExpiresAt', 'boostOrderId', 'boostLivemode', 'featured']) &&
                       (fieldUnchanged('seller') || (
                         request.resource.data.seller.uid == resource.data.seller.uid &&
                         // whatsapp inclus : le formulaire d'édition permet de le

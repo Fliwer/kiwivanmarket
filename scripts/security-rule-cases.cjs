@@ -20,6 +20,15 @@ const listing = { title: 'Toyota Hiace', price: 10000, description: 'A maintaine
   location: 'Auckland', year: 2008, mileage: 180000, images: ['https://res.cloudinary.com/image.jpg'],
   seller: { uid: 'seller', name: 'Seller' }, views: 0, createdAt: 'today', status: 'active' };
 const firestore = [
+  firestoreCase('seller cannot forge boost dates on creation', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, boostState: 'active', boostExpiresAt: '2099-01-01' }),
+  firestoreCase('seller cannot extend a boost', 'DENY', 'vans/van', 'update', authenticated('seller'), { ...listing, boostState: 'active', boostExpiresAt: 'today' }, { ...listing, boostState: 'active', boostExpiresAt: '2099-01-01' }),
+  firestoreCase('seller cannot turn a test boost into a public paid boost', 'DENY', 'vans/van', 'update', authenticated('seller'), { ...listing, boostLivemode: false }, { ...listing, boostLivemode: true }),
+  firestoreCase('seller cannot enable legacy featured flag', 'DENY', 'vans/van', 'update', authenticated('seller'), listing, { ...listing, featured: true }),
+  firestoreCase('boost order cannot be created from browser', 'DENY', 'boostOrders/order', 'create', authenticated('seller'), {}, { ownerId: 'seller', status: 'active' }),
+  firestoreCase('boost order cannot be marked paid from browser', 'DENY', 'boostOrders/order', 'update', authenticated('seller'), { ownerId: 'seller', status: 'pending' }, { ownerId: 'seller', status: 'active' }),
+  firestoreCase('boost order owner can read receipt', 'ALLOW', 'boostOrders/order', 'get', authenticated('seller'), { ownerId: 'seller' }),
+  firestoreCase('another user cannot read boost order', 'DENY', 'boostOrders/order', 'get', authenticated(), { ownerId: 'seller' }),
+  firestoreCase('boost lock is private to server', 'DENY', 'vans/van/private/boostLock', 'get', authenticated('seller')),
   firestoreCase('normal listing creation allowed', 'ALLOW', 'vans/van', 'create', authenticated('seller'), {}, listing),
   firestoreCase('seller edit form with null contact placeholders allowed', 'ALLOW', 'vans/van', 'update', authenticated('seller'), listing,
     { ...listing, price: 12000, description: 'Updated maintained campervan', seller: { ...listing.seller, email: null, phone: null, whatsapp: null } }),

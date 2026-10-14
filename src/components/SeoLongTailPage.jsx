@@ -5,6 +5,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import SeoHead from './SeoHead';
 import VanCard from './VanCard';
+import boostVisibility from '../utils/boostVisibility.cjs';
+import { useBoostClock } from '../hooks/useBoostClock';
 import AlertCta from './AlertCta';
 import { useTranslation } from 'react-i18next';
 import { SEO_LANGS } from '../data/seo';
@@ -17,6 +19,7 @@ export default function SeoLongTailPage() {
   const { slug } = useParams();
   const [vans, setVans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const boostNow = useBoostClock();
 
   const { i18n } = useTranslation();
   const lang = searchCopy.searchLang(i18n.language);
@@ -49,6 +52,7 @@ export default function SeoLongTailPage() {
   }, [config]);
 
   const faqs = config ? searchCopy.searchFaqs(config, lang) : [];
+  const rankedVans = boostVisibility.rankVans(vans, 'newest', boostNow);
 
   if (!config) {
     return (
@@ -121,7 +125,7 @@ export default function SeoLongTailPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {vans.map((van) => <VanCard key={van.id} van={van} />)}
+              {rankedVans.map((van) => <VanCard key={van.id} van={van} />)}
             </div>
             <section className="mt-10 bg-white rounded-2xl border border-slate-100 p-6">
               <AlertCta variant="banner" source="search" className="mb-8" defaults={{ location: config.city, brand: config.brandSlug || '', priceMax: config.maxPrice || '', selfContained: !!config.selfContainedOnly }} />

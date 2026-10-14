@@ -4,6 +4,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ArrowLeft } from 'lucide-react';
 import VanCard from './VanCard';
+import boostVisibility from '../utils/boostVisibility.cjs';
+import { useBoostClock } from '../hooks/useBoostClock';
 import AlertCta from './AlertCta';
 import SeoHead from './SeoHead';
 import taxonomy from '../data/seo/taxonomy';
@@ -63,6 +65,7 @@ export default function BrandPage() {
   const { t, i18n } = useTranslation();
   const currentLang = (i18n.language || 'en').split('-')[0];
   const [vans, setVans] = useState([]);
+  const boostNow = useBoostClock();
   const [loading, setLoading] = useState(true);
 
   const brandConfig = BRANDS_CONFIG[brand];
@@ -186,7 +189,7 @@ export default function BrandPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {vans.map(van => (
+                {boostVisibility.rankVans(vans, 'newest', boostNow).map(van => (
                   <VanCard key={van.id} van={van} />
                 ))}
               </div>

@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { collection, query, where, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, deleteDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db } from '../firebase';
 import { functions } from '../firebase';
@@ -9,6 +9,7 @@ import { useAuth } from '../AuthContext';
 import SeoHead from './SeoHead';
 import { isAdmin, AdminBadge } from '../utils/adminHelper';
 import AddVanForm from './AddVanForm';
+import { ListingBoostButton, ListingBoostModal, BoostPaymentNotice } from './ListingBoost';
 import {
   ArrowLeft, Edit2, Trash2, Eye, Plus, Calendar, MapPin,
   DollarSign, Crown, Loader, Car, AlertTriangle, CheckCircle, RotateCcw, Mail
@@ -31,6 +32,11 @@ export default function MyListingsPage() {
   const [stats, setStats] = useState({ totalVans: 0, totalViews: 0, avgPrice: 0 });
   const [viewMode, setViewMode] = useState('my');
   const [sendingCarJamCampaign, setSendingCarJamCampaign] = useState(false);
+  const [boostVan, setBoostVan] = useState(null);
+  const boostParams = new URLSearchParams(location.search);
+  const boostOrderId = boostParams.get('boost_order');
+  const boostCancelled = boostParams.get('boost_cancelled') === '1';
+  const activatedOrder = useRef(null);
 
   const userIsAdmin = isAdmin(currentUser);
 
@@ -107,6 +113,14 @@ export default function MyListingsPage() {
     }
   }, [currentUser, viewMode, userIsAdmin]);
 
+  const onBoostActivated = useCallback((orderId) => {
+    if (orderId && activatedOrder.current === orderId) return;
+    if (orderId) activatedOrder.current = orderId;
+    localStorage.removeItem('kiwiVanMarket_vans');
+    localStorage.removeItem('kiwiVanMarket_timestamp');
+    fetchVans();
+  }, [fetchVans]);
+
   // Fetch vans
   useEffect(() => {
     fetchVans();
@@ -155,19 +169,11 @@ export default function MyListingsPage() {
 
   // Toggle sold status
   const handleToggleSold = async (van) => {
-    const newStatus = van.status === 'sold' ? 'active' : 'sold';
+    const newStatus = ['sold', 'paused'].includes(van.status) ? 'active' : 'sold';
     try {
-      await updateDoc(doc(db, 'vans', van.id), { status: newStatus });
-      setMyVans(prev => prev.map(v => v.id === van.id ? { ...v, status: newStatus } : v));
-
-      // Update all conversations linked to this van
-      const convsSnapshot = await getDocs(
-        query(collection(db, 'conversations'), where('vanId', '==', van.id))
-      );
-      const updatePromises = convsSnapshot.docs.map(convDoc =>
-        updateDoc(convDoc.ref, { 'van.status': newStatus })
-      );
-      await Promise.all(updatePromises);
+      const { data } = await httpsCallable(functions, 'setListingAvailability')({ vanId: van.id, status: newStatus });
+      setMyVans(prev => prev.map(v => v.id === van.id ? { ...v, status: data.status,
+        ...(data.confirmedAt ? { availabilityConfirmedAt: new Date(data.confirmedAt) } : {}) } : v));
 
       // Invalidate cache
       localStorage.removeItem('kiwiVanMarket_vans');
@@ -346,6 +352,9 @@ export default function MyListingsPage() {
             </div>
           )}
 
+          {boostOrderId && <BoostPaymentNotice orderId={boostOrderId} cancelled={boostCancelled} onActivated={onBoostActivated} />}
+          {boostVan && <ListingBoostModal van={boostVan} onClose={() => setBoostVan(null)} onUpdated={onBoostActivated} />}
+
           {/* Empty State */}
           {myVans.length === 0 && (
             <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
@@ -419,6 +428,7 @@ export default function MyListingsPage() {
 
                     {/* Actions */}
                     <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
+                      {van.seller?.uid === currentUser?.uid && <ListingBoostButton van={van} onOpen={setBoostVan} />}
                       <Link
                         to={`/van/${van.id}`}
                         className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition min-w-[120px]"
@@ -433,7 +443,7 @@ export default function MyListingsPage() {
                         <Edit2 size={16} />
                         {t('my_listings.edit')}
                       </button>
-                      {van.status === 'sold' ? (
+                      {['sold', 'paused'].includes(van.status) ? (
                         <button
                           onClick={() => handleToggleSold(van)}
                           className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition min-w-[120px]"

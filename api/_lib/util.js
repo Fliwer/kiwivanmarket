@@ -5,6 +5,7 @@
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'kiwivanmarket';
 const ORIGIN = 'https://kiwivanmarket.com';
 const COPY = require('../../src/data/seo/copy.cjs');
+const { rankVans, isBoostActive } = require('../../src/utils/boostVisibility.cjs');
 
 // URL d'une page dans la langue courante (?lang=fr), pour le maillage interne
 // des pages localisées. L'anglais reste sans paramètre.
@@ -52,14 +53,14 @@ async function fetchAllVans() {
   );
   if (!r.ok) throw new Error(`Firestore ${r.status}`);
   const data = await r.json();
-  return (data.documents || [])
+  return rankVans((data.documents || [])
     .map((doc) => {
       const van = parseFields(doc.fields || {});
       van.id = doc.name.split('/').pop();
       return van;
     })
     // Parité avec l'app (App.js) : seules active + sold sont visibles
-    .filter((v) => !v.status || v.status === 'active' || v.status === 'sold');
+    .filter((v) => !v.status || v.status === 'active' || v.status === 'sold'));
 }
 
 // ── lastmod sitemap : dernière modification de contenu d'un lot de vans ────
@@ -87,13 +88,15 @@ const nzd = (n) => `$${Number(n).toLocaleString('en-NZ')} NZD`;
 // ── Liste de vans (cartes HTML crawlables, liens internes vers /van/:id) ───
 function vanListHTML(vans, { limit = 24, lang = 'en' } = {}) {
   const C = (COPY[lang] || COPY.en).common;
-  return vans.slice(0, limit).map((v) => {
+  return rankVans(vans).slice(0, limit).map((v) => {
     const img = (Array.isArray(v.images) && v.images[0]) || v.imageUrl;
     const bits = [
       v.year, v.mileage ? `${Number(v.mileage).toLocaleString('en-NZ')} km` : null,
       v.selfContained ? C.selfContained : null, v.location,
     ].filter(Boolean).join(' · ');
-    return `<li>
+    const sponsored = isBoostActive(v) ? (lang === 'fr' ? 'Annonce sponsorisée' : lang === 'es' ? 'Anuncio patrocinado' : 'Sponsored listing') : '';
+    return `<li${sponsored ? ' data-sponsored="true"' : ''}>
+  ${sponsored ? `<small>${sponsored}</small><br>` : ''}
   <a href="${langUrl('/van/' + esc(v.id), lang)}">
     ${img ? `<img src="${esc(cdnImg(img, 400))}" alt="${esc(v.title || C.campervan)}" width="200" loading="lazy">` : ''}
     <strong>${esc(v.title || C.campervan)}</strong></a>
@@ -110,7 +113,7 @@ function itemListLd(name, vans, limit = 15) {
     '@type': 'ItemList',
     name,
     numberOfItems: vans.length,
-    itemListElement: vans.slice(0, limit).map((v, i) => ({
+    itemListElement: rankVans(vans).slice(0, limit).map((v, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       name: v.title || 'Campervan',
@@ -208,7 +211,7 @@ function send404(res, message) {
 function sendHTML(res, html) {
   res.status(200);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+  res.setHeader('Cache-Control', html.includes('data-sponsored="true"') ? 'no-store' : 's-maxage=3600, stale-while-revalidate=86400');
   return res.send(html);
 }
 

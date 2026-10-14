@@ -344,5 +344,29 @@
         "err_email": "Introduce un email válido.",
         "err_max": "Ya tienes 5 alertas activas.",
         "err_generic": "Algo salió mal. Inténtalo de nuevo."
+    },
+    "boost": {
+        "test_active_until": "Promoción de prueba hasta {{date}} · sin prioridad pública",
+        "success_test": "Pago de prueba confirmado. La promoción se registra sin dar prioridad pública al anuncio.",
+        "sponsored": "Anuncio patrocinado",
+        "button": "Destacar anuncio",
+        "title": "Destacar tu anuncio",
+        "close": "Cerrar",
+        "description": "Tu anuncio aparece antes de los gratuitos en las búsquedas que coinciden con sus características. Los anuncios patrocinados se alternan. Destacarlo mejora su visibilidad, pero no garantiza una venta.",
+        "duration": "{{days}} días",
+        "one_time": "Pago único · sin renovación automática",
+        "active_until": "Patrocinado hasta {{date}}",
+        "test_mode": "Modo de prueba de Stripe: no se cobra dinero real.",
+        "not_ready": "Las compras aún no están disponibles. Los precios se muestran como presentación.",
+        "error": "No se puede continuar ahora. Inténtalo de nuevo o contáctanos.",
+        "verify_email": "Verifica tu email antes de destacar un anuncio.",
+        "already_active": "Este anuncio ya está destacado.",
+        "cancel_pending": "Cancelar pago pendiente",
+        "conditions": "El período comienza tras confirmar el pago. Finaliza en la fecha indicada o al marcar la furgoneta como vendida. Los días restantes no se prolongan automáticamente. Para consultas sobre reembolsos:",
+        "contact": "contáctanos",
+        "success": "Pago confirmado: tu anuncio está patrocinado.",
+        "confirming": "Estamos verificando el pago con Stripe. El anuncio se destacará tras la confirmación.",
+        "cancelled": "El pago se canceló o caducó. Este pago no ha activado la promoción.",
+        "needs_attention": "Esta promoción necesita una revisión o un reembolso. Revisa tus anuncios o contáctanos."
     }
 }

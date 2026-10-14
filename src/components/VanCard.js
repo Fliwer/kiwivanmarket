@@ -7,6 +7,8 @@ import { safeDate } from '../utils/dateHelper';
 import { formatMileage } from '../utils/formatHelper';
 import { useTranslation } from 'react-i18next';
 import { useAutoTranslate } from '../hooks/useAutoTranslate';
+import boostVisibility from '../utils/boostVisibility.cjs';
+import { useBoostClock } from '../hooks/useBoostClock';
 
 const RETURN_SCROLL_KEY = 'kiwiVanMarket_returnScrollY';
 const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
@@ -138,6 +140,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
 export default function VanCard({ van, formatPrice, priority = false, setShowAuthModal }) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { t } = useTranslation();
+  const boostNow = useBoostClock();
   // Le vendeur a confirmé la disponibilité (email de cycle de vie) : badge visible 45 jours.
   const confirmedAtDate = safeDate(van.availabilityConfirmedAt);
   const confirmedDaysAgo = confirmedAtDate ? Math.max(0, Math.floor((Date.now() - confirmedAtDate.getTime()) / 86400000)) : null;
@@ -196,7 +199,8 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
               {confirmedDaysAgo <= 1 ? t("van_card.confirmed_today") : t("van_card.confirmed_days", { count: confirmedDaysAgo })}
             </div>
           )}
-          {van.featured && (
+          {boostVisibility.isBoostActive(van, boostNow) && <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 text-xs font-bold px-2 py-1 rounded-lg"><Star size={12} />{t('boost.sponsored')}</span>}
+          {van.featured && !boostVisibility.isBoostActive(van, boostNow) && (
             <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-[0_4px_15px_rgba(251,191,36,0.5)] border border-white/40 flex items-center gap-1.5 animate-pulse">
               <Star size={12} fill="currentColor" />
               Promoted

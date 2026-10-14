@@ -5,6 +5,8 @@ import { Search, BookOpen, ArrowRight, ArrowUpDown, ChevronDown } from 'lucide-r
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import VanCard from './VanCard';
+import boostVisibility from '../utils/boostVisibility.cjs';
+import { useBoostClock } from '../hooks/useBoostClock';
 import AlertCta from './AlertCta';
 import searchCopy from '../data/seo/search-copy';
 import { getLongTailSlugsForVan, LONG_TAIL_PAGE_MAP, indexableSlugs } from '../constants/seoLongTailPages';
@@ -44,6 +46,8 @@ export default function Listings({
     setShowAuthModal,
     onPageChange
 }) {
+    const boostNow = useBoostClock();
+    filteredVans = boostVisibility.rankVans(filteredVans, sortBy, boostNow);
     const { t, i18n } = useTranslation();
     const lang = searchCopy.searchLang(i18n.language);
     const keep = indexableSlugs(allVans);

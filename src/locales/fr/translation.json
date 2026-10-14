@@ -548,5 +548,29 @@
     "documents": "Vérifiez les documents WOF et rego",
     "payment": "Voyez le van avant de payer",
     "report": "Signalez les annonces suspectes"
-  }
+  },
+    "boost": {
+        "test_active_until": "Boost de test jusqu’au {{date}} · sans priorité publique",
+        "success_test": "Paiement de test confirmé. Le boost est enregistré sans donner de priorité publique à l’annonce.",
+        "sponsored": "Annonce sponsorisée",
+        "button": "Mettre en avant",
+        "title": "Mettre votre annonce en avant",
+        "close": "Fermer",
+        "description": "Votre annonce passe avant les annonces gratuites dans les recherches auxquelles elle correspond. Les annonces sponsorisées alternent entre elles. La mise en avant améliore la visibilité, sans garantir une vente.",
+        "duration": "{{days}} jours",
+        "one_time": "Paiement unique · sans renouvellement automatique",
+        "active_until": "Sponsorisé jusqu’au {{date}}",
+        "test_mode": "Mode test Stripe : aucun argent réel n’est débité.",
+        "not_ready": "Les achats ne sont pas encore ouverts. Les tarifs sont affichés à titre de présentation.",
+        "error": "Impossible de poursuivre pour le moment. Réessayez ou contactez-nous.",
+        "verify_email": "Vérifiez votre adresse email avant d’acheter une mise en avant.",
+        "already_active": "Cette annonce bénéficie déjà d’une mise en avant.",
+        "cancel_pending": "Annuler le paiement en attente",
+        "conditions": "La durée commence après confirmation du paiement. Le boost s’arrête à la date indiquée ou si vous marquez le van vendu. Les jours restants ne sont pas prolongés automatiquement. Pour toute question de remboursement :",
+        "contact": "nous contacter",
+        "success": "Paiement confirmé : votre annonce est maintenant sponsorisée.",
+        "confirming": "Nous vérifions le paiement auprès de Stripe. La mise en avant sera activée après confirmation.",
+        "cancelled": "Le paiement a été annulé ou a expiré. Aucun boost n’a été activé par ce paiement.",
+        "needs_attention": "Cette mise en avant nécessite une vérification ou un remboursement. Consultez vos annonces ou contactez-nous."
+    }
 }

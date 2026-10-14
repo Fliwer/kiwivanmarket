@@ -548,5 +548,29 @@
     "documents": "Verify WOF and rego documents",
     "payment": "See the van before paying",
     "report": "Report suspicious listings"
-  }
+  },
+    "boost": {
+        "test_active_until": "Test boost until {{date}} · no public priority",
+        "success_test": "Test payment confirmed. Your boost is recorded without giving the listing public priority.",
+        "sponsored": "Sponsored listing",
+        "button": "Boost listing",
+        "title": "Boost your listing",
+        "close": "Close",
+        "description": "Your listing appears before free listings in searches it matches. Sponsored listings rotate between themselves. A boost improves visibility but does not guarantee a sale.",
+        "duration": "{{days}} days",
+        "one_time": "One-time payment · no automatic renewal",
+        "active_until": "Sponsored until {{date}}",
+        "test_mode": "Stripe test mode: no real money is charged.",
+        "not_ready": "Purchases are not open yet. Prices are shown as a preview.",
+        "error": "Unable to continue right now. Please try again or contact us.",
+        "verify_email": "Verify your email address before purchasing a boost.",
+        "already_active": "This listing already has an active boost.",
+        "cancel_pending": "Cancel pending checkout",
+        "conditions": "The period begins after payment confirmation. The boost ends on the displayed date or when you mark the van sold. Unused days are not extended automatically. For refund questions:",
+        "contact": "contact us",
+        "success": "Payment confirmed: your listing is now sponsored.",
+        "confirming": "We are checking your payment with Stripe. Your boost starts after confirmation.",
+        "cancelled": "Checkout was cancelled or expired. This payment has not activated a boost.",
+        "needs_attention": "This boost needs a review or refund. Check your listings or contact us."
+    }
 }

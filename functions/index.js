@@ -13,7 +13,7 @@ const admin = require('firebase-admin');
 // Firebase Functions v2 imports
 const { onDocumentCreated } = require('firebase-functions/v2/firestore');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
-const { defineSecret } = require('firebase-functions/params');
+const { defineSecret, defineBoolean } = require('firebase-functions/params');
 
 // Resend for email notifications
 const { Resend } = require('resend');
@@ -23,6 +23,7 @@ const resendApiKey = defineSecret('RESEND_API_KEY');
 const geminiApiKey = defineSecret('GEMINI_API_KEY');
 const stripeSecretKey = defineSecret('STRIPE_SECRET_KEY');
 const stripeWebhookSecret = defineSecret('STRIPE_WEBHOOK_SECRET');
+const boostLiveEnabled = defineBoolean('BOOST_PAYMENTS_LIVE_ENABLED', { default: false });
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
@@ -1103,6 +1104,46 @@ exports.generateVanDescription = onCall(
 // 💳 STRIPE PAYMENTS - Production Grade
 // ============================================
 const Stripe = require('stripe');
+const { createBoostService, activeBoost: boostIsActive } = require('./boostService');
+const boostService = createBoostService({
+  db, stripe: getStripeClient, getKey: () => stripeSecretKey.value(),
+  liveEnabled: () => boostLiveEnabled.value(), FV: admin.firestore.FieldValue, HttpsError,
+  rateLimit: enforceRateLimit,
+});
+exports.getBoostPlans = onCall({ secrets: [stripeSecretKey], maxInstances: 3 }, (request) => boostService.catalog(request));
+exports.createBoostCheckout = onCall({ secrets: [stripeSecretKey], maxInstances: 3, timeoutSeconds: 60 }, (request) => boostService.checkout(request));
+exports.reconcileBoostOrder = onCall({ secrets: [stripeSecretKey], maxInstances: 3, timeoutSeconds: 60 }, (request) => boostService.reconcile(request));
+exports.cancelBoostCheckout = onCall({ secrets: [stripeSecretKey], maxInstances: 3, timeoutSeconds: 60 }, (request) => boostService.cancelCheckout(request));
+exports.setListingAvailability = onCall({ maxInstances: 3 }, async (request) => {
+  const result = await boostService.setAvailability(request);
+  try {
+    const vans = await db.collection('vans').doc(request.data.vanId).get();
+    const conversations = await db.collection('conversations').where('vanId', '==', request.data.vanId).get();
+    for (let index = 0; index < conversations.docs.length; index += 400) {
+      const batch = db.batch();
+      for (const conversation of conversations.docs.slice(index, index + 400)) batch.update(conversation.ref, { 'van.status': vans.data().status });
+      await batch.commit();
+    }
+  } catch (error) { console.error('Listing conversation status sync failed:', error.code || 'unknown'); }
+  return result;
+});
+
+// Dates also enforce expiry in every listing view, even between scheduler runs.
+exports.expireListingBoosts = onSchedule({ schedule: 'every 60 minutes', timeoutSeconds: 120 }, async () => {
+  const cutoff = new Date();
+  const snap = await db.collection('boostOrders').where('status', '==', 'active').get();
+  for (const order of snap.docs) {
+    await db.runTransaction(async (tx) => {
+      const current = await tx.get(order.ref);
+      const data = current.data();
+      if (data?.status !== 'active' || !data.expiresAt || data.expiresAt.toMillis() > cutoff.getTime()) return;
+      const vanRef = db.collection('vans').doc(data.vanId);
+      const van = await tx.get(vanRef);
+      tx.update(order.ref, { status: 'expired', updatedAt: admin.firestore.FieldValue.serverTimestamp() });
+      if (van.data()?.boostOrderId === order.id) tx.update(vanRef, { boostState: 'expired' });
+    });
+  }
+});
 const { isSafeReturnUrl, isTestPaymentKey, sessionMatchesReservation, refundParameters } = require('./paymentSecurity');
 
 function requireTestPayments() {
@@ -1513,7 +1554,13 @@ exports.stripeWebhook = onRequest(
       }
 
       if (['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type)) {
-        await markReservationPaidFromSession(event.data.object);
+        if (event.data.object.metadata?.kind === 'listing_boost') {
+          await boostService.fulfill(event.data.object, event.id);
+        } else await markReservationPaidFromSession(event.data.object);
+      } else if (event.type === 'checkout.session.expired' && event.data.object.metadata?.kind === 'listing_boost') {
+        await boostService.expireCheckout(event.data.object);
+      } else if (['charge.refunded', 'charge.dispute.created', 'charge.dispute.closed'].includes(event.type)) {
+        await boostService.financialEvent(event);
       }
 
       await processedRef.set({
@@ -1524,6 +1571,7 @@ exports.stripeWebhook = onRequest(
       return res.status(200).json({ received: true });
     } catch (error) {
       console.error('❌ Stripe webhook error:', error);
+      if (error.type === 'StripeSignatureVerificationError') return res.status(400).send('Invalid webhook signature');
       // Non-2xx triggers Stripe retries; do not disclose internal error details.
       return res.status(500).send('Webhook processing failed');
     }
@@ -1940,6 +1988,8 @@ exports.listingLifecycle = onSchedule(
     for (const doc of docs) {
       const van = doc.data();
       stats.scanned++;
+      // A paid visibility period is an availability confirmation; do not pause it.
+      if (boostIsActive(van, now)) { stats.skipped++; continue; }
       const lastSignal = Math.max(toMs(van.createdAt), toMs(van.availabilityConfirmedAt));
       const remindedAt = toMs(van.availabilityReminderSentAt);
       const email = (await getSellerContact(doc.ref, van)).email;
