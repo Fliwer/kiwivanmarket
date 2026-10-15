@@ -377,7 +377,7 @@ export default function MyListingsPage() {
               <div key={van.id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition">
                 <div className="flex flex-col sm:flex-row">
                   {/* Image */}
-                  <div className="sm:w-48 h-40 sm:h-auto relative flex-shrink-0">
+                  <Link to={`/van/${van.id}`} className="block sm:w-48 h-40 sm:h-auto relative flex-shrink-0 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-inset">
                     <img
                       src={van.images?.[0] || van.imageUrl || '/placeholder-van.jpg'}
                       alt={van.title}
@@ -393,10 +393,11 @@ export default function MyListingsPage() {
                         <span className="text-white font-bold text-lg">{t('my_listings.status_paused')}</span>
                       </div>
                     )}
-                  </div>
+                  </Link>
 
                   {/* Content */}
                   <div className="flex-1 p-4">
+                    <Link to={`/van/${van.id}`} className="block rounded-lg hover:text-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                       <div>
                         <h3 className="font-bold text-lg text-gray-900">{van.title}</h3>
@@ -425,6 +426,7 @@ export default function MyListingsPage() {
                     <div className="text-xs text-gray-400 mt-2">
                       Listed on {formatDate(van.createdAt)}
                     </div>
+                    </Link>
 
                     {/* Actions */}
                     <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
