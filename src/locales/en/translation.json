@@ -1,4 +1,18 @@
 {
+    "profile_save": {
+        "photo_type": "Choose an image file (JPG, PNG or WebP).",
+        "photo_size": "Choose a photo smaller than 5 MB.",
+        "photo_error": "Your photo could not be saved. Try a JPG, PNG or WebP image, or contact support if the problem persists.",
+        "saved": "Profile saved!",
+        "name_error": "Enter a name between 1 and 100 characters.",
+        "location_error": "City and region must each be at most 100 characters.",
+        "bio_error": "Your bio must be at most 500 characters.",
+        "phone_error": "Enter a phone number with 8 to 15 digits, including your country code (for example +64 21 123 4567), or leave it blank.",
+        "access_error": "Your account cannot save these changes. Contact support if the problem persists.",
+        "session_error": "Your session has expired. Sign in again, then save your changes.",
+        "network_error": "The save could not be confirmed. Check your connection and try again; your edits are still here.",
+        "save_error": "Your profile could not be saved. Your edits are still here; try again or contact support."
+    },
     "edit_listing": {
         "loading": "Loading your listing…",
         "missing": "This listing could not be found.",

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
+import { prepareProfileUpdate, profileErrorKey } from '../utils/profileUpdate';
 import { useAuth } from '../AuthContext';
 import { uploadToCloudinary } from '../cloudinaryConfig';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -38,6 +39,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
+  const [saveError, setSaveError] = useState('');
 
   // Hide app-loader
   useEffect(() => {
@@ -123,18 +125,20 @@ export default function ProfilePage() {
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { alert('Please select an image file'); return; }
-    if (file.size > 5 * 1024 * 1024) { alert('Image must be less than 5MB'); return; }
+    if (!file.type.startsWith('image/')) { setSaveError(t('profile_save.photo_type')); return; }
+    if (file.size > 5 * 1024 * 1024) { setSaveError(t('profile_save.photo_size')); return; }
     try {
       setUploadingPhoto(true);
+      setSaveError('');
       const result = await uploadToCloudinary(file, { folder: 'profile_photos' });
       const photoURL = result.url;
+      if (auth.currentUser?.uid !== currentUser.uid) throw Object.assign(new Error('Session changed'), { code: 'unauthenticated' });
       await updateDoc(doc(db, 'users', currentUser.uid), { photoURL });
-      await updateProfile(currentUser, { photoURL });
+      await updateProfile(auth.currentUser, { photoURL }).catch(error => console.warn('Profile photo sync:', error.code));
       setProfile(p => ({ ...p, photoURL }));
     } catch (e) {
       console.error(e);
-      alert('Failed to upload photo');
+      setSaveError(t(profileErrorKey(e, 'photo_error')));
     } finally {
       setUploadingPhoto(false);
     }
@@ -143,23 +147,22 @@ export default function ProfilePage() {
   const handleSave = async () => {
     try {
       setSaving(true);
-      await updateDoc(doc(db, 'users', currentUser.uid), {
-        displayName: editData.displayName ?? profile.displayName,
-        city: editData.city ?? profile.city,
-        region: editData.region ?? profile.region,
-        bio: editData.bio ?? profile.bio,
-        phone: editData.phone ?? profile.phone,
-        lastActive: new Date()
-      });
-      if (editData.displayName) await updateProfile(currentUser, { displayName: editData.displayName });
-      setProfile(p => ({ ...p, ...editData }));
+      setSaveError('');
+      setSuccessMsg('');
+      const changes = prepareProfileUpdate(profile, editData);
+      const user = auth.currentUser;
+      if (!user || user.uid !== currentUser.uid) throw Object.assign(new Error('Sign in again'), { code: 'unauthenticated' });
+      await updateDoc(doc(db, 'users', user.uid), changes);
+      // Firestore is the saved profile; use the actual Auth user for its mirror.
+      await updateProfile(user, { displayName: changes.displayName }).catch(error => console.warn('Profile name sync:', error.code));
+      setProfile(p => ({ ...p, ...changes }));
       setIsEditing(false);
       setEditData({});
-      setSuccessMsg('Profile saved!');
+      setSuccessMsg(t('profile_save.saved'));
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (e) {
       console.error(e);
-      alert('Failed to save profile');
+      setSaveError(t(profileErrorKey(e)));
     } finally {
       setSaving(false);
     }
@@ -360,6 +363,7 @@ export default function ProfilePage() {
                   </AnimatePresence>
 
                   {/* Edit form / Display */}
+                  {saveError && <p role="alert" className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">{saveError}</p>}
                   <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="text-lg font-black text-slate-900">About me</h2>

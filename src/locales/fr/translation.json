@@ -1,4 +1,18 @@
 {
+    "profile_save": {
+        "photo_type": "Choisissez une image JPG, PNG ou WebP.",
+        "photo_size": "Choisissez une photo de moins de 5 Mo.",
+        "photo_error": "Votre photo n’a pas pu être enregistrée. Essayez une image JPG, PNG ou WebP, ou contactez l’assistance si le problème persiste.",
+        "saved": "Profil enregistré !",
+        "name_error": "Indiquez un nom entre 1 et 100 caractères.",
+        "location_error": "La ville et la région doivent chacune contenir au maximum 100 caractères.",
+        "bio_error": "Votre présentation doit contenir au maximum 500 caractères.",
+        "phone_error": "Indiquez un téléphone de 8 à 15 chiffres avec l’indicatif du pays (par exemple +64 21 123 4567), ou laissez le champ vide.",
+        "access_error": "Votre compte ne peut pas enregistrer ces modifications. Contactez l’assistance si le problème persiste.",
+        "session_error": "Votre session a expiré. Reconnectez-vous, puis enregistrez vos modifications.",
+        "network_error": "L’enregistrement n’a pas pu être confirmé. Vérifiez votre connexion et réessayez ; vos modifications sont conservées dans le formulaire.",
+        "save_error": "Votre profil n’a pas pu être enregistré. Vos modifications sont conservées dans le formulaire ; réessayez ou contactez l’assistance."
+    },
     "edit_listing": {
         "loading": "Chargement de votre annonce…",
         "missing": "Cette annonce est introuvable.",

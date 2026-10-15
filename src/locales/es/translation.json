@@ -1,4 +1,18 @@
 {
+    "profile_save": {
+        "photo_type": "Elige una imagen JPG, PNG o WebP.",
+        "photo_size": "Elige una foto de menos de 5 MB.",
+        "photo_error": "No se pudo guardar tu foto. Prueba una imagen JPG, PNG o WebP, o contacta con soporte si el problema persiste.",
+        "saved": "¡Perfil guardado!",
+        "name_error": "Introduce un nombre de entre 1 y 100 caracteres.",
+        "location_error": "La ciudad y la región deben tener como máximo 100 caracteres cada una.",
+        "bio_error": "Tu descripción debe tener como máximo 500 caracteres.",
+        "phone_error": "Introduce un teléfono de 8 a 15 dígitos con el código del país (por ejemplo +64 21 123 4567), o deja el campo vacío.",
+        "access_error": "Tu cuenta no puede guardar estos cambios. Contacta con soporte si el problema persiste.",
+        "session_error": "Tu sesión ha caducado. Vuelve a iniciar sesión y guarda los cambios.",
+        "network_error": "No se pudo confirmar el guardado. Comprueba tu conexión e inténtalo de nuevo; tus cambios siguen en el formulario.",
+        "save_error": "No se pudo guardar tu perfil. Tus cambios siguen en el formulario; inténtalo de nuevo o contacta con soporte."
+    },
     "edit_listing": {
         "loading": "Cargando tu anuncio…",
         "missing": "No se ha encontrado este anuncio.",

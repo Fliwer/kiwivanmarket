@@ -4,6 +4,8 @@ import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } fro
 // import { RecaptchaVerifier, signInWithPhoneNumber, updateProfile } from 'firebase/auth';
 import { updateProfile } from 'firebase/auth';
 import { db, auth } from '../firebase';
+import { useTranslation } from 'react-i18next';
+import { prepareProfileUpdate, profileErrorKey } from '../utils/profileUpdate';
 import { useAuth } from '../AuthContext';
 import {
   X, Camera, Check, Shield, Phone, Mail, MapPin, Calendar,
@@ -17,8 +19,10 @@ import {
 
 export default function UserProfile({ onClose }) {
   const { currentUser } = useAuth();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
 
@@ -170,17 +174,18 @@ export default function UserProfile({ onClose }) {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      setSaveError(t('profile_save.photo_type'));
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image must be less than 5MB');
+      setSaveError(t('profile_save.photo_size'));
       return;
     }
 
     try {
       setUploadingPhoto(true);
+      setSaveError('');
 
       // Upload directly to Cloudinary using unsigned upload
       const formData = new FormData();
@@ -207,17 +212,18 @@ export default function UserProfile({ onClose }) {
 
       // Update Firestore
       const userRef = doc(db, 'users', currentUser.uid);
+      if (auth.currentUser?.uid !== currentUser.uid) throw Object.assign(new Error('Session changed'), { code: 'unauthenticated' });
       await updateDoc(userRef, { photoURL: photoURL });
 
       // Update Firebase Auth profile
-      await updateProfile(currentUser, { photoURL: photoURL });
+      await updateProfile(auth.currentUser, { photoURL }).catch(error => console.warn('Profile photo sync:', error.code));
 
       // Update local state
       setProfile(prev => ({ ...prev, photoURL: photoURL }));
 
     } catch (error) {
       console.error('Error uploading photo:', error);
-      alert('Failed to upload photo: ' + error.message);
+      setSaveError(t(profileErrorKey(error, 'photo_error')));
     } finally {
       setUploadingPhoto(false);
     }
@@ -227,27 +233,20 @@ export default function UserProfile({ onClose }) {
   const handleSaveProfile = async () => {
     try {
       setSaving(true);
-
+      setSaveError('');
+      const changes = prepareProfileUpdate(profile, editData);
+      const user = auth.currentUser;
+      if (!user || user.uid !== currentUser.uid) throw Object.assign(new Error('Sign in again'), { code: 'unauthenticated' });
       const userRef = doc(db, 'users', currentUser.uid);
-      await updateDoc(userRef, {
-        displayName: editData.displayName || profile.displayName,
-        phone: editData.phone || profile.phone,
-        city: editData.city || profile.city,
-        region: editData.region || profile.region,
-        bio: editData.bio || profile.bio,
-        lastActive: new Date()
-      });
+      await updateDoc(userRef, changes);
 
       // Update Firebase Auth display name
-      if (editData.displayName) {
-        await updateProfile(currentUser, { displayName: editData.displayName });
-      }
+      await updateProfile(user, { displayName: changes.displayName }).catch(error => console.warn('Profile name sync:', error.code));
 
       // Update local state
       setProfile(prev => ({
         ...prev,
-        ...editData,
-        lastActive: new Date()
+        ...changes
       }));
 
       setIsEditing(false);
@@ -255,7 +254,7 @@ export default function UserProfile({ onClose }) {
 
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('Failed to save profile');
+      setSaveError(t(profileErrorKey(error)));
     } finally {
       setSaving(false);
     }
@@ -536,6 +535,7 @@ export default function UserProfile({ onClose }) {
             {/* Tab Content */}
             {activeTab === 'profile' && (
               <div className="space-y-4">
+                {saveError && <p role="alert" className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">{saveError}</p>}
                 {isEditing ? (
                   // Edit mode
                   <div className="space-y-4">

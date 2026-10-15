@@ -85,8 +85,7 @@ service cloud.firestore {
     
     function isValidNZPhone(phone) {
       return phone is string &&
-             phone.size() >= 8 &&
-             phone.size() <= 15;
+             phone.matches('^[+]?[0-9]{8,15}$');
     }
 
     function hasNoPublicContact(data) {
@@ -176,7 +175,9 @@ service cloud.firestore {
                       !request.resource.data.keys().hasAny(['stripeAccountId', 'balance', 'payoutsEnabled', 'role', 'roles']);
       
       allow update: if isOwner(userId) &&
-                      onlyUpdating(['displayName', 'photoURL', 'phone', 'location', 'bio', 'lastLogin', 'updatedAt']) &&
+                      onlyUpdating(['displayName', 'photoURL', 'phone', 'location', 'city', 'region', 'bio', 'lastActive', 'lastLogin', 'updatedAt']) &&
+                      (fieldUnchanged('city') || isValidString(request.resource.data.city, 0, 100)) &&
+                      (fieldUnchanged('region') || isValidString(request.resource.data.region, 0, 100)) &&
                       (fieldUnchanged('displayName') || isValidString(request.resource.data.displayName, 1, 100)) &&
                       (fieldUnchanged('phone') || request.resource.data.phone == null || isValidNZPhone(request.resource.data.phone)) &&
                       (fieldUnchanged('bio') || request.resource.data.bio == null || isValidString(request.resource.data.bio, 0, 500));

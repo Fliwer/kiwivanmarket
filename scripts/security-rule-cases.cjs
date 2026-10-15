@@ -20,6 +20,17 @@ const listing = { title: 'Toyota Hiace', price: 10000, description: 'A maintaine
   location: 'Auckland', year: 2008, mileage: 180000, images: ['https://res.cloudinary.com/image.jpg'],
   seller: { uid: 'seller', name: 'Seller' }, views: 0, createdAt: 'today', status: 'active' };
 const firestore = [
+  firestoreCase('owner can save full profile without an optional phone', 'ALLOW', 'users/buyer', 'update', authenticated(), profile,
+    { ...profile, city: 'Auckland', region: 'North Island', bio: 'Travelling in NZ', phone: null, lastActive: 'today' }),
+  firestoreCase('owner can clear optional profile fields', 'ALLOW', 'users/buyer', 'update', authenticated(), { ...profile, phone: '+64211234567', bio: 'Old bio', city: 'Auckland' },
+    { ...profile, phone: null, bio: '', city: '' }),
+  firestoreCase('international phone with fifteen digits allowed', 'ALLOW', 'users/buyer', 'update', authenticated(), profile, { ...profile, phone: '+123456789012345' }),
+  firestoreCase('invalid phone denied', 'DENY', 'users/buyer', 'update', authenticated(), profile, { ...profile, phone: 'abcdefgh' }),
+  firestoreCase('oversized profile city denied', 'DENY', 'users/buyer', 'update', authenticated(), profile, { ...profile, city: 'x'.repeat(101) }),
+  firestoreCase('oversized profile bio denied', 'DENY', 'users/buyer', 'update', authenticated(), profile, { ...profile, bio: 'x'.repeat(501) }),
+  firestoreCase('another user cannot save profile', 'DENY', 'users/buyer', 'update', authenticated('other'), profile, { ...profile, city: 'Auckland' }),
+  firestoreCase('banned user cannot save profile', 'DENY', 'users/buyer', 'update', authenticated(), profile, { ...profile, city: 'Auckland' }, { banned: true }),
+  ...['isAdmin', 'banned', 'stripeAccountId', 'email', 'phoneVerified'].map(field => firestoreCase(`profile save cannot change ${field}`, 'DENY', 'users/buyer', 'update', authenticated(), profile, { ...profile, [field]: 'forged' })),
   firestoreCase('seller cannot forge boost dates on creation', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, boostState: 'active', boostExpiresAt: '2099-01-01' }),
   firestoreCase('seller cannot extend a boost', 'DENY', 'vans/van', 'update', authenticated('seller'), { ...listing, boostState: 'active', boostExpiresAt: 'today' }, { ...listing, boostState: 'active', boostExpiresAt: '2099-01-01' }),
   firestoreCase('seller cannot turn a test boost into a public paid boost', 'DENY', 'vans/van', 'update', authenticated('seller'), { ...listing, boostLivemode: false }, { ...listing, boostLivemode: true }),
