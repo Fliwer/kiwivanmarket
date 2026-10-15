@@ -37,7 +37,8 @@ export default function ListingOwnerPanel({ van, isUpdating, onToggleSold, onTog
         {status === 'paused' ? <Play size={16} className="shrink-0" aria-hidden="true" /> : <Pause size={16} className="shrink-0" aria-hidden="true" />}
         {t(status === 'paused' ? 'my_listings.resume' : 'my_listings.pause')}
       </button>
-      <button type="button" onClick={onToggleSold} disabled={isUpdating} className={secondary}>
+      <button type="button" onClick={onToggleSold} disabled={isUpdating}
+        className={status === 'sold' ? secondary : 'inline-flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl border border-emerald-600 bg-emerald-600 px-2.5 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:border-emerald-700 hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-wait disabled:opacity-50 sm:gap-2 sm:px-3.5 sm:text-sm'}>
         <CheckCircle size={16} className="shrink-0" aria-hidden="true" />{t(status === 'sold' ? 'my_listings.reactivate' : 'my_listings.mark_as_sold')}
       </button>
       <button type="button" onClick={onDelete} disabled={isUpdating}
