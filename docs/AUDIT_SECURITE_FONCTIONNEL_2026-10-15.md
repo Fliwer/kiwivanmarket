@@ -6,7 +6,7 @@
 
 Cet audit couvre le dépôt et les contrôles de production accessibles au moment de la revue. Il ne garantit pas l'absence de toute faille et ne remplace pas un test d'intrusion indépendant. Aucun ancien module, fichier de sauvegarde ou document métier n'est supprimé pendant cet audit. La liste de nettoyage nécessite l'accord du propriétaire.
 
-État des corrections : **validation et déploiement en cours**. Les preuves finales de publication sont ajoutées en fin de rapport.
+État des corrections : **validées et publiées**. Les preuves de publication figurent en fin de rapport. Les points ouverts restent explicitement listés ; aucun nettoyage de l'ancien code n'a été effectué.
 
 ## Périmètre et méthode
 
@@ -33,7 +33,7 @@ Volets détaillés : [backend](audit-backend-2026-10-15.md), [accès et règles]
 - **166 pages dans 7 sitemaps : aucune erreur détectée** de statut HTTP, canonical, langue française, robots ou JSON-LD par le script de contrôle. Les en-têtes HTTPS, `nosniff`, protection de frame et politique de referrer sont présents.
 - Aucun secret conforme aux motifs recherchés dans les fichiers suivis actuels. Une ancienne clé Stripe de test reste présente dans l'historique Git ; sa révocation reste plus importante que l'effacement de cet historique.
 
-## Problèmes confirmés et corrections préparées
+## Problèmes confirmés et corrections publiées
 
 | Priorité | Problème prouvé | Correction et validation |
 |---|---|---|
@@ -52,7 +52,7 @@ Volets détaillés : [backend](audit-backend-2026-10-15.md), [accès et règles]
 | P3 | Des clés brutes `common.loading`, `common.cancel` et `my_listings.sold` pouvaient apparaître dans l'interface. | Ajout des libellés communs dans les trois langues et réutilisation de `my_listings.status_sold`. |
 | P2 | Le téléphone ou WhatsApp privé pouvait être enregistré sous forme d'objet, puis casser le bouton de contact. | Champs limités à une chaîne de 64 caractères, null ou absence ; conservation des formats et champs vides actuels. Tests de création et modification. |
 
-Le budget email préparé est de **80 tentatives par jour UTC**, **40 par heure**, **10 par expéditeur et par heure**, avec un délai de **30 minutes par destinataire** sur les notifications. Il protège contre le coût et les rafales ; il peut limiter des notifications légitimes à fort trafic et ne constitue pas un plafond global de dépenses cloud. Les paramètres devront être ajustés aux volumes et au forfait Resend après observation.
+Le budget email publié est de **80 tentatives par jour UTC**, **40 par heure**, **10 par expéditeur et par heure**, avec un délai de **30 minutes par destinataire** sur les notifications. Il protège contre le coût et les rafales ; il peut limiter des notifications légitimes à fort trafic et ne constitue pas un plafond global de dépenses cloud. Les paramètres devront être ajustés aux volumes et au forfait Resend après observation.
 
 ## Points ouverts avant les vrais encaissements
 
@@ -147,11 +147,15 @@ Les audits réseau ont été relancés avec l'accès effectif au registre : une 
 
 - **67 tests React dans 18 suites : réussis.** Navigation favoris, changements de compte en messagerie et actions de disponibilité inclus.
 - **71 tests Node : réussis.** Scénarios de concurrence email et de cycle de disponibilité ajoutés aux tests de paiement, de sécurité et de rendu existants.
-- **133 cas de règles : réussis**, y compris le complément de validation des coordonnées privées. Compilation Firestore et Storage sans erreur ni avertissement ; correspondance de production à confirmer après publication.
+- **133 cas de règles : réussis**, y compris le complément de validation des coordonnées privées. Compilation Firestore et Storage sans erreur ni avertissement ; règles publiées relues et identiques aux fichiers locaux.
 - **Build de production : réussi**, sans avertissement de compilation ESLint. L'outil CRA émet un avertissement de dépréciation Node pour `fs.F_OK`.
 - Le nombre et les noms des **32 exports de fonctions sont inchangés**. Aucun endpoint historique n'a été supprimé.
 
-La publication Firebase est en cours. La publication du frontend et les vérifications de production suivent. Les résultats initiaux étaient de **56 tests React**, **56 tests Node** et **51 cas de règles** ; les nouveaux cas couvrent les régressions identifiées par cet audit.
+Les règles Firestore et les 32 fonctions ont été publiées avec succès. La vérification des métadonnées confirme **32 fonctions actives**, toutes avec un plafond d'instances, les secrets Stripe version 3 et les paiements réels toujours désactivés. Les requêtes invalides GET/POST de disponibilité retournent 400, PUT retourne 405, avec les en-têtes de protection attendus. Les cinq collections privées sondées, dont le nouveau registre d'emails, refusent la lecture anonyme (403). Les 94 annonces relues n'exposent aucun jeton ni coordonnée dans les champs contrôlés.
+
+Le commit de correctifs est `19abb14`, poussé sur `main`. Le déploiement Vercel [`dpl_3cmw73xJNHNqN3ieD6pUe8egrEPc`](https://kiwivanmarket-dblz49p04-pauls-projects-5d056a3f.vercel.app) est **Ready**, avec les alias `kiwivanmarket.com` et `www.kiwivanmarket.com` confirmés à sa publication. **17 navigations Chrome** ont ensuite été vérifiées sur le domaine public, en largeurs 1280 et 390 px : toutes en HTTP 200, aucune erreur JavaScript observée, aucun écran d'erreur ni débordement horizontal ; l'accueil affiche réellement 12 liens d'annonces après attente du chargement. Les parcours privés authentifiés restent couverts par les tests synthétiques et les limites de périmètre ci-dessus.
+
+Les résultats initiaux étaient de **56 tests React**, **56 tests Node** et **51 cas de règles** ; les nouveaux cas couvrent les régressions identifiées par cet audit. Les preuves locales finales sont `reports/audit-published-rules-2026-10-15.jsonl`, `reports/audit-published-runtime-2026-10-15.jsonl`, `reports/audit-published-http-2026-10-15.jsonl`, `reports/audit-published-browser-2026-10-15.jsonl` et les journaux de build/déploiement datés du même jour.
 
 ## Références techniques
 

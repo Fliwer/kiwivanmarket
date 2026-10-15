@@ -87,6 +87,6 @@ Après correction : **133 cas Firestore réussis**, compilation Firestore et Sto
 
 Les deux cas « image objet » produisent un message d'évaluation indiquant qu'une map ne peut pas être jointe en chaîne : leur résultat est bien DENY et leur test réussit. Les variantes valides à dix photos passent, ce qui vérifie aussi la limite de 1000 expressions des règles.
 
-Les essais sont synthétiques et ne sont pas une campagne de charge sur la production. Ils ne vérifient pas la configuration effective du preset Cloudinary, tous les chemins des fournisseurs OAuth, une compromission historique ou le comportement de tous les appareils. La comparaison avec les règles publiées est volontairement différente tant que le responsable de l'audit n'a pas réalisé le déploiement.
+Les essais sont synthétiques et ne sont pas une campagne de charge sur la production. Ils ne vérifient pas la configuration effective du preset Cloudinary, tous les chemins des fournisseurs OAuth, une compromission historique ou le comportement de tous les appareils. Après publication, le contrôle principal confirme les 133 cas réussis et la correspondance exacte des règles Firestore et Storage avec les fichiers locaux ; voir le bilan principal pour la preuve de déploiement.
 
 Références primaires : [tests Firebase Rules REST](https://firebase.google.com/docs/reference/rules/rest/v1/projects/test), [validation de champs Firestore](https://firebase.google.com/docs/firestore/security/rules-fields), [opérations sur les listes Rules](https://firebase.google.com/docs/reference/rules/rules.List).
