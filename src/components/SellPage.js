@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { collection, addDoc, doc, setDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -10,8 +10,16 @@ import { uploadToCloudinary, compressImage } from '../cloudinaryConfig';
 import AuthModal from './AuthModal';
 import SeoHead from './SeoHead';
 import { useToast } from './ToastProvider';
+import EditListingPage from './EditListingPage';
 
 export default function SellPage() {
+  const [params] = useSearchParams();
+  return params.has('edit')
+    ? <EditListingPage key={params.get('edit')} vanId={params.get('edit')} focusPlate={params.get('focus') === 'plate'} />
+    : <CreateListingPage />;
+}
+
+function CreateListingPage() {
   const navigate = useNavigate();
   const { currentUser, resendVerificationEmail } = useAuth();
   const [loading, setLoading] = useState(false);

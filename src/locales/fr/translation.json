@@ -1,4 +1,12 @@
 {
+    "edit_listing": {
+        "loading": "Chargement de votre annonce…",
+        "missing": "Cette annonce est introuvable.",
+        "verify": "Vérifiez votre adresse e-mail avant de modifier votre annonce.",
+        "denied": "Vous n’avez pas accès à la modification de cette annonce.",
+        "load_error": "Impossible de charger toutes les informations. Réessayez avant de modifier l’annonce.",
+        "back": "Retour à mes annonces"
+    },
     "auth_google": {
         "account_access_denied": "L’accès à votre compte Kiwi Van Market est refusé. Contactez l’assistance pour vérifier le statut de votre compte.",
         "continue": "Continuer avec Google",

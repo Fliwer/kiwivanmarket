@@ -1,4 +1,12 @@
 {
+    "edit_listing": {
+        "loading": "Cargando tu anuncio…",
+        "missing": "No se ha encontrado este anuncio.",
+        "verify": "Verifica tu correo electrónico antes de editar el anuncio.",
+        "denied": "No tienes permiso para editar este anuncio.",
+        "load_error": "No se han podido cargar todos los datos. Vuelve a intentarlo antes de editar.",
+        "back": "Volver a mis anuncios"
+    },
     "my_listings": {
         "dashboard": "Gestionar mi anuncio",
         "pause": "Pausar anuncio",

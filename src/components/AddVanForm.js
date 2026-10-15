@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { collection, addDoc, doc, setDoc, updateDoc, getDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, writeBatch, getDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions, auth } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -25,12 +25,15 @@ const formatDateForInput = (date) => {
 export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode = false, van = null, focusPlate = false }) {
   const { t } = useTranslation();
   const { currentUser, resendVerificationEmail } = useAuth();
+  const currentUserId = currentUser?.uid;
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [uploadingIndex, setUploadingIndex] = useState(null);
   const plateInputRef = useRef(null);
   const [imageCrops, setImageCrops] = useState([]);
+  const [initializing, setInitializing] = useState(isEditMode);
+  const [loadError, setLoadError] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -113,8 +116,20 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
 
   // Charger les données du van en mode édition
   useEffect(() => {
+    let cancelled = false;
     const loadData = async () => {
       if (isEditMode && van) {
+        setInitializing(true);
+        setLoadError(false);
+        let contact = van.seller || {};
+        try {
+          const snapshot = await getDoc(doc(db, 'vans', van.id, 'private', 'contact'));
+          if (snapshot.exists()) contact = { ...contact, ...snapshot.data() };
+        } catch (error) {
+          if (!cancelled) { setLoadError(true); setInitializing(false); }
+          return;
+        }
+        if (cancelled) return;
         // Default equipment object - Simplified for backpackers
         const defaultEquipment = {
           // Sleeping
@@ -160,8 +175,8 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           imageFocusY: Number.isFinite(Number(van.imageFocusY)) ? Number(van.imageFocusY) : 50,
           imageZoom: Number.isFinite(Number(van.imageZoom)) ? Math.max(1, Math.min(2, Number(van.imageZoom))) : 1,
           customFeatures: van.customFeatures || '',
-          sellerWhatsApp: van.seller?.whatsapp || van.seller?.phone || '',
-          sellerPhone: van.seller?.phone || '',
+          sellerWhatsApp: contact.whatsapp || contact.phone || '',
+          sellerPhone: contact.phone || '',
           plateNumber: van.plateNumber || ''
         });
 
@@ -195,11 +210,12 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
             zoom: Number.isFinite(Number(van.imageZoom)) ? Math.max(1, Math.min(2, Number(van.imageZoom))) : 1
           }]);
         }
-      } else if (!isEditMode && currentUser) {
+        setInitializing(false);
+      } else if (!isEditMode && currentUserId) {
         // Mode création - Essayer de pré-remplir le téléphone depuis le profil
         try {
-          const userSnap = await getDoc(doc(db, 'users', currentUser.uid));
-          if (userSnap.exists()) {
+          const userSnap = await getDoc(doc(db, 'users', currentUserId));
+          if (!cancelled && userSnap.exists()) {
             const userData = userSnap.data();
             setFormData(prev => ({
               ...prev,
@@ -213,18 +229,19 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
       }
     };
     loadData();
-  }, [isEditMode, van, currentUser]);
+    return () => { cancelled = true; };
+  }, [isEditMode, van, currentUserId]);
 
   // Deep-link support: focus plate field directly from email CTA
   useEffect(() => {
-    if (!focusPlate) return;
+    if (!focusPlate || initializing) return;
     const timer = setTimeout(() => {
       plateInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       plateInputRef.current?.focus();
       plateInputRef.current?.select();
     }, 150);
     return () => clearTimeout(timer);
-  }, [focusPlate, isEditMode, van?.id]);
+  }, [focusPlate, isEditMode, van?.id, initializing]);
 
   // tats pour les tooltips
   const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
@@ -346,6 +363,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isEditMode && (initializing || loadError || !van?.id)) return;
 
     //  SÉCURITÉ: Vérifier que l'utilisateur est connecté et VÉRIFIÉ
     if (!currentUser) {
@@ -516,20 +534,22 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           updatedAt: new Date()
         };
 
-        await updateDoc(doc(db, 'vans', van.id), updateData);
+        const batch = writeBatch(db);
+        batch.update(doc(db, 'vans', van.id), updateData);
 
         // Les coordonnees vont dans le sous-document reserve aux comptes verifies.
-        await setDoc(doc(db, 'vans', van.id, 'private', 'contact'), {
+        if (currentUser.uid === van.seller?.uid) batch.set(doc(db, 'vans', van.id, 'private', 'contact'), {
           email: currentUser.email || null,
           phone: sanitizeString(formData.sellerPhone || '') || null,
           whatsapp: sanitizeString(formData.sellerWhatsApp || '') || null,
         }, { merge: true });
+        await batch.commit();
 
         localStorage.removeItem('kiwiVanMarket_vans');
         localStorage.removeItem('kiwiVanMarket_timestamp');
 
         toast.success('Van updated successfully! ✅');
-        onVanAdded && onVanAdded();
+        await (onVanAdded || onSuccess)?.();
         onClose();
 
       } else {
@@ -656,6 +676,13 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
       area: crop.area ?? null
     };
   };
+
+  if (isEditMode && (initializing || loadError || !van?.id)) return (
+    <div className="fixed inset-0 z-[60] bg-white flex flex-col items-center justify-center gap-4 p-6">
+      <p role={loadError || !van?.id ? 'alert' : 'status'}>{t(`edit_listing.${loadError || !van?.id ? 'load_error' : 'loading'}`)}</p>
+      <button type="button" onClick={onClose} className="underline">{t('edit_listing.back')}</button>
+    </div>
+  );
 
   return (
     <div
@@ -1036,6 +1063,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                 <input
                   type="tel"
                   value={formData.sellerWhatsApp}
+                  disabled={isEditMode && currentUser?.uid !== van?.seller?.uid}
                   onChange={(e) => setFormData({ ...formData, sellerWhatsApp: e.target.value })}
                   placeholder="+64 21 123 4567"
                   className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
@@ -1058,6 +1086,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                 <input
                   type="tel"
                   value={formData.sellerPhone}
+                  disabled={isEditMode && currentUser?.uid !== van?.seller?.uid}
                   onChange={(e) => setFormData({ ...formData, sellerPhone: e.target.value })}
                   placeholder="+64 21 123 4567"
                   className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-slate-500 focus:outline-none transition-colors"

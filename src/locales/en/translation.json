@@ -1,4 +1,12 @@
 {
+    "edit_listing": {
+        "loading": "Loading your listing…",
+        "missing": "This listing could not be found.",
+        "verify": "Verify your email address before editing your listing.",
+        "denied": "You do not have permission to edit this listing.",
+        "load_error": "Unable to load all listing details. Please try again before editing.",
+        "back": "Back to my listings"
+    },
     "auth_google": {
         "account_access_denied": "Access to your Kiwi Van Market account was denied. Contact support to check your account status.",
         "continue": "Continue with Google",
