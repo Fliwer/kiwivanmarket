@@ -374,7 +374,7 @@ export default function MyListingsPage() {
           {/* Vans List */}
           <div className="space-y-4">
             {myVans.map(van => (
-              <div key={van.id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition">
+              <div key={van.id} className="relative bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition">
                 <div className="flex flex-col sm:flex-row">
                   {/* Image */}
                   <Link to={`/van/${van.id}`} className="block sm:w-48 h-40 sm:h-auto relative flex-shrink-0 focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-inset">
@@ -397,7 +397,7 @@ export default function MyListingsPage() {
 
                   {/* Content */}
                   <div className="flex-1 p-4">
-                    <Link to={`/van/${van.id}`} className="block rounded-lg hover:text-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600">
+                    <Link to={`/van/${van.id}`} className="block rounded-lg hover:text-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 after:absolute after:inset-0 after:rounded-2xl after:content-['']">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                       <div>
                         <h3 className="font-bold text-lg text-gray-900">{van.title}</h3>
@@ -429,7 +429,7 @@ export default function MyListingsPage() {
                     </Link>
 
                     {/* Actions */}
-                    <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
+                    <div className="relative z-10 pointer-events-none [&_button]:pointer-events-auto [&_a]:pointer-events-auto flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
                       {van.seller?.uid === currentUser?.uid && <ListingBoostButton van={van} onOpen={setBoostVan} />}
                       <Link
                         to={`/van/${van.id}`}
