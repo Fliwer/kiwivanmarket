@@ -7,67 +7,12 @@ import SeoHead from './SeoHead';
 import { useTranslation } from 'react-i18next';
 import { seoCopy, seoLang, SEO_LANGS } from '../data/seo';
 
+import priceIndex from '../data/seo/price-index';
+const { MIN_SAMPLE } = priceIndex;
+
 const CURRENT_YEAR = new Date().getFullYear();
 
-// Un van est rattaché à une marque via son titre, faute de champ `brand`
-// structuré. L'ORDRE COMPTE : chaque van n'est compté qu'une seule fois, dans
-// le premier segment qui matche. Les modèles précis passent donc avant les
-// marques génériques, sinon un "Toyota Hiace" serait compté deux fois.
-const BRAND_MATCHERS = [
-  { name: 'Toyota Hiace', kws: ['hiace'] },
-  { name: 'Nissan Caravan', kws: ['caravan', 'homy'] },
-  { name: 'Nissan Elgrand', kws: ['elgrand'] },
-  { name: 'Mitsubishi Delica', kws: ['delica'] },
-  { name: 'Mazda Bongo', kws: ['bongo'] },
-  { name: 'Ford Transit', kws: ['transit'] },
-  { name: 'VW Transporter', kws: ['transporter', 'kombi'] },
-  { name: 'Hyundai iLoad', kws: ['iload', 'imax'] },
-  { name: 'Mercedes Sprinter', kws: ['sprinter', 'vito'] },
-  { name: 'Toyota (other models)', kws: ['toyota', 'estima', 'regius', 'townace', 'liteace', 'granvia'] },
-  { name: 'Nissan (other models)', kws: ['nissan', 'serena', 'vanette', 'nv200'] },
-];
-const BRAND_LABELS = {
-  fr: { 'Toyota (other models)': 'Toyota (autres modèles)', 'Nissan (other models)': 'Nissan (autres modèles)' },
-};
-
-// ─── Stats helpers ────────────────────────────────────────────────────────────
-
-const median = (nums) => {
-  if (!nums.length) return 0;
-  const s = [...nums].sort((a, b) => a - b);
-  const mid = Math.floor(s.length / 2);
-  return s.length % 2 ? s[mid] : Math.round((s[mid - 1] + s[mid]) / 2);
-};
-
 const nzd = (n) => `$${Math.round(n).toLocaleString('en-NZ')}`;
-
-// Un échantillon sous ce seuil n'est pas publiable : une "médiane" sur 3
-// annonces n'a aucune valeur statistique et décrédibiliserait la page — c'est
-// précisément le chiffre qu'un journaliste ou une IA irait citer.
-const MIN_SAMPLE = 5;
-
-// ─── Schema.org Dataset — format que les moteurs et les IA citent ────────────
-
-function PriceDatasetSchema({ stats, url, T }) {
-  if (!stats || !stats.total) return null;
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'Dataset',
-    name: T.datasetName(CURRENT_YEAR),
-    description: T.datasetDesc(stats),
-    url,
-    keywords: ['campervan prices New Zealand', 'how much does a campervan cost NZ', 'backpacker van price NZ', 'used campervan value NZ'],
-    license: 'https://creativecommons.org/licenses/by/4.0/',
-    creator: { '@type': 'Organization', name: 'Kiwi Van Market', url: 'https://kiwivanmarket.com' },
-    temporalCoverage: String(CURRENT_YEAR),
-    spatialCoverage: { '@type': 'Country', name: 'New Zealand' },
-    variableMeasured: [
-      { '@type': 'PropertyValue', name: T.varMedian, value: stats.median, unitText: 'NZD' },
-      { '@type': 'PropertyValue', name: T.varSample, value: stats.total, unitText: 'listings' },
-    ],
-  };
-  return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -78,91 +23,27 @@ export default function PriceIndexPage() {
   const C = seoCopy(i18n.language).common;
   const [vans, setVans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const url = 'https://kiwivanmarket.com/campervan-prices-nz';
+  const [observedAt, setObservedAt] = useState(null);
+  const [loadError, setLoadError] = useState(false);
+  const href = (path) => lang === 'fr' ? `${path}?lang=fr` : path;
 
   useEffect(() => {
     (async () => {
       try {
         const snap = await getDocs(collection(db, 'vans'));
-        const list = snap.docs
-          .map((d) => ({ id: d.id, ...d.data() }))
-          // On ne garde que des prix plausibles : un van à $1 ou $500k est une
-          // erreur de saisie et ferait dériver la médiane.
-          .filter((v) => {
-            const p = Number(v.price);
-            return Number.isFinite(p) && p >= 1000 && p <= 200000;
-          });
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setVans(list);
+        setObservedAt(new Date().toISOString());
       } catch (e) {
-        console.error('Price index: fetch failed', e);
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const stats = useMemo(() => {
-    if (!vans.length) return null;
-    const prices = vans.map((v) => Number(v.price));
-
-    // Attribution exclusive : chaque van tombe dans un seul segment (le premier
-    // qui matche), pour que les effectifs s'additionnent sans doublon.
-    const groups = new Map(BRAND_MATCHERS.map((m) => [m.name, []]));
-    vans.forEach((v) => {
-      const title = (v.title || '').toLowerCase();
-      const hit = BRAND_MATCHERS.find((m) => m.kws.some((k) => title.includes(k)));
-      if (hit) groups.get(hit.name).push(Number(v.price));
-    });
-
-    const byBrand = [...groups.entries()]
-      .filter(([, p]) => p.length >= MIN_SAMPLE)
-      .map(([name, p]) => ({
-        name: (BRAND_LABELS[lang] && BRAND_LABELS[lang][name]) || name,
-        count: p.length, median: median(p), min: Math.min(...p), max: Math.max(...p),
-      }))
-      .sort((a, b) => b.median - a.median);
-
-    // Segments utiles à l'acheteur : l'âge et l'auto-suffisance sont les deux
-    // variables qui pèsent le plus sur le prix d'un van en NZ.
-    const segment = (label, subset) => {
-      const p = subset.map((v) => Number(v.price));
-      return p.length >= MIN_SAMPLE
-        ? { label, count: p.length, median: median(p), min: Math.min(...p), max: Math.max(...p) }
-        : null;
-    };
-
-    const byAge = [
-      segment(T.ageBefore, vans.filter((v) => v.year && v.year < 2000)),
-      segment(T.age2000, vans.filter((v) => v.year >= 2000 && v.year <= 2009)),
-      segment(T.age2010, vans.filter((v) => v.year >= 2010)),
-    ].filter(Boolean);
-
-    const selfContained = segment(T.scYes, vans.filter((v) => v.selfContained));
-    const notSelfContained = segment(T.scNo, vans.filter((v) => !v.selfContained));
-
-    const buckets = [
-      { label: T.bucketUnder, test: (p) => p < 5000 },
-      { label: '$5,000 – $9,999', test: (p) => p >= 5000 && p < 10000 },
-      { label: '$10,000 – $14,999', test: (p) => p >= 10000 && p < 15000 },
-      { label: '$15,000 – $24,999', test: (p) => p >= 15000 && p < 25000 },
-      { label: T.bucketAbove, test: (p) => p >= 25000 },
-    ].map((b) => {
-      const count = prices.filter(b.test).length;
-      return { ...b, count, pct: Math.round((count / prices.length) * 100) };
-    });
-
-    return {
-      total: prices.length,
-      median: median(prices),
-      min: Math.min(...prices),
-      max: Math.max(...prices),
-      byBrand,
-      byAge,
-      selfContained,
-      notSelfContained,
-      buckets,
-    };
-  }, [vans, lang]); // eslint-disable-line react-hooks/exhaustive-deps
+  const stats = useMemo(() => priceIndex.calculate(vans, T, lang), [vans, T, lang]);
+  const dataset = observedAt && priceIndex.dataset(stats, T, lang, observedAt);
 
   const faqs = stats ? T.faqs(stats, nzd) : [];
   return (
@@ -175,7 +56,7 @@ export default function PriceIndexPage() {
         faqs={faqs}
         breadcrumbs={[{ name: C.home, path: '/' }, { name: T.crumb, path: '/campervan-prices-nz' }]}
       />
-      <PriceDatasetSchema stats={stats} url={url} T={T} />
+      {dataset && <script type="application/ld+json">{JSON.stringify(dataset)}</script>}
 
       {/* ── Hero ────────────────────────────────────────────────────── */}
       <section className="bg-slate-900 text-white">
@@ -201,7 +82,7 @@ export default function PriceIndexPage() {
             </div>
           ) : (
             <p className="mt-10 text-slate-400">
-              {T.empty}
+              {loadError ? T.error : T.empty}
             </p>
           )}
         </div>
@@ -209,6 +90,7 @@ export default function PriceIndexPage() {
 
       {stats && (
         <div className="max-w-5xl mx-auto px-5 py-12 space-y-12">
+          <p className="text-sm text-slate-500">{T.observed}: <time dateTime={observedAt}>{new Date(observedAt).toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-NZ', { timeZone: 'Pacific/Auckland' })} NZ</time></p>
           {/* ── Réponse directe (format citable par les IA) ──────────── */}
           <section className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8">
             <h2 className="text-xl sm:text-2xl font-black text-slate-900 mb-3">
@@ -287,6 +169,9 @@ export default function PriceIndexPage() {
             </p>
           </section>
 
+          <section><h2 className="text-2xl font-bold mb-5">{C.faqTitle}</h2>{faqs.map(({ q, a }) => <details key={q} className="border-b border-slate-200 py-4"><summary className="font-bold cursor-pointer">{q}</summary><p className="pt-3 text-slate-600 leading-relaxed">{a}</p></details>)}</section>
+          <Link className="inline-flex font-bold text-emerald-700 underline" to={href('/guide/buying-campervan-nz')}>{T.guideBuy}</Link>
+
           {/* ── CTA ─────────────────────────────────────────────────── */}
           <section className="bg-emerald-600 rounded-2xl p-6 sm:p-8 text-white text-center">
             <h2 className="text-xl sm:text-2xl font-black mb-2">
@@ -297,13 +182,13 @@ export default function PriceIndexPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
-                to="/sell"
+                to={href('/sell')}
                 className="inline-flex items-center justify-center gap-2 bg-white text-emerald-700 px-6 py-3 rounded-xl font-bold hover:bg-emerald-50 transition"
               >
                 {T.sellMy} <ArrowRight size={18} />
               </Link>
               <Link
-                to="/"
+                to={href('/')}
                 className="inline-flex items-center justify-center gap-2 bg-emerald-700/50 border border-white/25 px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition"
               >
                 {t('seo_pages.prices.browse')}

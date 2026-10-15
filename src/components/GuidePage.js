@@ -6,6 +6,7 @@ import {
   Calculator, ChevronDown, MessageCircle, Facebook, Download,
 } from 'lucide-react';
 import SeoHead from './SeoHead';
+import guideSchema from '../data/seo/guide-schema';
 import BuybackCalculator from './BuybackCalculator';
 import { GUIDES } from '../constants/guides';
 import { useHideLoader } from '../hooks/useHideLoader';
@@ -17,25 +18,7 @@ import { useHideLoader } from '../hooks/useHideLoader';
 // tableau, FAQ, CTA inline. Footer de partage. Un seul h1 par page.
 // ============================================================================
 
-const GuideSchema = ({ guide, url }) => {
-  const schema = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: guide.title,
-    description: guide.description,
-    image: guide.heroImage,
-    url,
-    author: { '@type': 'Organization', name: 'Kiwi Van Market' },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Kiwi Van Market',
-      logo: { '@type': 'ImageObject', url: 'https://kiwivanmarket.com/kiwi-van-logo-128.webp' },
-    },
-    datePublished: guide.datePublished || undefined,
-    dateModified: guide.dateModified || undefined,
-  };
-  return <script type="application/ld+json">{JSON.stringify(schema)}</script>;
-};
+const GuideSchema = ({ guide, slug, lang }) => <script type="application/ld+json">{JSON.stringify(guideSchema.article(guide, slug, lang))}</script>;
 
 // ── Encadré fin à bordure gauche ────────────────────────────────────────────
 function TipBox({ label, children, tone = 'emerald' }) {
@@ -54,6 +37,9 @@ function TipBox({ label, children, tone = 'emerald' }) {
 
 // ── Blocs de contenu ────────────────────────────────────────────────────────
 function GuideItem({ item, lang }) {
+  if (item.type === 'sources') {
+    return <ul className="my-5 space-y-2 text-sm text-emerald-800">{(item.items || []).map((source) => <li key={source.url}><a href={source.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{source.name}</a></li>)}</ul>;
+  }
   if (item.type === 'image') {
     return (
       <figure className="my-8">
@@ -105,7 +91,7 @@ function GuideItem({ item, lang }) {
     const cls = 'my-6 flex items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50/60 px-5 py-4 font-bold text-emerald-900 text-[15px] hover:bg-emerald-100/70 transition group';
     return item.href
       ? <a href={item.href} target="_blank" rel="noopener noreferrer" className={cls}>{inner}</a>
-      : <Link to={item.to || '/'} className={cls}>{inner}</Link>;
+      : <Link to={guideSchema.localizedPath(item.to || '/', lang)} className={cls}>{inner}</Link>;
   }
 
   if (item.type === 'checklist') {
@@ -190,7 +176,9 @@ export default function GuidePage() {
   useHideLoader();
   const { slug } = useParams();
   const { t, i18n } = useTranslation();
-  const currentLang = (i18n.language || 'en').split('-')[0];
+  const requestedLang = (i18n.language || 'en').split('-')[0];
+  const currentLang = GUIDES[requestedLang]?.[slug] ? requestedLang : 'en';
+  const href = (path) => guideSchema.localizedPath(path, currentLang);
   // Sélecteur de langue pour les libellés d'UI (FR / ES / EN par défaut)
   const tri = (fr, es, en) => (currentLang === 'fr' ? fr : currentLang === 'es' ? es : en);
 
@@ -201,7 +189,7 @@ export default function GuidePage() {
 
   const langGuides = GUIDES[currentLang] || GUIDES.en;
   const guide = langGuides[slug] || GUIDES.en[slug];
-  const url = `https://kiwivanmarket.com/guide/${slug}`;
+  const url = `https://kiwivanmarket.com${href(`/guide/${slug}`)}`;
 
   const readingTime = (() => {
     if (!guide) return 5;
@@ -244,7 +232,7 @@ export default function GuidePage() {
           <div className="text-6xl mb-6">📖</div>
           <h1 className="text-2xl font-bold text-slate-900 mb-3">{t('guides.page.not_found_title')}</h1>
           <p className="text-slate-500 mb-8">{t('guides.page.not_found_desc')}</p>
-          <Link to="/guides" className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-500 transition">
+          <Link to={href('/guides')} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-500 transition">
             <ArrowLeft size={18} />
             {t('guides.page.back')}
           </Link>
@@ -254,7 +242,7 @@ export default function GuidePage() {
   }
 
   const { content } = guide;
-  const updatedLabel = guide.dateModified ? new Date(guide.dateModified).toLocaleDateString(tri('fr-FR', 'es-ES', 'en-NZ'), { month: 'long', year: 'numeric' }) : null;
+  const updatedLabel = guide.dateModified ? new Date(guide.dateModified).toLocaleDateString(tri('fr-FR', 'es-ES', 'en-NZ'), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : null;
 
   const guideFaqs = (content.sections || [])
     .flatMap((s) => s.items || [])
@@ -274,15 +262,15 @@ export default function GuidePage() {
         description={guide.description}
         image={guide.heroImage}
         type="article"
-        alternateLangs={['en', 'fr', 'es']}
+        alternateLangs={Object.keys(GUIDES).filter((lang) => GUIDES[lang][slug])}
         faqs={guideFaqs}
         breadcrumbs={[
-          { name: 'Home', path: '/' },
-          { name: 'Guides', path: '/guides' },
-          { name: guide.title, path: `/guide/${slug}` },
+          { name: tri('Accueil', 'Inicio', 'Home'), path: href('/') },
+          { name: 'Guides', path: href('/guides') },
+          { name: guide.title, path: href(`/guide/${slug}`) },
         ]}
       />
-      <GuideSchema guide={guide} url={url} />
+      <GuideSchema guide={guide} slug={slug} lang={currentLang} />
 
       <div className="bg-white pt-16 md:pt-6">
         <div
@@ -297,9 +285,9 @@ export default function GuidePage() {
           {/* ── En-tête d'article ── */}
           <header>
             <nav className="flex items-center gap-2 text-[13px] font-semibold text-slate-400 mb-6">
-              <Link to="/" className="hover:text-emerald-600 transition-colors">Home</Link>
+              <Link to={href('/')} className="hover:text-emerald-600 transition-colors">{tri('Accueil', 'Inicio', 'Home')}</Link>
               <span>/</span>
-              <Link to="/guides" className="hover:text-emerald-600 transition-colors">{t('guides.backToList', 'Guides')}</Link>
+              <Link to={href('/guides')} className="hover:text-emerald-600 transition-colors">{t('guides.backToList', 'Guides')}</Link>
             </nav>
 
             <h1 className="text-3xl sm:text-4xl md:text-[2.6rem] font-extrabold text-slate-900 tracking-tight leading-[1.15] mb-5">
@@ -319,7 +307,7 @@ export default function GuidePage() {
                 <Clock size={14} />
                 {t('guides.hub.min_read', { count: readingTime })}
               </span>
-              {updatedLabel && <span className="text-slate-400">{tri('Mis à jour', 'Actualizado', 'Updated')} {updatedLabel}</span>}
+              {updatedLabel && <span className="text-slate-400">{tri('Mis à jour', 'Actualizado', 'Updated')} <time dateTime={guide.dateModified}>{updatedLabel}</time></span>}
             </div>
 
             <img
@@ -371,8 +359,7 @@ export default function GuidePage() {
                     ))}
                   </section>
 
-                  {((slug === 'buying-campervan-nz' && idx === 3) ||
-                    (slug === 'selling-campervan-nz' && idx === 2)) && (
+                  {(slug === 'selling-campervan-nz' && idx === 2) && (
                       <div className="mb-14 rounded-2xl bg-slate-900 text-white p-6 md:p-10 overflow-hidden relative">
                         <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-[80px]" />
                         <div className="relative z-10 mb-8">
@@ -455,7 +442,7 @@ export default function GuidePage() {
                     'Browse campervans for sale across New Zealand — WOF, REGO and self-contained status shown on every listing.')}
                 </p>
                 <Link
-                  to={content.cta?.buttonLink || '/'}
+                  to={href(content.cta?.buttonLink || '/')}
                   className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-emerald-500 transition active:scale-95"
                 >
                   {content.cta?.buttonText || tri('Voir les annonces', 'Ver anuncios', 'Browse campervans')}
@@ -481,7 +468,7 @@ export default function GuidePage() {
                       'Campervans listed by real owners across New Zealand.')}
                   </p>
                   <Link
-                    to="/"
+                    to={href('/')}
                     className="block text-center bg-white text-emerald-900 font-bold rounded-xl px-4 py-2.5 text-sm hover:bg-emerald-50 transition active:scale-95"
                   >
                     {tri('Voir les annonces →', 'Ver anuncios →', 'Browse vans →')}
@@ -517,7 +504,7 @@ export default function GuidePage() {
                     </p>
                     <div className="space-y-4">
                       {related.map(([s, g]) => (
-                        <Link key={s} to={`/guide/${s}`} className="flex gap-3 group">
+                        <Link key={s} to={href(`/guide/${s}`)} className="flex gap-3 group">
                           <img
                             src={g.heroImage}
                             alt=""
@@ -552,7 +539,7 @@ export default function GuidePage() {
               </p>
               <div className="grid sm:grid-cols-3 gap-5">
                 {related.map(([s, g]) => (
-                  <Link key={s} to={`/guide/${s}`} className="group flex sm:block gap-4">
+                  <Link key={s} to={href(`/guide/${s}`)} className="group flex sm:block gap-4">
                     <img
                       src={g.heroImage}
                       alt={g.title}

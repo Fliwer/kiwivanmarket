@@ -21,7 +21,8 @@ export const config = {
   matcher: ['/((?!api/|_vercel/|_next/|__/auth/|.*\\..*).*)'],
 };
 
-const BOT_RE = /(googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|gptbot|oai-searchbot|chatgpt|claudebot|claude-web|claude-searchbot|anthropic|perplexity|ccbot|amazonbot|bytespider|meta-externalagent|facebookexternalhit|twitterbot|linkedinbot|slackbot|whatsapp|telegrambot|discordbot|pinterestbot|google-extended)/i;
+import crawlerPattern from './src/data/seo/crawlers';
+const BOT_RE = new RegExp(crawlerPattern, 'i');
 
 // Miroir des <Route path> de src/App.js. Les segments dynamiques acceptent
 // n'importe quoi : c'est la fonction prerender-* correspondante qui renvoie le

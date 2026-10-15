@@ -529,6 +529,8 @@ function ScrollToTop() {
 }
 
 export default function KiwiVanMarket() {
+  // Direct entry must reveal every route, including pages without their own loader hook.
+  useHideLoader();
   const { currentUser, logout, googleSignInError } = useAuth();
   const { count: favoritesCount } = useFavorites();
   const { t } = useTranslation();

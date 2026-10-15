@@ -1,0 +1,4 @@
+// This selects readable HTML, never grants authentication or special access.
+// Keep Vercel route rules in sync with scripts/sync-crawler-routes.cjs.
+const pattern = '(googlebot|google-inspectiontool|bingbot|duckduckbot|yandex|baiduspider|applebot|gptbot|oai-searchbot|chatgpt|claudebot|claude-web|claude-searchbot|claude-user|anthropic|perplexity|cohere-ai|googleother|ccbot|amazonbot|bytespider|meta-externalagent|facebookexternalhit|twitterbot|linkedinbot|slackbot|whatsapp|telegrambot|discordbot|pinterestbot|google-extended)';
+export default pattern;

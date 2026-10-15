@@ -2,6 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 require('./sync-seo-modules.cjs');
+require('./sync-crawler-routes.cjs');
 require('./generate-guide-summaries.cjs');
 const { COPY, SOURCES, REVIEWED } = require('../src/data/seo/market.cjs');
 const guides = require('../api/_lib/guides-data.json');

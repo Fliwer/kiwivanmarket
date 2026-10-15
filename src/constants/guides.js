@@ -3,428 +3,326 @@ import { CheckCircle, AlertTriangle, MapPin, Shield, Car, DollarSign, Star } fro
 export const GUIDES = {
     en: {
         'buying-campervan-nz': {
-            "title": "How to Buy a Campervan in New Zealand: The Backpacker Guide (2026)",
-            "description": "Real prices, a step-by-step inspection routine, WOF, REGO, insurance and self-contained rules — everything you need to buy a campervan in New Zealand without getting burned.",
+            "title": "How to Buy a Campervan in New Zealand: Checks, Costs & Paperwork",
+            "description": "Buy a campervan in NZ with a practical checklist for prices, inspection, WoF, rego, RUC and green-warrant certification. Official sources and handover steps.",
             "heroImage": "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=1200",
+            "dateModified": "2026-10-15",
             "content": {
-                "intro": "So you've just landed in Auckland, everyone at the hostel is talking about buying a van, and you have no idea where to start. Good news: in the next 15 minutes you'll get the full picture — real prices, a proven inspection routine, the scams to dodge, and the exact paperwork. This is the guide we wish we'd had before our first NZ road trip.",
+                "intro": "To buy a campervan in New Zealand, compare available vans, check the seller and vehicle history, arrange an independent inspection, agree the purchase in writing and complete the NZTA notification at handover. Budget for ownership as well as the asking price. This guide connects those decisions to the documents and checks you need, with official sources checked on 15 October 2026.",
                 "sections": [
                     {
-                        "title": "Start Here: The 5-Minute Basics",
-                        "icon": "CheckCircle",
+                        "title": "Start with your trip and a realistic ownership budget",
                         "items": [
                             {
-                                "title": "Why buy instead of rent?",
-                                "text": "Renting costs $60–150 a day. Buying a $7,000 van for 6 months and selling it for $6,000 costs you about $5 a day plus fuel. That's why almost every long-stay backpacker buys — and with a smart resale, some even break even. The catch: the savings only work if you buy a healthy van. That's what the rest of this guide is for."
+                                "title": "Choose the van around how you will use it",
+                                "text": "Write down your passenger count, sleeping arrangement, route, parking needs and equipment you will actually use. Compare the cost and complexity of a small people-mover, a medium van and a larger motorhome. Standing room, heating, a fridge and a separate leisure battery can be useful, but an attractive conversion cannot tell you whether the underlying vehicle has been maintained."
+                            },
+                            {
+                                "title": "Calculate the cost of buying versus renting",
+                                "text": "For your own comparison, use: purchase price minus eventual resale proceeds, plus inspection, repairs, servicing, insurance, licensing and selling costs. Add fuel, camping and ferry costs to each option consistently. Then divide by the number of travel days. Keep the purchase cash and an emergency reserve available: resale proceeds only arrive at the end, and may be lower than expected."
                             },
                             {
                                 "type": "table",
-                                "title": "The NZ jargon, decoded",
+                                "title": "Worked example — assumptions, not market prices or provider quotes",
                                 "headers": [
-                                    "Term",
-                                    "What it means",
-                                    "Why you care"
+                                    "Assumption",
+                                    "NZD"
                                 ],
                                 "rows": [
                                     [
-                                        "WOF",
-                                        "Warrant of Fitness — the periodic safety inspection every vehicle needs",
-                                        "No valid WOF = you can't legally drive"
+                                        "Purchase",
+                                        "12,000"
                                     ],
                                     [
-                                        "REGO",
-                                        "Vehicle registration, paid to use public roads",
-                                        "Sold per 3, 6 or 12 months (~$100/year for petrol vans)"
+                                        "Assumed resale proceeds",
+                                        "9,500"
                                     ],
                                     [
-                                        "RUC",
-                                        "Road User Charges — a per-km tax paid only by diesel vehicles",
-                                        "About $76 per 1,000 km, on top of fuel"
+                                        "Inspection",
+                                        "250"
                                     ],
                                     [
-                                        "Self-contained",
-                                        "Certified under the current green-warrant system; verify the vehicle certificate",
-                                        "Required for most freedom camping"
+                                        "Repairs and servicing",
+                                        "1,000"
                                     ],
                                     [
-                                        "CarJam",
-                                        "An online vehicle history report",
-                                        "Reveals debts, odometer fraud and stolen vehicles"
+                                        "Insurance",
+                                        "600"
+                                    ],
+                                    [
+                                        "Licensing and other administration",
+                                        "300"
+                                    ],
+                                    [
+                                        "Net ownership cost for this example",
+                                        "4,650"
+                                    ]
+                                ],
+                                "caption": "Over 90 days, these assumptions give NZ$51.67 per day before fuel, campsites and ferries. Change the assumptions using your own quotes. This is not a resale forecast."
+                            },
+                            {
+                                "title": "Use comparable asking prices, then inspect",
+                                "text": "Our price page reports the active advertised inventory on Kiwi Van Market, with the sample size and calculation method. Compare the same model, year, kilometres, maintenance history and equipment. A cheap listing with an expensive repair can cost more overall; a high asking price does not prove quality. Obtain repair estimates before negotiating instead of assuming every seller will offer the same percentage discount."
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Compare current campervan asking prices and sample size",
+                                "to": "/campervan-prices-nz"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Find vans you can actually view",
+                        "items": [
+                            {
+                                "title": "Arrange viewings around your arrival city",
+                                "text": "Start with Auckland or Christchurch if that fits your route, then broaden the search only when the travel and inspection costs make sense. Ask whether the van is still available, where it can be viewed and when the seller can hand it over. Save the advert and agree an appointment. Leave time for a workshop booking and a second option if the first van is unsuitable."
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Browse campervans for sale in Auckland",
+                                "to": "/location/auckland"
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Browse campervans for sale in Christchurch",
+                                "to": "/location/christchurch"
+                            },
+                            {
+                                "title": "Know who is selling",
+                                "text": "A marketplace advert does not make a private sale a dealer sale. Consumer Protection explains that private purchases have fewer protections and that the Consumer Guarantees Act generally applies to businesses, not private sellers. Establish the seller’s identity and authority to sell, and retain the advert and written statements."
+                            },
+                            {
+                                "title": "Prepare useful questions before travelling",
+                                "text": "Ask for the plate, VIN or chassis number, odometer reading, maintenance invoices and expiry dates on the relevant documents. Request photos of the engine bay, underside and conversion, not just the bed. Ask what is broken, why the van is being sold and whether an independent inspection and a cold start are possible. Treat evasive answers as missing evidence, not reassurance."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "Consumer Protection — Buying privately",
+                                        "url": "https://www.consumerprotection.govt.nz/help-product-service/cars/finding-the-right-car/buying-car-privately"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Check the documents separately",
+                        "items": [
+                            {
+                                "type": "table",
+                                "headers": [
+                                    "Document or check",
+                                    "What to verify"
+                                ],
+                                "rows": [
+                                    [
+                                        "WoF / CoF",
+                                        "Check the actual inspection document and expiry. A WoF is a safety inspection, not a guarantee of engine or gearbox condition."
+                                    ],
+                                    [
+                                        "Rego",
+                                        "This is vehicle licensing, distinct from registration. Confirm it is current; registration records the responsible person, not legal ownership."
+                                    ],
+                                    [
+                                        "RUC, where applicable",
+                                        "Check the vehicle’s RUC type, weight and distance licence against its odometer. Diesel and many electric vehicles pay RUC; it is not diesel-only."
                                     ],
                                     [
                                         "PPSR",
-                                        "Personal Property Securities Register — the official debt register",
-                                        "A $3 check that stops you inheriting someone's loan"
+                                        "Search the correct identifiers for a registered security interest before agreeing to buy. If an interest exists, resolve it with the lender before completing the purchase."
+                                    ],
+                                    [
+                                        "Service history",
+                                        "Match invoices to the vehicle and odometer. Record overdue work and ask the mechanic to check the manufacturer’s maintenance requirements for that engine."
+                                    ],
+                                    [
+                                        "Self-contained certification",
+                                        "Read the current certificate and green warrant, not just an advert checkbox. The camping checks are explained below."
                                     ]
                                 ]
                             },
                             {
+                                "title": "Use current fees and dates",
+                                "text": "Check NZTA’s current licensing and RUC information for the actual vehicle. The standard type 1 RUC rate for a vehicle up to 3,500 kg is currently NZ$76 per 1,000 km, with an administration fee added to the purchase. Other vehicle types and weights can differ. A generic “rego costs $100” budget is not a reliable substitute for the vehicle’s actual charge."
+                            },
+                            {
                                 "type": "callout",
                                 "variant": "info",
-                                "title": "📝 Good to know",
-                                "text": "You do NOT need to be a NZ resident to buy a vehicle. A passport and a local address (your hostel works) are enough. Most backpackers drive on their home licence or an International Driving Permit — just make sure it's valid in English."
+                                "title": "WoF rules are changing",
+                                "text": "NZTA has announced inspection changes from 1 November 2026. Use the expiry on the vehicle’s document and check NZTA’s current rules for its inspection frequency; do not rely on an old age-based summary."
                             },
                             {
-                                "title": "How long does it take?",
-                                "text": "Plan 3 to 7 days in a big city: a couple of days browsing listings, a few viewings, one mechanical inspection, and 15 minutes of paperwork. Rushing it on day one is exactly how people buy lemons.",
-                                "expertTip": "Book your first week of accommodation in Auckland or Christchurch — that's where the van supply lives."
-                            },
-                            {
-                                "type": "cta",
-                                "text": "See what's for sale right now across New Zealand",
-                                "to": "/"
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Warrant of fitness",
+                                        "url": "https://www.nzta.govt.nz/vehicles/warrants-and-certificates/warrant-of-fitness"
+                                    },
+                                    {
+                                        "name": "NZTA — Vehicle licensing (rego)",
+                                        "url": "https://www.nzta.govt.nz/vehicles/licensing-rego/vehicle-licensing-rego"
+                                    },
+                                    {
+                                        "name": "NZTA — About road user charges",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/about-ruc"
+                                    },
+                                    {
+                                        "name": "NZTA — RUC rates and transaction fees",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/ruc-rates-and-transaction-fees"
+                                    },
+                                    {
+                                        "name": "Companies Office — PPSR vehicle checks",
+                                        "url": "https://ppsr.companiesoffice.govt.nz/help-centre/information-for-debtors-and-consumers/how-the-ppsr-can-help-when-buying-used-goods/"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "What a Campervan Really Costs",
-                        "icon": "DollarSign",
+                        "title": "Inspect the vehicle and the conversion",
                         "items": [
                             {
-                                "type": "table",
-                                "title": "Price tiers on the backpacker market (NZD)",
-                                "headers": [
-                                    "Budget",
-                                    "What you get",
-                                    "Watch out for"
-                                ],
-                                "rows": [
-                                    [
-                                        "Under $4,000",
-                                        "Old people-movers (Estima, Serena, Odyssey) with a mattress in the back",
-                                        "High kms, rust, short WOF — inspection is non-negotiable"
-                                    ],
-                                    [
-                                        "$4,000–$8,000",
-                                        "The classic backpacker vans: Hiace, Bongo, Vanette, L300 — often self-contained",
-                                        "The sweet spot for value; verify the certification is genuine"
-                                    ],
-                                    [
-                                        "$8,000–$15,000",
-                                        "Younger vans with proper builds: solar, fridge, insulation",
-                                        "Pay for what helps YOU travel, not for fairy lights"
-                                    ],
-                                    [
-                                        "$15,000+",
-                                        "High-top vans, 4WD Delicas, small motorhomes",
-                                        "Harder to resell fast at the end of a trip"
-                                    ]
-                                ],
-                                "caption": "For reference: the average listing on Kiwi Van Market sits around $8,000–10,000."
+                                "title": "Book an independent inspection with the right scope",
+                                "text": "Ask a mechanic or inspection service what the report covers before booking. A roadworthiness check, a mechanical pre-purchase inspection and checks of the camper conversion answer different questions. Tell the inspector the intended trip and ask them to separate urgent safety work, likely maintenance and items needing further investigation. Use written findings and estimates to decide whether to continue."
                             },
                             {
                                 "type": "checklist",
-                                "title": "✅ Quick Checklist: the hidden costs first-timers forget",
+                                "title": "At the viewing: record observations for the inspector",
                                 "items": [
-                                    "Insurance: $300–600/year (third party is the backpacker standard)",
-                                    "WOF test: $60–80 each time",
-                                    "REGO: about $100/year for petrol vans",
-                                    "RUC (diesel only): ~$76 per 1,000 km",
-                                    "Pre-purchase mechanical inspection: $150–180 — the best money you'll spend",
-                                    "Cook Strait ferry with a van: $250–450 return",
-                                    "A $1,000 emergency fund for repairs (battery, tyres, water pump)"
+                                    "Start with a genuinely cold engine. Watch how it starts and whether dashboard warning lamps behave normally; note persistent smoke, leaks or unusual noises.",
+                                    "Ask for evidence of overheating repairs, cooling-system maintenance and timing-belt work where that engine uses a belt. A sticker without an invoice is incomplete evidence.",
+                                    "Look for damp carpets, staining around windows and roof openings, musty smells and soft interior panels. Check the bed and storage after moving cushions.",
+                                    "Look for corrosion around structural areas, seams and mounting points. Ask the inspector to assess the underside; do not crawl under a vehicle supported only by a jack.",
+                                    "Compare tyre wear across the axle and note cracks or damage. On a permitted and insured test drive, report pulling, vibration, slipping, difficult shifts or abnormal temperature.",
+                                    "Ask the seller to demonstrate the fridge, water pump, lighting, charging and leisure battery under load. A voltage reading alone does not establish battery capacity.",
+                                    "Check doors, locks, seat belts, ventilation and access to equipment. Ask for documentation for modifications and gas or mains-electric installations; use an appropriately qualified professional for those checks."
                                 ]
                             },
                             {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ Common Mistake",
-                                "text": "Spending every dollar on the van itself. Keep $1,000 aside for surprises — a battery, a tyre, a water pump. A breakdown with an empty account is how road trips end early."
+                                "title": "Turn findings into a decision",
+                                "text": "A viewing checklist cannot diagnose an internal engine fault. If the report leaves a significant issue unresolved, ask for a specialist assessment or consider another van. Keep the written estimate beside your budget. Never open a hot cooling-system cap, and do not experiment with gas or mains wiring to test a seller’s claim."
                             },
                             {
-                                "title": "Can you negotiate? (Yes. Politely.)",
-                                "text": "Almost every listed price has 10–15% of room — more at the end of the season, when sellers have a flight to catch. Point at real things: WOF expiry, tyre wear, kilometres, a tired leisure battery. Cash today beats promises tomorrow.",
-                                "expertTip": "💡 Ask when the seller flies out. Three days before departure, an $8,500 van becomes a $7,200 van."
-                            },
-                            {
-                                "title": "Petrol or diesel? The honest maths",
-                                "text": "Diesel is cheaper at the pump but pays RUC (~$76 per 1,000 km) and services cost more. Petrol is simpler: no RUC, cheaper maintenance, and for a typical 10,000–15,000 km trip the total cost difference is small. Rule of thumb: under 15,000 km, petrol usually wins on simplicity."
-                            }
-                        ]
-                    },
-                    {
-                        "title": "Where to Buy (and Where to Be Careful)",
-                        "icon": "MapPin",
-                        "items": [
-                            {
-                                "type": "table",
-                                "title": "Your options, compared honestly",
-                                "headers": [
-                                    "Where",
-                                    "Pros",
-                                    "Cons"
-                                ],
-                                "rows": [
-                                    [
-                                        "Online marketplaces (like Kiwi Van Market)",
-                                        "Photos, WOF/REGO shown upfront, CarJam history button, direct chat with the owner",
-                                        "Popular vans go fast — check daily"
-                                    ],
-                                    [
-                                        "Facebook backpacker groups",
-                                        "Huge volume, real bargains exist",
-                                        "Zero verification, scams, half the posts are already sold"
-                                    ],
-                                    [
-                                        "Backpacker car markets",
-                                        "See many vans in one morning",
-                                        "Dealers posing as travellers, entry fees"
-                                    ],
-                                    [
-                                        "Dealers",
-                                        "Consumer guarantees, lower risk",
-                                        "20–40% more expensive, few true backpacker vans"
-                                    ]
-                                ]
-                            },
-                            {
-                                "title": "Timing beats everything",
-                                "text": "Buy where travellers land: Auckland all year, Christchurch for the South Island. And buy when they leave — February to April floods the market with departing backpackers' vans. October to December is a seller's market: arrive early or pay more."
-                            },
-                            {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ The classic scams",
-                                "text": "A 'friend overseas' who will ship the van after a deposit. A seller refusing a mechanical inspection. A price way under market with pressure to decide today. A request for a deposit just to 'hold' a van you haven't seen. Any one of these: walk away. There is always another van."
-                            }
-                        ]
-                    },
-                    {
-                        "title": "The 30-Minute Inspection That Saves You Thousands",
-                        "icon": "Shield",
-                        "items": [
-                            {
-                                "type": "image",
-                                "url": "/van_inspection_expert_1772133711431.webp",
-                                "caption": "Always check the oil BEFORE the engine warms up — a cold start tells the truth."
-                            },
-                            {
-                                "title": "The mayo test (30 seconds, deal-breaker)",
-                                "text": "Open the oil cap. A milky, mayonnaise-like paste under it usually means the head gasket is gone — a $2,000+ repair on a $5,000 van. Close the bonnet, say thank you, and leave."
-                            },
-                            {
-                                "type": "steps",
+                                "type": "sources",
                                 "items": [
                                     {
-                                        "title": "Cold start",
-                                        "text": "Ask the seller NOT to warm up the engine before you arrive. A pre-warmed engine is the oldest trick for hiding rough starts."
-                                    },
-                                    {
-                                        "title": "Watch the exhaust",
-                                        "text": "White or blue smoke at start-up means engine trouble. A puff of steam on a cold morning is fine; a cloud that keeps coming is not."
-                                    },
-                                    {
-                                        "title": "Cambelt / timing belt history",
-                                        "text": "Critical on Hiace and many diesels. Ask when it was last replaced and at what kms — if this belt lets go while driving, it can take the whole engine with it. No proof of replacement on a high-km van? Budget for the job or lower your offer."
-                                    },
-                                    {
-                                        "title": "Brakes",
-                                        "text": "Straight-line stop from 50 km/h: no squealing, no pulling to one side, pedal firm."
-                                    },
-                                    {
-                                        "title": "Gearbox",
-                                        "text": "Test every gear — including reverse. Crunching or hesitation is a repair bill in waiting."
-                                    },
-                                    {
-                                        "title": "Steering at speed",
-                                        "text": "Take it on the motorway. Any wobble at 100 km/h points to alignment, tyres or suspension."
-                                    },
-                                    {
-                                        "title": "Rust — the NZ killer",
-                                        "text": "Wheel arches, window seals, under the carpet, and underneath the van. Surface rust on panels is manageable; rust on structural rails or floor pans is a walk-away."
-                                    },
-                                    {
-                                        "title": "Suspension",
-                                        "text": "Drive over a speed bump slowly and listen for clunks. Push down on each corner — it should settle, not bounce."
-                                    },
-                                    {
-                                        "title": "Everything electric",
-                                        "text": "Windows, lights, wipers, stereo, USB plugs, interior lights. Small failures reveal how the van was cared for."
-                                    },
-                                    {
-                                        "title": "Water systems and mould",
-                                        "text": "Run the taps, check under the sink, lift the mattress. Brown ceiling rings and a damp smell mean water ingress."
-                                    },
-                                    {
-                                        "title": "Tyres",
-                                        "text": "Uneven wear across the tread = alignment or suspension issues. A set of four van tyres costs $600–1,000."
-                                    },
-                                    {
-                                        "title": "VIN matches everywhere",
-                                        "text": "Compare the VIN on the dashboard, the door jamb and the paperwork. Mismatches can mean accident history or a stolen vehicle."
+                                        "name": "NZTA — Used vehicle inspection checks",
+                                        "url": "https://www.nzta.govt.nz/vehicles/choosing-the-right-vehicle/tips-for-buying-a-used-car"
                                     }
                                 ]
                             },
                             {
-                                "title": "Then pay a professional — always",
-                                "text": "A pre-purchase inspection at VTNZ, AA or any garage costs $150–180. They put the van on a hoist and find what you physically cannot see. A seller who refuses an inspection is telling you everything.",
-                                "expertTip": "🎯 Run the plate through CarJam before you even travel to a viewing — money owing on a van becomes YOUR problem after purchase."
-                            },
-                            {
                                 "type": "cta",
-                                "text": "Get the full 30-point printable buyer checklist",
-                                "to": "/guide/campervan-buyer-checklist"
-                            },
-                            {
-                                "type": "callout",
-                                "variant": "info",
-                                "title": "📝 Good to know",
-                                "text": "On Kiwi Van Market, every listing shows WOF and REGO expiry upfront, and includes a CarJam history button when the seller provides the plate — so you can do the two big checks before you even message anyone."
+                                "text": "Read the detailed campervan inspection checklist",
+                                "to": "/guide/how-to-inspect-campervan-nz"
                             }
                         ]
                     },
                     {
-                        "title": "Paperwork: Legal in 15 Minutes",
-                        "icon": "Car",
+                        "title": "Verify self-contained status and your camping plan",
                         "items": [
                             {
-                                "title": "The good news",
-                                "text": "New Zealand makes vehicle paperwork genuinely easy. No notary, no lawyer, no waiting weeks. Six steps, done the same day, most of them free."
+                                "title": "Check the green warrant and the national register",
+                                "text": "From 7 June 2026, the old blue warrant is no longer recognised for self-contained certification. PGDB says a valid green warrant card, certificate and national SCV register entry matter; a coloured promotional sticker has no official status. Certification requires a fixed toilet and other compliant facilities. Ask a certification authority about any uncertain conversion."
                             },
+                            {
+                                "title": "Certification does not make every overnight stop legal",
+                                "text": "Check the rules and signs for the place you plan to stay. Restrictions can still apply to certified vans. A non-self-contained vehicle can use campgrounds, holiday parks and other permitted sites; build those costs into your route instead of assuming every night will be free."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Complete the sale and prepare to drive",
+                        "items": [
                             {
                                 "type": "steps",
                                 "items": [
                                     {
-                                        "title": "Run the history checks",
-                                        "text": "CarJam with the plate number (stolen status, odometer history, WOF record), plus a $3 PPSR check with the VIN — if finance is still owing, the lender can repossess the van from YOU after purchase."
+                                        "title": "Set the terms",
+                                        "text": "Write down the agreed price, vehicle identifiers, odometer, included equipment, disclosed defects and any conditions that must be satisfied before payment. Agree the handover and keep copies of the advert, inspection report and receipt."
                                     },
                                     {
-                                        "title": "Verify WOF and REGO",
-                                        "text": "At least 3 months of WOF left (or freshly passed), and REGO current — not 'on hold'. Both visible on the windscreen and on the listing."
+                                        "title": "Check the WoF arrangements",
+                                        "text": "NZTA says buyers can insist on a WoF less than one month old. Read its rules before accepting an older or expired WoF, including any written agreement and driving restrictions."
                                     },
                                     {
-                                        "title": "Write a receipt",
-                                        "text": "Price, date, both names and passport numbers, plate and VIN, the words 'sold as seen'. Two copies, both signed. It takes five minutes and settles every future argument."
+                                        "title": "Coordinate payment and handover",
+                                        "text": "Use a payment method both parties understand and allow for transfer limits and bank processing times. Verify the recipient details directly. Do not use an emailed screenshot as confirmation of cleared funds. Record receipt of the vehicle, keys and documents."
                                     },
                                     {
-                                        "title": "Transfer ownership TOGETHER",
-                                        "text": "Both of you complete the change of ownership online at nzta.govt.nz (or at any NZ Post shop) the day you buy. About $9, needs your passport and an address — your hostel is fine."
+                                        "title": "Notify NZTA immediately",
+                                        "text": "Buyer and seller each notify NZTA. The buyer’s online transaction requires a New Zealand driver licence; without one, use an NZTA agent and check its identification requirements before visiting."
                                     },
                                     {
-                                        "title": "Activate insurance before driving off",
-                                        "text": "Third-party cover takes 20 minutes online and works with a foreign licence. Driving uninsured is gambling your whole trip on one intersection."
-                                    },
-                                    {
-                                        "title": "Buy RUC if it's a diesel",
-                                        "text": "Check the odometer against the RUC distance already purchased. Unpaid RUC becomes your debt. Top up online at nzta.govt.nz in 1,000 km blocks."
+                                        "title": "Arrange cover and confirm road requirements",
+                                        "text": "Get insurance quotes for your licence, age, travel plans and conversion before committing. Read the cover and excess, set the start time for handover, and confirm the vehicle’s licensing and any applicable RUC before driving."
                                     }
                                 ]
                             },
                             {
                                 "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ Common Mistake",
-                                "text": "Paying now and 'sorting the papers later'. If the seller never files the transfer, their speeding tickets become yours — and legally, the van may not even be yours. Same day, together, no exceptions."
-                            },
-                            {
-                                "type": "cta",
-                                "text": "New to WOF, REGO and RUC? Read the plain-English rules guide",
-                                "to": "/guide/wof-rego-ruc-insurance-nz"
-                            }
-                        ]
-                    },
-                    {
-                        "title": "Self-Contained: Your Ticket to Free Camping",
-                        "icon": "Star",
-                        "items": [
-                            {
-                                "type": "image",
-                                "url": "/self_contained_sticker_van_1772133744005.webp",
-                                "caption": "The certification sticker: your key to legal freedom camping."
-                            },
-                            {
-                                "title": "What the sticker actually means",
-                                "text": "A certified self-contained van has compliant water systems and a fixed toilet. The blue-warrant transition ended on 7 June 2026. Check the valid green warrant and vehicle certificate, including the registration plate and expiry date. Camping permission still depends on local restrictions."
-                            },
-                            {
-                                "title": "Why it's worth real money",
-                                "text": "Without certification, you'll pay $20–50 a night for campsites. With it, thousands of legal freedom camping spots become free. Over 4 months, that's easily $1,500+ saved — and certified vans resell faster, at better prices."
-                            },
-                            {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ Common Mistake",
-                                "text": "Trusting the words 'self-contained' in an ad. Ask to SEE the certificate and check its expiry — then verify the certification number. A $400 freedom-camping fine ruins a good week."
-                            },
-                            {
-                                "title": "Download these two apps tonight",
-                                "text": "CamperMate and Rankers show every legal camping spot, dump station and public shower in the country, with reviews from other travellers. They're free, and they're how everyone actually finds where to sleep."
-                            }
-                        ]
-                    },
-                    {
-                        "title": "Selling It When You Leave (Think About It Now)",
-                        "icon": "DollarSign",
-                        "items": [
-                            {
-                                "title": "Your exit plan starts at purchase",
-                                "text": "The van you buy today is the van you must sell in 6 months, from whichever city you fly out of. Popular models — Hiace, Bongo, L300 — with valid WOF, REGO and self-contained certification sell in days. Rare or tired vans sell in weeks, under pressure, at a loss."
-                            },
-                            {
-                                "title": "The seasonal money machine",
-                                "text": "Buy in Christchurch in March from a leaving backpacker (low season, low price). Sell in Auckland in November to an arriving one (high season, high price). Travellers who ride this calendar regularly sell for MORE than they paid."
-                            },
-                            {
-                                "type": "callout",
                                 "variant": "info",
-                                "title": "📝 Good to know",
-                                "text": "Listing your van on Kiwi Van Market is free, with no commission — and you can offer a buy-back deal to make your listing stand out. Put it live 3–4 weeks before your flight, not 3 days."
+                                "title": "Visitors: check your driving entitlement",
+                                "text": "NZTA currently permits eligible overseas car-licence holders to drive for up to 18 months from their last entry. From 1 November 2026, the limit changes to 12 months. Carry the valid original licence and, if it is not in English, the required translation or IDP. Check the full NZTA conditions before driving."
                             },
                             {
-                                "type": "cta",
-                                "text": "List your van for free — no commission, direct contact with buyers",
-                                "to": "/sell"
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    },
+                                    {
+                                        "name": "Consumer Protection — Sales agreements",
+                                        "url": "https://www.consumerprotection.govt.nz/help-product-service/cars/paying-registering-insuring-car/car-sales-contracts-warranties"
+                                    },
+                                    {
+                                        "name": "NZTA — Driving on New Zealand roads",
+                                        "url": "https://www.nzta.govt.nz/travelling-on-our-roads/visitors-and-new-residents/driving-on-nz-roads"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "FAQ: Quick Answers",
-                        "icon": "CheckCircle",
+                        "title": "Questions buyers ask",
                         "items": [
                             {
                                 "type": "faq",
                                 "items": [
                                     {
-                                        "q": "Can foreigners buy a campervan in New Zealand?",
-                                        "a": "Yes. You don't need residency or a NZ licence: a passport and a local address (your hostel counts) are enough to buy and register a vehicle. Most backpackers drive on their home licence or an International Driving Permit."
+                                        "q": "Should I buy a van before arriving in New Zealand?",
+                                        "a": "You can research and arrange viewings in advance. A purchase decision is stronger once you have checked the vehicle, seller and inspection findings. Leave time in your arrival city for those steps and for another option if the first van is unsuitable."
                                     },
                                     {
-                                        "q": "How much should I budget for a backpacker campervan?",
-                                        "a": "Most travellers spend NZ$5,000–10,000. Solid vans exist under $4,000 but demand a rigorous inspection. The average listing on Kiwi Van Market sits around $8,000–10,000."
+                                        "q": "Does a new WoF replace a mechanical inspection?",
+                                        "a": "No. NZTA distinguishes a safety inspection from a pre-purchase inspection. Use the mechanic’s report to assess the vehicle’s condition rather than treating the WoF as a reliability guarantee."
                                     },
                                     {
-                                        "q": "Is car insurance mandatory in New Zealand?",
-                                        "a": "No — but third-party insurance ($300–600/year) is the backpacker standard. It covers the expensive car you might hit; skipping it is gambling your whole trip on one intersection."
+                                        "q": "Can I rely on the advertised resale or buyback amount?",
+                                        "a": "An asking-price comparison or calculator is not a guaranteed offer. For an actual buyback agreement, read who is committing to buy, the timing, mileage and condition requirements, deductions and payment terms. Allow for a lower resale outcome in your budget."
                                     },
                                     {
-                                        "q": "Petrol or diesel campervan?",
-                                        "a": "Diesel is cheaper at the pump but pays Road User Charges (about $76 per 1,000 km) and services cost more. If you'll drive under ~15,000 km, petrol usually wins on simplicity."
-                                    },
-                                    {
-                                        "q": "What is a WOF and how often do I need it?",
-                                        "a": "The Warrant of Fitness is New Zealand's periodic safety inspection: every 12 months for vehicles first registered after 2000, every 6 months for older ones. Buy a van with at least 3 months of WOF left."
-                                    },
-                                    {
-                                        "q": "What is a PPSR check?",
-                                        "a": "A $3 search of the Personal Property Securities Register (ppsr.govt.nz) using the VIN. It tells you whether money is still owing on the vehicle — if it is, the lender can repossess the van even after you've paid for it."
-                                    },
-                                    {
-                                        "q": "Can I sleep anywhere in my van?",
-                                        "a": "No. Freedom camping is only legal in permitted areas, and usually only for certified self-contained vehicles. Fines reach $400. CamperMate and Rankers show every legal spot for free."
-                                    },
-                                    {
-                                        "q": "What happens if my van breaks down?",
-                                        "a": "AA Membership (~$99/year) gets you roadside assistance nationwide — most backpackers consider it essential. Keep a $1,000 repair buffer: batteries, tyres and water pumps are the usual suspects on older vans."
-                                    },
-                                    {
-                                        "q": "How fast can I sell my van at the end of my trip?",
-                                        "a": "With a fair price, honest photos and valid paperwork: a few days in high season (October–December), two to four weeks otherwise. List it 3–4 weeks before your flight."
-                                    },
-                                    {
-                                        "q": "Where do I check a van's history before buying?",
-                                        "a": "CarJam, using the plate number: it reveals money owing, stolen status, odometer readings and import history. On Kiwi Van Market, the CarJam button is on the listing whenever the seller provides the plate."
+                                        "q": "What should I keep for resale?",
+                                        "a": "Keep your purchase receipt, inspection report, maintenance invoices, document renewals and records of repairs. Photograph the equipment included in your eventual sale and describe any outstanding issues clearly."
                                     }
                                 ]
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Browse available campervans across New Zealand",
+                                "to": "/"
                             }
                         ]
                     }
@@ -1282,428 +1180,326 @@ export const GUIDES = {
     },
     fr: {
         'buying-campervan-nz': {
-            "title": "Acheter un campervan en Nouvelle-Zélande : le guide backpacker (2026)",
-            "description": "Prix réels, une routine d'inspection pas à pas, le WOF, la REGO, l'assurance et les règles self-contained — tout pour acheter un van en Nouvelle-Zélande sans se faire avoir.",
+            "title": "Acheter un van en Nouvelle-Zélande : contrôles, budget et démarches",
+            "description": "Préparez l’achat d’un van en NZ : prix, inspection, WoF, rego, RUC, certificat self-contained et remise des clés. Checklist et sources officielles.",
             "heroImage": "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?w=1200",
+            "dateModified": "2026-10-15",
             "content": {
-                "intro": "Vous venez d'atterrir à Auckland, tout le monde à l'auberge parle d'acheter un van, et vous ne savez pas par où commencer. Bonne nouvelle : dans les 15 prochaines minutes, vous aurez le tableau complet — prix réels, méthode d'inspection éprouvée, arnaques à éviter et paperasse exacte. C'est le guide qu'on aurait aimé avoir avant notre premier road trip en NZ.",
+                "intro": "Pour acheter un van en Nouvelle-Zélande, comparez les annonces disponibles, vérifiez le vendeur et l’historique, faites réaliser une inspection indépendante, consignez l’accord par écrit et effectuez la notification NZTA à la remise du véhicule. Prévoyez les frais de possession en plus du prix affiché. Ce guide relie chaque décision aux documents et contrôles utiles, avec des sources officielles consultées le 15 octobre 2026.",
                 "sections": [
                     {
-                        "title": "Commencez ici : les bases en 5 minutes",
-                        "icon": "CheckCircle",
+                        "title": "Définir votre voyage et un budget complet",
                         "items": [
                             {
-                                "title": "Pourquoi acheter plutôt que louer ?",
-                                "text": "Louer coûte 60 à 150 $ par jour. Acheter un van à 7 000 $ pour 6 mois et le revendre 6 000 $ vous revient à environ 5 $ par jour, plus le carburant. C'est pour ça que presque tous les backpackers en long séjour achètent — et avec une revente maligne, certains rentrent même dans leurs frais. Le piège : ces économies ne tiennent que si vous achetez un van sain. C'est tout l'objet de ce guide."
+                                "title": "Choisir selon votre utilisation",
+                                "text": "Notez le nombre de passagers, le couchage, l’itinéraire, les contraintes de stationnement et les équipements réellement utiles. Comparez le coût et la complexité d’un monospace, d’un van moyen et d’un camping-car. Pouvoir se tenir debout, disposer du chauffage, d’un frigo ou d’une batterie auxiliaire peut être appréciable ; un bel aménagement ne prouve toutefois pas l’entretien du véhicule."
+                            },
+                            {
+                                "title": "Comparer achat et location",
+                                "text": "Calculez : prix d’achat moins produit de la revente, plus inspection, réparations, entretien, assurance, licence du véhicule et frais de vente. Ajoutez de façon comparable carburant, campings et ferries aux deux options. Divisez ensuite par les jours de voyage. Gardez la trésorerie nécessaire à l’achat et une réserve : la revente n’arrive qu’à la fin et son montant reste incertain."
                             },
                             {
                                 "type": "table",
-                                "title": "Le jargon néo-zélandais, décodé",
+                                "title": "Exemple de calcul — hypothèses, pas tarifs du marché ni devis",
                                 "headers": [
-                                    "Terme",
-                                    "Ce que ça veut dire",
-                                    "Pourquoi ça vous concerne"
+                                    "Hypothèse",
+                                    "NZD"
                                 ],
                                 "rows": [
                                     [
-                                        "WOF",
-                                        "Warrant of Fitness — le contrôle technique de sécurité périodique obligatoire",
-                                        "Pas de WOF valide = interdiction de rouler"
+                                        "Achat",
+                                        "12 000"
                                     ],
                                     [
-                                        "REGO",
-                                        "L'immatriculation, payée pour circuler sur les routes publiques",
-                                        "Vendue par 3, 6 ou 12 mois (~100 $/an pour un van essence)"
+                                        "Revente supposée",
+                                        "9 500"
                                     ],
                                     [
-                                        "RUC",
-                                        "Road User Charges — une taxe au kilomètre payée uniquement par les diesels",
-                                        "Environ 76 $ par 1 000 km, en plus du carburant"
+                                        "Inspection",
+                                        "250"
                                     ],
                                     [
-                                        "Self-contained",
-                                        "Certifié selon le système green warrant actuel ; vérifiez le certificat du véhicule",
-                                        "Exigé pour la plupart du freedom camping"
+                                        "Réparations et entretien",
+                                        "1 000"
                                     ],
                                     [
-                                        "CarJam",
-                                        "Un rapport d'historique du véhicule en ligne",
-                                        "Révèle dettes, fraude au compteur et véhicules volés"
+                                        "Assurance",
+                                        "600"
+                                    ],
+                                    [
+                                        "Licence et autres démarches",
+                                        "300"
+                                    ],
+                                    [
+                                        "Coût net dans cet exemple",
+                                        "4 650"
+                                    ]
+                                ],
+                                "caption": "Sur 90 jours, ces hypothèses donnent 51,67 NZD par jour avant carburant, campings et ferries. Remplacez-les par vos propres devis. Ce n’est pas une prévision de revente."
+                            },
+                            {
+                                "title": "Comparer les prix puis faire inspecter",
+                                "text": "Notre page de prix présente les annonces actives de Kiwi Van Market, avec l’effectif et la méthode de calcul. Comparez modèle, année, kilométrage, historique et équipements similaires. Une annonce bon marché peut cacher une réparation coûteuse ; un prix élevé ne prouve pas la qualité. Obtenez des devis avant de négocier, sans présumer d’une remise identique chez tous les vendeurs."
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Comparer les prix demandés et la taille de l’échantillon",
+                                "to": "/campervan-prices-nz"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Trouver des vans que vous pouvez visiter",
+                        "items": [
+                            {
+                                "title": "Organiser les visites autour de votre arrivée",
+                                "text": "Commencez par Auckland ou Christchurch si cela correspond à votre itinéraire. Élargissez seulement lorsque le déplacement et l’inspection restent intéressants. Confirmez la disponibilité, le lieu de visite et la date de remise possible. Conservez l’annonce et fixez un rendez-vous. Prévoyez du temps pour le garage et une solution de remplacement si le premier van ne convient pas."
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Voir les vans à vendre à Auckland",
+                                "to": "/location/auckland"
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Voir les vans à vendre à Christchurch",
+                                "to": "/location/christchurch"
+                            },
+                            {
+                                "title": "Identifier le vendeur",
+                                "text": "Une annonce sur une plateforme ne transforme pas une vente entre particuliers en vente professionnelle. Consumer Protection précise que l’acheteur bénéficie de moins de protections face à un particulier ; le Consumer Guarantees Act concerne généralement les professionnels. Vérifiez l’identité et le droit de vendre, puis conservez l’annonce et les déclarations écrites."
+                            },
+                            {
+                                "title": "Poser les bonnes questions avant de vous déplacer",
+                                "text": "Demandez plaque, VIN ou numéro de châssis, kilométrage, factures d’entretien et dates d’expiration des documents. Demandez des photos du compartiment moteur, du dessous et de l’aménagement, pas seulement du lit. Faites préciser les défauts, le motif de vente et la possibilité d’une inspection indépendante et d’un démarrage à froid. Une réponse évasive laisse un point à vérifier."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "Consumer Protection — Buying privately",
+                                        "url": "https://www.consumerprotection.govt.nz/help-product-service/cars/finding-the-right-car/buying-car-privately"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Vérifier chaque document séparément",
+                        "items": [
+                            {
+                                "type": "table",
+                                "headers": [
+                                    "Document ou vérification",
+                                    "Points à contrôler"
+                                ],
+                                "rows": [
+                                    [
+                                        "WoF / CoF",
+                                        "Vérifiez le document et son échéance. Le WoF contrôle la sécurité ; il ne garantit pas l’état du moteur ou de la boîte."
+                                    ],
+                                    [
+                                        "Rego",
+                                        "Il s’agit de la licence du véhicule, distincte de son immatriculation. Vérifiez sa validité. La personne enregistrée comme responsable n’est pas nécessairement le propriétaire légal."
+                                    ],
+                                    [
+                                        "RUC, si applicable",
+                                        "Comparez catégorie, poids et licence kilométrique au compteur. Les RUC concernent le diesel et de nombreux véhicules électriques, pas uniquement le diesel."
                                     ],
                                     [
                                         "PPSR",
-                                        "Personal Property Securities Register — le registre officiel des dettes",
-                                        "Une vérification à 3 $ qui vous évite d'hériter du crédit d'un autre"
+                                        "Recherchez une sûreté enregistrée à partir des bons identifiants avant de vous engager. S’il en existe une, clarifiez sa levée avec le prêteur avant de finaliser."
+                                    ],
+                                    [
+                                        "Historique d’entretien",
+                                        "Rapprochez factures, véhicule et kilométrage. Notez les travaux en retard et faites vérifier les préconisations du constructeur pour ce moteur."
+                                    ],
+                                    [
+                                        "Self-contained",
+                                        "Lisez le certificat actuel et le green warrant ; une case cochée dans l’annonce ne suffit pas. Les contrôles camping figurent plus bas."
                                     ]
                                 ]
                             },
                             {
+                                "title": "Utiliser les tarifs et échéances actuels",
+                                "text": "Consultez les informations NZTA correspondant au véhicule. Le taux RUC standard de type 1 jusqu’à 3 500 kg est actuellement de 76 NZD par 1 000 km, auxquels s’ajoutent des frais de transaction. D’autres catégories et poids ont d’autres taux. Une provision générique de « 100 dollars de rego » ne remplace pas le montant réel."
+                            },
+                            {
                                 "type": "callout",
                                 "variant": "info",
-                                "title": "📝 Bon à savoir",
-                                "text": "Vous n'avez PAS besoin d'être résident néo-zélandais pour acheter un véhicule. Un passeport et une adresse locale (votre auberge suffit) font l'affaire. La plupart des backpackers conduisent avec leur permis d'origine ou un permis international — assurez-vous simplement qu'il soit valide en anglais."
+                                "title": "Les règles de WoF évoluent",
+                                "text": "NZTA a annoncé des changements à partir du 1er novembre 2026. Vérifiez l’échéance du document et les règles actuelles de fréquence pour ce véhicule, plutôt qu’un ancien résumé fondé sur l’âge."
                             },
                             {
-                                "title": "Combien de temps ça prend ?",
-                                "text": "Comptez 3 à 7 jours dans une grande ville : un ou deux jours à éplucher les annonces, quelques visites, une inspection mécanique et 15 minutes de paperasse. Se précipiter dès le premier jour, c'est exactement comme ça qu'on achète une épave.",
-                                "expertTip": "Réservez votre première semaine d'hébergement à Auckland ou Christchurch — c'est là que se trouve l'offre de vans."
-                            },
-                            {
-                                "type": "cta",
-                                "text": "Voyez ce qui est en vente en ce moment partout en Nouvelle-Zélande",
-                                "to": "/"
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Warrant of fitness",
+                                        "url": "https://www.nzta.govt.nz/vehicles/warrants-and-certificates/warrant-of-fitness"
+                                    },
+                                    {
+                                        "name": "NZTA — Vehicle licensing (rego)",
+                                        "url": "https://www.nzta.govt.nz/vehicles/licensing-rego/vehicle-licensing-rego"
+                                    },
+                                    {
+                                        "name": "NZTA — About road user charges",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/about-ruc"
+                                    },
+                                    {
+                                        "name": "NZTA — RUC rates and transaction fees",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/ruc-rates-and-transaction-fees"
+                                    },
+                                    {
+                                        "name": "Companies Office — PPSR vehicle checks",
+                                        "url": "https://ppsr.companiesoffice.govt.nz/help-centre/information-for-debtors-and-consumers/how-the-ppsr-can-help-when-buying-used-goods/"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "Ce qu'un campervan coûte vraiment",
-                        "icon": "DollarSign",
+                        "title": "Inspecter la mécanique et l’aménagement",
                         "items": [
                             {
-                                "type": "table",
-                                "title": "Les tranches de prix sur le marché backpacker (NZD)",
-                                "headers": [
-                                    "Budget",
-                                    "Ce que vous obtenez",
-                                    "À surveiller"
-                                ],
-                                "rows": [
-                                    [
-                                        "Moins de 4 000 $",
-                                        "Vieux monospaces (Estima, Serena, Odyssey) avec un matelas à l'arrière",
-                                        "Kilométrage élevé, rouille, WOF court — l'inspection est non négociable"
-                                    ],
-                                    [
-                                        "4 000–8 000 $",
-                                        "Les vans backpackers classiques : Hiace, Bongo, Vanette, L300 — souvent self-contained",
-                                        "Le meilleur rapport qualité-prix ; vérifiez que la certification est authentique"
-                                    ],
-                                    [
-                                        "8 000–15 000 $",
-                                        "Des vans plus récents, bien aménagés : solaire, frigo, isolation",
-                                        "Payez pour ce qui VOUS aide à voyager, pas pour les guirlandes"
-                                    ],
-                                    [
-                                        "15 000 $ et +",
-                                        "Vans surélevés, Delica 4x4, petits camping-cars",
-                                        "Plus durs à revendre vite en fin de voyage"
-                                    ]
-                                ],
-                                "caption": "Pour référence : l'annonce moyenne sur Kiwi Van Market tourne autour de 8 000–10 000 $."
+                                "title": "Choisir une inspection indépendante au périmètre adapté",
+                                "text": "Demandez au garage ce que couvre son rapport avant de réserver. Contrôle de sécurité, inspection mécanique avant achat et vérification de l’aménagement répondent à des questions différentes. Expliquez votre voyage et demandez de distinguer urgences de sécurité, entretien probable et points nécessitant une expertise complémentaire. Décidez à partir des constats écrits et des devis."
                             },
                             {
                                 "type": "checklist",
-                                "title": "✅ Checklist rapide : les coûts cachés qu'on oublie la première fois",
+                                "title": "Pendant la visite : observations à transmettre au mécanicien",
                                 "items": [
-                                    "Assurance : 300–600 $/an (le tiers est le standard backpacker)",
-                                    "Contrôle WOF : 60–80 $ à chaque fois",
-                                    "REGO : environ 100 $/an pour un van essence",
-                                    "RUC (diesel uniquement) : ~76 $ par 1 000 km",
-                                    "Inspection mécanique pré-achat : 150–180 $ — le meilleur argent que vous dépenserez",
-                                    "Ferry du détroit de Cook avec un van : 250–450 $ aller-retour",
-                                    "Un fonds d'urgence de 1 000 $ pour les réparations (batterie, pneus, pompe à eau)"
+                                    "Commencez moteur réellement froid. Observez démarrage et voyants ; notez fumée persistante, fuites et bruits inhabituels.",
+                                    "Demandez les justificatifs concernant surchauffe, circuit de refroidissement et distribution si le moteur possède une courroie. Un autocollant sans facture reste une preuve incomplète.",
+                                    "Cherchez moquette humide, traces autour des fenêtres et ouvertures de toit, odeur de moisi et panneaux ramollis. Déplacez les coussins pour regarder couchage et rangements.",
+                                    "Repérez la corrosion aux éléments structurels, raccords et points de fixation. Faites examiner le dessous par le professionnel ; ne passez pas sous un véhicule soutenu uniquement par un cric.",
+                                    "Comparez l’usure des pneus et notez fissures ou dommages. Lors d’un essai autorisé et assuré, signalez tirage, vibrations, patinage, passages difficiles ou température anormale.",
+                                    "Faites fonctionner frigo, pompe, éclairage, recharge et batterie auxiliaire en charge. Une simple tension mesurée ne démontre pas la capacité de la batterie.",
+                                    "Vérifiez portes, serrures, ceintures, ventilation et accès aux équipements. Demandez les documents des modifications et installations gaz ou secteur ; confiez leur contrôle à un professionnel qualifié."
                                 ]
                             },
                             {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ Erreur fréquente",
-                                "text": "Dépenser chaque dollar dans le van lui-même. Gardez 1 000 $ de côté pour les imprévus — une batterie, un pneu, une pompe à eau. Une panne avec un compte vide, c'est comme ça qu'un road trip se termine trop tôt."
+                                "title": "Transformer les constats en décision",
+                                "text": "Une checklist de visite ne diagnostique pas une panne interne du moteur. Si un problème important reste inexpliqué, demandez une expertise ciblée ou envisagez un autre véhicule. Comparez le devis écrit à votre budget. N’ouvrez jamais un bouchon de refroidissement chaud et ne manipulez pas le gaz ou le câblage secteur pour vérifier une promesse du vendeur."
                             },
                             {
-                                "title": "Peut-on négocier ? (Oui. Poliment.)",
-                                "text": "Presque tout prix affiché a 10 à 15 % de marge — davantage en fin de saison, quand les vendeurs ont un avion à prendre. Appuyez-vous sur du concret : échéance du WOF, usure des pneus, kilométrage, batterie auxiliaire fatiguée. Du cash aujourd'hui vaut mieux que des promesses demain.",
-                                "expertTip": "💡 Demandez quand le vendeur repart. Trois jours avant le départ, un van à 8 500 $ devient un van à 7 200 $."
-                            },
-                            {
-                                "title": "Essence ou diesel ? Le calcul honnête",
-                                "text": "Le diesel est moins cher à la pompe mais paie la RUC (~76 $ par 1 000 km) et ses révisions coûtent plus cher. L'essence est plus simple : pas de RUC, entretien moins cher, et pour un trajet type de 10 000–15 000 km, l'écart de coût total est faible. Règle du pouce : en dessous de 15 000 km, l'essence gagne généralement en simplicité."
-                            }
-                        ]
-                    },
-                    {
-                        "title": "Où acheter (et où faire attention)",
-                        "icon": "MapPin",
-                        "items": [
-                            {
-                                "type": "table",
-                                "title": "Vos options, comparées honnêtement",
-                                "headers": [
-                                    "Où",
-                                    "Avantages",
-                                    "Inconvénients"
-                                ],
-                                "rows": [
-                                    [
-                                        "Marketplaces en ligne (comme Kiwi Van Market)",
-                                        "Photos, WOF/REGO affichés d'emblée, bouton historique CarJam, chat direct avec le propriétaire",
-                                        "Les vans populaires partent vite — regardez chaque jour"
-                                    ],
-                                    [
-                                        "Groupes Facebook backpackers",
-                                        "Gros volume, de vraies bonnes affaires existent",
-                                        "Zéro vérification, arnaques, la moitié des annonces sont déjà vendues"
-                                    ],
-                                    [
-                                        "Marchés de voitures backpackers",
-                                        "Voir beaucoup de vans en une matinée",
-                                        "Des revendeurs déguisés en voyageurs, des frais d'entrée"
-                                    ],
-                                    [
-                                        "Concessionnaires",
-                                        "Garanties consommateur, moins de risque",
-                                        "20–40 % plus chers, peu de vrais vans backpackers"
-                                    ]
-                                ]
-                            },
-                            {
-                                "title": "Le timing prime sur tout",
-                                "text": "Achetez là où les voyageurs atterrissent : Auckland toute l'année, Christchurch pour l'île du Sud. Et achetez quand ils repartent — de février à avril, le marché est inondé de vans de backpackers sur le départ. D'octobre à décembre, c'est le marché du vendeur : arrivez tôt ou payez plus."
-                            },
-                            {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ Les arnaques classiques",
-                                "text": "Un « ami à l'étranger » qui expédiera le van après un acompte. Un vendeur qui refuse une inspection mécanique. Un prix très en dessous du marché avec pression pour décider aujourd'hui. Une demande d'acompte juste pour « réserver » un van que vous n'avez pas vu. L'un de ces signaux : partez. Il y a toujours un autre van."
-                            }
-                        ]
-                    },
-                    {
-                        "title": "L'inspection de 30 minutes qui vous économise des milliers",
-                        "icon": "Shield",
-                        "items": [
-                            {
-                                "type": "image",
-                                "url": "/van_inspection_expert_1772133711431.webp",
-                                "caption": "Vérifiez toujours l'huile AVANT que le moteur ne chauffe — un démarrage à froid dit la vérité."
-                            },
-                            {
-                                "title": "Le test de la mayo (30 secondes, rédhibitoire)",
-                                "text": "Ouvrez le bouchon d'huile. Une pâte laiteuse, façon mayonnaise, sous le bouchon signifie en général que le joint de culasse est mort — une réparation à 2 000 $+ sur un van à 5 000 $. Refermez le capot, dites merci, et partez."
-                            },
-                            {
-                                "type": "steps",
+                                "type": "sources",
                                 "items": [
                                     {
-                                        "title": "Démarrage à froid",
-                                        "text": "Demandez au vendeur de NE PAS faire chauffer le moteur avant votre arrivée. Un moteur préchauffé est la plus vieille astuce pour masquer un démarrage capricieux."
-                                    },
-                                    {
-                                        "title": "Observez l'échappement",
-                                        "text": "Une fumée blanche ou bleue au démarrage signale un souci moteur. Un panache de vapeur par matin froid est normal ; un nuage qui persiste ne l'est pas."
-                                    },
-                                    {
-                                        "title": "Historique de la courroie de distribution",
-                                        "text": "Crucial sur le Hiace et beaucoup de diesels. Demandez quand elle a été remplacée et à quel kilométrage — si cette courroie lâche en roulant, elle peut emporter tout le moteur. Pas de preuve de remplacement sur un van à haut kilométrage ? Prévoyez le budget ou baissez votre offre."
-                                    },
-                                    {
-                                        "title": "Freins",
-                                        "text": "Freinage en ligne droite depuis 50 km/h : pas de couinement, pas de déport d'un côté, pédale ferme."
-                                    },
-                                    {
-                                        "title": "Boîte de vitesses",
-                                        "text": "Testez chaque rapport — y compris la marche arrière. Craquements ou hésitations = une facture de réparation en attente."
-                                    },
-                                    {
-                                        "title": "Direction à vitesse",
-                                        "text": "Emmenez-le sur la voie rapide. Le moindre flottement à 100 km/h pointe vers le parallélisme, les pneus ou la suspension."
-                                    },
-                                    {
-                                        "title": "La rouille — le tueur néo-zélandais",
-                                        "text": "Passages de roues, joints de vitres, sous la moquette, et sous le van. La rouille de surface sur les tôles se gère ; la rouille sur les longerons ou le plancher, on part."
-                                    },
-                                    {
-                                        "title": "Suspension",
-                                        "text": "Passez lentement un ralentisseur et écoutez les cognements. Appuyez sur chaque coin — il doit se stabiliser, pas rebondir."
-                                    },
-                                    {
-                                        "title": "Tout ce qui est électrique",
-                                        "text": "Vitres, phares, essuie-glaces, autoradio, prises USB, plafonniers. Les petites pannes révèlent comment le van a été entretenu."
-                                    },
-                                    {
-                                        "title": "Circuits d'eau et moisissures",
-                                        "text": "Ouvrez les robinets, regardez sous l'évier, soulevez le matelas. Auréoles brunes au plafond et odeur d'humidité = infiltration d'eau."
-                                    },
-                                    {
-                                        "title": "Pneus",
-                                        "text": "Usure inégale sur la bande de roulement = parallélisme ou suspension. Un jeu de quatre pneus de van coûte 600–1 000 $."
-                                    },
-                                    {
-                                        "title": "Le VIN concorde partout",
-                                        "text": "Comparez le VIN sur le tableau de bord, le montant de porte et les papiers. Une différence peut signaler un passé accidenté ou un véhicule volé."
+                                        "name": "NZTA — Used vehicle inspection checks",
+                                        "url": "https://www.nzta.govt.nz/vehicles/choosing-the-right-vehicle/tips-for-buying-a-used-car"
                                     }
                                 ]
                             },
                             {
-                                "title": "Puis payez un pro — toujours",
-                                "text": "Une inspection pré-achat chez VTNZ, AA ou n'importe quel garage coûte 150–180 $. Ils mettent le van sur un pont et trouvent ce que vous ne pouvez physiquement pas voir. Un vendeur qui refuse une inspection vous dit tout ce qu'il faut savoir.",
-                                "expertTip": "🎯 Passez la plaque dans CarJam avant même de vous déplacer pour une visite — une dette sur un van devient VOTRE problème après l'achat."
-                            },
-                            {
                                 "type": "cta",
-                                "text": "Obtenez la checklist acheteur complète en 30 points, imprimable",
-                                "to": "/guide/campervan-buyer-checklist"
-                            },
-                            {
-                                "type": "callout",
-                                "variant": "info",
-                                "title": "📝 Bon à savoir",
-                                "text": "Sur Kiwi Van Market, chaque annonce affiche l'échéance du WOF et de la REGO, et inclut un bouton d'historique CarJam quand le vendeur fournit la plaque — vous pouvez donc faire les deux grosses vérifications avant même de contacter quiconque."
+                                "text": "Consulter la checklist détaillée d’inspection",
+                                "to": "/guide/how-to-inspect-campervan-nz"
                             }
                         ]
                     },
                     {
-                        "title": "Paperasse : en règle en 15 minutes",
-                        "icon": "Car",
+                        "title": "Vérifier le self-contained et votre itinéraire camping",
                         "items": [
                             {
-                                "title": "La bonne nouvelle",
-                                "text": "La Nouvelle-Zélande rend la paperasse véhicule vraiment simple. Pas de notaire, pas d'avocat, pas d'attente de plusieurs semaines. Six étapes, bouclées le jour même, la plupart gratuites."
+                                "title": "Contrôler le green warrant et le registre national",
+                                "text": "Depuis le 7 juin 2026, l’ancien blue warrant n’est plus reconnu pour cette certification. PGDB précise que carte verte valide, certificat et inscription au registre SCV sont déterminants ; un autocollant promotionnel n’a pas de valeur officielle. La certification exige notamment des toilettes fixes et d’autres équipements conformes. Interrogez une autorité de certification en cas de doute sur l’aménagement."
                             },
+                            {
+                                "title": "Le certificat ne permet pas de dormir partout",
+                                "text": "Consultez règles et panneaux de chaque lieu. Des restrictions restent possibles pour un van certifié. Un véhicule non self-contained peut utiliser campings, holiday parks et autres emplacements autorisés. Intégrez ces frais à l’itinéraire au lieu de supposer que toutes les nuits seront gratuites."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Finaliser l’achat et préparer le départ",
+                        "items": [
                             {
                                 "type": "steps",
                                 "items": [
                                     {
-                                        "title": "Faites les vérifications d'historique",
-                                        "text": "CarJam avec le numéro de plaque (statut volé, historique du compteur, dossier WOF), plus une vérification PPSR à 3 $ avec le VIN — si un crédit court encore, le prêteur peut saisir le van chez VOUS après l'achat."
+                                        "title": "Écrire les conditions",
+                                        "text": "Consignez prix, identifiants du véhicule, kilométrage, équipements inclus, défauts déclarés et conditions avant paiement. Fixez la remise et conservez annonce, rapport d’inspection et reçu."
                                     },
                                     {
-                                        "title": "Vérifiez WOF et REGO",
-                                        "text": "Au moins 3 mois de WOF restants (ou fraîchement passé), et REGO à jour — pas « on hold ». Les deux visibles sur le pare-brise et sur l'annonce."
+                                        "title": "Clarifier le WoF",
+                                        "text": "NZTA indique que l’acheteur peut demander un WoF de moins d’un mois. Consultez les règles avant d’accepter un WoF plus ancien ou expiré, notamment les accords écrits et restrictions de circulation."
                                     },
                                     {
-                                        "title": "Rédigez un reçu",
-                                        "text": "Prix, date, les deux noms et numéros de passeport, plaque et VIN, la mention « sold as seen » (vendu en l'état). Deux exemplaires, signés tous les deux. Cinq minutes qui règlent toute dispute future."
+                                        "title": "Coordonner paiement et remise",
+                                        "text": "Choisissez un paiement compris par les deux parties, en tenant compte des plafonds et délais bancaires. Confirmez directement le destinataire. Une capture envoyée par courriel ne prouve pas l’arrivée des fonds. Consignez la remise du véhicule, des clés et documents."
                                     },
                                     {
-                                        "title": "Transférez la propriété ENSEMBLE",
-                                        "text": "Faites tous les deux le changement de propriétaire en ligne sur nzta.govt.nz (ou dans n'importe quel NZ Post) le jour de l'achat. Environ 9 $, avec votre passeport et une adresse — votre auberge convient."
+                                        "title": "Notifier immédiatement NZTA",
+                                        "text": "Acheteur et vendeur effectuent chacun leur notification. La démarche en ligne de l’acheteur nécessite un permis néo-zélandais ; sinon, rendez-vous chez un agent NZTA et vérifiez à l’avance les pièces d’identité acceptées."
                                     },
                                     {
-                                        "title": "Activez l'assurance avant de démarrer",
-                                        "text": "Une assurance au tiers prend 20 minutes en ligne et fonctionne avec un permis étranger. Rouler sans assurance, c'est parier tout votre voyage sur un seul carrefour."
-                                    },
-                                    {
-                                        "title": "Achetez la RUC si c'est un diesel",
-                                        "text": "Comparez le compteur à la distance RUC déjà achetée. Une RUC impayée devient votre dette. Rechargez en ligne sur nzta.govt.nz par blocs de 1 000 km."
+                                        "title": "Préparer assurance et documents routiers",
+                                        "text": "Demandez des devis adaptés à votre permis, âge, voyage et aménagement avant l’engagement. Lisez garanties et franchise, faites démarrer la couverture à la remise et vérifiez licence du véhicule et RUC applicables avant de conduire."
                                     }
                                 ]
                             },
                             {
                                 "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ Erreur fréquente",
-                                "text": "Payer maintenant et « régler les papiers plus tard ». Si le vendeur ne dépose jamais le transfert, ses excès de vitesse deviennent les vôtres — et légalement, le van peut même ne pas être à vous. Le jour même, ensemble, sans exception."
-                            },
-                            {
-                                "type": "cta",
-                                "text": "WOF, REGO et RUC vous parlent chinois ? Lisez le guide des règles en clair",
-                                "to": "/guide/wof-rego-ruc-insurance-nz"
-                            }
-                        ]
-                    },
-                    {
-                        "title": "Self-contained : votre ticket pour le camping gratuit",
-                        "icon": "Star",
-                        "items": [
-                            {
-                                "type": "image",
-                                "url": "/self_contained_sticker_van_1772133744005.webp",
-                                "caption": "Le macaron de certification : votre clé pour le freedom camping légal."
-                            },
-                            {
-                                "title": "Ce que le macaron veut vraiment dire",
-                                "text": "Un van certifié self-contained possède des systèmes d’eau conformes et des toilettes fixes. La transition des blue warrants a pris fin le 7 juin 2026. Vérifiez le green warrant valide et le certificat du véhicule, notamment la plaque et la date d’expiration. Le camping reste soumis aux restrictions locales."
-                            },
-                            {
-                                "title": "Pourquoi ça vaut de l'argent réel",
-                                "text": "Sans certification, vous paierez 20–50 $ la nuit en camping. Avec, des milliers de spots de freedom camping légaux deviennent gratuits. Sur 4 mois, c'est facilement 1 500 $+ économisés — et les vans certifiés se revendent plus vite, à meilleur prix."
-                            },
-                            {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ Erreur fréquente",
-                                "text": "Se fier au mot « self-contained » dans une annonce. Demandez à VOIR le certificat et vérifiez son échéance — puis vérifiez le numéro de certification. Une amende de 400 $ pour freedom camping gâche une bonne semaine."
-                            },
-                            {
-                                "title": "Téléchargez ces deux applis ce soir",
-                                "text": "CamperMate et Rankers montrent tous les spots de camping légaux, stations de vidange et douches publiques du pays, avec les avis d'autres voyageurs. Elles sont gratuites, et c'est comme ça que tout le monde trouve vraiment où dormir."
-                            }
-                        ]
-                    },
-                    {
-                        "title": "Le revendre en partant (pensez-y dès maintenant)",
-                        "icon": "DollarSign",
-                        "items": [
-                            {
-                                "title": "Votre plan de sortie commence à l'achat",
-                                "text": "Le van que vous achetez aujourd'hui est celui que vous devrez revendre dans 6 mois, depuis la ville d'où vous décollez. Les modèles populaires — Hiace, Bongo, L300 — avec WOF, REGO et certification self-contained valides, se vendent en quelques jours. Les vans rares ou fatigués se vendent en semaines, sous pression, à perte."
-                            },
-                            {
-                                "title": "La machine à cash saisonnière",
-                                "text": "Achetez à Christchurch en mars à un backpacker qui repart (basse saison, prix bas). Revendez à Auckland en novembre à un backpacker qui arrive (haute saison, prix haut). Les voyageurs qui suivent ce calendrier revendent régulièrement PLUS cher qu'ils n'ont payé."
-                            },
-                            {
-                                "type": "callout",
                                 "variant": "info",
-                                "title": "📝 Bon à savoir",
-                                "text": "Publier votre van sur Kiwi Van Market est gratuit, sans commission — et vous pouvez proposer un rachat pour faire ressortir votre annonce. Mettez-la en ligne 3–4 semaines avant votre vol, pas 3 jours."
+                                "title": "Visiteurs : vérifier le droit de conduire",
+                                "text": "NZTA autorise actuellement les titulaires admissibles d’un permis voiture étranger à conduire jusqu’à 18 mois après leur dernière entrée. La limite passe à 12 mois le 1er novembre 2026. Gardez le permis original valide et, s’il n’est pas en anglais, la traduction ou le permis international requis. Vérifiez toutes les conditions NZTA avant de conduire."
                             },
                             {
-                                "type": "cta",
-                                "text": "Publiez votre van gratuitement — sans commission, contact direct avec les acheteurs",
-                                "to": "/sell"
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    },
+                                    {
+                                        "name": "Consumer Protection — Sales agreements",
+                                        "url": "https://www.consumerprotection.govt.nz/help-product-service/cars/paying-registering-insuring-car/car-sales-contracts-warranties"
+                                    },
+                                    {
+                                        "name": "NZTA — Driving on New Zealand roads",
+                                        "url": "https://www.nzta.govt.nz/travelling-on-our-roads/visitors-and-new-residents/driving-on-nz-roads"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "FAQ : réponses rapides",
-                        "icon": "CheckCircle",
+                        "title": "Questions fréquentes avant l’achat",
                         "items": [
                             {
                                 "type": "faq",
                                 "items": [
                                     {
-                                        "q": "Un étranger peut-il acheter un campervan en Nouvelle-Zélande ?",
-                                        "a": "Oui. Pas besoin de résidence ni de permis néo-zélandais : un passeport et une adresse locale (votre auberge compte) suffisent pour acheter et immatriculer un véhicule. La plupart des backpackers conduisent avec leur permis d'origine ou un permis international."
+                                        "q": "Faut-il acheter avant d’arriver en Nouvelle-Zélande ?",
+                                        "a": "Vous pouvez préparer une sélection et des visites à distance. La décision repose sur de meilleures preuves après vérification du vendeur, du véhicule et du rapport d’inspection. Gardez du temps sur place pour ces étapes et une autre option si le premier van ne convient pas."
                                     },
                                     {
-                                        "q": "Quel budget prévoir pour un campervan backpacker ?",
-                                        "a": "La plupart des voyageurs dépensent 5 000–10 000 NZ$. De bons vans existent sous 4 000 $ mais exigent une inspection rigoureuse. L'annonce moyenne sur Kiwi Van Market tourne autour de 8 000–10 000 $."
+                                        "q": "Un WoF récent remplace-t-il l’inspection mécanique ?",
+                                        "a": "Non. NZTA distingue contrôle de sécurité et inspection avant achat. Évaluez l’état à partir du rapport du mécanicien plutôt que de considérer le WoF comme une garantie de fiabilité."
                                     },
                                     {
-                                        "q": "L'assurance auto est-elle obligatoire en Nouvelle-Zélande ?",
-                                        "a": "Non — mais l'assurance au tiers (300–600 $/an) est le standard backpacker. Elle couvre la voiture coûteuse que vous pourriez emboutir ; s'en passer, c'est parier tout votre voyage sur un seul carrefour."
+                                        "q": "Puis-je me fier au montant annoncé de revente ou de rachat ?",
+                                        "a": "Une comparaison de prix ou un calculateur ne constitue pas une offre garantie. Pour un contrat de rachat, examinez l’acheteur engagé, les dates, conditions de kilométrage et d’état, déductions et modalités de paiement. Prévoyez une hypothèse de revente moins favorable dans votre budget."
                                     },
                                     {
-                                        "q": "Campervan essence ou diesel ?",
-                                        "a": "Le diesel est moins cher à la pompe mais paie les Road User Charges (environ 76 $ par 1 000 km) et ses révisions coûtent plus. Si vous roulez moins de ~15 000 km, l'essence gagne généralement en simplicité."
-                                    },
-                                    {
-                                        "q": "Qu'est-ce qu'un WOF et à quelle fréquence en faut-il un ?",
-                                        "a": "Le Warrant of Fitness est le contrôle de sécurité périodique néo-zélandais : tous les 12 mois pour les véhicules immatriculés après 2000, tous les 6 mois pour les plus anciens. Achetez un van avec au moins 3 mois de WOF restants."
-                                    },
-                                    {
-                                        "q": "Qu'est-ce qu'une vérification PPSR ?",
-                                        "a": "Une recherche à 3 $ dans le Personal Property Securities Register (ppsr.govt.nz) via le VIN. Elle vous dit si un crédit court encore sur le véhicule — si oui, le prêteur peut saisir le van même après que vous l'ayez payé."
-                                    },
-                                    {
-                                        "q": "Puis-je dormir n'importe où dans mon van ?",
-                                        "a": "Non. Le freedom camping n'est légal que dans les zones autorisées, et généralement réservé aux véhicules certifiés self-contained. Les amendes atteignent 400 $. CamperMate et Rankers montrent gratuitement chaque spot légal."
-                                    },
-                                    {
-                                        "q": "Que se passe-t-il si mon van tombe en panne ?",
-                                        "a": "L'adhésion AA (~99 $/an) vous donne une assistance routière dans tout le pays — la plupart des backpackers la jugent essentielle. Gardez une réserve de 1 000 $ : batteries, pneus et pompes à eau sont les suspects habituels sur les vieux vans."
-                                    },
-                                    {
-                                        "q": "En combien de temps puis-je revendre mon van en fin de voyage ?",
-                                        "a": "Avec un prix juste, des photos honnêtes et des papiers valides : quelques jours en haute saison (octobre–décembre), deux à quatre semaines sinon. Publiez-le 3–4 semaines avant votre vol."
-                                    },
-                                    {
-                                        "q": "Où vérifier l'historique d'un van avant d'acheter ?",
-                                        "a": "CarJam, avec le numéro de plaque : il révèle les dettes, le statut volé, les relevés de compteur et l'historique d'importation. Sur Kiwi Van Market, le bouton CarJam est sur l'annonce dès que le vendeur fournit la plaque."
+                                        "q": "Quels documents conserver pour revendre ?",
+                                        "a": "Gardez reçu d’achat, rapport d’inspection, factures d’entretien, renouvellements et justificatifs de réparation. Photographiez les équipements inclus lors de la revente et décrivez clairement les défauts non résolus."
                                     }
                                 ]
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Voir les vans disponibles en Nouvelle-Zélande",
+                                "to": "/"
                             }
                         ]
                     }

@@ -1,50 +1,7 @@
+# Public pages are available to search engines and AI retrieval crawlers.
+# One group keeps these rules consistent for every crawler.
 User-agent: *
 Allow: /
-
-# Explicitly allow AI crawlers for Generative Engine Optimization (GEO)
-User-agent: GPTBot
-Allow: /
-User-agent: OAI-SearchBot
-Allow: /
-User-agent: ChatGPT-User
-Allow: /
-User-agent: Google-Extended
-Allow: /
-User-agent: CCBot
-Allow: /
-User-agent: Anthropic-ai
-Allow: /
-User-agent: Claude-Web
-Allow: /
-User-agent: ClaudeBot
-Allow: /
-User-agent: Claude-SearchBot
-Allow: /
-User-agent: Amazonbot
-Allow: /
-User-agent: meta-externalagent
-Allow: /
-User-agent: PerplexityBot
-Allow: /
-User-agent: Perplexity-User
-Allow: /
-User-agent: cohere-ai
-Allow: /
-User-agent: GoogleOther
-Allow: /
-User-agent: Applebot-Extended
-Allow: /
-
-Allow: /*.jpg$
-Allow: /*.jpeg$
-Allow: /*.png$
-Allow: /*.webp$
-
-Disallow: /*?page=
-Disallow: /*?sort=
-Disallow: /*&page=
-Disallow: /*?search=
-Disallow: /*?filter=
 Disallow: /admin/
 
 Sitemap: https://kiwivanmarket.com/sitemap.xml

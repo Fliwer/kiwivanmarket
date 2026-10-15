@@ -2,46 +2,14 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, HelpCircle, BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { pagesData } from '../data/seo';
 
 // Composant FAQ Modal
 export function FAQModal({ isOpen, onClose }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (!isOpen) return null;
 
-  const faqs = [
-    {
-      question: "How does Kiwi Van Market work?",
-      answer: "Kiwi Van Market is a free platform connecting campervan buyers and sellers in New Zealand. Sellers list their vans with photos and details, buyers browse and contact sellers directly through our messaging system. We don't handle payments or transactions - those happen directly between buyer and seller."
-    },
-    {
-      question: "Is it free to use?",
-      answer: "Yes! Listing your van and browsing listings is completely free. We may introduce optional paid features in the future, but basic functionality will always remain free."
-    },
-    {
-      question: "How do I sell my van?",
-      answer: "1. Create an account (free)\n2. Click 'Sell Your Van'\n3. Add photos and details\n4. Publish your listing\n5. Respond to messages from interested buyers\n6. Meet buyers and complete the sale directly"
-    },
-    {
-      question: "How do I buy a van?",
-      answer: "1. Browse listings using filters\n2. Save favorites with the heart button\n3. Message sellers you're interested in\n4. Arrange viewings directly with sellers\n5. Inspect the van thoroughly before buying\n6. Complete the purchase directly with the seller"
-    },
-    {
-      question: "What is 'Self-Contained'?",
-      answer: "A self-contained vehicle has a toilet, fresh water tank, and grey water tank that meets New Zealand standards for freedom camping. Look for the blue Self-Contained badge on listings."
-    },
-    {
-      question: "What is 'Buy-Back'?",
-      answer: "Some sellers offer to buy back the van at an agreed price after your trip. This is an arrangement between you and the seller - Kiwi Van Market does not guarantee or enforce buy-back agreements."
-    },
-    {
-      question: "Is Kiwi Van Market responsible for transactions?",
-      answer: "No. We are a listing platform only. All transactions, inspections, and agreements are between buyers and sellers directly. We strongly recommend:\n• Meeting in person before any payment\n• Inspecting the vehicle thoroughly\n• Verifying WOF and REGO documents\n• Getting a mechanical inspection for expensive purchases"
-    },
-    {
-      question: "How do I report a suspicious listing?",
-      answer: "Contact us at kiwivanmarket.contact@gmail.com with the listing details. We take fraud seriously and will investigate all reports."
-    }
-  ];
+  const faqs = pagesData(i18n.language).faq.flatMap((category) => category.items.map(({ q, a }) => ({ question: q, answer: a })));
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
@@ -50,7 +18,7 @@ export function FAQModal({ isOpen, onClose }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <HelpCircle size={28} />
-              <h2 className="text-2xl font-bold">FAQ & How It Works</h2>
+              <h2 className="text-2xl font-bold">{t('seo_footer.faq')}</h2>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition">
               <span className="text-2xl">×</span>
@@ -76,8 +44,7 @@ export function FAQModal({ isOpen, onClose }) {
           {/* Contact */}
           <div className="mt-6 p-4 bg-emerald-50 rounded-xl">
             <p className="text-sm text-emerald-800">
-              <strong>Still have questions?</strong><br />
-              Contact us at{' '}
+              <strong>{t('footer.contact')}</strong><br />
               <a href="mailto:kiwivanmarket.contact@gmail.com" className="text-emerald-600 font-semibold hover:underline">
                 kiwivanmarket.contact@gmail.com
               </a>
@@ -138,6 +105,11 @@ export default function Footer({ onOpenFAQ, onOpenTerms }) {
           <div>
             <h3 className="font-bold mb-4 text-emerald-400 text-sm uppercase tracking-wider">{t('footer.quick_links')}</h3>
             <ul className="space-y-2 text-sm">
+              <li>
+                <Link to={localHref('/why')} className="text-gray-300 hover:text-white transition">
+                  {t('why_page.hero_badge')}
+                </Link>
+              </li>
               <li>
                 <Link to={localHref('/faq')} className="text-gray-300 hover:text-white transition">
                   {t('seo_footer.faq')}

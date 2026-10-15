@@ -101,7 +101,7 @@ Kiwi Van Market connects campervan buyers and sellers in New Zealand. Compare ad
 - [buyback-calculator](https://kiwivanmarket.com/buyback-calculator)
 
 ### Guides
-- [How to Buy a Campervan in New Zealand: The Backpacker Guide (2026)](https://kiwivanmarket.com/guide/buying-campervan-nz): Real prices, a step-by-step inspection routine, WOF, REGO, insurance and self-contained rules — everything you need to buy a campervan in New Zealand without getting burned.
+- [How to Buy a Campervan in New Zealand: Checks, Costs & Paperwork](https://kiwivanmarket.com/guide/buying-campervan-nz): Buy a campervan in NZ with a practical checklist for prices, inspection, WoF, rego, RUC and green-warrant certification. Official sources and handover steps.
 - [Used Campervan Inspection Checklist NZ: How to Check a Van Before Buying](https://kiwivanmarket.com/guide/campervan-buyer-checklist): A chronological pre-purchase routine for campervans in New Zealand — the homework the night before, the first minutes on site, the walk-around, the test drive, and the handover. Free printable version.
 - [WOF, REGO, RUC & Insurance in New Zealand: Van Rules Explained Simply](https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz): The four vehicle rules every campervan traveller must understand in NZ — what they cost, when they're due, and the fines if you get them wrong. In plain English.
 - [Freedom Camping in New Zealand - Rules & Best Spots 2025](https://kiwivanmarket.com/guide/freedom-camping-nz): Complete guide to freedom camping in New Zealand. Where you can camp for free, self-contained requirements, fines to avoid, and the best freedom camping spots.
@@ -126,7 +126,7 @@ Kiwi Van Market met en relation acheteurs et vendeurs de vans en Nouvelle-Zélan
 - [buyback-calculator](https://kiwivanmarket.com/buyback-calculator?lang=fr)
 
 ### Guides
-- [Acheter un campervan en Nouvelle-Zélande : le guide backpacker (2026)](https://kiwivanmarket.com/guide/buying-campervan-nz?lang=fr): Prix réels, une routine d'inspection pas à pas, le WOF, la REGO, l'assurance et les règles self-contained — tout pour acheter un van en Nouvelle-Zélande sans se faire avoir.
+- [Acheter un van en Nouvelle-Zélande : contrôles, budget et démarches](https://kiwivanmarket.com/guide/buying-campervan-nz?lang=fr): Préparez l’achat d’un van en NZ : prix, inspection, WoF, rego, RUC, certificat self-contained et remise des clés. Checklist et sources officielles.
 - [Checklist d'inspection d'un van d'occasion en NZ : comment vérifier avant d'acheter](https://kiwivanmarket.com/guide/campervan-buyer-checklist?lang=fr): Une routine pré-achat chronologique pour les campervans en Nouvelle-Zélande — les devoirs la veille, les premières minutes sur place, le tour du véhicule, l'essai routier et la remise des clés. Version imprimable gratuite.
 - [WOF, REGO, RUC et assurance en Nouvelle-Zélande : les règles du van, en clair](https://kiwivanmarket.com/guide/wof-rego-ruc-insurance-nz?lang=fr): Les quatre règles véhicule que tout voyageur en campervan doit comprendre en NZ — ce qu'elles coûtent, quand elles sont dues, et les amendes en cas d'erreur. En français simple.
 - [Camping Sauvage en Nouvelle-Zélande - Règles et Meilleurs Spots 2025](https://kiwivanmarket.com/guide/freedom-camping-nz?lang=fr): Guide complet du freedom camping en Nouvelle-Zélande. Où dormir gratuitement, certification self-contained et amendes à éviter.

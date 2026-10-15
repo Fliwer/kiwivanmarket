@@ -9,6 +9,7 @@
 const {
   ORIGIN, esc, breadcrumbLd, htmlShell, send404, sendHTML,
 } = require('./_lib/util');
+const guideSchema = require('../src/data/seo/guide-schema.cjs');
 const GUIDES = require('./_lib/guides-data.json');
 
 const absUrl = (u) => (typeof u === 'string' && u.startsWith('/') ? `${ORIGIN}${u}` : u);
@@ -28,6 +29,7 @@ const L = {
 
 function renderItem(item, lang) {
   if (!item || typeof item !== 'object') return '';
+  if (item.type === 'sources') return '<ul>' + (item.items || []).map((source) => `<li><a href="${esc(source.url)}">${esc(source.name)}</a></li>`).join('') + '</ul>';
   if (item.type === 'image') {
     return `<figure><img src="${esc(absUrl(item.url))}" alt="${esc(item.caption || 'Guide illustration')}" loading="lazy">${item.caption ? `<figcaption>${esc(item.caption)}</figcaption>` : ''}</figure>`;
   }
@@ -41,7 +43,7 @@ function renderItem(item, lang) {
     return `<ol>${(item.items || []).map((s) => `<li><strong>${esc(s.title || '')}</strong>${s.title && s.text ? ' — ' : ''}${esc(s.text || '')}</li>`).join('')}</ol>`;
   }
   if (item.type === 'cta') {
-    const target = item.href || `${ORIGIN}${item.to || '/'}`;
+    const target = item.href || `${ORIGIN}${guideSchema.localizedPath(item.to || '/', lang)}`;
     return `<p><a href="${esc(target)}"><strong>${esc(item.text || '')} →</strong></a></p>`;
   }
   if (item.type === 'table') {
@@ -66,7 +68,8 @@ module.exports = async function handler(req, res) {
   let lang = String(req.query.lang || 'en').slice(0, 2).toLowerCase();
   if (!GUIDES[lang]) lang = 'en';
 
-  const guide = (GUIDES[lang] && GUIDES[lang][slug]) || GUIDES.en[slug];
+  if (!GUIDES[lang]?.[slug]) lang = 'en';
+  const guide = GUIDES[lang][slug];
   if (!guide) return send404(res, 'This guide does not exist');
 
   const suffix = lang === 'en' ? '' : `?lang=${lang}`;
@@ -74,37 +77,16 @@ module.exports = async function handler(req, res) {
   const canonical = `${cleanUrl}${suffix}`;
 
   // Hreflang réciproques (chaque variante pointe vers toutes les autres).
-  const alternates = [
-    { hreflang: 'en', href: cleanUrl },
-    { hreflang: 'fr', href: `${cleanUrl}?lang=fr` },
-    { hreflang: 'es', href: `${cleanUrl}?lang=es` },
-    { hreflang: 'x-default', href: cleanUrl },
-  ];
+  const alternates = Object.keys(GUIDES).filter((l) => GUIDES[l][slug]).map((l) => ({
+    hreflang: l, href: cleanUrl + (l === 'en' ? '' : `?lang=${l}`),
+  })).concat({ hreflang: 'x-default', href: cleanUrl });
 
   const title = `${guide.title} | Kiwi Van Market`;
   const metaDesc = String(guide.description || '').slice(0, 155);
   const content = guide.content || {};
   const sections = Array.isArray(content.sections) ? content.sections : [];
 
-  const articleLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    '@id': `${canonical}#article`,
-    headline: guide.title,
-    datePublished: guide.datePublished || undefined,
-    dateModified: guide.dateModified || undefined,
-    description: guide.description,
-    image: guide.heroImage ? [absUrl(guide.heroImage)] : undefined,
-    url: canonical,
-    inLanguage: lang,
-    author: { '@type': 'Organization', name: 'Kiwi Van Market', url: ORIGIN },
-    publisher: {
-      '@type': 'Organization',
-      name: 'Kiwi Van Market',
-      logo: { '@type': 'ImageObject', url: `${ORIGIN}/kiwi-van-logo-128.webp` },
-    },
-    mainEntityOfPage: canonical,
-  };
+  const articleLd = guideSchema.article(guide, slug, lang);
 
   const byLang = GUIDES[lang] || GUIDES.en;
   const otherGuides = Object.entries(byLang)
@@ -117,6 +99,7 @@ module.exports = async function handler(req, res) {
 <article>
 <h1>${esc(guide.title)}</h1>
 <p><em>${esc(guide.description || '')}</em></p>
+<p>Kiwi Van Market${guide.dateModified ? ` · <time datetime="${esc(guide.dateModified)}">${esc(guide.dateModified)}</time>` : ''}</p>
 ${guide.heroImage ? `<img src="${esc(absUrl(guide.heroImage))}" alt="${esc(guide.title)}">` : ''}
 ${content.intro ? `<p>${esc(content.intro)}</p>` : ''}
 ${sections.map((s) => `
