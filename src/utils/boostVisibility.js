@@ -11,7 +11,9 @@ function rankVans(vans, sortBy = 'newest', now = Date.now()) {
   const sponsoredIds = vans.filter((van) => isBoostActive(van, now)).map((van) => String(van.id)).sort();
   const offset = sponsoredIds.length ? Math.floor(now / 300000) % sponsoredIds.length : 0;
   const slot = (id) => (sponsoredIds.indexOf(String(id)) - offset + sponsoredIds.length) % sponsoredIds.length;
-  return [...vans].sort((a, b) => {
+  // Keep this shared CommonJS module free of Babel-injected ESM spread helpers.
+  // Mixing those imports with module.exports breaks CRA's browser bundle.
+  return vans.slice().sort((a, b) => {
     const soldOrder = Number(a.status === 'sold') - Number(b.status === 'sold');
     if (soldOrder) return soldOrder;
     const aBoost = isBoostActive(a, now), bBoost = isBoostActive(b, now);

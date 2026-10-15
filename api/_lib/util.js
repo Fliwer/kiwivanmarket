@@ -5,7 +5,7 @@
 const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'kiwivanmarket';
 const ORIGIN = 'https://kiwivanmarket.com';
 const COPY = require('../../src/data/seo/copy.cjs');
-const { rankVans, isBoostActive } = require('../../src/utils/boostVisibility.cjs');
+const { rankVans, isBoostActive } = require('../../src/utils/boostVisibility.js');
 
 // URL d'une page dans la langue courante (?lang=fr), pour le maillage interne
 // des pages localisées. L'anglais reste sans paramètre.

@@ -5,7 +5,7 @@ import { Search, BookOpen, ArrowRight, ArrowUpDown, ChevronDown } from 'lucide-r
 import { Link } from 'react-router-dom';
 import { useAuth } from '../AuthContext';
 import VanCard from './VanCard';
-import boostVisibility from '../utils/boostVisibility.cjs';
+import boostVisibility from '../utils/boostVisibility.js';
 import { useBoostClock } from '../hooks/useBoostClock';
 import AlertCta from './AlertCta';
 import searchCopy from '../data/seo/search-copy';

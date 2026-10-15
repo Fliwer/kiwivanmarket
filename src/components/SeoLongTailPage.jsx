@@ -5,7 +5,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import SeoHead from './SeoHead';
 import VanCard from './VanCard';
-import boostVisibility from '../utils/boostVisibility.cjs';
+import boostVisibility from '../utils/boostVisibility.js';
 import { useBoostClock } from '../hooks/useBoostClock';
 import AlertCta from './AlertCta';
 import { useTranslation } from 'react-i18next';

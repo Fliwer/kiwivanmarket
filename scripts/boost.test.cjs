@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { createBoostService, keyState, PLANS } = require('../functions/boostService');
-const { rankVans, isBoostActive } = require('../src/utils/boostVisibility.cjs');
+const { rankVans, isBoostActive } = require('../src/utils/boostVisibility.js');
 
 function fixture() {
   let clock = 1800000000000, id = 0, queue = Promise.resolve();

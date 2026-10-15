@@ -7,7 +7,7 @@ import { safeDate } from '../utils/dateHelper';
 import { formatMileage } from '../utils/formatHelper';
 import { useTranslation } from 'react-i18next';
 import { useAutoTranslate } from '../hooks/useAutoTranslate';
-import boostVisibility from '../utils/boostVisibility.cjs';
+import boostVisibility from '../utils/boostVisibility.js';
 import { useBoostClock } from '../hooks/useBoostClock';
 
 const RETURN_SCROLL_KEY = 'kiwiVanMarket_returnScrollY';

@@ -5,7 +5,7 @@ import { functions, db } from '../firebase';
 import { useAuth } from '../AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import boostVisibility from '../utils/boostVisibility.cjs';
+import boostVisibility from '../utils/boostVisibility.js';
 import { useBoostClock } from '../hooks/useBoostClock';
 
 const dateOf = (value) => value?.toDate ? value.toDate() : new Date(value?.seconds != null ? value.seconds * 1000 : value);
