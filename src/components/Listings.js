@@ -18,16 +18,12 @@ const LISTINGS_PAGE_KEY = 'kiwiVanMarket_listingsPage';
 const RETURN_SCROLL_KEY = 'kiwiVanMarket_returnScrollY';
 const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
 
-// Keep every page directly accessible for typical result sets.
-// Buttons wrap on mobile; only larger sets use a compact window.
+// Five consecutive pages around the current page, plus the final page.
 function getPageNumbers(current, total) {
-    if (total <= 12) return Array.from({ length: total }, (_, i) => i + 1);
-    const pages = [1];
-    const start = Math.max(2, current - 1);
-    const end = Math.min(total - 1, current + 1);
-    if (start > 2) pages.push('…');
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (end < total - 1) pages.push('…');
+    if (total <= 6) return Array.from({ length: total }, (_, i) => i + 1);
+    const start = Math.max(1, Math.min(current - 2, total - 5));
+    const pages = Array.from({ length: 5 }, (_, i) => start + i);
+    if (start + 4 < total - 1) pages.push('…');
     pages.push(total);
     return pages;
 }
