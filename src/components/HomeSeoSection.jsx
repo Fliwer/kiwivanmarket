@@ -1,5 +1,5 @@
 import market from '../data/seo/market';
-import taxonomy from '../data/seo/taxonomy';
+import inventoryLinks from '../data/seo/inventory';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { seoLang, seoCopy, priceStats, nzd } from '../data/seo';
@@ -7,20 +7,24 @@ import { seoLang, seoCopy, priceStats, nzd } from '../data/seo';
 
 // The same source-backed information is rendered in api/prerender-home.js.
 export default function HomeSeoSection({ vans = [] }) {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const lang = seoLang(i18n.language);
   const T = market.COPY[lang] || market.COPY.en;
   const stats = priceStats(vans);
   const sample = stats && { count: stats.count, min: nzd(stats.min), max: nzd(stats.max), avg: nzd(stats.avg) };
   const faqs = [...seoCopy(lang).home.faqs(sample), ...T.faqs];
+  const inventory = inventoryLinks(vans);
+  const home = seoCopy(lang).home;
   const href = (path) => lang === 'fr' ? path + '?lang=fr' : path;
   const card = (item) => <article key={item.title} className="rounded-2xl border border-slate-200 bg-white p-6"><h3 className="text-lg font-bold text-slate-900 mb-3">{item.title}</h3><p className="text-slate-600 leading-relaxed">{item.text}</p></article>;
   return <section className="max-w-7xl mx-auto px-5 py-12 space-y-10">
-    <div className="max-w-3xl"><h2 className="text-3xl font-black text-slate-900 mb-4">{T.title}</h2><p className="text-slate-600 leading-relaxed">{T.intro}</p></div>
+    <div className="max-w-3xl"><h2 className="text-3xl font-black text-slate-900 mb-4">{T.title}</h2><p className="text-slate-600 leading-relaxed">{T.intro}</p>
+      {sample && <p className="mt-4 font-semibold text-slate-800">{t('seo_market.inventorySummary', sample)}</p>}
+    </div>
     <div className="grid md:grid-cols-2 gap-8">{[
-      [T.byLocation, Object.entries(taxonomy.LOCATIONS).map(([slug, name]) => ['/location/' + slug, name])],
-      [T.byBrand, Object.entries(taxonomy.BRANDS).map(([slug, brand]) => ['/brand/' + slug, brand.name])],
-    ].map(([title, links]) => <nav key={title} aria-label={title}><h2 className="text-2xl font-bold mb-4">{title}</h2><div className="flex flex-wrap gap-3">{links.map(([path, label]) => <Link key={path} to={href(path)} className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-emerald-800 hover:border-emerald-400">{label}</Link>)}</div></nav>)}</div>
+      [T.byLocation, inventory.cities, home.locationLink],
+      [T.byBrand, inventory.models, home.brandLink],
+    ].filter(([, links]) => links.length).map(([title, links, label]) => <nav key={title} aria-label={title}><h2 className="text-2xl font-bold mb-4">{title}</h2><ul className="space-y-3">{links.map(({path, name, count, min}) => <li key={path}><Link to={href(path)} className="flex flex-col rounded-xl border border-slate-200 bg-white px-4 py-3 text-emerald-800 hover:border-emerald-400"><span className="font-semibold">{label(name)}</span><span className="text-sm text-slate-600">{t('seo_market.stockCount', {count})}{min !== null ? ` · ${t('seo_market.fromPrice', {price: nzd(min)})}` : ''}</span></Link></li>)}</ul></nav>)}</div>
     <div><h2 className="text-2xl font-bold mb-5">{T.buyersTitle}</h2><div className="grid md:grid-cols-2 gap-5">{T.buyers.map(card)}</div></div>
     <div><h2 className="text-2xl font-bold mb-5">{T.sellersTitle}</h2><div className="grid md:grid-cols-2 gap-5">{T.sellers.map(card)}</div></div>
     <div className="flex flex-wrap gap-3">{[

@@ -280,12 +280,12 @@
         }
     },
     "home": {
-        "badge": "NZ's #1 Campervan Marketplace",
-        "title_part1": "Buy Your Perfect",
-        "title_highlight": "Campervan",
-        "title_part2": "in New Zealand.",
-        "subtitle": "Find the perfect campervan for your adventure. Compare Toyota Hiace, Nissan Caravan, Nissan Elgrand, and more.",
-        "cta_browse_listings": "Buy Van",
+        "badge": "New Zealand's campervan marketplace",
+        "title_part1": "Buy a",
+        "title_highlight": "Van",
+        "title_part2": "in New Zealand",
+        "subtitle": "Compare campervans and backpacker vans for sale in Auckland, Christchurch and across NZ. Check seller-provided details and contact owners directly.",
+        "cta_browse_listings": "Browse vans for sale",
         "cta_sell_van": "Sell Your Van",
         "buying_guides": "Buying Guides",
         "badge_guide": "Guide",
@@ -494,6 +494,9 @@
     "scAnswer": "Check the current green warrant and vehicle certificate rather than relying on a listing badge. The blue-warrant transition ended on 7 June 2026. Certification does not allow camping everywhere: check local restrictions."
   },
   "seo_market": {
+    "inventorySummary": "{{count}} priced vans for sale · From {{min}} · Average asking price {{avg}}",
+    "stockCount": "{{count}} for sale",
+    "fromPrice": "From {{price}}",
     "title": "Buy and sell a campervan in New Zealand",
     "intro": "Kiwi Van Market connects campervan buyers and sellers in New Zealand. Compare advertised prices, locations, equipment and seller-provided vehicle details; contact owners directly and inspect the vehicle before agreeing a purchase.",
     "byLocation": "Find a campervan by city",

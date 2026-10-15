@@ -280,12 +280,12 @@
         }
     },
     "home": {
-        "badge": "Le N°1 pour Acheter un Van en NZ",
-        "title_part1": "Achetez votre",
-        "title_highlight": "Campervan",
-        "title_part2": "en Nouvelle-Zélande.",
-        "subtitle": "Trouvez le van aménagé parfait pour votre aventure. Comparez les Toyota Hiace, les Nissan Caravan, Nissan Elgrand, et bien d'autres.",
-        "cta_browse_listings": "Acheter un van",
+        "badge": "Annonces de vans en Nouvelle-Zélande",
+        "title_part1": "Achetez un",
+        "title_highlight": "Van",
+        "title_part2": "en Nouvelle-Zélande",
+        "subtitle": "Comparez les vans aménagés à vendre à Auckland, Christchurch et dans toute la NZ. Consultez les informations des annonces et contactez directement les propriétaires.",
+        "cta_browse_listings": "Voir les vans à vendre",
         "cta_sell_van": "Vendre mon van",
         "buying_guides": "Guides d'achat",
         "badge_guide": "Guide",
@@ -494,6 +494,9 @@
     "scAnswer": "Vérifiez le green warrant valide et le certificat du véhicule plutôt que le seul badge de l’annonce. La transition des blue warrants a pris fin le 7 juin 2026. La certification ne permet pas de camper partout : vérifiez les restrictions locales."
   },
   "seo_market": {
+    "inventorySummary": "{{count}} vans avec prix à vendre · À partir de {{min}} · Prix demandé moyen {{avg}}",
+    "stockCount": "{{count}} en vente",
+    "fromPrice": "À partir de {{price}}",
     "title": "Acheter et vendre un van en Nouvelle-Zélande",
     "intro": "Kiwi Van Market met en relation acheteurs et vendeurs de vans en Nouvelle-Zélande. Comparez prix affichés, villes, équipements et informations fournies par les vendeurs ; contactez directement les propriétaires et inspectez le véhicule avant de convenir d’un achat.",
     "byLocation": "Trouver un van par ville",

@@ -132,7 +132,10 @@ export default function SeoHead({
     if (normalizedPath !== '/' && normalizedPath.endsWith('/')) {
         normalizedPath = normalizedPath.slice(0, -1);
     }
-    normalizedPath = normalizedPath.toLowerCase();
+    // Firestore document IDs are case-sensitive. Lowercasing /van/:id would
+    // point the canonical at a different listing (usually a 404).
+    const listingPath = normalizedPath.match(/^\/van\/(.+)$/i);
+    normalizedPath = listingPath ? `/van/${listingPath[1]}` : normalizedPath.toLowerCase();
 
     const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
     const cleanUrl = `${ORIGIN}${normalizedPath}`;
@@ -143,7 +146,8 @@ export default function SeoHead({
     // Ailleurs : canonical propre + en/x-default uniquement (comportement d'avant).
     const localized = Array.isArray(alternateLangs) && alternateLangs.length > 0;
     const langHref = (l) => (l === 'en' ? cleanUrl : `${cleanUrl}?lang=${l}`);
-    const computedCanonicalUrl = localized ? langHref(currentLang) : cleanUrl;
+    const canonicalLang = localized && alternateLangs.includes(currentLang) ? currentLang : 'en';
+    const computedCanonicalUrl = localized ? langHref(canonicalLang) : cleanUrl;
     const fullTitle = title
         ? `${title} | Kiwi Van Market`
         : `${t('header.subtitle')} | Kiwi Van Market`;

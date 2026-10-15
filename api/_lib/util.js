@@ -48,12 +48,19 @@ const cdnImg = (url, w) =>
 
 // ── Fetch de tous les vans (visibles) depuis Firestore ─────────────────────
 async function fetchAllVans() {
-  const r = await fetch(
-    `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/vans?pageSize=300`
-  );
-  if (!r.ok) throw new Error(`Firestore ${r.status}`);
-  const data = await r.json();
-  return rankVans((data.documents || [])
+  const documents = [];
+  let pageToken;
+  do {
+    const url = new URL(`https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT_ID}/databases/(default)/documents/vans`);
+    url.searchParams.set('pageSize', '300');
+    if (pageToken) url.searchParams.set('pageToken', pageToken);
+    const r = await fetch(url.toString(), { signal: AbortSignal.timeout(15000) });
+    if (!r.ok) throw new Error(`Firestore ${r.status}`);
+    const data = await r.json();
+    documents.push(...(data.documents || []));
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+  return rankVans(documents
     .map((doc) => {
       const van = parseFields(doc.fields || {});
       van.id = doc.name.split('/').pop();

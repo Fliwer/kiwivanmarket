@@ -154,3 +154,57 @@ test('homepage exposes the same reviewed facts and sources to crawlers in EN and
     }
   } finally { global.fetch = originalFetch; }
 });
+
+test('listing discovery follows Firestore pages and fails rather than publishing a partial inventory', async () => {
+  const originalFetch = global.fetch;
+  const calls = [];
+  const document = (id, status = 'active') => ({ name: `vans/${id}`, fields: {
+    title: { stringValue: 'Toyota Hiace' }, status: { stringValue: status },
+  } });
+  global.fetch = async (url) => {
+    calls.push(new URL(url));
+    return { ok: true, json: async () => calls.length === 1
+      ? { documents: [document('first')], nextPageToken: 'next+/=' }
+      : { documents: [document('second'), document('hidden', 'hidden')] } };
+  };
+  try {
+    const { fetchAllVans } = require('../api/_lib/util');
+    const vans = await fetchAllVans();
+    assert.deepEqual(vans.map((van) => van.id).sort(), ['first', 'second']);
+    assert.equal(calls.length, 2);
+    assert.equal(calls[1].searchParams.get('pageToken'), 'next+/=');
+    let page = 0;
+    global.fetch = async () => ++page === 1
+      ? { ok: true, json: async () => ({ documents: [document('first')], nextPageToken: 'next' }) }
+      : { ok: false, status: 503 };
+    await assert.rejects(fetchAllVans(), /Firestore 503/);
+  } finally { global.fetch = originalFetch; }
+});
+
+test('homepage discovery shows actual available stock and excludes sold/hidden/empty categories in both languages', async () => {
+  const originalFetch = global.fetch;
+  const documents = [
+    ['active', 'Toyota Hiace', 'Auckland', 10000, 'active'],
+    ['sold', 'Toyota Hiace', 'Auckland', 1000, 'sold'],
+    ['hidden', 'Mercedes Sprinter', 'Dunedin', 500, 'hidden'],
+  ].map(([id, title, location, price, status]) => ({ name: `vans/${id}`, fields: {
+    title: { stringValue: title }, location: { stringValue: location },
+    price: { integerValue: String(price) }, status: { stringValue: status },
+  } }));
+  global.fetch = async () => ({ ok: true, json: async () => ({ documents }) });
+  try {
+    const inventoryLinks = require('../src/data/seo/inventory.cjs');
+    const vans = await require('../api/_lib/util').fetchAllVans();
+    assert.deepEqual(inventoryLinks(vans).cities, [{ path: '/location/auckland', name: 'Auckland', count: 1, min: 10000 }]);
+    for (const lang of ['en', 'fr']) {
+      const page = response();
+      await require('../api/prerender-home')({ query: { lang } }, page);
+      assert.ok(page.body.includes('/brand/toyota-hiace'));
+      assert.ok(!page.body.includes('/brand/mercedes-sprinter'));
+      assert.ok(!page.body.includes('/location/dunedin'));
+      assert.ok(page.body.includes(lang === 'en' ? '1 for sale' : '1 en vente'));
+      assert.ok(page.body.includes('$10,000 NZD'));
+      assert.ok(page.body.includes(`/guide/buying-campervan-nz${lang === 'fr' ? '?lang=fr' : ''}`));
+    }
+  } finally { global.fetch = originalFetch; }
+});

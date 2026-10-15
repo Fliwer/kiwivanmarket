@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, ArrowRight, Clock, Star, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { GUIDES } from '../constants/guides';
+import GUIDES from '../data/seo/guide-summaries.json';
 
 // Top guides to feature on the home page
 const FEATURED_SLUGS = [
@@ -17,6 +17,7 @@ export default function GuidePreviewSection() {
     const { i18n } = useTranslation();
     const currentLang = (i18n.language || 'en').split('-')[0];
     const localizedGuides = GUIDES[currentLang] || GUIDES.en || {};
+    const href = (path) => ['fr', 'es'].includes(currentLang) ? `${path}?lang=${currentLang}` : path;
 
     // Build the featured guides list
     const featured = FEATURED_SLUGS
@@ -56,7 +57,7 @@ export default function GuidePreviewSection() {
                         </p>
                     </div>
                     <Link
-                        to="/guides"
+                        to={href('/guides')}
                         className="inline-flex items-center gap-2 px-6 py-3 border-2 border-slate-900 text-slate-900 font-black rounded-2xl hover:bg-slate-900 hover:text-white transition-all group whitespace-nowrap"
                     >
                         All Articles
@@ -69,7 +70,7 @@ export default function GuidePreviewSection() {
 
                     {/* Primary Feature — large card */}
                     <Link
-                        to={`/guide/${primary.slug}`}
+                        to={href(`/guide/${primary.slug}`)}
                         className="lg:col-span-3 group relative flex flex-col rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/60 border border-slate-100 hover:border-emerald-200 hover:shadow-emerald-100/60 transition-all duration-500 bg-white"
                     >
                         <div className="h-[320px] lg:h-[420px] overflow-hidden relative flex-shrink-0">
@@ -113,7 +114,7 @@ export default function GuidePreviewSection() {
                         {rest.map(({ slug, guide, readTime }) => (
                             <Link
                                 key={slug}
-                                to={`/guide/${slug}`}
+                                to={href(`/guide/${slug}`)}
                                 className="group flex flex-col rounded-[2rem] overflow-hidden shadow-lg shadow-slate-200/50 border border-slate-100 hover:border-emerald-200 hover:shadow-emerald-100 transition-all duration-300 bg-white flex-1"
                             >
                                 <div className="h-48 overflow-hidden relative">
@@ -148,7 +149,7 @@ export default function GuidePreviewSection() {
 
                         {/* All guides CTA card */}
                         <Link
-                            to="/guides"
+                            to={href('/guides')}
                             className="group relative rounded-[2rem] overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 p-8 flex flex-col justify-between min-h-[140px] hover:from-emerald-900 hover:to-teal-900 transition-all duration-500 border border-transparent hover:border-emerald-500/30 shadow-lg"
                         >
                             <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_70%_50%,_#10b981,_transparent)]" />

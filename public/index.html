@@ -21,9 +21,9 @@
   <meta name="language" content="en-NZ" />
 
 
-  <title>Buy and Sell Campervans in New Zealand | Kiwi Van Market</title>
+  <title>Buy a Van in NZ — Campervans for Sale | Kiwi Van Market</title>
   <meta name="description"
-    content="The easiest way to buy and sell campervans for backpackers and locals in New Zealand. Find self-contained vans with CarJam checks, buy-back guarantees, WOF and rego." />
+    content="Buy a van in New Zealand. Browse campervans and backpacker vans for sale by city, model and budget. Compare seller details and contact owners directly." />
   <!-- Canonical géré dynamiquement par react-helmet-async pour chaque page -->
 
   <link rel="icon" href="%PUBLIC_URL%/favicon.ico?v=5" sizes="any" />
@@ -45,11 +45,19 @@
   <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
   <link rel="dns-prefetch" href="https://firestore.googleapis.com" />
 
-  <!-- Preload LCP image - Mobile & Desktop optimized -->
-  <link rel="preload" href="%PUBLIC_URL%/nz-background-mobile.webp" as="image" type="image/webp" fetchpriority="high"
-    media="(max-width: 768px)" />
-  <link rel="preload" href="%PUBLIC_URL%/nz-background.webp" as="image" type="image/webp" fetchpriority="high"
-    media="(min-width: 769px)" />
+  <!-- Only the homepage uses this hero. Start its download before React,
+       without downloading unused background images on every route. -->
+  <script>
+    if (window.location.pathname === '/') {
+      var heroPreload = document.createElement('link');
+      heroPreload.rel = 'preload';
+      heroPreload.as = 'image';
+      heroPreload.type = 'image/webp';
+      heroPreload.href = '%PUBLIC_URL%/hiace-camper.webp';
+      heroPreload.setAttribute('fetchpriority', 'high');
+      document.head.appendChild(heroPreload);
+    }
+  </script>
 
   <!-- Structured data géré dynamiquement par react-helmet-async dans l'application -->
 
@@ -261,8 +269,8 @@
 
   <noscript>
     <header>
-      <h1>Buy and Sell Campervans in New Zealand</h1>
-      <h2>NZ's #1 Backpacker Marketplace for Self Contained Vans</h2>
+      <h1>Buy a Van in New Zealand</h1>
+      <h2>Campervans and backpacker vans for sale</h2>
     </header>
     <main>
       <section>
@@ -281,9 +289,9 @@
       <section>
         <h3>Why choose Kiwi Van Market?</h3>
         <ul>
-          <li>Fully Certified: Find Blue and Green Self-Contained sticker vehicles.</li>
-          <li>Road Legal: Filter by valid WOF (Warrant of Fitness) and REGO.</li>
-          <li>Buy-Back Options: Guarantee your end-of-trip sale with backpacker buy-back deals.</li>
+          <li>Check seller-provided WOF, rego and self-contained details against the vehicle documents.</li>
+          <li>Arrange an independent mechanical inspection before paying.</li>
+          <li>For any buy-back offer, agree the price, dates and conditions with the seller in writing.</li>
         </ul>
       </section>
     </main>

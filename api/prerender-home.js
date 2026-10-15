@@ -16,11 +16,9 @@ const { pickLang, pageMeta } = require('./_lib/i18n');
 const COPY = require('../src/data/seo/copy.cjs');
 const { COPY: MARKET, SOURCES } = require('../src/data/seo/market.cjs');
 const { localizePage } = require('../src/data/seo/search-copy.cjs');
+const inventoryLinks = require('../src/data/seo/inventory.cjs');
 const GUIDES = require('./_lib/guides-data.json');
 const { LONG_TAIL_PAGE_LIST, indexableSlugs } = require('./_lib/long-tail');
-
-const { BRANDS: BRAND_CONFIG, LOCATIONS } = require('./_lib/taxonomy');
-const BRANDS = Object.fromEntries(Object.entries(BRAND_CONFIG).map(([slug, brand]) => [slug, brand.name]));
 
 module.exports = async function handler(req, res) {
   const lang = pickLang(req);
@@ -44,6 +42,10 @@ module.exports = async function handler(req, res) {
   const keep = indexableSlugs(vans);
   const budgetPages = LONG_TAIL_PAGE_LIST.filter((p) => keep.has(p.slug)).map((p) => localizePage(p, lang));
   const M = MARKET[lang];
+  const inventory = inventoryLinks(vans);
+  const inventoryList = (entries, label) => entries.map(({ path, name, count, min }) =>
+    `<li><a href="${langUrl(path, lang)}">${label(esc(name))}</a> — ${esc(M.stockCount.replace('{{count}}', count))}${min !== null ? ` · ${esc(M.fromPrice.replace('{{price}}', nzd(min)))}` : ''}</li>`
+  ).join('\n');
 
   const stats = priceStats(vans);
   // Montants formatés une fois, pour les gabarits de textes.
@@ -83,14 +85,8 @@ module.exports = async function handler(req, res) {
 ${SE ? `<p>${T.statsLine(SE)}</p>` : ''}
 <h2>${T.latest}</h2>
 <ul>${vanListHTML(vans, { limit: 24, lang })}</ul>
-<h2>${T.byBrand}</h2>
-<ul>
-${Object.entries(BRANDS).map(([s, n]) => `<li><a href="${langUrl('/brand/' + s, lang)}">${T.brandLink(esc(n))}</a></li>`).join('\n')}
-</ul>
-<h2>${T.byLocation}</h2>
-<ul>
-${Object.entries(LOCATIONS).map(([s, n]) => `<li><a href="${langUrl('/location/' + s, lang)}">${T.locationLink(esc(n))}</a></li>`).join('\n')}
-</ul>
+${inventory.models.length ? `<h2>${T.byBrand}</h2><ul>${inventoryList(inventory.models, T.brandLink)}</ul>` : ''}
+${inventory.cities.length ? `<h2>${T.byLocation}</h2><ul>${inventoryList(inventory.cities, T.locationLink)}</ul>` : ''}
 ${budgetPages.length ? `<h2>${T.byBudget}</h2>
 <ul>
 ${budgetPages.map((p) => `<li><a href="${langUrl(`/search/${p.slug}`, lang)}">${esc(p.heading)}</a></li>`).join('\n')}

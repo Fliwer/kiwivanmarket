@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { GUIDES } from '../constants/guides';
+import GUIDES from '../data/seo/guide-summaries.json';
 
 // Guide mis en avant dans le hero (le plus consulté).
 const FEATURED_SLUG = 'buying-campervan-nz';
