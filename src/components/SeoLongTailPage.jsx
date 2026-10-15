@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import SeoHead from './SeoHead';
+import SeoFaqSection from './SeoFaqSection';
 import VanCard from './VanCard';
 import boostVisibility from '../utils/boostVisibility.js';
 import { useBoostClock } from '../hooks/useBoostClock';
@@ -144,6 +145,7 @@ export default function SeoLongTailPage() {
             </section>
           </>
         )}
+        {!loading && <SeoFaqSection title={text('faqTitle')} faqs={faqs} className="mt-10" />}
       </main>
     </div>
   );

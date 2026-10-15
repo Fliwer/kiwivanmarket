@@ -6,7 +6,9 @@ const { htmlShell } = require('../api/_lib/util');
 const prerenderVan = require('../api/prerender-van');
 
 test('edge middleware admits payment returns and keeps unknown routes at 404', async () => {
-  const source = require('node:fs').readFileSync(require('node:path').join(__dirname, '../middleware.js'), 'utf8');
+  const source = require('node:fs').readFileSync(require('node:path').join(__dirname, '../middleware.js'), 'utf8')
+    .replace("import crawlerPattern from './src/data/seo/crawlers';", `const crawlerPattern = ${JSON.stringify(require('../src/data/seo/crawlers.cjs'))};`)
+    .replace("import publicAssets from './src/data/seo/public-assets.json';", `const publicAssets = ${JSON.stringify(require('../src/data/seo/public-assets.json'))};`);
   const { default: middleware } = await import(`data:text/javascript,${encodeURIComponent(source)}`);
   for (const path of ['/reservation-success?id=res', '/reservation-cancelled?id=res', '/Reservation-Success/']) {
     const response = middleware(new Request(`https://kiwivanmarket.com${path}`));

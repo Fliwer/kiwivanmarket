@@ -8,6 +8,7 @@ import { X, Upload, Trash2, CheckCircle, Shield, Phone } from 'lucide-react';
 import { uploadToCloudinary, compressImage } from '../cloudinaryConfig';
 import { sanitizeString, sanitizeText } from '../securityUtils';
 import { useToast } from './ToastProvider';
+import SelfContainedDeclaration from './SelfContainedDeclaration';
 
 // Helper pour convertir les dates Firestore (Timestamp) en format input HTML
 const formatDateForInput = (date) => {
@@ -34,6 +35,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
   const [imageCrops, setImageCrops] = useState([]);
   const [initializing, setInitializing] = useState(isEditMode);
   const [loadError, setLoadError] = useState(false);
+  const [selfContainedEdited, setSelfContainedEdited] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -130,6 +132,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           return;
         }
         if (cancelled) return;
+        setSelfContainedEdited(false);
         // Default equipment object - Simplified for backpackers
         const defaultEquipment = {
           // Sleeping
@@ -161,7 +164,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           description: van.description || '',
           capacity: van.capacity || 2,
           selfContained: van.selfContained || false,
-          selfContainedType: van.selfContainedType || 'green',
+          selfContainedType: van.selfContainedType ?? '',
           featured: van.featured || false,
           buyBack: van.buyBack || false,
           buyBackPrice: van.buyBackPrice?.toString() || '',
@@ -247,7 +250,6 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
   const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
   const [showWofTooltip, setShowWofTooltip] = useState(false);
   const [showRegoTooltip, setShowRegoTooltip] = useState(false);
-  const [showSelfContainedTooltip, setShowSelfContainedTooltip] = useState(false);
   const [showAdvancedEquipment, setShowAdvancedEquipment] = useState(false);
   const [generatingAI, setGeneratingAI] = useState(false);
 
@@ -508,8 +510,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
           transmission: formData.transmission,
           description: sanitizeText(formData.description),
           capacity: parseInt(formData.capacity),
-          selfContained: formData.selfContained,
-          selfContainedType: formData.selfContained ? formData.selfContainedType : null,
+          ...(selfContainedEdited ? {
+            selfContained: formData.selfContained,
+            selfContainedType: formData.selfContained ? formData.selfContainedType || null : null,
+          } : {}),
           equipment: formData.equipment,
           buyBack: formData.buyBack,
           buyBackPrice: formData.buyBack ? parseInt(formData.buyBackPrice) || 0 : null,
@@ -982,9 +986,7 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                     title="Warrant of Fitness"
                     emoji=""
                   >
-                    A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months for all vehicles in NZ.
-                    It checks brakes, lights, tyres, steering and other safety features.
-                    <span className="text-white font-semibold"> You can't legally drive without a valid WOF!</span>
+                    {t('filters.wof_desc')}
                   </InfoTooltip>
                 </label>
                 <input
@@ -1004,12 +1006,10 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
                     show={showRegoTooltip}
                     onMouseEnter={() => setShowRegoTooltip(true)}
                     onMouseLeave={() => setShowRegoTooltip(false)}
-                    title="Vehicle Registration"
+                    title={t('filters.rego_title', { defaultValue: 'Vehicle licensing (rego)' })}
                     emoji=""
                   >
-                    <span className="text-white font-semibold">Registration fee</span> that must be paid to legally drive on NZ roads.
-                    Can be bought in 3, 6 or 12 month periods at any PostShop or online.
-                    <span className="text-white font-semibold"> Check the sticker on the windscreen!</span>
+                    {t('filters.rego_desc')}
                   </InfoTooltip>
                 </label>
                 <input
@@ -1372,73 +1372,15 @@ export default function AddVanForm({ onClose, onSuccess, onVanAdded, isEditMode 
               <label className="block text-sm font-semibold text-gray-700 mb-3"> Certifications & Options</label>
               <div className="space-y-3">
 
-                {/* Self-Contained avec tooltip */}
-                <div className="p-3 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.selfContained}
-                        onChange={(e) => setFormData({ ...formData, selfContained: e.target.checked })}
-                        className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
-                      />
-                      <span className="font-medium text-gray-700">Self-Contained Certified</span>
-                    </label>
-                    {/* Tooltip Self-Contained */}
-                    <InfoTooltip
-                      show={showSelfContainedTooltip}
-                      onMouseEnter={() => setShowSelfContainedTooltip(true)}
-                      onMouseLeave={() => setShowSelfContainedTooltip(false)}
-                      title="Self-Contained"
-                      emoji=""
-                    >
-                      A certified van with <span className="text-white font-semibold">toilet, fresh water tank & grey water tank</span>.
-                      Required for freedom camping in most areas of NZ.
-                      <span className="text-green-400 font-semibold"> Green sticker</span> = fixed toilet.
-                      <span className="text-blue-400 font-semibold"> Blue sticker</span> = porta-potty allowed.
-                      <span className="text-white font-semibold"> Essential for free camping!</span>
-                    </InfoTooltip>
-                  </div>
-
-                  {/* Choix Vert ou Bleu si coch */}
-                  {formData.selfContained && (
-                    <div className="mt-3 ml-8 flex gap-4 flex-wrap">
-                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'green'
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                        }`}>
-                        <input type="radio" name="selfContainedType" value="green"
-                          checked={formData.selfContainedType === 'green'}
-                          onChange={(e) => setFormData({ ...formData, selfContainedType: e.target.value })}
-                          className="hidden" />
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold"></span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-green-700">Green Sticker</span>
-                          <p className="text-xs text-gray-500">Fixed toilet</p>
-                        </div>
-                      </label>
-
-                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'blue'
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                        }`}>
-                        <input type="radio" name="selfContainedType" value="blue"
-                          checked={formData.selfContainedType === 'blue'}
-                          onChange={(e) => setFormData({ ...formData, selfContainedType: e.target.value })}
-                          className="hidden" />
-                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold"></span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-blue-700">Blue Sticker</span>
-                          <p className="text-xs text-gray-500">Porta-potty allowed</p>
-                        </div>
-                      </label>
-                    </div>
-                  )}
-                </div>
+                <SelfContainedDeclaration
+                  value={formData}
+                  originalVan={van}
+                  isEditMode={isEditMode}
+                  onChange={(declaration) => {
+                    setFormData((previous) => ({ ...previous, ...declaration }));
+                    setSelfContainedEdited(true);
+                  }}
+                />
 
                 {/* Buy-Back avec tooltip */}
                 <div className="p-3 bg-gray-50 rounded-xl">

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Helmet } from 'react-helmet-async';
 import { doc, getDoc, updateDoc, increment, deleteDoc } from 'firebase/firestore';
 import { db, functions } from '../firebase';
 import { httpsCallable } from 'firebase/functions';
@@ -20,6 +19,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastProvider';
 import SeoHead from './SeoHead';
+import VanSeo from './VanSeo';
+import selfContained from '../data/seo/self-contained';
+import taxonomy from '../data/seo/taxonomy';
 import EquipmentBadges from './EquipmentBadges';
 import ListingOwnerPanel from './ListingOwnerPanel';
 
@@ -27,166 +29,6 @@ import ListingOwnerPanel from './ListingOwnerPanel';
 import lazyWithReload from '../utils/lazyWithReload';
 const QuickMessageBox = lazyWithReload(() => import('./QuickMessageBox'));
 const AuthModal = lazyWithReload(() => import('./AuthModal'));
-
-// ✅ Composant SEO avec Schema.org pour les vans
-const VanSEO = ({ van }) => {
-  const { t } = useTranslation();
-  if (!van) return null;
-
-  const url = `https://kiwivanmarket.com/van/${van.id}`;
-  const image = van.images?.[0] || van.imageUrl || 'https://kiwivanmarket.com/og-image.jpg';
-  const title = `${van.title} - ${van.price ? `NZ$${van.price.toLocaleString()}` : ''}`;
-  const description = `${van.year} ${van.title} in ${van.location}. ${formatMileage(van.mileage)} km. ${t('hero.subtitle')}`;
-
-  // Description SEO enrichie avec équipements
-  const features = [];
-  if (van.selfContained) features.push('self-contained');
-  if (van.buyBack) features.push('buy-back guarantee');
-  if (van.equipment?.doubleBed) features.push('double bed');
-  if (van.equipment?.solarPanel) features.push('solar panel');
-  if (van.equipment?.fridge) features.push('fridge');
-
-  const featuresText = features.length > 0 ? ` Features: ${features.join(', ')}.` : '';
-  const metaDescription = `${van.year} ${van.title} for sale in ${van.location}, New Zealand. ${formatMileage(van.mileage)} km, ${van.capacity || 2} berth.${featuresText} Perfect campervan for backpackers and travellers.`.slice(0, 160);
-
-  // Schema.org JSON-LD pour Google Rich Snippets — type Car (more precise than Vehicle)
-  const additionalProperties = [];
-  if (van.buyBack) additionalProperties.push({ "@type": "PropertyValue", "name": "Buy-Back Guarantee", "value": `Yes${van.buyBackPrice ? ` — NZ$${van.buyBackPrice.toLocaleString()}` : ''}` });
-  if (van.selfContained) additionalProperties.push({ "@type": "PropertyValue", "name": "Self-Contained (NZS 5465)", "value": van.selfContainedType === 'blue' ? 'Blue (porta-potty)' : 'Green (fixed toilet)' });
-  if (van.wofExpiry && safeDate(van.wofExpiry) > new Date()) additionalProperties.push({ "@type": "PropertyValue", "name": "WOF Valid Until", "value": safeDate(van.wofExpiry).toLocaleDateString('en-NZ') });
-  if (van.regoExpiry && safeDate(van.regoExpiry) > new Date()) additionalProperties.push({ "@type": "PropertyValue", "name": "REGO Valid Until", "value": safeDate(van.regoExpiry).toLocaleDateString('en-NZ') });
-  if (van.equipment?.doubleBed) additionalProperties.push({ "@type": "PropertyValue", "name": "Double Bed", "value": "Yes" });
-  if (van.equipment?.solarPanel) additionalProperties.push({ "@type": "PropertyValue", "name": "Solar Panel", "value": "Yes" });
-  if (van.equipment?.fridge) additionalProperties.push({ "@type": "PropertyValue", "name": "Fridge", "value": "Yes" });
-  if (van.equipment?.shower || van.equipment?.outdoorShower) additionalProperties.push({ "@type": "PropertyValue", "name": "Shower", "value": "Yes" });
-
-  // Try to parse brand from title (first word)
-  const titleParts = (van.title || '').split(' ');
-  const brandName = titleParts[0] || 'Campervan';
-  const modelName = titleParts.slice(1).join(' ') || van.title;
-
-  const schemaData = {
-    "@context": "https://schema.org",
-    "@type": "Car",
-    "name": van.title,
-    "description": van.description,
-    "image": van.images || [image],
-    "url": url,
-    "offers": {
-      "@type": "Offer",
-      "price": van.price,
-      "priceCurrency": "NZD",
-      "availability": van.status === 'sold' ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
-      "itemCondition": "https://schema.org/UsedCondition",
-      "seller": {
-        "@type": "Person",
-        "name": van.seller?.name || "Private Seller"
-      },
-      "areaServed": {
-        "@type": "Country",
-        "name": "New Zealand"
-      }
-    },
-    "vehicleModelDate": van.year?.toString(),
-    "mileageFromOdometer": {
-      "@type": "QuantitativeValue",
-      "value": van.mileage,
-      "unitCode": "KMT"
-    },
-    "vehicleConfiguration": van.type || "Van",
-    "bodyType": van.type || "Campervan",
-    "vehicleSeatingCapacity": van.capacity || 2,
-    "itemCondition": "https://schema.org/UsedCondition",
-    "brand": {
-      "@type": "Brand",
-      "name": brandName
-    },
-    "model": modelName,
-    "vehicleIdentificationNumber": van.id,
-    "additionalProperty": additionalProperties.length > 0 ? additionalProperties : undefined
-  };
-
-  // BreadcrumbList — 3 niveaux avec localisation
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://kiwivanmarket.com" },
-      { "@type": "ListItem", "position": 2, "name": van.location ? `${van.location} Campervans` : "Campervans", "item": van.location ? `https://kiwivanmarket.com/location/${encodeURIComponent(van.location)}` : "https://kiwivanmarket.com" },
-      { "@type": "ListItem", "position": 3, "name": van.title, "item": url }
-    ]
-  };
-
-  // FAQ Schema contextuel basé sur les caractéristiques du van
-  const faqItems = [
-    {
-      "@type": "Question",
-      "name": `Is this ${van.title?.split(' ')[0] || 'campervan'} a good choice for backpackers?`,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": `This ${van.year} ${van.title} is located in ${van.location}, New Zealand. ${van.selfContained ? 'It is self-contained, meaning you can freedom camp in designated areas.' : 'It is not self-contained, so you will need to stay at campsites with facilities.'} ${van.buyBack ? 'The seller offers a buy-back guarantee, which is great for travellers on a working holiday visa.' : ''}`
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What should I check before buying a campervan in New Zealand?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Always verify the WOF (Warrant of Fitness) and REGO (registration) expiry dates. This van's WOF is valid until " + (van.wofExpiry ? safeDate(van.wofExpiry).toLocaleDateString('en-NZ') : 'not specified') + ". Meet the seller in person, inspect the vehicle thoroughly, and consider getting a mechanical inspection for peace of mind."
-      }
-    }
-  ];
-
-  if (van.selfContained) {
-    faqItems.push({
-      "@type": "Question",
-      "name": "What does self-contained mean for campervans in New Zealand?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "A self-contained campervan has a toilet, fresh water tank, and grey water tank that meets NZ standards (NZS 5465). This allows you to freedom camp in many scenic locations across New Zealand. This van is certified self-contained."
-      }
-    });
-  }
-
-  if (van.buyBack) {
-    faqItems.push({
-      "@type": "Question",
-      "name": "How does the buy-back guarantee work?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": `This seller offers a buy-back option${van.buyBackPrice ? ` at NZ$${van.buyBackPrice.toLocaleString()}` : ''}${van.buyBackDuration ? ` valid for ${van.buyBackDuration} months` : ''}. Buy-back guarantees are agreements between you and the seller - contact them directly for specific terms and conditions.`
-      }
-    });
-  }
-
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": faqItems
-  };
-
-  return (
-    <>
-      <SeoHead
-        title={title}
-        description={metaDescription}
-        image={image}
-        type="product"
-      />
-      <Helmet>
-        <script type="application/ld+json">
-          {JSON.stringify(schemaData)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(breadcrumbSchema)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(faqSchema)}
-        </script>
-      </Helmet>
-    </>
-  );
-};
 
 // ✅ Loading Skeleton
 const VanPageSkeleton = () => (
@@ -413,7 +255,7 @@ export default function VanPage() {
   // Générateur de texte pour Facebook
   const generateFbAdText = () => {
     const features = [];
-    if (van.selfContained) features.push(`✅ Self-Contained (${van.selfContainedType === 'blue' ? 'Blue' : 'Green'})`);
+    if (van.selfContained === true) features.push(selfContained.describe(van, i18n.language));
     if (van.buyBack) features.push(`🛡️ Buy-Back Guarantee available`);
     if (van.equipment?.doubleBed) features.push('🛏️ Double Bed');
     if (van.equipment?.solarPanel) features.push('☀️ Solar Panel');
@@ -492,16 +334,7 @@ ${shareUrl}
     }
   };
 
-  const inferBrandSlug = (title = '') => {
-    const t = title.toLowerCase();
-    if (t.includes('toyota') || t.includes('hiace')) return 'toyota-hiace';
-    if (t.includes('nissan') || t.includes('caravan')) return 'nissan-caravan';
-    if (t.includes('mazda') || t.includes('bongo')) return 'mazda-bongo';
-    if (t.includes('mitsubishi') || t.includes('delica')) return 'mitsubishi-delica';
-    if (t.includes('ford') || t.includes('transit')) return 'ford-transit';
-    if (t.includes('mercedes') || t.includes('sprinter')) return 'mercedes-sprinter';
-    return null;
-  };
+
 
   if (loading) return <VanPageSkeleton />;
 
@@ -530,8 +363,8 @@ ${shareUrl}
   const canRevealContact = !!(seller.whatsapp || seller.phone || (!currentUser && van.hasDirectContact !== false));
   const hasRating = seller.rating !== undefined && seller.rating !== null && seller.reviewCount > 0;
   const isOwner = currentUser && (currentUser.uid === seller.uid || currentUser.uid === van.userId);
-  const locationSlug = (van.location || '').toLowerCase().trim().replace(/\s+/g, '-');
-  const inferredBrandSlug = inferBrandSlug(van.title);
+  const locationSlug = Object.keys(taxonomy.LOCATIONS).find((slug) => String(van.location || '').toLowerCase().includes(slug));
+  const inferredBrandSlug = Object.keys(taxonomy.BRANDS).find((slug) => taxonomy.matchesBrand(van, slug));
   const longTailSlug = locationSlug === 'auckland'
     ? 'buy-campervan-in-auckland-under-15000'
     : (locationSlug === 'christchurch' ? 'self-contained-van-christchurch' : null);
@@ -539,7 +372,7 @@ ${shareUrl}
   return (
     <>
       {/* SEO Meta Tags */}
-      <VanSEO van={van} />
+      <VanSeo van={van} />
 
       <div className="min-h-screen bg-white">
 
@@ -567,9 +400,9 @@ ${shareUrl}
               <ol className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400 flex-wrap">
                 <li className="hidden sm:block"><Link to="/" className="hover:text-emerald-600 transition-colors">Marketplace</Link></li>
                 <li className="hidden sm:block"><ChevronRight size={12} className="text-slate-300" /></li>
-                {van.location && (
+                {locationSlug && (
                   <>
-                    <li><Link to={`/location/${encodeURIComponent(van.location)}`} className="hover:text-emerald-600 transition-colors">{van.location}</Link></li>
+                    <li><Link to={`/location/${locationSlug}`} className="hover:text-emerald-600 transition-colors">{van.location}</Link></li>
                     <li><ChevronRight size={12} className="text-slate-300" /></li>
                   </>
                 )}
@@ -713,7 +546,7 @@ ${shareUrl}
               )}
               {van.selfContained && (
                 <span className="bg-white/95 backdrop-blur px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md text-slate-800">
-                  {van.selfContainedType === 'blue' ? '🔵' : '🟢'} {t('filters.self_contained')}
+                  {selfContained.short(van, i18n.language)}
                 </span>
               )}
               {van.buyBack && (
@@ -762,7 +595,7 @@ ${shareUrl}
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs text-slate-400 font-medium">{t('van_page.sleeps')}</p>
-                    <p className="text-base font-semibold text-slate-900 leading-tight truncate">{van.capacity || 2} pax</p>
+                    <p className="text-base font-semibold text-slate-900 leading-tight truncate">{van.capacity || '—'}</p>
                   </div>
                 </div>
                 {van.fuelType && (
@@ -835,13 +668,19 @@ ${shareUrl}
                     {/* Self-contained */}
                     <div className="flex flex-1 items-center justify-between gap-3 px-4 py-3">
                       <span className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-slate-400">
-                        {van.selfContained ? <CheckCircle size={14} className="text-teal-500" /> : <X size={14} className="text-slate-300" />}
-                        Self-contained
+                        <HelpCircle size={14} className="text-slate-400" />
+                        {selfContained.languageCopy(i18n.language).label}
                       </span>
                       <span className={`text-sm font-bold ${van.selfContained ? 'text-slate-900' : 'text-slate-400'}`}>
-                        {van.selfContained ? (van.selfContainedType === 'blue' ? '🔵 Blue' : '🟢 Green') : 'No'}
+                        {selfContained.short(van, i18n.language)}
                       </span>
                     </div>
+                  </div>
+
+                  <div className="border-t border-slate-100 px-4 py-3 text-xs leading-relaxed text-slate-600">
+                    <p className="font-semibold">{selfContained.describe(van, i18n.language)}</p>
+                    <p className="mt-1">{selfContained.languageCopy(i18n.language).guidance}</p>
+                    <a href={selfContained.SOURCE} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-emerald-700 underline">{selfContained.languageCopy(i18n.language).sourceLabel}</a>
                   </div>
 
                   {/* CarJam — compact one-line trust signal */}
@@ -1089,7 +928,7 @@ ${shareUrl}
                   <Link to="/buyback-calculator" className="flex items-center justify-between p-4 hover:bg-emerald-50 rounded-2xl transition-all group border border-transparent hover:border-emerald-100">
                     <div className="flex items-center gap-3">
                       <span className="text-xl">🧮</span>
-                      <span className="text-sm font-bold text-slate-700">Estimate your buy-back price</span>
+                      <span className="text-sm font-bold text-slate-700">{t('header.calculator')}</span>
                     </div>
                     <ExternalLink size={14} className="text-slate-300 group-hover:text-emerald-600" />
                   </Link>
@@ -1237,7 +1076,7 @@ ${shareUrl}
             </div>
             <div>
               <div className="mb-8 bg-slate-50 rounded-2xl border border-slate-100 p-5">
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Related SEO paths</h3>
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">{t('van_page.related_buying_resources', { defaultValue: 'More buying resources' })}</h3>
                 <div className="flex flex-wrap gap-2">
                   {locationSlug && (
                     <>
@@ -1261,7 +1100,9 @@ ${shareUrl}
                   )}
                   {longTailSlug && (
                     <Link to={`/search/${longTailSlug}`} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-emerald-200 hover:text-emerald-700 transition-all">
-                      High-intent local page
+                      {locationSlug === 'auckland'
+                        ? t('van_page.local_budget_link', { city: van.location, defaultValue: 'Campervans in {{city}} under NZ$15,000' })
+                        : t('van_page.local_self_contained_link', { city: van.location, defaultValue: 'Self-contained listings in {{city}}' })}
                     </Link>
                   )}
                   <Link to="/guide/buying-campervan-nz" className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:border-emerald-200 hover:text-emerald-700 transition-all">

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useAutoTranslate } from '../hooks/useAutoTranslate';
 import boostVisibility from '../utils/boostVisibility.js';
 import { useBoostClock } from '../hooks/useBoostClock';
+import selfContained from '../data/seo/self-contained';
 
 const RETURN_SCROLL_KEY = 'kiwiVanMarket_returnScrollY';
 const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
@@ -139,7 +140,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
 // Composant VanCard complet
 export default function VanCard({ van, formatPrice, priority = false, setShowAuthModal }) {
   const { toggleFavorite, isFavorite } = useFavorites();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const boostNow = useBoostClock();
   // Le vendeur a confirmé la disponibilité (email de cycle de vie) : badge visible 45 jours.
   const confirmedAtDate = safeDate(van.availabilityConfirmedAt);
@@ -221,11 +222,10 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
         </div>
 
         {/* Self-contained marker */}
-        {van.selfContained && (
-          <div className={`absolute bottom-4 left-4 backdrop-blur-md text-white px-3 py-2 rounded-2xl text-[10px] font-black tracking-widest uppercase shadow-2xl flex items-center gap-2 border border-white/30 ${van.selfContainedType === 'blue' ? 'bg-blue-600/90' : 'bg-emerald-600/90'
+        {van.selfContained === true && (
+          <div title={selfContained.describe(van, i18n.language)} className={`absolute bottom-4 left-4 max-w-[90%] backdrop-blur-md text-white px-3 py-2 rounded-2xl text-[10px] font-black tracking-widest uppercase shadow-2xl flex items-center gap-2 border border-white/30 ${van.selfContainedType === 'green' ? 'bg-emerald-600/90' : 'bg-slate-700/90'
             }`}>
-            <span className="text-sm leading-none">{van.selfContainedType === 'blue' ? '🔵' : '🟢'}</span>
-            {van.selfContainedType === 'blue' ? t('van_page.sticker_blue') : t('van_page.sticker_green')}
+            {selfContained.short(van, i18n.language)}
           </div>
         )}
       </div>
@@ -278,13 +278,12 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
                 </span>
               </span>
             )}
-            {van.selfContained && (
-              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide border ${van.selfContainedType === 'blue'
-                ? 'bg-blue-50 border-blue-300 text-blue-800'
-                : 'bg-emerald-50 border-emerald-300 text-emerald-800'
+            {van.selfContained === true && (
+              <span title={selfContained.describe(van, i18n.language)} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide border ${van.selfContainedType === 'green'
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                : 'bg-slate-50 border-slate-300 text-slate-700'
                 }`}>
-                <span className="text-[11px] leading-none">{van.selfContainedType === 'blue' ? '🔵' : '🟢'}</span>
-                Self-Contained
+                {selfContained.short(van, i18n.language)}
               </span>
             )}
           </div>

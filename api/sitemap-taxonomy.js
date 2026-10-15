@@ -1,7 +1,7 @@
 // Submit only category pages that the prerender serves as indexable.
 const { fetchAllVans, latestUpdate, esc } = require('./_lib/util');
 const { langUrl, SUPPORTED } = require('./_lib/i18n');
-const { BRANDS, LOCATIONS, vansForTaxonomy } = require('./_lib/taxonomy');
+const { BRANDS, LOCATIONS, vansForTaxonomy, hasActiveStock } = require('./_lib/taxonomy');
 
 module.exports = async function handler(req, res) {
   const kind = req.query.kind;
@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
   const prefix = kind === 'brands' ? 'brand' : 'location';
   const urls = Object.keys(config).flatMap((slug) => {
     const matches = vansForTaxonomy(vans, kind, slug);
-    if (!matches.length) return [];
+    if (!hasActiveStock(matches)) return [];
     return SUPPORTED.map((lang) => `  <url><loc>${esc(langUrl(`/${prefix}/${slug}`, lang))}</loc><lastmod>${latestUpdate(matches)}</lastmod></url>`);
   });
   res.status(200);

@@ -95,7 +95,9 @@ test('buyer guides expose visible citations and self-referencing article data in
 
 test('search and AI crawlers receive readable HTML on root and every configured article route', async () => {
   const pattern = require('../src/data/seo/crawlers.cjs');
-  const source = fs.readFileSync('middleware.js', 'utf8').replace("import crawlerPattern from './src/data/seo/crawlers';", `const crawlerPattern = ${JSON.stringify(pattern)};`);
+  const source = fs.readFileSync('middleware.js', 'utf8')
+    .replace("import crawlerPattern from './src/data/seo/crawlers';", `const crawlerPattern = ${JSON.stringify(pattern)};`)
+    .replace("import publicAssets from './src/data/seo/public-assets.json';", `const publicAssets = ${JSON.stringify(require('../src/data/seo/public-assets.json'))};`);
   const middleware = (await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'))).default;
   const routes = JSON.parse(fs.readFileSync('vercel.json', 'utf8')).rewrites.filter((r) => r.destination.startsWith('/api/prerender-'));
   for (const ua of ['Googlebot', 'Google-InspectionTool', 'bingbot', 'OAI-SearchBot', 'ChatGPT-User', 'Claude-User', 'Claude-SearchBot', 'PerplexityBot', 'Perplexity-User', 'cohere-ai']) {

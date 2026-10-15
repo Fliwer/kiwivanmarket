@@ -17,6 +17,7 @@ const {
 } = require('./_lib/util');
 const { pickLang, pageMeta, langUrl: absLangUrl } = require('./_lib/i18n');
 const priceIndex = require('../src/data/seo/price-index.cjs');
+const ownershipCost = require('../src/data/seo/ownership-cost.cjs');
 const { MIN_SAMPLE } = priceIndex;
 const COPY = require('../src/data/seo/copy.cjs');
 
@@ -392,12 +393,19 @@ function buybackPage(lang) {
   const T = COPY[lang].buyback;
   const C = COPY[lang].common;
   const B = DATA[lang].buyback;
+  const U = B.ui;
+  const example = { purchase: 12000, resale: 9500, days: 90, inspection: 250, repairs: 1000, insurance: 600, administration: 300 };
+  const result = ownershipCost.calculate(example);
 
   const body = `
 <h1>${esc(B.h1)}</h1>
 <p>${esc(B.intro)}</p>
 <p>${esc(B.explainer)}</p>
 <p><a href="${langUrl('/buyback-calculator', lang)}"><strong>${T.open}</strong></a> ${T.openText}</p>
+<p>${esc(U.example)}</p>
+<table class="stats"><tbody>${Object.entries(example).map(([key, value]) => `<tr><td>${esc(U.fields[key])}</td><td>${key === 'days' ? value : esc(nzd(value))}</td></tr>`).join('')}</tbody></table>
+<p>${esc(U.ownership)}: ${esc(nzd(result.ownership))}. ${esc(U.daily)}: ${esc(nzd(Math.round(result.daily * 100) / 100))}.</p>
+<p>${esc(U.formula)}</p><p>${esc(U.limits)}</p>
 
 <h2>${esc(B.factorsTitle)}</h2>
 ${B.factors.map((f) => `<h3>${esc(f.name)}</h3><p>${esc(f.text)}</p>`).join('\n')}

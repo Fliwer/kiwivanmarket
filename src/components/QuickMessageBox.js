@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Check, MessageCircle, AlertCircle, Zap } from 'lucide-react';
+import { Send, Check, MessageCircle, AlertCircle } from 'lucide-react';
 import { collection, addDoc, query, where, getDocs, updateDoc, doc, serverTimestamp, increment } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../AuthContext';
@@ -227,8 +227,7 @@ export default function QuickMessageBox({ van, seller, onMessageSent, onOpenFull
             {t('van_page.contact_title') || 'Contact Seller'}
           </h4>
           <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] flex items-center gap-1 mt-1">
-            <Zap size={10} fill="currentColor" />
-            {t('van_page.contact_subtitle') || 'Fast response'}
+            {t('van_page.contact_subtitle', { defaultValue: 'Reply time depends on the seller.' })}
           </p>
         </div>
 

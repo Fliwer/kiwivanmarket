@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Mail, MessageSquare, Send, CheckCircle, Shield, Clock, MapPin, AlertCircle } from 'lucide-react';
 import { httpsCallable } from 'firebase/functions';
@@ -86,30 +85,30 @@ export default function ContactPage() {
                                 <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-6">
                                     <Clock size={24} />
                                 </div>
-                                <h3 className="font-black text-slate-900 mb-2">Typical Response</h3>
-                                <p className="text-slate-500 text-sm mb-4">We usually get back to you within</p>
-                                <p className="text-blue-600 font-bold">24-48 Hours</p>
+                                <h3 className="font-black text-slate-900 mb-2">{t('contact_page.reply_title', { defaultValue: 'Reply by email' })}</h3>
+                                <p className="text-slate-500 text-sm mb-4">{t('contact_page.reply_text', { defaultValue: 'Use the form to send your question and contact details.' })}</p>
+                                <p className="text-blue-600 font-bold">{t('contact_page.reply_channel', { defaultValue: 'We reply to the email you provide.' })}</p>
                             </div>
                         </div>
 
                         <div className="bg-slate-900 rounded-[3rem] p-10 text-white relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl" />
-                            <h3 className="text-2xl font-black mb-6 relative z-10">Safe & Trusted Marketplace</h3>
+                            <h3 className="text-2xl font-black mb-6 relative z-10">{t('contact_page.report_title', { defaultValue: 'Report a problem' })}</h3>
                             <div className="space-y-4 relative z-10">
                                 <div className="flex items-start gap-3">
                                     <Shield size={20} className="text-emerald-400 mt-1 flex-shrink-0" />
-                                    <p className="text-slate-400 text-sm italic">"We take fraud and safety seriously. Contact us immediately if you notice suspicious behavior."</p>
+                                    <p className="text-slate-400 text-sm">{t('contact_page.report_text', { defaultValue: 'If you notice suspicious activity or an inaccurate listing, send us the details so we can review it.' })}</p>
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <CheckCircle size={20} className="text-emerald-400 mt-1 flex-shrink-0" />
-                                    <p className="text-slate-400 text-sm italic">"Our guides are verified by experts to ensure you get the best advice for your journey."</p>
+                                    <p className="text-slate-400 text-sm">{t('contact_page.guide_correction', { defaultValue: 'Found an error in a guide? Include the page link and the correction or official source you suggest.' })}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-4 px-6 py-4 bg-emerald-50 rounded-2xl border border-emerald-100 inline-flex">
                             <MapPin size={20} className="text-emerald-600" />
-                            <span className="text-emerald-800 font-bold text-sm uppercase tracking-widest">Base: Auckland, New Zealand</span>
+                            <span className="text-emerald-800 font-bold text-sm uppercase tracking-widest">{t('contact_page.marketplace_scope', { defaultValue: 'Campervan marketplace for New Zealand' })}</span>
                         </div>
                     </div>
 

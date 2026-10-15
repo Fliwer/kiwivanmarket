@@ -368,10 +368,10 @@ export default function GuidePage() {
                             {tri('Outil gratuit', 'Herramienta gratis', 'Free tool')}
                           </p>
                           <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2">
-                            {tri('Estimez votre valeur de revente', 'Estima tu valor de reventa', 'Estimate your resale value')}
+                            {tri('Comparez votre budget d’achat et de location', 'Compara tu presupuesto de compra y alquiler', 'Compare your buying and rental budgets')}
                           </h2>
                           <p className="text-slate-400 text-[15px]">
-                            {tri('Basé sur la saisonnalité réelle du marché NZ.', 'Basado en la estacionalidad real del mercado NZ.', 'Based on real NZ market seasonality.')}
+                            {tri('Utilisez vos propres devis et hypothèses de revente.', 'Utiliza tus presupuestos e hipótesis de reventa.', 'Use your own quotes and resale assumptions.')}
                           </p>
                         </div>
                         <BuybackCalculator isEmbedded={true} />

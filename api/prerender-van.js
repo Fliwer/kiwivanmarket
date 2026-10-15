@@ -11,6 +11,8 @@
 
 const { BRANDS, matchesBrand } = require('./_lib/taxonomy');
 const { ORIGIN, esc, cdnImg, fetchAllVans } = require('./_lib/util');
+const vehicleData = require('../src/data/seo/vehicle-schema.cjs');
+const selfContained = require('../src/data/seo/self-contained.cjs');
 
 // ── Maillage interne (liens uniquement vers des pages qui existent) ─────────
 // Même liste que prerender-location.js : un lien vers /location/napier alors
@@ -73,19 +75,10 @@ module.exports = async function handler(req, res) {
 
   const sold = van.status === 'sold';
   const url = `${ORIGIN}/van/${id}`;
-  const images = (Array.isArray(van.images) && van.images.length ? van.images : [van.imageUrl])
-    .filter((u) => typeof u === 'string' && u.startsWith('https://'));
-  const title = `${van.year ? van.year + ' ' : ''}${van.title || 'Campervan'} for Sale${van.location ? ' in ' + van.location : ' in New Zealand'}`;
+  const images = vehicleData.images(van);
+  const title = vehicleData.title(van);
   const price = van.price ? `$${Number(van.price).toLocaleString('en-NZ')} NZD` : 'Price on request';
-  const descBits = [
-    price,
-    van.year,
-    van.mileage ? `${Number(van.mileage).toLocaleString('en-NZ')} km` : null,
-    van.selfContained ? 'Self-contained' : null,
-    van.buyBack ? 'Buy-back available' : null,
-    van.location ? `Located in ${van.location}` : null,
-  ].filter(Boolean).join(' • ');
-  const metaDesc = `${descBits}. ${String(van.description || '').replace(/\s+/g, ' ').slice(0, 100)}`.slice(0, 155);
+  const metaDesc = vehicleData.description(van);
 
   const equipment = van.equipment && typeof van.equipment === 'object'
     ? Object.keys(van.equipment).filter((k) => van.equipment[k] === true).map(label)
@@ -106,40 +99,7 @@ module.exports = async function handler(req, res) {
     .slice(0, 4);
 
   // ── JSON-LD : parité avec VanSeo.jsx ──────────────────────────────────────
-  const vehicleLd = {
-    '@context': 'https://schema.org',
-    '@type': ['Vehicle', 'Product'],
-    '@id': url,
-    name: van.title || 'Campervan',
-    description: String(van.description || metaDesc).slice(0, 5000),
-    image: images,
-    url,
-    vehicleModelDate: van.year ? String(van.year) : undefined,
-    bodyType: 'Campervan',
-    vehicleSeatingCapacity: van.capacity || undefined,
-    mileageFromOdometer: van.mileage
-      ? { '@type': 'QuantitativeValue', value: van.mileage, unitCode: 'KMT' }
-      : undefined,
-    itemCondition: 'https://schema.org/UsedCondition',
-    offers: {
-      '@type': 'Offer',
-      price: van.price ? String(van.price) : undefined,
-      priceCurrency: 'NZD',
-      url: url,
-      availability: sold ? 'https://schema.org/SoldOut' : 'https://schema.org/InStock',
-      itemCondition: 'https://schema.org/UsedCondition',
-      seller: { '@type': 'Person', name: (van.seller && van.seller.name) || 'Private Seller' },
-      availableAtOrFrom: van.location
-        ? { '@type': 'Place', address: { '@type': 'PostalAddress', addressLocality: van.location, addressCountry: 'NZ' } }
-        : undefined,
-    },
-    additionalProperty: [
-      van.selfContained ? { '@type': 'PropertyValue', name: 'Self-Contained', value: 'Yes' } : null,
-      van.wofExpiry ? { '@type': 'PropertyValue', name: 'WOF Valid Until', value: String(van.wofExpiry) } : null,
-      van.regoExpiry ? { '@type': 'PropertyValue', name: 'Registration Valid Until', value: String(van.regoExpiry) } : null,
-      van.buyBack ? { '@type': 'PropertyValue', name: 'Buy-Back Option', value: 'Available' } : null,
-    ].filter(Boolean),
-  };
+  const vehicleLd = vehicleData.schema(van);
   const breadcrumbLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -157,8 +117,8 @@ module.exports = async function handler(req, res) {
     van.mileage ? ['Mileage', `${Number(van.mileage).toLocaleString('en-NZ')} km`] : null,
     van.location ? ['Location', `${van.location}, New Zealand`] : null,
     van.type ? ['Type', van.type] : null,
-    van.capacity ? ['Sleeps / Seats', van.capacity] : null,
-    ['Self-contained', van.selfContained ? `Yes${van.selfContainedType ? ` (${van.selfContainedType} sticker)` : ''}` : 'No'],
+    van.capacity ? ['Sleeps (seller declaration)', van.capacity] : null,
+    [selfContained.COPY.en.label, selfContained.describe(van)],
     van.wofExpiry ? ['WOF expiry', van.wofExpiry] : null,
     van.regoExpiry ? ['REGO expiry', van.regoExpiry] : null,
     van.buyBack ? ['Buy-back option', 'Available'] : null,
@@ -207,6 +167,7 @@ ${images[0] ? `<meta name="twitter:image" content="${esc(cdnImg(images[0], 1200)
   <table><tbody>
   ${specRows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('\n  ')}
   </tbody></table>
+  <p>${esc(selfContained.COPY.en.guidance)} <a href="${selfContained.SOURCE}">${esc(selfContained.COPY.en.sourceLabel)}</a>.</p>
   <h2>Description</h2>
   ${String(van.description || '').split(/\n+/).filter(Boolean).map((p) => `<p>${esc(p)}</p>`).join('\n  ') || '<p>Contact the seller for more details.</p>'}
   ${equipment.length ? `<h2>Equipment &amp; features</h2>\n  <ul>${equipment.map((e) => `<li>${esc(e)}</li>`).join('')}</ul>` : ''}

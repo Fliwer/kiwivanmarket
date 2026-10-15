@@ -116,3 +116,42 @@ test('admin edits preserve another seller’s private contact', async () => {
   await waitFor(() => expect(mockBatch.commit).toHaveBeenCalledTimes(1));
   expect(mockBatch.set).not.toHaveBeenCalled();
 });
+
+test.each([
+  ['legacy blue', { selfContained: true, selfContainedType: 'blue' }],
+  ['unspecified certificate type', { selfContained: true }],
+])('saving another field preserves an existing %s declaration', async (_, declaration) => {
+  render(<AddVanForm isEditMode van={{ ...listing, ...declaration, id: 'existing' }} onClose={jest.fn()} />);
+  const title = await screen.findByDisplayValue(listing.title);
+  const green = screen.getByRole('radio', { name: 'self_contained_form.green' });
+  expect(green).not.toBeChecked();
+  if (declaration.selfContainedType === 'blue') {
+    expect(screen.getByText(/Legacy blue sticker — not valid/)).toBeInTheDocument();
+  } else {
+    expect(screen.getByText(/certificate type not provided/)).toBeInTheDocument();
+  }
+  fireEvent.change(title, { target: { value: 'Changed title only' } });
+  fireEvent.submit(document.getElementById('addVanForm'));
+  await waitFor(() => expect(mockBatch.commit).toHaveBeenCalledTimes(1));
+  const saved = mockBatch.update.mock.calls[0][1];
+  expect(saved).not.toHaveProperty('selfContained');
+  expect(saved).not.toHaveProperty('selfContainedType');
+});
+
+test('an existing blue declaration changes only when the seller explicitly chooses a green warrant', async () => {
+  render(<AddVanForm isEditMode van={{ ...listing, selfContained: true, selfContainedType: 'blue', id: 'existing' }} onClose={jest.fn()} />);
+  await screen.findByDisplayValue(listing.title);
+  fireEvent.click(screen.getByRole('radio', { name: 'self_contained_form.green' }));
+  fireEvent.submit(document.getElementById('addVanForm'));
+  await waitFor(() => expect(mockBatch.commit).toHaveBeenCalledTimes(1));
+  expect(mockBatch.update.mock.calls[0][1]).toEqual(expect.objectContaining({ selfContained: true, selfContainedType: 'green' }));
+});
+
+test('the new-listing form offers a green warrant declaration without a legacy blue option', async () => {
+  render(<AddVanForm onClose={jest.fn()} />);
+  await screen.findByDisplayValue(contact.phone);
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Self-containment (seller declaration)' }));
+  expect(screen.getByRole('radio', { name: 'self_contained_form.green' })).toBeChecked();
+  expect(document.querySelector('input[name="selfContainedType"][value="blue"]')).toBeNull();
+  expect(screen.getByRole('link', { name: 'Official self-containment requirements' })).toHaveAttribute('href', 'https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/');
+});

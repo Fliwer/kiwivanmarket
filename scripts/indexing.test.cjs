@@ -94,6 +94,62 @@ test('sitemap index includes every child and dynamic XML paths have no static sh
   }
 });
 
+test('sold-only categories stay readable but are noindex and absent from EN/FR sitemaps', async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () => ({ ok: true, json: async () => ({ documents: [
+    { name: 'vans/sold', fields: { title: { stringValue: 'Ford Transit' },
+      location: { stringValue: 'Hamilton' }, status: { stringValue: 'sold' },
+      price: { integerValue: '10000' } } },
+  ] }) });
+  try {
+    const { hasActiveStock } = require('../api/_lib/taxonomy');
+    assert.equal(hasActiveStock([{ status: 'sold' }, { status: 'hidden' }]), false);
+    assert.equal(hasActiveStock([{ status: 'active' }]), true);
+    assert.equal(hasActiveStock([{}]), true);
+    for (const [kind, handler, slug] of [
+      ['brands', brandPage, 'ford-transit'],
+      ['locations', locationPage, 'hamilton'],
+    ]) {
+      const sitemap = response();
+      await taxonomySitemap({ query: { kind } }, sitemap);
+      assert.equal(sitemap.code, 200);
+      assert.ok(!sitemap.body.includes(`<loc>`));
+      for (const lang of ['en', 'fr']) {
+        const page = response();
+        await handler({ query: { slug, lang } }, page);
+        assert.equal(page.code, 200);
+        assert.ok(page.body.includes('noindex, follow'));
+        assert.ok(page.body.includes('/van/sold'));
+      }
+    }
+  } finally { global.fetch = originalFetch; }
+});
+
+test('for-sale metadata and category ItemList count active vans while sold cards stay readable', async () => {
+  const originalFetch = global.fetch;
+  const documents = ['active-one', 'active-two', 'sold'].map((id) => ({ name: `vans/${id}`, fields: {
+    title: { stringValue: 'Toyota Hiace' }, location: { stringValue: 'Auckland' },
+    status: { stringValue: id === 'sold' ? 'sold' : 'active' },
+    price: { integerValue: id === 'sold' ? '500' : '10000' },
+  } }));
+  global.fetch = async () => ({ ok: true, json: async () => ({ documents }) });
+  try {
+    for (const [handler, slug] of [[brandPage, 'toyota-hiace'], [locationPage, 'auckland']]) {
+      for (const lang of ['en', 'fr']) {
+        const page = response();
+        await handler({ query: { slug, lang } }, page);
+        assert.match(page.body, /<meta name="description" content="2 /);
+        const schemas = [...page.body.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map((m) => JSON.parse(m[1]));
+        const list = schemas.find((schema) => schema['@type'] === 'ItemList');
+        assert.equal(list.numberOfItems, 2);
+        assert.deepEqual(list.itemListElement.map((item) => item.url.split('/').pop()).sort(), ['active-one', 'active-two']);
+        assert.ok(page.body.includes('/van/sold'));
+        assert.ok(page.body.includes(lang === 'fr' ? 'VENDU' : 'SOLD'));
+      }
+    }
+  } finally { global.fetch = originalFetch; }
+});
+
 test('budget search pages share stock rules, French content and reciprocal language links', async () => {
   const originalFetch = global.fetch;
   const documents = Array.from({ length: 8 }, (_, i) => ({ name: `vans/v${i}`, fields: {

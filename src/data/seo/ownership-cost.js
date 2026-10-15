@@ -1,0 +1,25 @@
+// Scenario arithmetic only. Resale proceeds and rental quotes are supplied by the user.
+const COST_FIELDS = ['inspection', 'repairs', 'insurance', 'administration'];
+function calculate(input) {
+  const number = (key, optional = false) => {
+    const value = input[key];
+    if (value === '' || value === null || value === undefined) return optional ? 0 : NaN;
+    return Number(value);
+  };
+  const purchase = number('purchase');
+  const resale = number('resale');
+  const days = number('days');
+  const costs = COST_FIELDS.map((key) => number(key, true));
+  const rentalEntered = input.rentalDaily !== '' && input.rentalDaily !== null && input.rentalDaily !== undefined;
+  const rentalDaily = number('rentalDaily', true);
+  const rentalExtras = number('rentalExtras', true);
+  if (![purchase, resale, days, ...costs, rentalDaily, rentalExtras].every(Number.isFinite)
+    || purchase <= 0 || days <= 0 || [resale, ...costs, rentalDaily, rentalExtras].some((n) => n < 0)) return null;
+  const expenses = costs.reduce((sum, value) => sum + value, 0);
+  const ownership = purchase - resale + expenses;
+  const rental = rentalEntered ? days * rentalDaily + rentalExtras : null;
+  const result = { expenses, cashRequired: purchase + expenses, ownership, daily: ownership / days,
+    rental, difference: rental === null ? null : rental - ownership };
+  return Object.values(result).every((value) => value === null || Number.isFinite(value)) ? result : null;
+}
+export default { calculate, COST_FIELDS };

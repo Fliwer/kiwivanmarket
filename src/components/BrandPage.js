@@ -8,6 +8,7 @@ import boostVisibility from '../utils/boostVisibility.js';
 import { useBoostClock } from '../hooks/useBoostClock';
 import AlertCta from './AlertCta';
 import SeoHead from './SeoHead';
+import SeoFaqSection from './SeoFaqSection';
 import taxonomy from '../data/seo/taxonomy';
 import { useHideLoader } from '../hooks/useHideLoader';
 import { useTranslation } from 'react-i18next';
@@ -73,11 +74,12 @@ export default function BrandPage() {
   // Textes SEO partagés avec le prerender (src/data/seo), dans la langue courante.
   const lang = seoLang(i18n.language);
   const S = seoCopy(i18n.language);
+  const activeVans = taxonomy.activeStock(vans);
   const stats = priceStats(vans);
   const statsFmt = stats && { count: stats.count, min: nzd(stats.min), max: nzd(stats.max), avg: nzd(stats.avg) };
   const name = brandConfig?.name || '';
   const seoTitle = S.brand.title(name).replace(' | Kiwi Van Market', '');
-  const seoDescription = statsFmt ? S.brand.metaDesc(name, statsFmt, vans.length) : S.brand.metaDescNoStats(name);
+  const seoDescription = statsFmt ? S.brand.metaDesc(name, statsFmt, activeVans.length) : S.brand.metaDescNoStats(name);
   const brandFaqs = brandConfig ? S.brand.faqs(name, statsFmt) : [];
 
   useEffect(() => {
@@ -135,7 +137,7 @@ export default function BrandPage() {
         title={seoTitle}
         description={seoDescription}
         keywords={brandConfig?.keywords}
-        noindex={!loading && !vans.length}
+        noindex={!loading && !taxonomy.hasActiveStock(vans)}
         alternateLangs={SEO_LANGS}
         faqs={brandFaqs}
         breadcrumbs={[
@@ -145,7 +147,7 @@ export default function BrandPage() {
         ]}
       />
 
-      {brandConfig && <BrandSchema brand={{ title: seoTitle }} vans={vans} url={lang === 'en' ? url : `${url}?lang=${lang}`} />}
+      {brandConfig && <BrandSchema brand={{ title: seoTitle }} vans={activeVans} url={lang === 'en' ? url : `${url}?lang=${lang}`} />}
 
       {/* Hero Section */}
       <div className="bg-emerald-600 text-white pt-24 pb-12 px-4 shadow-lg">
@@ -165,7 +167,7 @@ export default function BrandPage() {
           </p>
           <div className="mt-8 flex items-center gap-4 text-sm font-bold bg-white/10 w-fit px-4 py-2 rounded-full border border-white/20">
             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            {vans.length === 0 ? t('seo_pages.brand.searching') : t('seo_pages.brand.available', { count: vans.length })}
+            {loading ? t('seo_pages.brand.searching') : t('seo_pages.brand.available', { count: activeVans.length })}
           </div>
         </div>
       </div>
@@ -196,6 +198,8 @@ export default function BrandPage() {
             )}
 
             <AlertCta variant="banner" source="brand" className="mt-10" defaults={{ brand }} />
+
+            <SeoFaqSection title={S.common.faqTitle} faqs={brandFaqs} className="mt-10" />
 
             <div className="mt-10 bg-white rounded-2xl border border-slate-100 p-6">
               <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">{t('seo_pages.links_title')}</h3>

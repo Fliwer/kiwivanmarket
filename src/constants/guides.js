@@ -274,7 +274,7 @@ export const GUIDES = {
                                 "type": "callout",
                                 "variant": "info",
                                 "title": "Visitors: check your driving entitlement",
-                                "text": "NZTA currently permits eligible overseas car-licence holders to drive for up to 18 months from their last entry. From 1 November 2026, the limit changes to 12 months. Carry the valid original licence and, if it is not in English, the required translation or IDP. Check the full NZTA conditions before driving."
+                                "text": "Eligible overseas car-licence holders currently have an 18-month limit from their last arrival. NZTA announces a 12-month limit from 1 November 2026, while the 2024 rule includes a transitional provision for arrivals between 1 November 2024 and 31 October 2026. Check the rule that applies to your arrival date with NZTA before driving. Carry the current original licence and the required English translation or IDP if applicable."
                             },
                             {
                                 "type": "sources",
@@ -290,6 +290,15 @@ export const GUIDES = {
                                     {
                                         "name": "NZTA — Driving on New Zealand roads",
                                         "url": "https://www.nzta.govt.nz/travelling-on-our-roads/visitors-and-new-residents/driving-on-nz-roads"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZ Legislation — Driver Licensing Amendment Rule 2024, transitional provision",
+                                        "url": "https://www.legislation.govt.nz/regulation/public/2024/0222/11.0/LMS1000138.html"
                                     }
                                 ]
                             }
@@ -334,15 +343,15 @@ export const GUIDES = {
             "description": "A chronological pre-purchase routine for campervans in New Zealand — the homework the night before, the first minutes on site, the walk-around, the test drive, and the handover. Free printable version.",
             "heroImage": "/van_inspection_expert_1772133711431.webp",
             "content": {
-                "intro": "Every hostel has the story: someone bought a van on day two, then spent week three paying a mechanic to explain what they missed. You don't avoid becoming that story with luck — you avoid it with a routine. This checklist follows a real viewing in the order it actually happens: the homework the night before, the first minutes on site, the walk-around, the test drive, and the fifteen minutes where money and paperwork change hands. Tick your way through, and by the end you'll know the van better than the seller expects.",
+                "intro": "Use this checklist to organise a campervan viewing: documents before you travel, the vehicle from cold, body and camper equipment, then the test drive and written handover. It helps you decide what needs professional investigation; it cannot establish the mechanical condition by itself. Book an independent inspection before committing.",
                 "sections": [
                     {
                         "title": "The Night Before: Homework From the Hostel",
                         "icon": "Shield",
                         "items": [
                             {
-                                "title": "Twenty minutes on your phone, thousands protected",
-                                "text": "Most disasters are visible online before you've spent a dollar on gas. Do this from your bunk, the evening before the viewing."
+                                "title": "Check the documents before arranging the viewing",
+                                "text": "Use the plate and VIN to compare the advert, inspection information and vehicle identity. Resolve missing records or inconsistencies with the seller before travelling."
                             },
                             {
                                 "type": "steps",
@@ -353,7 +362,7 @@ export const GUIDES = {
                                     },
                                     {
                                         "title": "VIN into the PPSR",
-                                        "text": "Three dollars at ppsr.govt.nz tells you whether a lender still has a claim on the vehicle. Finance debt travels with the van — not with the seller."
+                                        "text": "Search the PPSR using the vehicle identifiers and read the result for registered security interests. Check the current search fee on the official site. A registered interest can put a purchase at risk; obtain independent advice if an interest remains."
                                     },
                                     {
                                         "title": "Sanity-check the price",
@@ -374,6 +383,15 @@ export const GUIDES = {
                                 "text": "Print the pocket version of this checklist (free, nothing to sign up for)",
                                 "href": "/checklist-print.html",
                                 "download": true
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "Companies Office — How the PPSR can help when buying used goods",
+                                        "url": "https://ppsr.companiesoffice.govt.nz/help-centre/information-for-debtors-and-consumers/how-the-ppsr-can-help-when-buying-used-goods/"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -390,11 +408,11 @@ export const GUIDES = {
                                 "items": [
                                     {
                                         "title": "Look at how it sits",
-                                        "text": "A van leaning toward one corner is telling you about tired springs or suspension before you've opened a door."
+                                        "text": "Look for an uneven stance and ask about the load, tyres and suspension. These observations need an inspector’s assessment before attributing a cause."
                                     },
                                     {
                                         "title": "Compare the four tyres",
-                                        "text": "Four different brands, or fresh fronts over bald rears, describe a van that gets maintained one emergency at a time."
+                                        "text": "Check size, tread, condition and wear patterns, and ask whether the tyres meet the vehicle’s requirements. Different brands alone do not prove poor maintenance."
                                     },
                                     {
                                         "title": "Open the door and breathe in",
@@ -422,19 +440,19 @@ export const GUIDES = {
                                 "items": [
                                     {
                                         "title": "Panel gaps and paint tone",
-                                        "text": "Uneven gaps between panels, or one door in a slightly different shade, point to accident repairs that nobody volunteered."
+                                        "text": "Record uneven gaps, paint differences or signs of repair and ask for the repair history. These clues do not establish the cause or structural condition."
                                     },
                                     {
-                                        "title": "The fridge-magnet trick",
-                                        "text": "Wrap a magnet in a tea towel and glide it along the sills and wheel arches. Where it stops sticking, someone has smoothed body filler over rust."
+                                        "title": "Ask about previous body repairs",
+                                        "text": "Ask for invoices and repair photos. A magnet test cannot reliably prove hidden rust, accident damage or sound structure; have suspect areas assessed professionally."
                                     },
                                     {
                                         "title": "Get underneath with your torch",
-                                        "text": "Chassis rails, floor pans, sills. Flaking brown crust on anything structural is a walk-away; a light surface bloom on flat panels is a negotiation."
+                                        "text": "Use a torch from a safe position to look for visible damage or corrosion. Do not crawl under an unsupported vehicle. Ask the inspector to assess chassis rails, floor and sills using suitable access equipment."
                                     },
                                     {
                                         "title": "Window rubbers and roof seams",
-                                        "text": "NZ vans live outside, often near salt air. Paint bubbling around the glass is rust working from the inside out — the expensive direction."
+                                        "text": "Look for bubbling paint, disturbed seals and water marks. Ask the inspector to establish whether corrosion or leaks are present and how extensive they are."
                                     },
                                     {
                                         "title": "Lift whatever lifts",
@@ -457,15 +475,15 @@ export const GUIDES = {
                                     },
                                     {
                                         "title": "Cap, dipstick, coolant",
-                                        "text": "Creamy residue under the oil cap points to head-gasket trouble — on an old van, that repair often costs more than the van is worth. Oil should be dark but clean; coolant its proper colour and never oily."
+                                        "text": "Inspect oil and coolant only when it is safe and follow the vehicle’s instructions. Never open a hot cooling system. Contamination, leaks or unexplained fluid loss need a mechanic’s diagnosis; an oil-cap deposit alone does not establish a failed head gasket."
                                     },
                                     {
                                         "title": "Ask the cambelt question",
-                                        "text": "On high-km Japanese vans, ask when the timing belt was last replaced and get it in writing if possible. If that belt lets go mid-trip, it can wreck the engine — no receipt means you price the job into your offer."
+                                        "text": "Identify the exact engine and whether it uses a belt or chain. Match maintenance invoices with the manufacturer’s schedule and ask the inspector to identify work due. Missing paperwork is not evidence that a replacement was done."
                                     },
                                     {
                                         "title": "Drive it like New Zealand drives",
-                                        "text": "Motorway up to 100 km/h (no shake through the wheel), a real hill if you can find one (temperature needle steady, power holding), a slow speed bump (no clunks), and one firm, straight brake."
+                                        "text": "Agree a safe route with the seller and follow speed limits and conditions. Observe steering, braking, temperature and power at suitable speeds. Have unfamiliar noises, vibration or warning lights investigated rather than trying dangerous manoeuvres."
                                     },
                                     {
                                         "title": "Radio off, window half down",
@@ -481,7 +499,16 @@ export const GUIDES = {
                                 "type": "callout",
                                 "variant": "info",
                                 "title": "📝 Good to know",
-                                "text": "Above roughly $5,000, a professional pre-purchase inspection ($150–180 at a garage, AA or VTNZ) buys you a hoist, trained eyes and a written report you can negotiate with. Cheap insurance on a big decision."
+                                "text": "Ask an independent inspector for a quote, the report’s scope and any limits on checking the camper conversion. The value of an inspection is not determined by a $5,000 purchase threshold. Obtain written findings and repair estimates before deciding."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Tips for buying a used car",
+                                        "url": "https://www.nzta.govt.nz/vehicles/choosing-the-right-vehicle/tips-for-buying-a-used-car"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -498,7 +525,7 @@ export const GUIDES = {
                                 "items": [
                                     {
                                         "title": "Certificate in hand, not in the ad",
-                                        "text": "For self-containment, see the actual document: expiry date, and that it matches THIS vehicle. Adverts say 'self-contained'; only certificates prove it."
+                                        "text": "Check the actual certificate, expiry, green warrant card and national SCV register entry for this vehicle. The old blue warrant is no longer recognised from 7 June 2026. A promotional sticker does not prove certification."
                                     },
                                     {
                                         "title": "Water in, water out",
@@ -510,19 +537,37 @@ export const GUIDES = {
                                     },
                                     {
                                         "title": "Run the fridge and lights on the battery",
-                                        "text": "Engine off, ten minutes. A healthy leisure battery shrugs this off; a dying one sags visibly. Ask its age — past three or four years, budget for a replacement."
+                                        "text": "Run appliances with the seller and note the battery type, capacity, age and charging arrangements. Ten minutes of operation does not establish battery health. Ask a suitable specialist to test capacity and installation if uncertain."
                                     },
                                     {
                                         "title": "Make 'it has solar' mean something",
                                         "text": "Ask for the panel wattage and the controller brand. Without numbers, 'solar' can mean a trickle charger and an optimistic sticker."
                                     },
                                     {
-                                        "title": "Sniff the gas locker",
-                                        "text": "Any gas smell — or a cooker with no compliance certificate — is a safety problem before it's a paperwork one."
+                                        "title": "Check gas safety with a qualified gasfitter",
+                                        "text": "Ask for the gasfitting documentation and arrange a qualified gasfitter’s check if uncertain. WorkSafe says portable gas cookers, heaters and lanterns must not be used inside a caravan or motorhome, including awnings. If you smell gas, stop testing the equipment and follow official gas-safety advice."
                                     },
                                     {
                                         "title": "Lift the mattress",
                                         "text": "Brown rings on the plywood underneath are the honest autobiography of every roof leak the van has ever had."
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "WorkSafe — Gas safety for caravans and motorhomes",
+                                        "url": "https://www.worksafe.govt.nz/managing-health-and-safety/consumers/safe-living-with-gas/recreational-safety/gas-safety-for-caravans-and-motorhomes/"
                                     }
                                 ]
                             }
@@ -536,24 +581,41 @@ export const GUIDES = {
                                 "type": "steps",
                                 "items": [
                                     {
-                                        "title": "Re-read the two windscreen labels",
-                                        "text": "WOF and REGO: both current, and ideally months from expiry. Anything about to lapse is a cost you're inheriting — say so, politely, with a number."
+                                        "title": "Check inspection and licence separately",
+                                        "text": "Read the WoF issue date and expiry, and the rego status. Buyers can insist on a WoF less than one month old; record acceptance of an older or expired inspection as NZTA requires."
                                     },
                                     {
-                                        "title": "Diesel? Read the RUC label",
-                                        "text": "The distance purchased should cover the odometer reading. Any shortfall becomes your bill at the NZTA counter."
+                                        "title": "Does RUC apply? Read the distance licence",
+                                        "text": "Compare the purchased distance with the odometer for any RUC vehicle, not only diesel vans. Resolve a shortfall before paying: the new registered person may become responsible for outstanding charges."
                                     },
                                     {
-                                        "title": "Write the receipt before money moves",
-                                        "text": "Price, date, both names and passport numbers, plate, VIN, the words 'sold as seen'. Two copies, both signed. Five minutes that settle every future argument."
+                                        "title": "Write the sale record before paying",
+                                        "text": "Record buyer and seller details, date, price, plate, VIN, included equipment, known faults and agreed conditions. Keep signed copies and evidence of payment. “Sold as seen” does not settle every dispute or remove statutory obligations."
                                     },
                                     {
-                                        "title": "Transfer ownership together, on the spot",
-                                        "text": "Ten minutes online at nzta.govt.nz, about $9, done side by side. 'We'll sort it tomorrow' is how travellers end up owning a stranger's speeding tickets — or not owning the van at all."
+                                        "title": "Notify NZTA at the handover",
+                                        "text": "Buyer and seller each notify NZTA immediately. The buyer’s online transaction needs a New Zealand driver licence; otherwise use an agent and check identification requirements. The registered-person record is not proof of legal ownership."
                                     },
                                     {
-                                        "title": "Insure it before you turn the key",
-                                        "text": "Third-party cover takes twenty minutes online and accepts foreign licences. The drive back to the hostel is already a drive."
+                                        "title": "Confirm insurance before driving",
+                                        "text": "Get terms for your own licence, age, trip and conversion before committing, and arrange the cover’s start time for handover. Application time and acceptance vary by insurer."
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    },
+                                    {
+                                        "name": "NZTA — About RUC",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/about-ruc"
+                                    },
+                                    {
+                                        "name": "Consumer Protection — Car insurance",
+                                        "url": "https://www.consumerprotection.govt.nz/help-product-service/cars/paying-registering-insuring-car/car-insurance"
                                     }
                                 ]
                             }
@@ -565,7 +627,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "title": "None of these are negotiation openers",
-                                "text": "They're exits. The NZ van market always has another one for sale — this week, at a fair price, from someone straightforward."
+                                "text": "Treat unresolved identity, finance, safety or inspection problems as reasons to pause or walk away. Do not let a departure deadline replace verification."
                             },
                             {
                                 "type": "checklist",
@@ -583,7 +645,7 @@ export const GUIDES = {
                                 "type": "callout",
                                 "variant": "info",
                                 "title": "📝 Good to know",
-                                "text": "On Kiwi Van Market, WOF, REGO and self-contained status sit on every listing, with a CarJam button when the plate is provided — the boring checks are done from your bunk, before you've spent a dollar on gas."
+                                "text": "Listings show seller-provided details. A CarJam link, where a plate is supplied, is a route to third-party checks; it does not mean Kiwi Van Market has verified the vehicle or paid for a full report."
                             },
                             {
                                 "type": "cta",
@@ -605,7 +667,7 @@ export const GUIDES = {
                                     },
                                     {
                                         "q": "Is a cheap OBD2 scanner worth buying?",
-                                        "a": "For about $30, absolutely. Plugged in under the dash, it reads stored engine fault codes in minutes and catches the classic trick of clearing a warning light the morning of a sale. It doesn't replace a mechanic — it decides whether you need one."
+                                        "a": "A compatible scanner can provide useful fault and readiness information, but coverage differs by vehicle and tool. Cleared codes or intermittent faults may not appear. A clean scan is not evidence that the engine or gearbox is sound; ask the inspector what diagnostics are appropriate."
                                     },
                                     {
                                         "q": "How long should I allow for a proper viewing?",
@@ -620,203 +682,201 @@ export const GUIDES = {
                         ]
                     }
                 ]
-            }
+            },
+            "dateModified": "2026-10-15"
         },
         'wof-rego-ruc-insurance-nz': {
-            "title": "WOF, REGO, RUC & Insurance in New Zealand: Van Rules Explained Simply",
-            "description": "The four vehicle rules every campervan traveller must understand in NZ — what they cost, when they're due, and the fines if you get them wrong. In plain English.",
+            "title": "WoF, Rego, RUC & Insurance NZ: Checks Before Buying a Van",
+            "description": "Check campervan WoF, vehicle licensing, RUC and insurance before buying in New Zealand. Official sources, upcoming inspection changes and handover checks.",
             "heroImage": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200",
+            "dateModified": "2026-10-15",
             "content": {
-                "intro": "Four acronyms rule your van life in New Zealand: WOF, REGO, RUC and (unofficially) ACC. Get them right and you'll never think about them again. Get them wrong and you're looking at fines, a van you can't legally drive, or debts you inherited from the previous owner. Here's each one, in plain English, with real numbers.",
+                "intro": "Before paying for a campervan, check four separate things: its safety inspection, vehicle licensing, any distance charges, and your insurance. An advert badge cannot replace these documents. Record the plate, dates and odometer reading and compare them with the actual vehicle.",
                 "sections": [
                     {
-                        "title": "WOF — the Warrant of Fitness",
+                        "title": "WoF: a safety inspection, with rules changing in November",
                         "icon": "Shield",
                         "items": [
                             {
-                                "title": "What it is",
-                                "text": "The WOF is New Zealand's periodic vehicle safety inspection. It checks brakes, tyres, lights, steering, seatbelts, rust and more. Without a current WOF, you cannot legally drive — and your insurance can refuse to pay out."
+                                "title": "What the inspection tells you",
+                                "text": "A WoF checks specified safety requirements at the time of inspection. It does not establish engine reliability, gearbox condition or the quality of a camper conversion. Arrange a separate pre-purchase inspection and ask what it includes."
                             },
                             {
-                                "type": "table",
-                                "title": "How often is a WOF due?",
-                                "headers": [
-                                    "Vehicle",
-                                    "WOF frequency"
-                                ],
-                                "rows": [
-                                    [
-                                        "First registered after 1 January 2000",
-                                        "Every 12 months"
-                                    ],
-                                    [
-                                        "First registered before 2000 (most cheap backpacker vans!)",
-                                        "Every 6 months"
-                                    ],
-                                    [
-                                        "Brand new vehicles",
-                                        "First WOF at 3 years"
-                                    ]
-                                ],
-                                "caption": "A test costs $60–80 at VTNZ, AA or most garages, and takes about 45 minutes."
+                                "title": "Check the actual expiry and current rules",
+                                "text": "On 15 October 2026, inspection frequency still depends on the vehicle’s first-registration date. Changes begin on 1 November 2026, with some vehicles phased in later. Use the NZTA guidance for the actual vehicle instead of assuming every van needs a WoF every six or twelve months."
                             },
                             {
-                                "title": "What if it fails?",
-                                "text": "You get a list of what to fix, and you can't legally drive except to get repairs and re-test. Most places offer a free or cheap re-check within 28 days. This is why a van with a nearly-expired WOF is worth less: you're inheriting the gamble.",
-                                "expertTip": "💡 Buying? A fresh WOF from VTNZ or AA carries more weight than one from an unknown garage — and 3+ months remaining should be your minimum."
+                                "title": "What matters when buying",
+                                "text": "NZTA says a buyer can insist on a WoF less than one month old. If accepting an older WoF, confirm that in writing. Without a current inspection, road use is restricted to travel for repair or inspection; the vehicle must still be safe for that journey. Several months remaining does not mean the inspection was recent."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Warrant of fitness",
+                                        "url": "https://www.nzta.govt.nz/vehicles/warrants-and-certificates/warrant-of-fitness"
+                                    },
+                                    {
+                                        "name": "NZTA — Changes to light vehicle inspections",
+                                        "url": "https://nzta.govt.nz/projects-and-consultations/have-your-say/past-consultations/considering-changes-to-light-vehicle-inspections/changes-to-light-vehicle-inspections"
+                                    },
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "REGO — Vehicle Registration",
-                        "icon": "Car",
+                        "title": "Rego: vehicle licensing, separate from registration",
+                        "icon": "Shield",
                         "items": [
                             {
-                                "title": "What it is",
-                                "text": "REGO is the licence fee to use public roads, shown by the label on your windscreen. You buy it in 3, 6 or 12-month blocks, online at nzta.govt.nz or at NZ Post — it takes five minutes."
+                                "title": "Check the licensing label and vehicle identity",
+                                "text": "Rego is the licence to use a registered vehicle on the road. Registration identifies the person responsible for the vehicle; the registration record is not proof of legal ownership. Check the plate and VIN as well as the date."
                             },
                             {
-                                "type": "table",
-                                "title": "What REGO costs (typical van)",
-                                "headers": [
-                                    "Vehicle type",
-                                    "Approx. cost per year"
-                                ],
-                                "rows": [
-                                    [
-                                        "Petrol van or car",
-                                        "$100–110"
-                                    ],
-                                    [
-                                        "Diesel van",
-                                        "Less for REGO itself — but you pay RUC on top (next section)"
-                                    ]
+                                "title": "Budget the actual fee",
+                                "text": "Fees depend on the vehicle and use, and include ACC and administration charges. The NZTA page has current rates and a plate-specific fee checker. A generic “$100 a year” assumption is not a reliable campervan budget."
+                            },
+                            {
+                                "title": "Expired or on hold",
+                                "text": "Find out whether the licence has expired, is on hold, or registration has been cancelled: these are different situations. Confirm the steps and charges before driving. Both buyer and seller must notify NZTA immediately; buyers without a New Zealand driver licence use an agent."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Licensing (rego) fees",
+                                        "url": "https://www.nzta.govt.nz/vehicles/licensing-rego/vehicle-fees/licensing-fees"
+                                    },
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    }
                                 ]
-                            },
-                            {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ When buying a van",
-                                "text": "Check the REGO isn't 'on hold' (a seller can suspend it to save money while selling). Reactivating is easy but it's YOUR cost, and driving while it's on hold is a $200 fine."
                             }
                         ]
                     },
                     {
-                        "title": "RUC — Road User Charges (diesel only)",
+                        "title": "RUC: check fuel type, vehicle class and paid distance",
                         "icon": "DollarSign",
                         "items": [
                             {
-                                "title": "What it is",
-                                "text": "Petrol vehicles pay road tax at the pump. Diesel vehicles pay it separately: Road User Charges, bought in 1,000 km blocks (about $76 each) online at nzta.govt.nz. Your windscreen label shows the odometer reading you've paid up to."
+                                "title": "RUC is not diesel-only",
+                                "text": "Diesel vehicles and many electric vehicles pay road user charges. Vehicle type and weight affect the rate. The standard type 1 rate up to 3,500 kg is NZ$76 per 1,000 km, plus the transaction fee. Check the actual rate rather than applying this example to every motorhome."
                             },
                             {
-                                "title": "The maths for a typical trip",
-                                "text": "A 10,000 km South-plus-North Island loop in a diesel van costs about $760 in RUC on top of fuel. Diesel is cheaper per litre, so on long trips it can still win — but for most backpacker itineraries under 15,000 km, petrol's simplicity is worth more than diesel's savings."
+                                "title": "Compare the distance licence with the odometer",
+                                "text": "A seller must supply a current RUC licence. NZTA warns that a buyer may become responsible for unpaid RUC. Resolve any shortfall before payment and record the agreement."
                             },
                             {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ The trap that catches buyers",
-                                "text": "Unpaid RUC follows the VEHICLE, not the seller. Before buying any diesel van, compare the odometer with the RUC distance purchased — the difference is a debt you're about to inherit."
+                                "title": "Unused RUC stays with the vehicle",
+                                "text": "Selling the van does not entitle you to a refund of unused RUC. NZTA says the licence belongs to that vehicle; account for unused distance in the sale price. Different refund rules apply to eligible off-road use or registration cancellation."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — About RUC",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/about-ruc"
+                                    },
+                                    {
+                                        "name": "NZTA — RUC rates and transaction fees",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/ruc-rates-and-transaction-fees"
+                                    },
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "Insurance & ACC — what's actually covered",
-                        "icon": "CheckCircle",
+                        "title": "Insurance: get a quote before committing",
+                        "icon": "Shield",
                         "items": [
                             {
-                                "title": "The surprise: insurance is not legally required",
-                                "text": "New Zealand doesn't mandate car insurance. But before you celebrate: if you cause a crash uninsured, you personally owe the damage — and hitting a $80,000 ute is a real possibility. That's why virtually every traveller carries at least third-party cover."
-                            },
-                            {
                                 "type": "table",
-                                "title": "Your three options",
+                                "title": "Compare the policies",
                                 "headers": [
                                     "Cover",
-                                    "Protects",
-                                    "Typical cost/year"
+                                    "Questions to ask"
                                 ],
                                 "rows": [
                                     [
                                         "Third party",
-                                        "Other people's vehicles and property (not your van)",
-                                        "$300–600"
+                                        "What liability is covered if you damage someone else’s vehicle or property?"
                                     ],
                                     [
-                                        "Third party, fire & theft",
-                                        "The above + your van if stolen or burned",
-                                        "$400–700"
+                                        "Third party, fire and theft",
+                                        "What theft and fire cover applies to the van, conversion and contents?"
                                     ],
                                     [
                                         "Comprehensive",
-                                        "Everything, including your own crash damage",
-                                        "$700+ — rarely worth it on a $6,000 van"
+                                        "What own-vehicle damage is covered, on what value basis and with what excess?"
                                     ]
                                 ],
-                                "caption": "Foreign licences are accepted by mainstream NZ insurers; you can sign up online with a passport and a NZ address."
+                                "caption": "Read the policy wording and exclusions. This table is a starting point for comparing quotes."
                             },
                             {
-                                "title": "And ACC?",
-                                "text": "New Zealand's Accident Compensation Corporation covers INJURY treatment for everyone in NZ — including tourists — regardless of fault. It's real and it's free. But it covers people, not property: your medical bills after a crash, yes; your van or the other car, no. ACC is why travel insurance and vehicle insurance still matter."
+                                "title": "Declare the actual driver and use",
+                                "text": "Ask about your overseas licence, age, named drivers, camper conversion, length of stay, work use and intended roads. Acceptance, price and claims depend on the insurer and policy. Do not assume a passport, hostel address or online application guarantees cover."
+                            },
+                            {
+                                "title": "Ask about roadworthiness conditions",
+                                "text": "Check these requirements with the insurer. Avoid assuming every expired WoF automatically voids every policy, or that a current WoF guarantees a claim will be paid."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "Consumer Protection — Car insurance",
+                                        "url": "https://www.consumerprotection.govt.nz/help-product-service/cars/paying-registering-insuring-car/car-insurance"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "Fines & penalties cheat sheet",
-                        "icon": "AlertTriangle",
+                        "title": "ACC and your handover checklist",
+                        "icon": "CheckCircle",
                         "items": [
                             {
+                                "title": "ACC is injury cover, not vehicle or travel insurance",
+                                "text": "ACC’s no-fault scheme can cover eligible accident injuries in New Zealand, including visitors. It does not replace cover for vehicle damage, illness, disrupted travel or getting home. There can be treatment costs you need to pay; check ACC’s visitor information and your travel policy."
+                            },
+                            {
                                 "type": "checklist",
-                                "title": "What it costs to get it wrong",
                                 "items": [
-                                    "Driving without a current WOF: $200 fine — and your insurance can refuse claims",
-                                    "Expired or on-hold REGO: $200 fine",
-                                    "Unpaid RUC: assessed against the vehicle, plus penalties",
-                                    "Freedom camping without certification (where required): up to $400",
-                                    "No insurance: no fine — but one at-fault crash can cost you tens of thousands"
+                                    "Compare the plate and VIN with the documents.",
+                                    "Read the WoF inspection date and expiry separately.",
+                                    "Confirm the licensing status and actual renewal cost.",
+                                    "If RUC applies, compare purchased distance with the odometer.",
+                                    "Obtain insurance terms for your own licence and trip before handover.",
+                                    "Keep the written sale and both NZTA notifications."
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "ACC — Visitors injured in New Zealand",
+                                        "url": "https://www.acc.co.nz/im-injured/what-we-cover/if-youre-a-visitor-injured-in-new-zealand"
+                                    }
                                 ]
                             },
                             {
                                 "type": "cta",
-                                "text": "Ready to buy? Read the full step-by-step buying guide",
+                                "text": "Follow the full buying and handover process",
                                 "to": "/guide/buying-campervan-nz"
                             },
                             {
                                 "type": "cta",
-                                "text": "Going to an inspection? Take the 30-point checklist",
+                                "text": "Take the inspection checklist to your viewing",
                                 "to": "/guide/campervan-buyer-checklist"
-                            }
-                        ]
-                    },
-                    {
-                        "title": "FAQ",
-                        "icon": "CheckCircle",
-                        "items": [
-                            {
-                                "type": "faq",
-                                "items": [
-                                    {
-                                        "q": "Can I drive a van with an expired WOF?",
-                                        "a": "Only directly to a testing station or to a garage for booked repairs. Anywhere else risks a $200 fine — and voids most insurance policies."
-                                    },
-                                    {
-                                        "q": "What does 'REGO on hold' mean when buying a van?",
-                                        "a": "The seller suspended the registration to save money. The van can't legally be driven until it's reactivated (easy, online, but at your cost) — and it may need a new WOF first."
-                                    },
-                                    {
-                                        "q": "How do I buy RUC for a diesel van?",
-                                        "a": "Online at nzta.govt.nz or at NZ Post, in blocks of 1,000 km (~$76). Buy enough to cover your planned distance; unused RUC can be refunded when you sell."
-                                    },
-                                    {
-                                        "q": "Can foreigners get NZ vehicle insurance?",
-                                        "a": "Yes — mainstream insurers cover drivers on foreign licences or International Driving Permits. You sign up online in about 20 minutes with a passport and a NZ address (your hostel works)."
-                                    },
-                                    {
-                                        "q": "Does ACC replace travel insurance?",
-                                        "a": "No. ACC covers accident injuries in NZ for everyone, but not illness, not your belongings, not your van, and not liability. Keep your travel insurance, and put third-party cover on the van."
-                                    }
-                                ]
                             }
                         ]
                     }
@@ -824,166 +884,435 @@ export const GUIDES = {
             }
         },
         'freedom-camping-nz': {
-            title: 'Freedom Camping in New Zealand - Rules & Best Spots 2025',
-            description: 'Complete guide to freedom camping in New Zealand. Where you can camp for free, self-contained requirements, fines to avoid, and the best freedom camping spots.',
-            heroImage: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200',
-            content: {
-                intro: `Freedom camping is one of the best ways to experience New Zealand's stunning nature without breaking the bank. But there are rules you need to follow to camp legally and protect the environment.`,
-                sections: [
+            "title": "Freedom Camping in New Zealand: Green Warrants, Local Rules & Fines",
+            "description": "Check New Zealand freedom camping rules, current self-contained certification, site restrictions and infringement fees before planning a campervan trip.",
+            "heroImage": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200",
+            "dateModified": "2026-10-15",
+            "content": {
+                "intro": "Start with the land manager’s rules for the exact place you want to stay. A self-contained certificate concerns the vehicle; it does not grant permission to camp at every beach, car park or roadside. Build a route with permitted stops and a paid-campsite backup.",
+                "sections": [
                     {
-                        title: 'Freedom Camping Rules',
-                        icon: 'CheckCircle',
-                        items: [
-                            { title: 'Self-Contained Required', text: 'Most freedom camping spots require a certified self-contained vehicle. This means having a toilet, fresh water tank, and grey water tank.' },
-                            { title: 'Check Local Rules', text: 'Each council has different rules. Use the CamperMate or WikiCamps app to find legal spots and current restrictions.' },
-                            { title: 'Maximum Stay', text: 'Most spots allow 1-2 nights maximum. Always move on and don\'t overstay.' },
-                            { title: 'Leave No Trace', text: 'Take all rubbish with you, don\'t dump grey water on the ground, use proper dump stations.' },
+                        "title": "Check the vehicle and the site separately",
+                        "icon": "Shield",
+                        "items": [
+                            {
+                                "title": "Current certification means a valid green warrant",
+                                "text": "Since 7 June 2026, the old blue warrant is not recognised as self-contained certification. PGDB identifies the certificate, displayed green warrant card and national SCV register entry as the relevant evidence. A promotional green sticker has no official status. Compliant facilities include a fixed toilet."
+                            },
+                            {
+                                "title": "Non-self-contained vehicles need an appropriate site",
+                                "text": "The general vehicle requirement for freedom camping on public land is self-contained certification, with designated exceptions. Non-self-contained vehicles can use suitable campgrounds, holiday parks and specifically permitted sites. Read the rule for that place and its land manager."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: 'Fines to Avoid',
-                        icon: 'AlertTriangle',
-                        items: [
-                            { title: 'Camping in Prohibited Areas', text: '$200 instant fine. Can be up to $10,000 for repeat offenders or environmental damage.' },
-                            { title: 'Fake Self-Contained Sticker', text: '$200+ fine. Officers do check - your van must actually have the required facilities.' },
-                            { title: 'Dumping Waste', text: 'Up to $10,000 fine for dumping toilet waste or grey water illegally.' },
+                        "title": "Plan with official location information",
+                        "icon": "MapPin",
+                        "items": [
+                            {
+                                "type": "steps",
+                                "items": [
+                                    {
+                                        "title": "Identify who manages the land",
+                                        "text": "Find the council, Department of Conservation, LINZ or private operator responsible. Check its current map, notices and booking information."
+                                    },
+                                    {
+                                        "title": "Read all the conditions",
+                                        "text": "Look for vehicle certification, occupancy, overnight hours, stay limits, seasonal closures and waste rules. There is no single national “one or two nights” allowance for every site."
+                                    },
+                                    {
+                                        "title": "Check signs when you arrive",
+                                        "text": "Apps can help find options, but check official information and on-site signs. If a site is full or unclear, use a permitted alternative rather than assuming you can park nearby."
+                                    },
+                                    {
+                                        "title": "Arrange water and waste stops",
+                                        "text": "Use authorised disposal facilities and take rubbish away. Plan these stops alongside overnight accommodation; a van’s tank capacity limits how long you can stay independently."
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "New Zealand Government — Freedom camping",
+                                        "url": "https://www.govt.nz/browse/recreation-and-the-environment/freedom-camping/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: 'Best Freedom Camping Regions',
-                        icon: 'MapPin',
-                        items: [
-                            { title: 'South Island West Coast', text: 'Most relaxed rules, stunning beaches and forests. Great spots near Hokitika and Greymouth.' },
-                            { title: 'Otago/Southland', text: 'Beautiful lakes and mountains. Many DOC campsites with basic facilities.' },
-                            { title: 'East Cape (North Island)', text: 'Off the beaten track, friendly locals, beautiful coastline.' },
+                        "title": "Understand the penalties",
+                        "icon": "AlertTriangle",
+                        "items": [
+                            {
+                                "type": "table",
+                                "title": "Examples from the national infringement regulations",
+                                "headers": [
+                                    "Offence",
+                                    "Infringement fee"
+                                ],
+                                "rows": [
+                                    [
+                                        "Camping in breach of a council prohibition or restriction",
+                                        "NZ$400"
+                                    ],
+                                    [
+                                        "Not displaying a warrant card where required",
+                                        "NZ$200"
+                                    ],
+                                    [
+                                        "Displaying an altered or fraudulent warrant card",
+                                        "NZ$600"
+                                    ],
+                                    [
+                                        "Depositing waste while freedom camping in a covered area",
+                                        "NZ$800"
+                                    ]
+                                ],
+                                "caption": "These are examples of infringement fees, not a complete list of offences or court penalties. The legal provision and circumstances matter."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "New Zealand Legislation — Freedom camping infringement penalties",
+                                        "url": "https://www.legislation.govt.nz/regulation/public/2023/0136/latest/whole.html"
+                                    }
+                                ]
+                            }
                         ]
                     },
-                ],
-                warnings: [
-                    'Queenstown and popular tourist areas have strict no-camping rules',
-                    'Auckland city has very limited freedom camping options',
-                    'Summer (Dec-Feb) is busiest - spots fill up early',
-                    'Always have a backup plan (paid campsite) in case spots are full',
-                ],
-                cta: {
-                    title: 'Get a Self-Contained Van',
-                    text: 'Freedom camping is only possible with a certified self-contained vehicle. Find one on Kiwi Van Market.',
-                    buttonText: 'Find Self-Contained Vans',
-                    buttonLink: '/?selfContained=true',
-                }
+                    {
+                        "title": "Before buying a van advertised as self-contained",
+                        "icon": "CheckCircle",
+                        "items": [
+                            {
+                                "type": "checklist",
+                                "items": [
+                                    "Read the actual certificate, expiry and vehicle details.",
+                                    "Check the current green warrant and SCV register entry.",
+                                    "Ask whether changes to the layout or equipment affect the certification.",
+                                    "Compare the proposed route with official camping restrictions.",
+                                    "Budget campsite and disposal costs rather than assuming every night is free."
+                                ]
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Read the full campervan buying guide",
+                                "to": "/guide/buying-campervan-nz"
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Compare vans advertised by their sellers as self-contained",
+                                "to": "/?selfContained=true"
+                            }
+                        ]
+                    }
+                ]
             }
         },
         'selling-campervan-nz': {
-            title: 'How to Sell Your Campervan in New Zealand - Quick Sale Guide',
-            description: 'Sell your campervan fast in New Zealand. Tips for pricing, photos, descriptions, and reaching backpacker buyers. Free listings on Kiwi Van Market.',
-            heroImage: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200',
-            content: {
-                intro: `Selling your campervan at the end of your New Zealand adventure doesn't have to be stressful. With the right approach, you can sell quickly and get a fair price.`,
-                sections: [
+            "title": "How to Sell a Campervan in New Zealand: Adverts, Payment & Handover",
+            "description": "Prepare a campervan sale in New Zealand: asking price, honest photos, inspections, payment and NZTA notifications. A practical seller checklist with official sources.",
+            "heroImage": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200",
+            "content": {
+                "intro": "Start preparing your advert before your departure deadline. Compare current asking prices, gather documents and allow time for viewings and inspections. There is no fixed sale time or guaranteed resale price; keep a backup plan if enquiries are slow.",
+                "sections": [
                     {
-                        title: 'Preparing Your Van for Sale',
-                        icon: 'CheckCircle',
-                        items: [
-                            { title: 'Deep Clean', text: 'First impressions matter. Clean inside and out, remove personal items, make it smell fresh.' },
-                            { title: 'Minor Repairs', text: 'Fix small issues - they\'re cheap but make buyers nervous. Worn wiper blades, broken lights, etc.' },
-                            { title: 'Get Fresh WOF', text: 'A van with 6+ months WOF sells faster and for more money. Worth the $50-100 investment.' },
-                            { title: 'Gather Documents', text: 'Have ownership papers, service history, and self-contained certificate ready to show.' },
+                        "title": "Preparing Your Van for Sale",
+                        "icon": "CheckCircle",
+                        "items": [
+                            {
+                                "title": "Deep Clean",
+                                "text": "First impressions matter. Clean inside and out, remove personal items, make it smell fresh."
+                            },
+                            {
+                                "title": "Minor Repairs",
+                                "text": "Fix small issues - they're cheap but make buyers nervous. Worn wiper blades, broken lights, etc."
+                            },
+                            {
+                                "title": "Check the WoF arrangements",
+                                "text": "Buyers can insist on a WoF less than one month old. If they accept an older inspection, record that in writing; an expired WoF also requires the buyer’s written acknowledgement and limits road use. Read NZTA’s sale rules rather than assuming that six months remaining proves a recent inspection."
+                            },
+                            {
+                                "title": "Gather the actual documents",
+                                "text": "Collect service invoices, WoF and rego details, RUC distance where applicable and current certification for the camper conversion. Keep documents consistent with the advert and disclose known faults."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Selling a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/selling-a-vehicle"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: 'Taking Great Photos',
-                        icon: 'Car',
-                        items: [
-                            { title: 'Timing', text: 'Shoot during golden hour (early morning or late afternoon) for best lighting.' },
-                            { title: 'Angles', text: 'Include: front 3/4 view, rear, both sides, interior bed setup, kitchen area, dashboard, engine bay.' },
-                            { title: 'Quantity', text: '10-15 photos is ideal. More photos = more trust = faster sale.' },
-                            { title: 'Honesty', text: 'Include photos of any damage or wear. Buyers appreciate honesty and it saves time.' },
+                        "title": "Taking Great Photos",
+                        "icon": "Car",
+                        "items": [
+                            {
+                                "title": "Timing",
+                                "text": "Shoot during golden hour (early morning or late afternoon) for best lighting."
+                            },
+                            {
+                                "title": "Angles",
+                                "text": "Include: front 3/4 view, rear, both sides, interior bed setup, kitchen area, dashboard, engine bay."
+                            },
+                            {
+                                "title": "Show the vehicle clearly",
+                                "text": "Include enough clear photographs to show its condition and equipment. Add close-ups of wear or damage instead of relying on an ideal photo count as a promise of a faster sale."
+                            },
+                            {
+                                "title": "Honesty",
+                                "text": "Include photos of any damage or wear. Buyers appreciate honesty and it saves time."
+                            }
                         ]
                     },
                     {
-                        title: 'Pricing Strategy',
-                        icon: 'DollarSign',
-                        items: [
-                            { title: 'Research Market', text: 'Check similar vans on TradeMe and Kiwi Van Market. Price competitively.' },
-                            { title: 'Be Realistic', text: 'End of season (March-April) prices drop. Factor in your timeline.' },
-                            { title: 'Room to Negotiate', text: 'List 5-10% above your minimum. Kiwi buyers expect to negotiate.' },
+                        "title": "Pricing Strategy",
+                        "icon": "DollarSign",
+                        "items": [
+                            {
+                                "title": "Compare current asking prices",
+                                "text": "Review similar year, engine, mileage, conversion, location and condition. Asking prices are not completed-sale values; use the site’s sample as one input and explain differences in your advert."
+                            },
+                            {
+                                "title": "Set your own negotiation limit",
+                                "text": "Include known repairs and your departure deadline when deciding what you can accept. No fixed negotiation percentage or seasonal discount applies to every van."
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Read the asking-price sample and methodology",
+                                "to": "/campervan-prices-nz"
+                            }
                         ]
                     },
                     {
-                        title: 'Where to List',
-                        icon: 'MapPin',
-                        items: [
-                            { title: 'Kiwi Van Market', text: 'Free listings, backpacker-focused audience. List here first!' },
-                            { title: 'Facebook Groups', text: 'Backpackers NZ groups have active buy/sell sections. Good for quick sales.' },
-                            { title: 'Hostel Noticeboards', text: 'Physical flyers at backpacker hostels in main cities.' },
+                        "title": "Where to List",
+                        "icon": "MapPin",
+                        "items": [
+                            {
+                                "title": "Kiwi Van Market",
+                                "text": "Free listings, backpacker-focused audience. List here first!"
+                            },
+                            {
+                                "title": "Facebook Groups",
+                                "text": "Backpackers NZ groups have active buy/sell sections. Good for quick sales."
+                            },
+                            {
+                                "title": "Hostel Noticeboards",
+                                "text": "Physical flyers at backpacker hostels in main cities."
+                            }
                         ]
                     },
+                    {
+                        "title": "Agree payment and finish the handover",
+                        "icon": "CheckCircle",
+                        "items": [
+                            {
+                                "type": "checklist",
+                                "items": [
+                                    "Arrange viewings safely and allow an independent inspection.",
+                                    "Write the vehicle identifiers, price, date, included equipment and agreed conditions into the sale record.",
+                                    "Confirm cleared payment through your own bank before handing over the keys; a screenshot is not confirmation.",
+                                    "Complete your seller notification to NZTA immediately and check the buyer has completed theirs.",
+                                    "A RUC vehicle must have current purchased distance; unused RUC stays with the vehicle.",
+                                    "If offering buyback, put the buyer, timing, price, mileage, condition, deductions and payment terms in writing."
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Selling a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/selling-a-vehicle"
+                                    },
+                                    {
+                                        "name": "NZTA — About RUC",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/about-ruc"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 ],
-                warnings: [
-                    'Beware of scammers asking to pay by unusual methods',
-                    'Never hand over keys before payment clears',
-                    'Meet buyers in safe, public places',
-                    'Complete the ownership transfer properly through NZTA',
+                "warnings": [
+                    "Disclose known faults and keep a copy of the advert and written sale.",
+                    "Allow time for inspections and have a plan if the van does not sell before departure."
                 ],
-                cta: {
-                    title: 'List Your Van for Free',
-                    text: 'Reach thousands of backpackers looking for campervans. It takes just 5 minutes.',
-                    buttonText: 'Sell Your Van',
-                    buttonLink: '/',
+                "cta": {
+                    "title": "List your campervan for sale",
+                    "text": "Create a free advert with clear photos, accurate vehicle details and a pickup location.",
+                    "buttonText": "Create a free listing",
+                    "buttonLink": "/sell"
                 }
-            }
+            },
+            "dateModified": "2026-10-15"
         },
         'how-to-inspect-campervan-nz': {
-            title: 'Expert Campervan Inspection - The Ultimate NZ Checklist',
-            description: 'Don\'t buy a lemon! Our expert guide covers everything from engine health and structural rust to living system checks. Inspect like a pro before you buy.',
-            heroImage: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200',
-            content: {
-                intro: `Buying a campervan is your biggest investment in NZ. A "pretty" interior often hides mechanical nightmares. This guide gives you the technical tools to look past the fairy lights and inspect the heart of the vehicle. If a seller rushes you or refuses these checks, walk away immediately.`,
-                sections: [
+            "title": "How to Arrange an Independent Campervan Inspection in New Zealand",
+            "description": "Choose a campervan pre-purchase inspection in NZ: agree the mechanical and conversion checks, request a quote and written report, then assess repairs before buying.",
+            "heroImage": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200",
+            "dateModified": "2026-10-15",
+            "content": {
+                "intro": "A viewing helps you decide which van deserves further investigation. An independent inspection helps you assess its condition before paying. Choose a provider separately from the seller and agree in advance what the inspection can establish about the vehicle and the camper conversion.",
+                "sections": [
                     {
-                        title: '1. The Mechanical Heart (Under the Hood)',
-                        icon: 'CheckCircle',
-                        items: [
-                            { title: 'The Cold Start Test', text: 'Touch the engine block before starting. If it\'s warm, the seller might be hiding a difficult start or smoke issues. Start it yourself and watch the exhaust for blue (oil) or white (coolant) smoke.' },
-                            { title: 'The "Mayonnaise" Check', text: 'Open the oil filler cap. A milky, white/beige sludge ("mayo") indicates a blown head gasket - a catastrophic and expensive failure. Avoid at all costs.' },
-                            { title: 'Belts & Cam-belt', text: 'Ask when the cam-belt (timing belt) was last changed. If it snaps, the engine is destroyed. It usually needs changing every 100,000km.' },
+                        "title": "1. Find a provider and agree the scope",
+                        "icon": "Shield",
+                        "items": [
+                            {
+                                "title": "Send the actual vehicle details",
+                                "text": "Give the inspector the plate, make, model, year, engine or fuel type, mileage and pickup location. Mention modifications, camper equipment and any concerns from your viewing. Ask whether that specification, vehicle size and conversion can be inspected at the proposed location."
+                            },
+                            {
+                                "title": "Ask what the quoted service includes",
+                                "text": "Request the price, availability, inspection method and exclusions in writing. Ask about a road test, underside access, diagnostic scanning, fluid leaks, corrosion, brakes, tyres, transmission and maintenance records. Ask which observations are visual and which are measured. Avoid assuming every service includes dismantling, internal engine tests or a forecast of future reliability."
+                            },
+                            {
+                                "title": "Arrange access with the seller",
+                                "text": "Confirm the booking, consent for any test drive, documents required and payment responsibility. Ask for a genuine cold start where practical. A seller’s report can be useful background, but discuss commissioning your own assessment rather than assuming an old report covers today’s condition."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Tips for buying a used car",
+                                        "url": "https://www.nzta.govt.nz/vehicles/choosing-the-right-vehicle/tips-for-buying-a-used-car"
+                                    },
+                                    {
+                                        "name": "AA — Pre Purchase Inspections",
+                                        "url": "https://www.aa.co.nz/cars/buying-and-selling/pre-purchase-inspections/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: '2. Structural Integrity (The Rust Hunt)',
-                        icon: 'Shield',
-                        items: [
-                            { title: 'Chassis & Sills', text: 'Get on the ground with a torch. Look for flaky, bubbling metal on the underside. Surface rust is okay; structural rust (holes or deep flakes) will fail the WOF and ruin the van\'s value.' },
-                            { title: 'Tyre Wear Patterns', text: 'If tyres are worn more on one side, the wheel alignment is off or suspension components are bent. Budget $500+ for suspension repairs.' },
+                        "title": "2. Separate mechanical inspection and camper equipment",
+                        "icon": "Car",
+                        "items": [
+                            {
+                                "type": "table",
+                                "title": "Questions to put to the provider",
+                                "headers": [
+                                    "Area",
+                                    "What to confirm"
+                                ],
+                                "rows": [
+                                    [
+                                        "Base vehicle",
+                                        "What safety, mechanical and corrosion checks are included, and can the underside be examined safely?"
+                                    ],
+                                    [
+                                        "Maintenance",
+                                        "Will the report identify missing records and service items needing further investigation?"
+                                    ],
+                                    [
+                                        "Living equipment",
+                                        "Are water, fridge, batteries, charging and signs of leaks included, or does a separate specialist need to inspect them?"
+                                    ],
+                                    [
+                                        "Gas and electrical systems",
+                                        "Who can assess the installation and its required documentation? What is outside the mechanical inspector’s competence?"
+                                    ],
+                                    [
+                                        "Self-contained status",
+                                        "Check the actual green warrant, certificate and SCV register entry. Is any changed equipment relevant to certification?"
+                                    ]
+                                ],
+                                "caption": "A mechanical inspection, gasfitting certification and self-contained certification answer different questions. Ask the relevant provider about each."
+                            },
+                            {
+                                "title": "Do not test unsafe equipment",
+                                "text": "Stop if you suspect a gas leak or unsafe wiring. WorkSafe says portable gas cookers, heaters and lanterns must not be used inside a campervan or its awning. Use a qualified gasfitter for uncertain gas installations."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "WorkSafe — Gas safety for caravans and motorhomes",
+                                        "url": "https://www.worksafe.govt.nz/managing-health-and-safety/consumers/safe-living-with-gas/recreational-safety/gas-safety-for-caravans-and-motorhomes/"
+                                    },
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: '3. The Test Drive (Performance)',
-                        icon: 'Car',
-                        items: [
-                            { title: 'Gearbox & Clutch', text: 'Shift through all gears. If it\'s a manual, check for a "slipping clutch" by putting it in 4th gear at low speed and flooring the gas - the RPM shouldn\'t jump without speed.' },
-                            { title: 'Braking & Steering', text: 'Let go of the wheel briefly on a flat road - the van should go straight. Brake hard once (safely) to check for shuddering (warped discs) or pulling to one side.' },
+                        "title": "3. Read the written report and cost the findings",
+                        "icon": "CheckCircle",
+                        "items": [
+                            {
+                                "type": "steps",
+                                "items": [
+                                    {
+                                        "title": "Ask which findings are urgent",
+                                        "text": "Have the inspector distinguish immediate safety concerns, maintenance due, defects needing diagnosis and observations that could not be checked. Ask about limits caused by access, weather or vehicle condition."
+                                    },
+                                    {
+                                        "title": "Get repair quotes before changing your offer",
+                                        "text": "Request estimates from a suitable repairer for significant work. Do not substitute a generic “head gasket price” or “suspension budget” for diagnosis and a quote on the actual vehicle."
+                                    },
+                                    {
+                                        "title": "Compare with your budget and timeline",
+                                        "text": "Add the inspection fee, immediate work and a reserve to the purchase price. Consider whether repairs can be completed before your trip. You can renegotiate, arrange further checks or decline the purchase; the report does not oblige you to proceed."
+                                    }
+                                ]
+                            },
+                            {
+                                "title": "Keep the documents",
+                                "text": "Retain the report, scope, seller’s statements and repair estimates. If the sale proceeds, keep the written sale and complete the NZTA buyer notification. A current WoF is a safety inspection, not a mechanical guarantee."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: '4. Living Systems & Electrical',
-                        icon: 'MapPin',
-                        items: [
-                            { title: 'The Leak Test', text: 'Look for dark stains around windows and skylights. Press your thumb into the walls - if they feel soft/spongy, there is wood rot from water ingress.' },
-                            { title: 'Deep Cycle Battery', text: 'Test the voltage of the leisure battery with a multimeter if possible. Turn on all lights and the fridge to see if the voltage drops instantly.' },
+                        "title": "4. Prepare for the viewing",
+                        "icon": "MapPin",
+                        "items": [
+                            {
+                                "type": "cta",
+                                "text": "Use the detailed visual checklist before booking an inspection",
+                                "to": "/guide/campervan-buyer-checklist"
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Read the buying process, budget and handover steps",
+                                "to": "/guide/buying-campervan-nz"
+                            }
                         ]
-                    },
+                    }
                 ],
-                warnings: [
-                    'NEVER buy a van without a pre-purchase inspection from an independent mechanic ($140-180)',
-                    'Check the VIN on CarJam.co.nz to ensure there is no money owing (debt) on the vehicle',
-                    'Verify the valid self-containment green warrant matches the van\'s plate and is current',
-                ],
-                cta: {
-                    title: 'Found a Good One?',
-                    text: 'Compare it with other listings to ensure you\'re getting a fair price for the condition.',
-                    buttonText: 'Compare Listings',
-                    buttonLink: '/',
+                "cta": {
+                    "title": "Shortlist a van for inspection",
+                    "text": "Compare seller-provided details, organise a viewing and book independent checks before committing.",
+                    "buttonText": "Browse current adverts",
+                    "buttonLink": "/"
                 }
             }
         },
@@ -1119,61 +1448,140 @@ export const GUIDES = {
             }
         },
         'top-10-best-vans-nz': {
-            title: 'Top 10 Best Campervans to Buy in New Zealand (2025 Ranking)',
-            description: 'The definitive ranking of the 10 best campervans for backpackers in New Zealand. Prices, reliability, resale value and expert tips for each model.',
-            heroImage: '/top10-van.avif',
-            content: {
-                intro: `Choosing the right campervan is the single most important decision of your New Zealand trip. The wrong van means breakdowns on remote roads, failed WOFs, and a stressful sale at the end. This ranking is based on real market data, mechanic feedback, and thousands of backpacker experiences.`,
-                sections: [
+            "title": "10 Campervan Models to Compare Before Buying in New Zealand",
+            "description": "Compare ten campervan models and variants for a New Zealand trip. Viewing questions, conversion checks and a way to compare asking prices without reliability guarantees.",
+            "heroImage": "/top10-van.avif",
+            "dateModified": "2026-10-15",
+            "content": {
+                "intro": "Use this editorial shortlist to organise viewings, then judge each vehicle by its specification, condition and documents. The order is not a reliability ranking. Kiwi Van Market has not road-tested these vehicles or collected verified model-level sale prices. A maintained individual vehicle and a conversion that fits your trip matter more than a model’s reputation.",
+                "sections": [
                     {
-                        title: 'The Legends (Tier 1)',
-                        icon: 'Star',
-                        items: [
-                            { title: '1. Toyota Hiace (1990–2005)', text: 'The undisputed king. 70% of NZ rental fleets use the Hiace for a reason: it is near-indestructible. Parts are available everywhere, even in tiny West Coast towns. The 2.8L diesel (3L) is the sweet spot between power and economy. Expect to pay NZ$8,000–$18,000 depending on conversion quality.', expertTip: 'The 1KZ-TE engine is legendary but watch for head gasket issues on high-mileage units. The later 1TR petrol engine is bulletproof but thirstier.' },
-                            { title: '2. Toyota HiAce (2005–2018 "200 Series")', text: 'The modern evolution. More comfortable, better fuel economy, and a smoother ride. Harder to find as campervans but worth the premium. Budget NZ$15,000–$30,000.', expertTip: 'The 2KD-FTV diesel engine is one of the most reliable engines ever made. If you find one with under 250,000km, buy it.' },
-                            { title: '3. Nissan Caravan (E25)', text: 'The budget king. Offers nearly the same space as a Hiace but typically $2,000–$4,000 cheaper. The ZD30 diesel engine is solid. Great option for couples on a tight budget. NZ$6,000–$14,000.', expertTip: 'Check for timing chain rattle on cold start. A noisy chain is a $1,500 repair but not terminal.' },
+                        "title": "Ten models and variants: questions for the seller and inspector",
+                        "icon": "Car",
+                        "items": [
+                            {
+                                "type": "table",
+                                "title": "Compare the actual vehicle",
+                                "headers": [
+                                    "Model family",
+                                    "What to establish at the viewing"
+                                ],
+                                "rows": [
+                                    [
+                                        "Toyota Hiace, earlier generations",
+                                        "Compare engine code, transmission, wheelbase and service invoices. Have the cooling system and corrosion assessed; the badge alone does not determine condition."
+                                    ],
+                                    [
+                                        "Toyota Hiace, 200-series variants",
+                                        "Confirm the exact year and engine, maintenance schedule, payload after conversion and dimensions. Compare vehicles of the same specification rather than combining every Hiace price."
+                                    ],
+                                    [
+                                        "Nissan Caravan / Homy",
+                                        "Identify the generation and engine before comparing adverts. Ask for cold-start and transmission checks, rust assessment and invoices for overdue maintenance."
+                                    ],
+                                    [
+                                        "Nissan Elgrand",
+                                        "Measure the usable bed and storage with the actual seats or conversion in place. Check legal seating capacity, payload and realistic fuel costs for your route."
+                                    ],
+                                    [
+                                        "Mitsubishi Delica",
+                                        "Check whether the actual vehicle is two- or four-wheel drive. If four-wheel drive matters, ask the inspector to assess its system, tyres and maintenance. Confirm road access and insurance conditions."
+                                    ],
+                                    [
+                                        "Toyota Estima / Previa",
+                                        "Test the sleeping layout with your luggage inside. Identify the exact engine, drivetrain and access for servicing; different generations are not interchangeable comparisons."
+                                    ],
+                                    [
+                                        "Mazda Bongo / Friendee",
+                                        "Distinguish a Bongo van from a Friendee conversion. If fitted with an elevating roof, inspect its operation, seals, fabric and signs of water damage."
+                                    ],
+                                    [
+                                        "Ford Transit",
+                                        "Record body size, engine, drivetrain, service history and total converted weight. Ask about maintenance due and whether local garages can support that exact specification."
+                                    ],
+                                    [
+                                        "Toyota TownAce / LiteAce",
+                                        "Compare usable interior dimensions, legal seating and payload with your needs. Confirm the engine and maintenance requirements rather than assuming a smaller body means low ownership cost."
+                                    ],
+                                    [
+                                        "Mitsubishi L300 / Express",
+                                        "Check the actual model and engine, structural condition, service records and conversion safety. Include repairs and inspection costs when comparing a low advertised price."
+                                    ]
+                                ],
+                                "caption": "Generations, engines and conversions differ. These questions are a starting point for an independent inspection, not a diagnosis."
+                            }
                         ]
                     },
                     {
-                        title: 'The Smart Choices (Tier 2)',
-                        icon: 'CheckCircle',
-                        items: [
-                            { title: '4. Nissan Elgrand (E51)', text: 'Known as the "King of Vans" — and for good reason. Superior comfort, powerful V6, and a luxury interior. Popular for premium conversions. Not the most fuel-efficient but the driving experience is unmatched. NZ$8,000–$16,000.' },
-                            { title: '5. Mitsubishi Delica (L400/D5)', text: 'The only true 4WD van on this list. If you want to explore gravel roads, ski fields, and remote DOC tracks, the Delica is your only option. Compact but incredibly capable. NZ$7,000–$15,000.', expertTip: 'The L400 with the 2.8L diesel is a workhorse. The newer D5 is more refined but rarer and pricier.' },
-                            { title: '6. Toyota Estima (Previa)', text: 'A hidden gem for solo travellers or couples. Mid-engine layout means a flat floor for sleeping. Surprisingly spacious. Very fuel-efficient. The best "stealth" camper. NZ$4,000–$10,000.' },
-                            { title: '7. Mazda Bongo Friendee', text: 'Compact, quirky, and loveable. The pop-top roof models are perfect for standing up inside. Great fuel economy and easy to park in cities. NZ$5,000–$12,000.' },
+                        "title": "Make a like-for-like shortlist",
+                        "icon": "Shield",
+                        "items": [
+                            {
+                                "type": "steps",
+                                "items": [
+                                    {
+                                        "title": "Write down the specification",
+                                        "text": "Record year, engine and fuel type, transmission, kilometres, seating, sleeping capacity, body dimensions and loaded weight. Compare these before deciding that one advert is cheaper."
+                                    },
+                                    {
+                                        "title": "Separate asking price from the ownership budget",
+                                        "text": "Add inspection, immediate servicing, tyres, insurance, licensing and applicable RUC. Allow for campsite costs and a lower resale outcome. A low purchase price can leave little room for a repair reserve."
+                                    },
+                                    {
+                                        "title": "Verify the conversion and documents",
+                                        "text": "Test water, fridge and electrics. Match certificates to the vehicle. Check current self-contained certification and any gas or electrical documentation with a qualified person where relevant."
+                                    },
+                                    {
+                                        "title": "Get an independent written report",
+                                        "text": "Ask the inspector about the exact engine, corrosion, transmission and maintenance due. A current WoF is not a mechanical warranty. Use findings and quotes rather than an assumed repair bill for a model."
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Tips for buying a used car",
+                                        "url": "https://www.nzta.govt.nz/vehicles/choosing-the-right-vehicle/tips-for-buying-a-used-car"
+                                    },
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    },
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: 'The Budget Warriors (Tier 3)',
-                        icon: 'DollarSign',
-                        items: [
-                            { title: '8. Ford Transit (2000–2012)', text: 'European reliability in a big body. Lots of interior space for tall conversions. Cheaper to buy but parts can be slightly harder to source than Japanese vans. NZ$5,000–$12,000.' },
-                            { title: '9. Toyota TownAce / LiteAce', text: 'The perfect "mini campervan" for solo backpackers. Tiny, fuel-sipping, and surprisingly comfortable for one person. Easy to drive and park anywhere. NZ$3,000–$8,000.' },
-                            { title: '10. Mitsubishi L300 Express', text: 'Raw, basic, and cheap. A no-frills option that gets the job done for short 2-3 month trips. Don\'t expect luxury but it won\'t break the bank. NZ$2,500–$6,000.', expertTip: 'Great for the "buy cheap, sell cheap" strategy. Perfect if you\'re only in NZ for a few months.' },
-                        ]
-                    },
-                    {
-                        title: 'Buying Strategy Tips',
-                        icon: 'Shield',
-                        items: [
-                            { title: 'Seasonality Matters', text: 'Buy in March-April (end of season) for the best prices. Sell in October-November for maximum return. The difference can be $2,000–$4,000 on the same van.' },
-                            { title: 'Always Get a Pre-Purchase Inspection', text: 'For $150, a mechanic will find issues worth thousands. Never skip this step, especially on diesel engines.' },
-                            { title: 'Check CarJam', text: 'Enter the license plate on CarJam.co.nz to check for money owing, stolen status, odometer rollback, and import history. It\'s free for basic checks.' },
+                        "title": "Use the site’s price data carefully",
+                        "icon": "DollarSign",
+                        "items": [
+                            {
+                                "title": "What an asking-price comparison can tell you",
+                                "text": "The price index summarises eligible active adverts on Kiwi Van Market. It does not measure completed sales, a national market share, reliability or the resale return you will receive. A model group may have too few adverts to publish a median."
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Read the current asking-price sample and its method",
+                                "to": "/campervan-prices-nz"
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Follow the full buying checklist and paperwork steps",
+                                "to": "/guide/buying-campervan-nz"
+                            }
                         ]
                     }
                 ],
-                warnings: [
-                    'Avoid any van where the seller refuses a mechanical inspection',
-                    'Japanese imports with under 100,000km on the clock can be suspicious — odometer fraud exists',
-                    'A "beautiful" interior conversion means nothing if the engine is dying',
-                    'Budget $1,000–$2,000 on top of purchase price for WOF repairs, registration, and insurance',
-                ],
-                cta: {
-                    title: 'Find Your Perfect Van',
-                    text: 'Browse verified campervans with transparent vehicle history on Kiwi Van Market.',
-                    buttonText: 'Browse All Vans',
-                    buttonLink: '/',
+                "cta": {
+                    "title": "Compare current campervan adverts",
+                    "text": "Review seller-provided details, arrange a viewing and verify the documents before purchase.",
+                    "buttonText": "Browse campervans for sale",
+                    "buttonLink": "/"
                 }
             }
         }
@@ -1451,7 +1859,7 @@ export const GUIDES = {
                                 "type": "callout",
                                 "variant": "info",
                                 "title": "Visiteurs : vérifier le droit de conduire",
-                                "text": "NZTA autorise actuellement les titulaires admissibles d’un permis voiture étranger à conduire jusqu’à 18 mois après leur dernière entrée. La limite passe à 12 mois le 1er novembre 2026. Gardez le permis original valide et, s’il n’est pas en anglais, la traduction ou le permis international requis. Vérifiez toutes les conditions NZTA avant de conduire."
+                                "text": "Les titulaires admissibles d’un permis voiture étranger disposent actuellement de 18 mois depuis leur dernière arrivée. NZTA annonce 12 mois à partir du 1er novembre 2026 ; le texte de 2024 comporte une disposition transitoire pour les arrivées du 1er novembre 2024 au 31 octobre 2026. Vérifiez auprès de NZTA la règle applicable à votre date d’arrivée avant de conduire. Gardez le permis original valide et la traduction anglaise ou le permis international requis."
                             },
                             {
                                 "type": "sources",
@@ -1467,6 +1875,15 @@ export const GUIDES = {
                                     {
                                         "name": "NZTA — Driving on New Zealand roads",
                                         "url": "https://www.nzta.govt.nz/travelling-on-our-roads/visitors-and-new-residents/driving-on-nz-roads"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZ Legislation — Driver Licensing Amendment Rule 2024, transitional provision",
+                                        "url": "https://www.legislation.govt.nz/regulation/public/2024/0222/11.0/LMS1000138.html"
                                     }
                                 ]
                             }
@@ -1511,15 +1928,15 @@ export const GUIDES = {
             "description": "Une routine pré-achat chronologique pour les campervans en Nouvelle-Zélande — les devoirs la veille, les premières minutes sur place, le tour du véhicule, l'essai routier et la remise des clés. Version imprimable gratuite.",
             "heroImage": "/van_inspection_expert_1772133711431.webp",
             "content": {
-                "intro": "Chaque auberge a son histoire : quelqu'un qui a acheté un van le deuxième jour, puis passé la troisième semaine à payer un mécano pour lui expliquer ce qu'il avait raté. On n'évite pas de devenir cette histoire avec de la chance — on l'évite avec une méthode. Cette checklist suit une vraie visite dans l'ordre où elle se déroule vraiment : les devoirs la veille, les premières minutes sur place, le tour du véhicule, l'essai routier, et le quart d'heure où l'argent et les papiers changent de mains. Cochez au fil de l'eau et, à la fin, vous connaîtrez le van mieux que le vendeur ne s'y attend.",
+                "intro": "Cette checklist organise une visite : documents avant le déplacement, démarrage à froid, carrosserie et aménagement, puis essai et remise écrite. Elle repère les points à faire examiner ; elle ne suffit pas à établir l’état mécanique. Prévoyez une inspection indépendante avant de vous engager.",
                 "sections": [
                     {
                         "title": "La veille : les devoirs depuis l'auberge",
                         "icon": "Shield",
                         "items": [
                             {
-                                "title": "Vingt minutes sur ton téléphone, des milliers de dollars protégés",
-                                "text": "La plupart des catastrophes sont visibles en ligne avant d'avoir dépensé un dollar d'essence. Fais ça depuis ton lit, la veille de la visite."
+                                "title": "Vérifier les documents avant la visite",
+                                "text": "Comparez plaque, VIN, annonce et informations de contrôle. Résolvez les incohérences ou documents manquants avec le vendeur avant le déplacement."
                             },
                             {
                                 "type": "steps",
@@ -1530,7 +1947,7 @@ export const GUIDES = {
                                     },
                                     {
                                         "title": "Le VIN dans le PPSR",
-                                        "text": "Trois dollars sur ppsr.govt.nz te disent si un prêteur a encore un droit sur le véhicule. La dette de financement suit le van — pas le vendeur."
+                                        "text": "Interrogez le PPSR avec les identifiants du véhicule pour rechercher les sûretés inscrites. Vérifiez le tarif actuel sur le site officiel. Une sûreté peut mettre l’achat en danger ; demandez conseil si elle subsiste."
                                     },
                                     {
                                         "title": "Vérifie que le prix tient la route",
@@ -1548,9 +1965,18 @@ export const GUIDES = {
                             },
                             {
                                 "type": "cta",
-                                "text": "Imprime la version de poche de cette checklist (gratuit, aucune inscription)",
+                                "text": "Imprime la version de poche en anglais de cette checklist (gratuit, aucune inscription)",
                                 "href": "/checklist-print.html",
                                 "download": true
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "Companies Office — How the PPSR can help when buying used goods",
+                                        "url": "https://ppsr.companiesoffice.govt.nz/help-centre/information-for-debtors-and-consumers/how-the-ppsr-can-help-when-buying-used-goods/"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -1567,11 +1993,11 @@ export const GUIDES = {
                                 "items": [
                                     {
                                         "title": "Regarde comment il repose",
-                                        "text": "Un van qui penche vers un coin te parle de ressorts ou d'une suspension fatigués avant même que tu aies ouvert une portière."
+                                        "text": "Observez l’assiette et demandez des informations sur chargement, pneus et suspension. L’inspecteur doit évaluer la cause avant toute conclusion."
                                     },
                                     {
                                         "title": "Compare les quatre pneus",
-                                        "text": "Quatre marques différentes, ou des pneus avant neufs sur des arrière lisses, décrivent un van entretenu une urgence à la fois."
+                                        "text": "Contrôlez taille, sculpture, état et usure ; demandez si les pneus respectent les exigences du véhicule. Des marques différentes ne prouvent pas seules un mauvais entretien."
                                     },
                                     {
                                         "title": "Ouvre la portière et respire",
@@ -1599,19 +2025,19 @@ export const GUIDES = {
                                 "items": [
                                     {
                                         "title": "Jeux de tôles et teinte de peinture",
-                                        "text": "Des écarts irréguliers entre les panneaux, ou une portière d'une nuance légèrement différente, trahissent des réparations après accident que personne n'a mentionnées."
+                                        "text": "Notez jeux irréguliers, différences de peinture et réparations visibles, puis demandez l’historique. Ces indices ne déterminent pas seuls cause ou état structurel."
                                     },
                                     {
-                                        "title": "L'astuce de l'aimant",
-                                        "text": "Enveloppe un aimant dans un torchon et fais-le glisser le long des bas de caisse et des passages de roues. Là où il cesse d'accrocher, quelqu'un a masqué de la rouille sous du mastic."
+                                        "title": "Demander les anciennes réparations de carrosserie",
+                                        "text": "Demandez factures et photos des travaux. Un aimant ne prouve pas de manière fiable rouille cachée, accident ou solidité ; faites examiner les zones suspectes."
                                     },
                                     {
                                         "title": "Passe dessous avec ta torche",
-                                        "text": "Longerons, planchers, bas de caisse. Une croûte brune qui s'effrite sur un élément structurel, on part ; un léger voile de surface sur des tôles plates, ça se négocie."
+                                        "text": "Éclairez depuis une position sûre pour chercher dommage ou corrosion. Ne passez pas sous un véhicule non soutenu correctement. Faites contrôler longerons, plancher et bas de caisse avec un accès adapté."
                                     },
                                     {
                                         "title": "Joints de vitres et jonctions de toit",
-                                        "text": "Les vans néo-zélandais vivent dehors, souvent près de l'air salin. Une peinture qui cloque autour des vitres, c'est de la rouille qui travaille de l'intérieur — le sens qui coûte cher."
+                                        "text": "Cherchez cloques, joints altérés et auréoles. Demandez à l’inspecteur s’il y a corrosion ou infiltration et quelle en est l’étendue."
                                     },
                                     {
                                         "title": "Soulève tout ce qui se soulève",
@@ -1634,15 +2060,15 @@ export const GUIDES = {
                                     },
                                     {
                                         "title": "Bouchon, jauge, liquide de refroidissement",
-                                        "text": "Un résidu crémeux sous le bouchon d'huile pointe vers un joint de culasse — sur un vieux van, cette réparation coûte souvent plus que le van ne vaut. L'huile doit être sombre mais propre ; le liquide de refroidissement de sa vraie couleur, jamais huileux."
+                                        "text": "Contrôlez huile et refroidissement uniquement sans risque et selon les consignes du véhicule. N’ouvrez jamais un circuit chaud. Mélange, fuite ou perte de liquide nécessitent un diagnostic ; un dépôt au bouchon ne prouve pas seul un joint de culasse."
                                     },
                                     {
                                         "title": "Pose la question de la courroie de distribution",
-                                        "text": "Sur les vans japonais à haut kilométrage, demande quand la courroie a été changée pour la dernière fois et obtiens-le par écrit si possible. Si elle lâche en cours de route, elle peut détruire le moteur — sans facture, tu intègres le remplacement dans ton offre."
+                                        "text": "Identifiez le moteur et sa distribution par courroie ou chaîne. Comparez factures et préconisations constructeur ; demandez à l’inspecteur les travaux à prévoir. L’absence de facture ne prouve pas un remplacement."
                                     },
                                     {
                                         "title": "Conduis-le comme on conduit en Nouvelle-Zélande",
-                                        "text": "Voie rapide jusqu'à 100 km/h (aucun tremblement au volant), une vraie côte si tu en trouves une (aiguille de température stable, puissance qui tient), un ralentisseur au pas (aucun cognement), et un freinage ferme et droit."
+                                        "text": "Convenez d’un parcours sûr et respectez limites et conditions. Observez direction, freinage, température et puissance à vitesse adaptée. Faites examiner bruits, vibrations et voyants sans tenter de manœuvre dangereuse."
                                     },
                                     {
                                         "title": "Radio éteinte, vitre à moitié baissée",
@@ -1658,7 +2084,16 @@ export const GUIDES = {
                                 "type": "callout",
                                 "variant": "info",
                                 "title": "📝 Bon à savoir",
-                                "text": "Au-delà d'environ 5 000 $, une inspection pré-achat professionnelle (150–180 $ dans un garage, chez AA ou VTNZ) t'offre un pont, des yeux entraînés et un rapport écrit avec lequel négocier. Une assurance pas chère sur une grosse décision."
+                                "text": "Demandez un devis à un inspecteur indépendant, le contenu du rapport et les limites concernant l’aménagement. L’intérêt de l’inspection ne dépend pas d’un seuil d’achat de 5 000 $. Obtenez constats écrits et devis avant de décider."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Tips for buying a used car",
+                                        "url": "https://www.nzta.govt.nz/vehicles/choosing-the-right-vehicle/tips-for-buying-a-used-car"
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -1675,7 +2110,7 @@ export const GUIDES = {
                                 "items": [
                                     {
                                         "title": "Le certificat en main, pas dans l'annonce",
-                                        "text": "Pour le self-contained, exige le vrai document : date d'échéance, et qu'il corresponde à CE véhicule. Les annonces disent « self-contained » ; seuls les certificats le prouvent."
+                                        "text": "Vérifiez certificat, échéance, warrant vert et inscription au registre SCV pour ce véhicule. L’ancien blue warrant n’est plus reconnu depuis le 7 juin 2026. Un autocollant promotionnel ne prouve pas la certification."
                                     },
                                     {
                                         "title": "L'eau entre, l'eau sort",
@@ -1687,19 +2122,37 @@ export const GUIDES = {
                                     },
                                     {
                                         "title": "Fais tourner le frigo et les lumières sur la batterie",
-                                        "text": "Moteur coupé, dix minutes. Une batterie auxiliaire en forme encaisse sans broncher ; une mourante s'affaisse à vue d'œil. Demande son âge — au-delà de trois ou quatre ans, prévois un remplacement."
+                                        "text": "Testez les appareils avec le vendeur et relevez type, capacité, âge et charge de la batterie. Dix minutes de fonctionnement ne prouvent pas son état. En cas de doute, faites contrôler capacité et installation."
                                     },
                                     {
                                         "title": "Fais dire quelque chose à « il y a du solaire »",
                                         "text": "Demande la puissance du panneau (en watts) et la marque du régulateur. Sans chiffres, « solaire » peut désigner un chargeur d'appoint et un autocollant optimiste."
                                     },
                                     {
-                                        "title": "Renifle le coffre à gaz",
-                                        "text": "La moindre odeur de gaz — ou un réchaud sans certificat de conformité — est un problème de sécurité avant d'être un problème de paperasse."
+                                        "title": "Faire vérifier le gaz par un professionnel qualifié",
+                                        "text": "Demandez les documents de l’installation et faites intervenir un professionnel qualifié en cas de doute. WorkSafe interdit l’usage de réchauds, chauffages et lampes à gaz portables à l’intérieur d’un camping-car ou van, auvents compris. Si vous sentez du gaz, arrêtez le test et suivez les consignes officielles."
                                     },
                                     {
                                         "title": "Soulève le matelas",
                                         "text": "Les auréoles brunes sur le contreplaqué en dessous sont l'autobiographie honnête de chaque fuite de toit que le van a connue."
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "WorkSafe — Gas safety for caravans and motorhomes",
+                                        "url": "https://www.worksafe.govt.nz/managing-health-and-safety/consumers/safe-living-with-gas/recreational-safety/gas-safety-for-caravans-and-motorhomes/"
                                     }
                                 ]
                             }
@@ -1713,24 +2166,41 @@ export const GUIDES = {
                                 "type": "steps",
                                 "items": [
                                     {
-                                        "title": "Relis les deux étiquettes du pare-brise",
-                                        "text": "WOF et REGO : les deux à jour, et idéalement à plusieurs mois de l'échéance. Tout ce qui est sur le point d'expirer est un coût dont tu hérites — dis-le, poliment, avec un chiffre."
+                                        "title": "Vérifier inspection et licence séparément",
+                                        "text": "Lisez date et échéance du WoF puis état de la rego. L’acheteur peut exiger un WoF de moins d’un mois ; gardez l’accord pour un contrôle plus ancien ou expiré selon NZTA."
                                     },
                                     {
-                                        "title": "Diesel ? Lis l'étiquette RUC",
-                                        "text": "La distance achetée doit couvrir le relevé du compteur. Tout manque devient ta facture au guichet NZTA."
+                                        "title": "Les RUC s’appliquent-ils ? Lire la licence",
+                                        "text": "Pour tout véhicule soumis aux RUC, pas seulement diesel, comparez distance payée et compteur. Réglez les écarts avant paiement ; l’acheteur peut devoir les payer."
                                     },
                                     {
-                                        "title": "Rédige le reçu avant que l'argent bouge",
-                                        "text": "Prix, date, les deux noms et numéros de passeport, plaque, VIN, la mention « sold as seen » (vendu en l'état). Deux exemplaires, signés tous les deux. Cinq minutes qui règlent toute dispute future."
+                                        "title": "Rédiger le contrat avant le paiement",
+                                        "text": "Inscrivez coordonnées, date, prix, plaque, VIN, équipement, défauts connus et conditions. Gardez exemplaires signés et preuve du paiement. « Sold as seen » ne règle pas tout litige et ne supprime pas les obligations légales."
                                     },
                                     {
-                                        "title": "Transférez la propriété ensemble, sur place",
-                                        "text": "Dix minutes en ligne sur nzta.govt.nz, environ 9 $, côte à côte. « On règlera ça demain », c'est comme ça qu'un voyageur se retrouve avec les excès de vitesse d'un inconnu — ou sans le van du tout."
+                                        "title": "Notifier NZTA à la remise",
+                                        "text": "Acheteur et vendeur notifient immédiatement NZTA. La démarche acheteur en ligne exige un permis néo-zélandais ; sinon, passez par un agent avec les justificatifs requis. Le registre ne prouve pas la propriété juridique."
                                     },
                                     {
-                                        "title": "Assure-le avant de tourner la clé",
-                                        "text": "Une assurance au tiers prend vingt minutes en ligne et accepte les permis étrangers. Le retour à l'auberge est déjà un trajet."
+                                        "title": "Confirmer l’assurance avant de conduire",
+                                        "text": "Demandez les conditions pour votre permis, âge, voyage et aménagement avant l’achat, avec prise d’effet à la remise. Acceptation et délai varient selon l’assureur."
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    },
+                                    {
+                                        "name": "NZTA — About RUC",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/about-ruc"
+                                    },
+                                    {
+                                        "name": "Consumer Protection — Car insurance",
+                                        "url": "https://www.consumerprotection.govt.nz/help-product-service/cars/paying-registering-insuring-car/car-insurance"
                                     }
                                 ]
                             }
@@ -1742,7 +2212,7 @@ export const GUIDES = {
                         "items": [
                             {
                                 "title": "Aucune n'est un point de négociation",
-                                "text": "Ce sont des sorties. Le marché néo-zélandais du van en a toujours un autre à vendre — cette semaine, à prix juste, chez quelqu'un de droit."
+                                "text": "Une identité incertaine, une sûreté, un problème de sécurité ou une inspection refusée justifient d’arrêter les démarches. L’urgence du départ ne remplace pas les vérifications."
                             },
                             {
                                 "type": "checklist",
@@ -1760,7 +2230,7 @@ export const GUIDES = {
                                 "type": "callout",
                                 "variant": "info",
                                 "title": "📝 Bon à savoir",
-                                "text": "Sur Kiwi Van Market, le WOF, la REGO et le statut self-contained figurent sur chaque annonce, avec un bouton CarJam dès que la plaque est fournie — les vérifications ennuyeuses se font depuis ton lit, avant d'avoir dépensé un dollar d'essence."
+                                "text": "Les informations des annonces viennent des vendeurs. Avec une plaque, le lien CarJam mène à des contrôles externes ; il ne prouve pas que Kiwi Van Market a vérifié le véhicule ou acheté un rapport complet."
                             },
                             {
                                 "type": "cta",
@@ -1782,7 +2252,7 @@ export const GUIDES = {
                                     },
                                     {
                                         "q": "Un scanner OBD2 bon marché vaut-il l'achat ?",
-                                        "a": "Pour environ 30 $, absolument. Branché sous le tableau de bord, il lit les codes défaut enregistrés en quelques minutes et repère l'astuce classique du voyant effacé le matin de la vente. Il ne remplace pas un mécano — il décide si tu en as besoin."
+                                        "a": "Un outil compatible peut lire certains défauts et informations de diagnostic, selon le véhicule et l’appareil. Des codes effacés ou défauts intermittents peuvent être absents. Un résultat vierge ne prouve pas la santé du moteur ou de la boîte ; demandez les contrôles adaptés à l’inspecteur."
                                     },
                                     {
                                         "q": "Combien de temps prévoir pour une vraie visite ?",
@@ -1797,203 +2267,201 @@ export const GUIDES = {
                         ]
                     }
                 ]
-            }
+            },
+            "dateModified": "2026-10-15"
         },
         'wof-rego-ruc-insurance-nz': {
-            "title": "WOF, REGO, RUC et assurance en Nouvelle-Zélande : les règles du van, en clair",
-            "description": "Les quatre règles véhicule que tout voyageur en campervan doit comprendre en NZ — ce qu'elles coûtent, quand elles sont dues, et les amendes en cas d'erreur. En français simple.",
+            "title": "WoF, rego, RUC et assurance NZ : contrôles avant l’achat d’un van",
+            "description": "Vérifiez WoF, licence du véhicule, RUC et assurance avant d’acheter un van en Nouvelle-Zélande. Sources officielles et changements des inspections.",
             "heroImage": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1200",
+            "dateModified": "2026-10-15",
             "content": {
-                "intro": "Quatre sigles régissent ta vie en van en Nouvelle-Zélande : WOF, REGO, RUC et (officieusement) ACC. Maîtrise-les et tu n'y penseras plus jamais. Rate-les et tu risques des amendes, un van que tu ne peux pas conduire légalement, ou des dettes héritées du précédent propriétaire. Voici chacun, en clair, avec de vrais chiffres.",
+                "intro": "Avant de payer un campervan, contrôlez séparément son inspection de sécurité, sa licence de circulation, les éventuelles charges kilométriques et votre assurance. Un badge dans l’annonce ne remplace pas les documents. Relevez plaque, dates et kilométrage sur le véhicule.",
                 "sections": [
                     {
-                        "title": "WOF — le Warrant of Fitness",
+                        "title": "WoF : inspection de sécurité et changements en novembre",
                         "icon": "Shield",
                         "items": [
                             {
-                                "title": "Ce que c'est",
-                                "text": "Le WOF est le contrôle technique de sécurité périodique néo-zélandais. Il vérifie freins, pneus, feux, direction, ceintures, rouille et plus encore. Sans WOF à jour, tu ne peux pas conduire légalement — et ton assurance peut refuser d'indemniser."
+                                "title": "Ce que le contrôle indique",
+                                "text": "Le WoF porte sur des critères de sécurité au moment de l’inspection. Il ne prouve ni la fiabilité du moteur, ni l’état de la boîte, ni la qualité de l’aménagement. Prévoyez une inspection préachat distincte et demandez ce qu’elle couvre."
                             },
                             {
-                                "type": "table",
-                                "title": "À quelle fréquence un WOF est-il dû ?",
-                                "headers": [
-                                    "Véhicule",
-                                    "Fréquence du WOF"
-                                ],
-                                "rows": [
-                                    [
-                                        "Immatriculé pour la première fois après le 1ᵉʳ janvier 2000",
-                                        "Tous les 12 mois"
-                                    ],
-                                    [
-                                        "Immatriculé avant 2000 (la plupart des vans backpackers pas chers !)",
-                                        "Tous les 6 mois"
-                                    ],
-                                    [
-                                        "Véhicules neufs",
-                                        "Premier WOF à 3 ans"
-                                    ]
-                                ],
-                                "caption": "Un contrôle coûte 60–80 $ chez VTNZ, AA ou la plupart des garages, et prend environ 45 minutes."
+                                "title": "Lire l’échéance et les règles actuelles",
+                                "text": "Au 15 octobre 2026, la fréquence dépend encore de la première immatriculation. Les changements commencent le 1er novembre 2026, avec un calendrier différé pour certains véhicules. Consultez NZTA pour le véhicule concerné au lieu de supposer que tous les vans sont contrôlés tous les six ou douze mois."
                             },
                             {
-                                "title": "Et s'il échoue ?",
-                                "text": "Tu reçois la liste de ce qu'il faut réparer, et tu ne peux légalement conduire que pour aller réparer et repasser le contrôle. La plupart des centres offrent une contre-visite gratuite ou peu chère sous 28 jours. C'est pour ça qu'un van au WOF presque expiré vaut moins : tu hérites du pari.",
-                                "expertTip": "💡 Tu achètes ? Un WOF récent de VTNZ ou AA pèse plus lourd qu'un WOF d'un garage inconnu — et 3 mois restants minimum devrait être ta règle."
+                                "title": "Au moment de l’achat",
+                                "text": "Selon NZTA, l’acheteur peut exiger un WoF de moins d’un mois. Accepter un contrôle plus ancien doit être confirmé par écrit. Sans inspection valide, la circulation est limitée aux déplacements pour réparation ou inspection et le véhicule doit rester sûr pour ce trajet. Plusieurs mois de validité restants ne prouvent pas que le contrôle est récent."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Warrant of fitness",
+                                        "url": "https://www.nzta.govt.nz/vehicles/warrants-and-certificates/warrant-of-fitness"
+                                    },
+                                    {
+                                        "name": "NZTA — Changes to light vehicle inspections",
+                                        "url": "https://nzta.govt.nz/projects-and-consultations/have-your-say/past-consultations/considering-changes-to-light-vehicle-inspections/changes-to-light-vehicle-inspections"
+                                    },
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "REGO — l'immatriculation",
-                        "icon": "Car",
+                        "title": "Rego : licence de circulation distincte de l’immatriculation",
+                        "icon": "Shield",
                         "items": [
                             {
-                                "title": "Ce que c'est",
-                                "text": "La REGO est la redevance pour circuler sur les routes publiques, matérialisée par l'étiquette sur ton pare-brise. Tu l'achètes par blocs de 3, 6 ou 12 mois, en ligne sur nzta.govt.nz ou à NZ Post — ça prend cinq minutes."
+                                "title": "Lire l’étiquette et vérifier l’identité du véhicule",
+                                "text": "La rego est la licence permettant d’utiliser un véhicule immatriculé sur route. L’immatriculation désigne la personne responsable ; le registre ne prouve pas la propriété juridique. Comparez plaque, VIN et dates."
                             },
                             {
-                                "type": "table",
-                                "title": "Ce que coûte la REGO (van type)",
-                                "headers": [
-                                    "Type de véhicule",
-                                    "Coût annuel approximatif"
-                                ],
-                                "rows": [
-                                    [
-                                        "Van ou voiture essence",
-                                        "100–110 $"
-                                    ],
-                                    [
-                                        "Van diesel",
-                                        "Moins cher pour la REGO elle-même — mais tu paies la RUC en plus (section suivante)"
-                                    ]
+                                "title": "Prévoir le tarif du véhicule",
+                                "text": "Les frais dépendent du véhicule et de son usage, avec une composante ACC et des frais administratifs. NZTA publie les tarifs et un outil par plaque. Une hypothèse de « 100 $ par an » ne constitue pas un budget fiable pour un campervan."
+                            },
+                            {
+                                "title": "Licence expirée ou suspendue",
+                                "text": "Distinguez licence expirée, licence mise en attente et immatriculation annulée : les démarches diffèrent. Vérifiez les conditions avant de conduire. Vendeur et acheteur notifient immédiatement NZTA ; sans permis néo-zélandais, l’acheteur passe par un agent."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Licensing (rego) fees",
+                                        "url": "https://www.nzta.govt.nz/vehicles/licensing-rego/vehicle-fees/licensing-fees"
+                                    },
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    }
                                 ]
-                            },
-                            {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ À l'achat d'un van",
-                                "text": "Vérifie que la REGO n'est pas « on hold » (un vendeur peut la suspendre pour économiser pendant la vente). La réactiver est facile mais c'est TON coût, et rouler pendant qu'elle est suspendue, c'est une amende de 200 $."
                             }
                         ]
                     },
                     {
-                        "title": "RUC — Road User Charges (diesel uniquement)",
+                        "title": "RUC : énergie, catégorie et distance payée",
                         "icon": "DollarSign",
                         "items": [
                             {
-                                "title": "Ce que c'est",
-                                "text": "Les véhicules essence paient la taxe routière à la pompe. Les diesels la paient à part : les Road User Charges, achetées par blocs de 1 000 km (environ 76 $ chacun) en ligne sur nzta.govt.nz. Ton étiquette de pare-brise indique le kilométrage jusqu'auquel tu as payé."
+                                "title": "Les RUC ne concernent pas uniquement le diesel",
+                                "text": "Les véhicules diesel et de nombreux véhicules électriques paient des road user charges. Le type et le poids déterminent le tarif. Le type 1 standard jusqu’à 3 500 kg coûte 76 NZD par 1 000 km, plus les frais de transaction. Cet exemple ne s’applique pas à tous les camping-cars."
                             },
                             {
-                                "title": "Le calcul pour un trajet type",
-                                "text": "Une boucle de 10 000 km île du Sud + île du Nord dans un van diesel coûte environ 760 $ de RUC en plus du carburant. Le diesel est moins cher au litre, donc sur les longs trajets il peut quand même gagner — mais pour la plupart des itinéraires backpackers sous 15 000 km, la simplicité de l'essence vaut plus que les économies du diesel."
+                                "title": "Comparer la licence kilométrique au compteur",
+                                "text": "Le vendeur doit fournir une licence RUC à jour. NZTA avertit que l’acheteur peut devoir régler les kilomètres impayés. Résolvez tout écart avant paiement et gardez une trace écrite."
                             },
                             {
-                                "type": "callout",
-                                "variant": "warning",
-                                "title": "⚠️ Le piège qui coince les acheteurs",
-                                "text": "La RUC impayée suit le VÉHICULE, pas le vendeur. Avant d'acheter tout van diesel, compare le compteur avec la distance RUC achetée — l'écart est une dette dont tu es sur le point d'hériter."
+                                "title": "Les kilomètres inutilisés restent avec le véhicule",
+                                "text": "La vente ne donne pas droit au remboursement des RUC inutilisés. La licence appartient à ce véhicule : tenez compte de la distance restante dans le prix. D’autres règles de remboursement concernent certains usages hors route ou l’annulation d’immatriculation."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — About RUC",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/about-ruc"
+                                    },
+                                    {
+                                        "name": "NZTA — RUC rates and transaction fees",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/ruc-rates-and-transaction-fees"
+                                    },
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "Assurance & ACC — ce qui est vraiment couvert",
-                        "icon": "CheckCircle",
+                        "title": "Assurance : obtenir les conditions avant de s’engager",
+                        "icon": "Shield",
                         "items": [
                             {
-                                "title": "La surprise : l'assurance n'est pas obligatoire",
-                                "text": "La Nouvelle-Zélande n'impose pas d'assurance auto. Mais avant de te réjouir : si tu causes un accident sans assurance, tu dois personnellement les dégâts — et emboutir un pick-up à 80 000 $ est une vraie possibilité. C'est pour ça que quasiment tous les voyageurs prennent au moins une couverture au tiers."
-                            },
-                            {
                                 "type": "table",
-                                "title": "Tes trois options",
+                                "title": "Comparer les garanties",
                                 "headers": [
-                                    "Couverture",
-                                    "Protège",
-                                    "Coût annuel typique"
+                                    "Formule",
+                                    "Questions à poser"
                                 ],
                                 "rows": [
                                     [
                                         "Au tiers",
-                                        "Les véhicules et biens des autres (pas ton van)",
-                                        "300–600 $"
+                                        "Quels dommages causés au véhicule ou aux biens d’autrui sont couverts ?"
                                     ],
                                     [
-                                        "Au tiers, incendie & vol",
-                                        "Ci-dessus + ton van s'il est volé ou brûlé",
-                                        "400–700 $"
+                                        "Tiers, incendie et vol",
+                                        "Quelles garanties concernent le van, l’aménagement et les affaires ?"
                                     ],
                                     [
                                         "Tous risques",
-                                        "Tout, y compris tes propres dégâts en cas d'accident",
-                                        "700 $+ — rarement rentable sur un van à 6 000 $"
+                                        "Quels dommages à votre véhicule sont couverts, sur quelle valeur et avec quelle franchise ?"
                                     ]
                                 ],
-                                "caption": "Les permis étrangers sont acceptés par les assureurs néo-zélandais classiques ; tu peux souscrire en ligne avec un passeport et une adresse en NZ."
+                                "caption": "Lisez conditions et exclusions : ce tableau sert à comparer des devis."
                             },
                             {
-                                "title": "Et l'ACC ?",
-                                "text": "L'Accident Compensation Corporation néo-zélandaise couvre les soins des BLESSURES pour tout le monde en NZ — touristes compris — quelle que soit la responsabilité. C'est réel et gratuit. Mais ça couvre les personnes, pas les biens : tes frais médicaux après un accident, oui ; ton van ou l'autre voiture, non. L'ACC, c'est pourquoi l'assurance voyage et l'assurance véhicule comptent quand même."
+                                "title": "Déclarer le conducteur et l’usage réels",
+                                "text": "Demandez les conditions pour votre permis étranger, âge, conducteurs, aménagement, durée de séjour, travail et routes prévues. Acceptation, tarif et indemnisation dépendent du contrat. Passeport, adresse d’auberge ou formulaire en ligne ne garantissent pas la couverture."
+                            },
+                            {
+                                "title": "Vérifier les conditions de sécurité",
+                                "text": "Interrogez l’assureur sur ces exigences. N’affirmez pas qu’un WoF expiré annule automatiquement toute garantie, ni qu’un WoF valide assure l’indemnisation."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "Consumer Protection — Car insurance",
+                                        "url": "https://www.consumerprotection.govt.nz/help-product-service/cars/paying-registering-insuring-car/car-insurance"
+                                    }
+                                ]
                             }
                         ]
                     },
                     {
-                        "title": "Amendes & pénalités : l'antisèche",
-                        "icon": "AlertTriangle",
+                        "title": "ACC et checklist de remise du véhicule",
+                        "icon": "CheckCircle",
                         "items": [
                             {
+                                "title": "L’ACC couvre des blessures, pas le véhicule ou tout le voyage",
+                                "text": "Le régime sans faute peut couvrir des blessures accidentelles admissibles en Nouvelle-Zélande, y compris pour les visiteurs. Il ne remplace pas l’assurance du véhicule, les maladies, les perturbations du voyage ou le retour chez vous. Certains frais de soins peuvent rester à payer : consultez ACC et votre assurance voyage."
+                            },
+                            {
                                 "type": "checklist",
-                                "title": "Ce que ça coûte de se tromper",
                                 "items": [
-                                    "Conduire sans WOF à jour : 200 $ d'amende — et ton assurance peut refuser les sinistres",
-                                    "REGO expirée ou « on hold » : 200 $ d'amende",
-                                    "RUC impayée : mise à la charge du véhicule, plus pénalités",
-                                    "Freedom camping sans certification (là où elle est requise) : jusqu'à 400 $",
-                                    "Pas d'assurance : pas d'amende — mais un seul accident responsable peut te coûter des dizaines de milliers"
+                                    "Comparer plaque et VIN aux documents.",
+                                    "Lire séparément date du WoF et échéance.",
+                                    "Confirmer l’état de la rego et le tarif réel.",
+                                    "Si les RUC s’appliquent, comparer distance payée et compteur.",
+                                    "Obtenir les conditions d’assurance pour votre permis et votre voyage.",
+                                    "Conserver le contrat et les deux notifications NZTA."
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "ACC — Visitors injured in New Zealand",
+                                        "url": "https://www.acc.co.nz/im-injured/what-we-cover/if-youre-a-visitor-injured-in-new-zealand"
+                                    }
                                 ]
                             },
                             {
                                 "type": "cta",
-                                "text": "Prêt à acheter ? Lis le guide d'achat complet, étape par étape",
+                                "text": "Suivre le guide complet d’achat et de remise du van",
                                 "to": "/guide/buying-campervan-nz"
                             },
                             {
                                 "type": "cta",
-                                "text": "Tu vas à une inspection ? Prends la checklist en 30 points",
+                                "text": "Emporter la checklist lors de la visite",
                                 "to": "/guide/campervan-buyer-checklist"
-                            }
-                        ]
-                    },
-                    {
-                        "title": "FAQ",
-                        "icon": "CheckCircle",
-                        "items": [
-                            {
-                                "type": "faq",
-                                "items": [
-                                    {
-                                        "q": "Puis-je conduire un van avec un WOF expiré ?",
-                                        "a": "Uniquement directement vers un centre de contrôle ou un garage pour des réparations prévues. Ailleurs, tu risques 200 $ d'amende — et l'annulation de la plupart des assurances."
-                                    },
-                                    {
-                                        "q": "Que veut dire « REGO on hold » à l'achat d'un van ?",
-                                        "a": "Le vendeur a suspendu l'immatriculation pour économiser. Le van ne peut légalement pas rouler avant réactivation (facile, en ligne, mais à ta charge) — et il peut lui falloir un nouveau WOF avant."
-                                    },
-                                    {
-                                        "q": "Comment acheter de la RUC pour un van diesel ?",
-                                        "a": "En ligne sur nzta.govt.nz ou à NZ Post, par blocs de 1 000 km (~76 $). Achètes-en assez pour couvrir ta distance prévue ; la RUC non utilisée peut être remboursée à la revente."
-                                    },
-                                    {
-                                        "q": "Un étranger peut-il obtenir une assurance véhicule en NZ ?",
-                                        "a": "Oui — les assureurs classiques couvrent les conducteurs avec permis étranger ou permis international. Tu souscris en ligne en environ 20 minutes avec un passeport et une adresse en NZ (ton auberge convient)."
-                                    },
-                                    {
-                                        "q": "L'ACC remplace-t-elle l'assurance voyage ?",
-                                        "a": "Non. L'ACC couvre les blessures d'accident en NZ pour tous, mais pas la maladie, ni tes affaires, ni ton van, ni la responsabilité civile. Garde ton assurance voyage, et mets une couverture au tiers sur le van."
-                                    }
-                                ]
                             }
                         ]
                     }
@@ -2001,166 +2469,435 @@ export const GUIDES = {
             }
         },
         'freedom-camping-nz': {
-            title: 'Camping Sauvage en Nouvelle-Zélande - Règles et Meilleurs Spots 2025',
-            description: 'Guide complet du freedom camping en Nouvelle-Zélande. Où dormir gratuitement, certification self-contained et amendes à éviter.',
-            heroImage: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200',
-            content: {
-                intro: `Le camping sauvage (Freedom Camping) est l'un des meilleurs moyens de vivre la nature néo-zélandaise. Mais il y a des règles strictes à respecter pour rester dans la légalité et protéger l'environnement.`,
-                sections: [
+            "title": "Freedom camping en Nouvelle-Zélande : warrant vert, règles et amendes",
+            "description": "Vérifiez certification self-contained actuelle, règles locales et amendes avant de préparer un voyage en van en Nouvelle-Zélande.",
+            "heroImage": "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=1200",
+            "dateModified": "2026-10-15",
+            "content": {
+                "intro": "Commencez par les règles du gestionnaire pour l’endroit précis où vous souhaitez dormir. Le certificat concerne le véhicule ; il ne donne pas accès à toutes les plages, parkings ou routes. Prévoyez des arrêts autorisés et une solution de secours en camping.",
+                "sections": [
                     {
-                        title: 'Règles du Freedom Camping',
-                        icon: 'CheckCircle',
-                        items: [
-                            { title: 'Certification Obligatoire', text: 'La plupart des spots exigent un véhicule certifié autonome (Self-Contained). Cela implique d\'avoir des toilettes et des cuves d\'eau.' },
-                            { title: 'Vérifiez les Conseils Locaux', text: 'Chaque région a ses propres règles. Utilisez CamperMate ou WikiCamps pour trouver les spots légaux.' },
-                            { title: 'Temps de Séjour', text: 'La plupart des spots limitent à 1 ou 2 nuits maximum. Ne restez pas au-delà.' },
-                            { title: 'Respect des Lieux', text: 'Emportez vos déchets, ne videz pas vos eaux grises au sol et utilisez les stations de vidange.' },
+                        "title": "Vérifier séparément véhicule et emplacement",
+                        "icon": "Shield",
+                        "items": [
+                            {
+                                "title": "La certification actuelle exige un warrant vert valide",
+                                "text": "Depuis le 7 juin 2026, l’ancien blue warrant n’est plus reconnu. PGDB précise que certificat, carte verte affichée et inscription au registre SCV sont les preuves pertinentes. Un autocollant vert promotionnel n’a pas de valeur officielle. Les équipements doivent notamment comprendre des toilettes fixes."
+                            },
+                            {
+                                "title": "Sans certification, choisir un emplacement adapté",
+                                "text": "Le principe général pour le freedom camping en véhicule sur terrain public est la certification, avec des exceptions désignées. Les vans non certifiés peuvent utiliser des campings adaptés, holiday parks et emplacements expressément autorisés. Vérifiez la règle du lieu et de son gestionnaire."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: 'Amendes à Éviter',
-                        icon: 'AlertTriangle',
-                        items: [
-                            { title: 'Camping Non Autorisé', text: '200$ d\'amende immédiate. Cela peut monter jusqu\'à 10 000$ en cas de récidive ou dégâts.' },
-                            { title: 'Fausse Blue Card', text: '200$ d\'amende minimum. Les rangers vérifient l\'intérieur de votre van pour s\'assurer des installations.' },
-                            { title: 'Déchets et Eaux Usées', text: 'Jusqu\'à 10 000$ d\'amende pour vidange illégale des toilettes ou eaux grises.' },
+                        "title": "Préparer les étapes avec les informations officielles",
+                        "icon": "MapPin",
+                        "items": [
+                            {
+                                "type": "steps",
+                                "items": [
+                                    {
+                                        "title": "Identifier le gestionnaire",
+                                        "text": "Recherchez le conseil local, Department of Conservation, LINZ ou opérateur privé responsable. Consultez carte, avis et conditions de réservation actuels."
+                                    },
+                                    {
+                                        "title": "Lire toutes les conditions",
+                                        "text": "Vérifiez certification, nombre de personnes, horaires, durée, fermetures saisonnières et déchets. Une limite nationale de « une ou deux nuits » ne s’applique pas uniformément partout."
+                                    },
+                                    {
+                                        "title": "Lire les panneaux à l’arrivée",
+                                        "text": "Les applications facilitent la recherche ; contrôlez les informations officielles et la signalisation sur place. Si le site est complet ou ambigu, choisissez une solution autorisée plutôt qu’un stationnement voisin supposé permis."
+                                    },
+                                    {
+                                        "title": "Prévoir eau et vidange",
+                                        "text": "Utilisez les installations autorisées et emportez les déchets. Planifiez ces étapes avec les nuits ; l’autonomie dépend de la capacité réelle des réservoirs."
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "New Zealand Government — Freedom camping",
+                                        "url": "https://www.govt.nz/browse/recreation-and-the-environment/freedom-camping/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: 'Meilleures Régions pour le Freedom',
-                        icon: 'MapPin',
-                        items: [
-                            { title: 'Côte Ouest (Île du Sud)', text: 'Règles plus souples, plages et forêts sauvages. Super spots vers Hokitika et Greymouth.' },
-                            { title: 'Otago/Southland', text: 'Lacs et montagnes magnifiques. Beaucoup de campings DOC avec services de base.' },
-                            { title: 'East Cape (Île du Nord)', text: 'Hors des sentiers battus, locaux accueillants, côtes sublimes.' },
+                        "title": "Comprendre les sanctions",
+                        "icon": "AlertTriangle",
+                        "items": [
+                            {
+                                "type": "table",
+                                "title": "Exemples du règlement national",
+                                "headers": [
+                                    "Infraction",
+                                    "Frais d’infraction"
+                                ],
+                                "rows": [
+                                    [
+                                        "Camper en violation d’une interdiction ou restriction locale",
+                                        "400 NZD"
+                                    ],
+                                    [
+                                        "Ne pas afficher le warrant lorsque requis",
+                                        "200 NZD"
+                                    ],
+                                    [
+                                        "Afficher un warrant altéré ou frauduleux",
+                                        "600 NZD"
+                                    ],
+                                    [
+                                        "Déposer des déchets en freedom camping dans une zone concernée",
+                                        "800 NZD"
+                                    ]
+                                ],
+                                "caption": "Ce sont des exemples de frais d’infraction, pas une liste complète ni les maxima au tribunal. Le texte et les circonstances comptent."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "New Zealand Legislation — Freedom camping infringement penalties",
+                                        "url": "https://www.legislation.govt.nz/regulation/public/2023/0136/latest/whole.html"
+                                    }
+                                ]
+                            }
                         ]
                     },
-                ],
-                warnings: [
-                    'Queenstown et les zones très touristiques ont des règles de "no-camping" très strictes',
-                    'Auckland a très peu d\'options de freedom camping en centre-ville',
-                    'En été (décembre-février), les places partent très vite dès la fin d\'après-midi',
-                    'Ayez toujours un plan B (camping payant) au cas où le spot est complet',
-                ],
-                cta: {
-                    title: 'Trouver un Van Autonome',
-                    text: 'Le camping sauvage n\'est possible qu\'en Self-Contained. Trouvez le vôtre sur Kiwi Van Market.',
-                    buttonText: 'Voir les Vans SC',
-                    buttonLink: '/?selfContained=true',
-                }
+                    {
+                        "title": "Avant d’acheter un van annoncé self-contained",
+                        "icon": "CheckCircle",
+                        "items": [
+                            {
+                                "type": "checklist",
+                                "items": [
+                                    "Lire le certificat, sa date et les références du véhicule.",
+                                    "Vérifier le warrant vert actuel et le registre SCV.",
+                                    "Demander si des modifications affectent la certification.",
+                                    "Comparer l’itinéraire aux restrictions officielles.",
+                                    "Budgéter campings et vidanges au lieu de supposer toutes les nuits gratuites."
+                                ]
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Lire le guide complet d’achat d’un campervan",
+                                "to": "/guide/buying-campervan-nz"
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Comparer les vans déclarés self-contained par les vendeurs",
+                                "to": "/?selfContained=true"
+                            }
+                        ]
+                    }
+                ]
             }
         },
         'selling-campervan-nz': {
-            title: 'Comment Vendre Votre Campervan en Nouvelle-Zélande - Guide Rapide',
-            description: 'Vendez votre van rapidement. Astuces pour le prix, les photos et comment atteindre les backpackers.',
-            heroImage: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200',
-            content: {
-                intro: `Vendre votre van à la fin de votre aventure ne doit pas être stressant. Avec la bonne méthode, vous vendrez vite et au bon prix avant de reprendre votre avion.`,
-                sections: [
+            "title": "Vendre un campervan en Nouvelle-Zélande : annonce, paiement et remise",
+            "description": "Préparez la vente d’un van en NZ : prix affiché, photos honnêtes, inspection, paiement et notifications NZTA. Checklist avec sources officielles.",
+            "heroImage": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200",
+            "content": {
+                "intro": "Préparez l’annonce avant votre date de départ. Comparez les prix affichés, rassemblez les documents et gardez du temps pour visites et inspections. Aucun délai ni prix de revente n’est garanti ; prévoyez une solution si les demandes tardent.",
+                "sections": [
                     {
-                        title: 'Préparer le Van à la Vente',
-                        icon: 'CheckCircle',
-                        items: [
-                            { title: 'Nettoyage en Profondeur', text: 'La première impression est capitale. Présentez un van propre, vide de vos objets personnels et qui sent bon.' },
-                            { title: 'Petit Entretien', text: 'Réparez les petits défauts : balais d\'essuie-glace, ampoules... ça rassure l\'acheteur sur le soin apporté.' },
-                            { title: 'Nouveau WOF', text: 'Un van avec plus de 6 mois de WOF se vend beaucoup plus cher et plus vite. C\'est un investissement de 50-100$.' },
-                            { title: 'Documents Prêts', text: 'Ayez la carte grise, l\'historique d\'entretien et le certificat self-contained sous la main.' },
+                        "title": "Préparer le Van à la Vente",
+                        "icon": "CheckCircle",
+                        "items": [
+                            {
+                                "title": "Nettoyage en Profondeur",
+                                "text": "La première impression est capitale. Présentez un van propre, vide de vos objets personnels et qui sent bon."
+                            },
+                            {
+                                "title": "Petit Entretien",
+                                "text": "Réparez les petits défauts : balais d'essuie-glace, ampoules... ça rassure l'acheteur sur le soin apporté."
+                            },
+                            {
+                                "title": "Vérifier les conditions du WoF",
+                                "text": "L’acheteur peut exiger un WoF de moins d’un mois. S’il accepte un contrôle plus ancien, conservez son accord écrit. Un WoF expiré impose aussi un accord écrit et limite la circulation. Consultez les règles de vente NZTA ; six mois restants ne prouvent pas un contrôle récent."
+                            },
+                            {
+                                "title": "Rassembler les documents réels",
+                                "text": "Regroupez factures d’entretien, WoF, rego, distance RUC applicable et certification actuelle de l’aménagement. Faites correspondre documents et annonce, en déclarant les défauts connus."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Selling a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/selling-a-vehicle"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: 'Réussir ses Photos',
-                        icon: 'Car',
-                        items: [
-                            { title: 'Le Bon Moment', text: 'Prenez les photos à la "golden hour" (lever ou coucher du soleil) pour une lumière flatteuse.' },
-                            { title: 'Tous les Angles', text: 'Extérieur (avant/arrière/côtés), lit déplié, cuisine, poste de conduite et moteur.' },
-                            { title: 'Quantité', text: 'Entre 10 et 15 photos est l\'idéal. Plus de photos = plus de confiance.' },
-                            { title: 'Honnêteté', text: 'Montrez aussi les petits défauts ou rayures. Ça évite de perdre du temps en visite.' },
+                        "title": "Réussir ses Photos",
+                        "icon": "Car",
+                        "items": [
+                            {
+                                "title": "Le Bon Moment",
+                                "text": "Prenez les photos à la \"golden hour\" (lever ou coucher du soleil) pour une lumière flatteuse."
+                            },
+                            {
+                                "title": "Tous les Angles",
+                                "text": "Extérieur (avant/arrière/côtés), lit déplié, cuisine, poste de conduite et moteur."
+                            },
+                            {
+                                "title": "Montrer clairement le véhicule",
+                                "text": "Publiez assez de photos nettes pour présenter état et équipement. Ajoutez des gros plans de l’usure et des défauts plutôt que de traiter un nombre de photos comme une promesse de vente rapide."
+                            },
+                            {
+                                "title": "Honnêteté",
+                                "text": "Montrez aussi les petits défauts ou rayures. Ça évite de perdre du temps en visite."
+                            }
                         ]
                     },
                     {
-                        title: 'Stratégie de Prix',
-                        icon: 'DollarSign',
-                        items: [
-                            { title: 'Étude de Marché', text: 'Regardez les vans similaires sur Kiwi Van Market et fixez un prix compétitif.' },
-                            { title: 'Soyez Réaliste', text: 'En fin de saison (mars-avril), les prix chutent. Anticipez votre départ.' },
-                            { title: 'Marge de Négociation', text: 'Affichez 5-10% au-dessus de votre minimum. Les acheteurs adorent négocier.' },
+                        "title": "Stratégie de Prix",
+                        "icon": "DollarSign",
+                        "items": [
+                            {
+                                "title": "Comparer les prix affichés actuels",
+                                "text": "Rapprochez année, moteur, kilométrage, aménagement, lieu et état. Un prix d’annonce n’est pas une vente conclue ; utilisez l’échantillon du site comme un élément et expliquez les écarts."
+                            },
+                            {
+                                "title": "Fixer votre propre limite de négociation",
+                                "text": "Tenez compte des réparations connues et de la date de départ. Aucun pourcentage de négociation ni rabais saisonnier fixe ne s’applique à tous les vans."
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Lire l’échantillon des prix affichés et sa méthode",
+                                "to": "/campervan-prices-nz"
+                            }
                         ]
                     },
                     {
-                        title: 'Où Publier',
-                        icon: 'MapPin',
-                        items: [
-                            { title: 'Kiwi Van Market', text: 'Annonces gratuites, public 100% backpacker. Publiez ici en priorité !' },
-                            { title: 'Groupes Facebook', text: 'Certains groupes "Backpackers NZ" sont très actifs pour les ventes rapides.' },
-                            { title: 'Auberges de Jeunesse', text: 'Les tableaux d\'affichage physiques dans les grandes villes marchent toujours.' },
+                        "title": "Où Publier",
+                        "icon": "MapPin",
+                        "items": [
+                            {
+                                "title": "Kiwi Van Market",
+                                "text": "Annonces gratuites, public 100% backpacker. Publiez ici en priorité !"
+                            },
+                            {
+                                "title": "Groupes Facebook",
+                                "text": "Certains groupes \"Backpackers NZ\" sont très actifs pour les ventes rapides."
+                            },
+                            {
+                                "title": "Auberges de Jeunesse",
+                                "text": "Les tableaux d'affichage physiques dans les grandes villes marchent toujours."
+                            }
                         ]
                     },
+                    {
+                        "title": "Paiement et remise du véhicule",
+                        "icon": "CheckCircle",
+                        "items": [
+                            {
+                                "type": "checklist",
+                                "items": [
+                                    "Organiser une visite sûre et permettre une inspection indépendante.",
+                                    "Inscrire identifiants, prix, date, équipement inclus et conditions dans le contrat.",
+                                    "Vérifier le paiement reçu auprès de votre banque avant les clés ; une capture d’écran ne suffit pas.",
+                                    "Notifier immédiatement NZTA côté vendeur et vérifier la démarche de l’acheteur.",
+                                    "Un véhicule soumis aux RUC doit avoir une distance payée à jour ; les kilomètres inutilisés restent avec le véhicule.",
+                                    "Pour un buyback, préciser signataires, date, prix, kilométrage, état, déductions et paiement par écrit."
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Selling a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/selling-a-vehicle"
+                                    },
+                                    {
+                                        "name": "NZTA — About RUC",
+                                        "url": "https://www.nzta.govt.nz/vehicles/road-user-charges/about-ruc"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
                 ],
-                warnings: [
-                    'Attention aux arnaques et moyens de paiement inhabituels (utilisez Wise ou cash)',
-                    'Ne donnez jamais les clés avant d\'avoir reçu les fonds sur votre compte',
-                    'Donnez rendez-vous dans des lieux publics et sûrs',
-                    'Complétez le transfert de propriété immédiatement via le site de la NZTA',
+                "warnings": [
+                    "Déclarez les défauts connus et gardez annonce et contrat.",
+                    "Prévoyez du temps pour les inspections et une solution si le van ne se vend pas avant le départ."
                 ],
-                cta: {
-                    title: 'Déposer une Annonce Gratuite',
-                    text: 'Touchez des milliers de voyageurs cherchant un van dès aujourd\'hui en 5 minutes.',
-                    buttonText: 'Vendre mon Van',
-                    buttonLink: '/',
+                "cta": {
+                    "title": "Mettre votre campervan en vente",
+                    "text": "Créez une annonce gratuite avec photos claires, caractéristiques exactes et lieu de remise.",
+                    "buttonText": "Créer une annonce gratuite",
+                    "buttonLink": "/sell"
                 }
-            }
+            },
+            "dateModified": "2026-10-15"
         },
         'how-to-inspect-campervan-nz': {
-            title: 'Inspection d\'Expert - La Checklist Ultime d\'Achat en NZ',
-            description: 'Ne vous faites pas avoir ! Notre guide d\'expert couvre tout : santé moteur, rouille structurelle et systèmes de vie.',
-            heroImage: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200',
-            content: {
-                intro: `Acheter un van est votre plus gros investissement en NZ. Un intérieur "mignon" cache parfois des cauchemars mécaniques. Ce guide vous donne les outils techniques pour inspecter le cœur du véhicule. Si un vendeur refuse ces tests, fuyez !`,
-                sections: [
+            "title": "Organiser une inspection indépendante d’un campervan en Nouvelle-Zélande",
+            "description": "Choisir une inspection préachat en NZ : définir les contrôles mécaniques et de l’aménagement, obtenir devis et rapport, puis évaluer les travaux avant l’achat.",
+            "heroImage": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1200",
+            "dateModified": "2026-10-15",
+            "content": {
+                "intro": "La visite permet de sélectionner un van à examiner davantage. L’inspection indépendante aide à évaluer son état avant paiement. Choisissez un prestataire séparément du vendeur et convenez à l’avance de ce qui pourra être établi sur le véhicule et son aménagement.",
+                "sections": [
                     {
-                        title: '1. Le Cœur Mécanique (Sous le Capot)',
-                        icon: 'CheckCircle',
-                        items: [
-                            { title: 'Démarrage à Froid', text: 'Touchez le bloc moteur avant de démarrer. S\'il est chaud, le vendeur cache peut-être un problème de démarrage ou de fumée (bleue = huile, blanche = liquide).' },
-                            { title: 'Le Test "Mayonnaise"', text: 'Ouvrez le bouchon d\'huile. Un dépôt laiteux/beige ("mayo") indique un joint de culasse HS - une panne catastrophique et hors de prix.' },
-                            { title: 'Courroie de Distrib', text: 'Demandez quand la courroie (cam-belt) a été changée. Si elle casse, le moteur est mort. Elle se change tous les 100 000 km.' },
+                        "title": "1. Choisir un prestataire et préciser sa mission",
+                        "icon": "Shield",
+                        "items": [
+                            {
+                                "title": "Transmettre les informations du véhicule",
+                                "text": "Donnez plaque, marque, modèle, année, moteur ou carburant, kilométrage et lieu. Mentionnez modifications, équipement et inquiétudes relevées à la visite. Demandez si cette version, ce gabarit et cet aménagement peuvent être contrôlés au lieu prévu."
+                            },
+                            {
+                                "title": "Demander le contenu du devis",
+                                "text": "Obtenez prix, disponibilité, méthode et exclusions par écrit. Demandez si essai routier, accès au dessous, diagnostic électronique, fuites, corrosion, freins, pneus, transmission et factures sont inclus. Distinguez observations visuelles et mesures. Ne supposez pas que démontage, tests internes du moteur ou prévision de fiabilité font partie de toute inspection."
+                            },
+                            {
+                                "title": "Organiser l’accès avec le vendeur",
+                                "text": "Confirmez rendez-vous, accord pour l’essai, documents et paiement. Demandez si possible un vrai démarrage à froid. Un ancien rapport du vendeur apporte du contexte ; discutez d’un examen commandé par vous plutôt que de présumer qu’il décrit l’état actuel."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Tips for buying a used car",
+                                        "url": "https://www.nzta.govt.nz/vehicles/choosing-the-right-vehicle/tips-for-buying-a-used-car"
+                                    },
+                                    {
+                                        "name": "AA — Pre Purchase Inspections",
+                                        "url": "https://www.aa.co.nz/cars/buying-and-selling/pre-purchase-inspections/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: '2. Intégrité Structurelle (La Chasse à la Rouille)',
-                        icon: 'Shield',
-                        items: [
-                            { title: 'Châssis et Bas de Caisse', text: 'Mettez-vous au sol avec une lampe. Cherchez des boursouflures ou des trous. La rouille de surface est ok, la rouille structurelle fera échouer le WOF.' },
-                            { title: 'Usure des Pneus', text: 'Si un pneu est plus usé d\'un côté, l\'alignement ou la suspension sont à refaire. Comptez 500$+ de frais.' },
+                        "title": "2. Distinguer mécanique et équipement de vie",
+                        "icon": "Car",
+                        "items": [
+                            {
+                                "type": "table",
+                                "title": "Questions à poser au prestataire",
+                                "headers": [
+                                    "Domaine",
+                                    "Points à confirmer"
+                                ],
+                                "rows": [
+                                    [
+                                        "Véhicule de base",
+                                        "Quels contrôles de sécurité, mécanique et corrosion sont compris ? Le dessous peut-il être examiné sans risque ?"
+                                    ],
+                                    [
+                                        "Entretien",
+                                        "Le rapport relève-t-il documents manquants et travaux à étudier ?"
+                                    ],
+                                    [
+                                        "Équipement de vie",
+                                        "Eau, frigo, batteries, recharge et infiltrations sont-ils inclus ou faut-il un autre spécialiste ?"
+                                    ],
+                                    [
+                                        "Gaz et électricité",
+                                        "Qui peut examiner installation et documents requis ? Quels points dépassent la compétence de l’inspecteur mécanique ?"
+                                    ],
+                                    [
+                                        "Statut self-contained",
+                                        "Vérifiez warrant vert, certificat et registre SCV. Les modifications concernent-elles la certification ?"
+                                    ]
+                                ],
+                                "caption": "Inspection mécanique, certification gaz et certification self-contained répondent à des questions différentes. Contactez le prestataire compétent pour chacune."
+                            },
+                            {
+                                "title": "Ne pas tester un équipement suspect",
+                                "text": "Arrêtez en cas de fuite de gaz ou câblage dangereux présumé. WorkSafe interdit les réchauds, chauffages et lampes à gaz portables à l’intérieur du van et sous l’auvent. Faites examiner toute installation incertaine par un professionnel du gaz qualifié."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "WorkSafe — Gas safety for caravans and motorhomes",
+                                        "url": "https://www.worksafe.govt.nz/managing-health-and-safety/consumers/safe-living-with-gas/recreational-safety/gas-safety-for-caravans-and-motorhomes/"
+                                    },
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: '3. L\'Essai Routier (Performance)',
-                        icon: 'Car',
-                        items: [
-                            { title: 'Boîte et Embrayage', text: 'Passez toutes les vitesses. En manuel, testez si l\'embrayage patine en 4ème à basse vitesse en accélérant fort.' },
-                            { title: 'Freinage et Direction', text: 'Lâchez brièvement le volant sur une route plate : le van doit rester droit. Freinez fort pour tester les vibrations (disques voilés).' },
+                        "title": "3. Lire le rapport et chiffrer les travaux",
+                        "icon": "CheckCircle",
+                        "items": [
+                            {
+                                "type": "steps",
+                                "items": [
+                                    {
+                                        "title": "Distinguer les urgences",
+                                        "text": "Demandez de séparer sécurité immédiate, entretien à prévoir, défauts à diagnostiquer et points non examinés. Identifiez les limites dues à l’accès, à la météo ou à l’état du véhicule."
+                                    },
+                                    {
+                                        "title": "Obtenir des devis avant de négocier",
+                                        "text": "Faites estimer les travaux importants par un réparateur adapté. Un « prix de joint de culasse » ou « budget suspension » générique ne remplace pas diagnostic et devis pour le véhicule réel."
+                                    },
+                                    {
+                                        "title": "Comparer budget et calendrier",
+                                        "text": "Ajoutez inspection, travaux immédiats et réserve au prix d’achat. Les réparations peuvent-elles être terminées avant le voyage ? Vous pouvez négocier, demander d’autres contrôles ou renoncer ; le rapport ne vous oblige pas à acheter."
+                                    }
+                                ]
+                            },
+                            {
+                                "title": "Conserver les documents",
+                                "text": "Gardez rapport, périmètre, déclarations et devis. Si la vente se fait, conservez le contrat et notifiez NZTA côté acheteur. Un WoF valide est un contrôle de sécurité, pas une garantie mécanique."
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: '4. Systèmes de Vie et Électricité',
-                        icon: 'MapPin',
-                        items: [
-                            { title: 'Le Test d\'Infiltration', text: 'Cherchez des taches sombres près des fenêtres. Appuyez sur les parois : si c\'est mou, le bois est pourri par l\'eau.' },
-                            { title: 'Batterie Auxiliaire', text: 'Allumez toutes les lumières et le frigo pour voir si le voltage de la batterie secondaire chute instantanément.' },
+                        "title": "4. Préparer la visite",
+                        "icon": "MapPin",
+                        "items": [
+                            {
+                                "type": "cta",
+                                "text": "Utiliser la checklist visuelle détaillée avant l’inspection",
+                                "to": "/guide/campervan-buyer-checklist"
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Lire budget, achat et remise du véhicule",
+                                "to": "/guide/buying-campervan-nz"
+                            }
                         ]
-                    },
+                    }
                 ],
-                warnings: [
-                    'N\'achetez JAMAIS sans un check mécanique indépendant ($140-180)',
-                    'Vérifiez le numéro VIN sur CarJam.co.nz pour confirmer l\'absence de dettes',
-                    'Vérifiez que le green warrant self-contained est valide et correspond à la plaque du van',
-                ],
-                cta: {
-                    title: 'Prêt pour l\'Inspection ?',
-                    text: 'Utilisez cette checklist lors de votre visite et comparez avec d\'autres annonces.',
-                    buttonText: 'Voir les Annonces',
-                    buttonLink: '/',
+                "cta": {
+                    "title": "Sélectionner un van à faire inspecter",
+                    "text": "Comparez les informations déclarées, organisez une visite et prévoyez des contrôles indépendants avant de vous engager.",
+                    "buttonText": "Voir les annonces actuelles",
+                    "buttonLink": "/"
                 }
             }
         },
@@ -2296,61 +3033,140 @@ export const GUIDES = {
             }
         },
         'top-10-best-vans-nz': {
-            title: 'Top 10 des Meilleurs Campervans à Acheter en Nouvelle-Zélande (2025)',
-            description: 'Le classement définitif des 10 meilleurs campervans pour backpackers en Nouvelle-Zélande. Prix, fiabilité, valeur de revente et conseils d\'expert.',
-            heroImage: '/top10-van.avif',
-            content: {
-                intro: `Choisir le bon campervan est LA décision la plus importante de votre voyage en Nouvelle-Zélande. Le mauvais van = pannes sur des routes isolées, WOF raté et revente stressante. Ce classement est basé sur des données réelles du marché, des retours de mécaniciens et des milliers d'expériences de backpackers.`,
-                sections: [
+            "title": "10 modèles de campervans à comparer avant un achat en Nouvelle-Zélande",
+            "description": "Comparez dix modèles et variantes de vans pour un voyage en NZ : questions de visite, aménagement et prix affichés, sans promesse de fiabilité ou de revente.",
+            "heroImage": "/top10-van.avif",
+            "dateModified": "2026-10-15",
+            "content": {
+                "intro": "Cette sélection éditoriale aide à organiser vos visites ; évaluez ensuite chaque véhicule par ses caractéristiques, son état et ses documents. L’ordre n’est pas un classement de fiabilité. Kiwi Van Market n’a pas testé ces véhicules ni collecté des ventes conclues par modèle. L’état individuel et l’aménagement adapté à votre voyage comptent davantage qu’une réputation.",
+                "sections": [
                     {
-                        title: 'Les Légendes (Tier 1)',
-                        icon: 'Star',
-                        items: [
-                            { title: '1. Toyota Hiace (1990–2005)', text: 'Le roi incontesté. 70% des flottes de location en NZ utilisent le Hiace car il est quasi indestructible. Les pièces se trouvent partout, même dans les plus petites villes de la West Coast. Le diesel 2.8L (3L) est le compromis idéal puissance/économie. Comptez NZ$8 000–$18 000 selon la qualité de conversion.', expertTip: 'Le moteur 1KZ-TE est légendaire mais attention au joint de culasse sur les gros kilométrages. Le 1TR essence est increvable mais plus gourmand.' },
-                            { title: '2. Toyota HiAce (2005–2018 "Série 200")', text: 'L\'évolution moderne. Plus confortable, meilleure consommation et conduite plus douce. Plus rare en campervan mais vaut le supplément. Budget NZ$15 000–$30 000.', expertTip: 'Le diesel 2KD-FTV est l\'un des moteurs les plus fiables jamais construits. Si vous en trouvez un sous 250 000 km, foncez.' },
-                            { title: '3. Nissan Caravan (E25)', text: 'Le roi du budget. Offre presque le même espace qu\'un Hiace mais typiquement $2 000–$4 000 moins cher. Le diesel ZD30 est solide. Top pour les couples avec un budget serré. NZ$6 000–$14 000.', expertTip: 'Vérifiez le bruit de chaîne de distribution au démarrage à froid. Une chaîne bruyante coûte $1 500 à réparer mais ce n\'est pas mortel.' },
+                        "title": "Dix modèles et variantes : questions pour le vendeur et l’inspecteur",
+                        "icon": "Car",
+                        "items": [
+                            {
+                                "type": "table",
+                                "title": "Comparer le véhicule réel",
+                                "headers": [
+                                    "Famille",
+                                    "Points à établir lors de la visite"
+                                ],
+                                "rows": [
+                                    [
+                                        "Toyota Hiace, anciennes générations",
+                                        "Comparez code moteur, transmission, empattement et factures. Faites évaluer refroidissement et corrosion ; le logo ne détermine pas l’état."
+                                    ],
+                                    [
+                                        "Toyota Hiace, variantes série 200",
+                                        "Confirmez année, moteur, entretien, charge utile après aménagement et dimensions. Comparez des spécifications équivalentes plutôt que tous les Hiace ensemble."
+                                    ],
+                                    [
+                                        "Nissan Caravan / Homy",
+                                        "Identifiez génération et moteur. Demandez contrôles à froid, transmission, rouille et factures des travaux nécessaires."
+                                    ],
+                                    [
+                                        "Nissan Elgrand",
+                                        "Mesurez lit et rangement avec sièges et aménagement réels. Vérifiez places légales, charge utile et budget carburant sur votre trajet."
+                                    ],
+                                    [
+                                        "Mitsubishi Delica",
+                                        "Vérifiez si le véhicule est réellement à deux ou quatre roues motrices. Faites contrôler le système 4x4, ses pneus et son entretien s’il compte pour vous. Confirmez accès aux routes et assurance."
+                                    ],
+                                    [
+                                        "Toyota Estima / Previa",
+                                        "Testez le couchage avec vos bagages. Identifiez moteur, transmission et accès pour l’entretien ; les générations ne sont pas des comparaisons interchangeables."
+                                    ],
+                                    [
+                                        "Mazda Bongo / Friendee",
+                                        "Distinguez utilitaire Bongo et aménagement Friendee. Si le toit se relève, contrôlez mécanisme, joints, toile et traces d’infiltration."
+                                    ],
+                                    [
+                                        "Ford Transit",
+                                        "Relevez carrosserie, moteur, transmission, entretien et poids aménagé. Demandez les travaux à prévoir et la prise en charge locale de cette version."
+                                    ],
+                                    [
+                                        "Toyota TownAce / LiteAce",
+                                        "Comparez dimensions utilisables, places légales et charge utile à vos besoins. Confirmez entretien et moteur ; petit gabarit ne garantit pas faible coût global."
+                                    ],
+                                    [
+                                        "Mitsubishi L300 / Express",
+                                        "Vérifiez modèle, moteur, structure, factures et sécurité de l’aménagement. Intégrez réparations et inspection dans la comparaison d’un petit prix."
+                                    ]
+                                ],
+                                "caption": "Générations, moteurs et aménagements varient. Ces questions préparent une inspection indépendante et ne constituent pas un diagnostic."
+                            }
                         ]
                     },
                     {
-                        title: 'Les Choix Malins (Tier 2)',
-                        icon: 'CheckCircle',
-                        items: [
-                            { title: '4. Nissan Elgrand (E51)', text: 'Surnommé le "Roi des Vans" — à juste titre. Confort supérieur, V6 puissant, et intérieur luxueux. Populaire pour les conversions haut de gamme. Pas le plus économe mais le plaisir de conduite est incomparable. NZ$8 000–$16 000.' },
-                            { title: '5. Mitsubishi Delica (L400/D5)', text: 'Le seul vrai 4x4 de cette liste. Si vous voulez explorer les pistes de gravier, les stations de ski et les tracks DOC reculés, le Delica est votre unique option. Compact mais incroyablement capable. NZ$7 000–$15 000.', expertTip: 'Le L400 avec le diesel 2.8L est un cheval de labour. Le D5 plus récent est plus raffiné mais plus rare et plus cher.' },
-                            { title: '6. Toyota Estima (Previa)', text: 'La pépite cachée pour les solos ou les couples. Le moteur central offre un plancher plat pour dormir. Étonnamment spacieux. Très économe en carburant. Le meilleur "stealth camper". NZ$4 000–$10 000.' },
-                            { title: '7. Mazda Bongo Friendee', text: 'Compact, original et attachant. Les modèles avec toit relevable permettent de se tenir debout. Super économe et facile à garer en ville. NZ$5 000–$12 000.' },
+                        "title": "Comparer des véhicules équivalents",
+                        "icon": "Shield",
+                        "items": [
+                            {
+                                "type": "steps",
+                                "items": [
+                                    {
+                                        "title": "Noter la version précise",
+                                        "text": "Relevez année, moteur, carburant, transmission, kilométrage, places, couchages, dimensions et poids chargé. Comparez-les avant de conclure qu’une annonce est moins chère."
+                                    },
+                                    {
+                                        "title": "Séparer prix affiché et budget total",
+                                        "text": "Ajoutez inspection, entretien immédiat, pneus, assurance, rego et RUC applicables. Prévoyez campings et revente moins favorable. Un petit prix peut laisser peu de marge pour les réparations."
+                                    },
+                                    {
+                                        "title": "Contrôler aménagement et documents",
+                                        "text": "Testez eau, frigo et électricité. Rapprochez les certificats du véhicule. Faites vérifier certification self-contained actuelle et documents gaz ou électricité par une personne qualifiée si nécessaire."
+                                    },
+                                    {
+                                        "title": "Obtenir un rapport indépendant",
+                                        "text": "Interrogez l’inspecteur sur moteur précis, corrosion, transmission et entretien à prévoir. Un WoF valide ne garantit pas la mécanique. Utilisez constats et devis plutôt qu’un coût supposé par modèle."
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "sources",
+                                "items": [
+                                    {
+                                        "name": "NZTA — Tips for buying a used car",
+                                        "url": "https://www.nzta.govt.nz/vehicles/choosing-the-right-vehicle/tips-for-buying-a-used-car"
+                                    },
+                                    {
+                                        "name": "NZTA — Buying a vehicle",
+                                        "url": "https://www.nzta.govt.nz/vehicles/buying-or-selling-a-vehicle/buying-a-vehicle"
+                                    },
+                                    {
+                                        "name": "PGDB — Self-contained certification for private vehicles",
+                                        "url": "https://www.pgdb.co.nz/self_contained_vehicles/private_vehicle_owners/"
+                                    }
+                                ]
+                            }
                         ]
                     },
                     {
-                        title: 'Les Guerriers du Budget (Tier 3)',
-                        icon: 'DollarSign',
-                        items: [
-                            { title: '8. Ford Transit (2000–2012)', text: 'Fiabilité européenne dans un grand gabarit. Beaucoup d\'espace intérieur pour les conversions hautes. Moins cher à l\'achat mais les pièces peuvent être un peu plus dures à trouver que sur les vans japonais. NZ$5 000–$12 000.' },
-                            { title: '9. Toyota TownAce / LiteAce', text: 'Le "mini campervan" parfait pour les solos. Petit, économe et étonnamment confortable pour une personne. Facile à conduire et à garer partout. NZ$3 000–$8 000.' },
-                            { title: '10. Mitsubishi L300 Express', text: 'Brut, basique et pas cher. Une option sans fioritures qui fait le travail pour les trips de 2-3 mois. N\'attendez pas du luxe mais ça ne cassera pas la banque. NZ$2 500–$6 000.', expertTip: 'Parfait pour la stratégie "acheter pas cher, revendre pas cher". Idéal si vous ne restez que quelques mois.' },
-                        ]
-                    },
-                    {
-                        title: 'Conseils Stratégiques d\'Achat',
-                        icon: 'Shield',
-                        items: [
-                            { title: 'La Saisonnalité Compte', text: 'Achetez en mars-avril (fin de saison) pour les meilleurs prix. Revendez en octobre-novembre pour le maximum. La différence peut être de $2 000–$4 000 sur le même van.' },
-                            { title: 'Toujours Faire une Inspection Mécanique', text: 'Pour $150, un mécanicien trouvera des problèmes valant des milliers. Ne sautez jamais cette étape, surtout sur les moteurs diesel.' },
-                            { title: 'Vérifiez sur CarJam', text: 'Entrez la plaque sur CarJam.co.nz pour vérifier les dettes, le statut volé, le retour d\'odomètre et l\'historique d\'import. C\'est gratuit pour les checks de base.' },
+                        "title": "Utiliser prudemment les prix du site",
+                        "icon": "DollarSign",
+                        "items": [
+                            {
+                                "title": "Ce que permet la comparaison des annonces",
+                                "text": "L’index résume des annonces actives admissibles sur Kiwi Van Market. Il ne mesure pas les ventes conclues, une part du marché national, la fiabilité ou votre future revente. Certains groupes ont trop peu d’annonces pour publier une médiane."
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Lire l’échantillon de prix affichés et sa méthode",
+                                "to": "/campervan-prices-nz"
+                            },
+                            {
+                                "type": "cta",
+                                "text": "Suivre les contrôles et démarches du guide d’achat",
+                                "to": "/guide/buying-campervan-nz"
+                            }
                         ]
                     }
                 ],
-                warnings: [
-                    'Fuyez tout vendeur qui refuse une inspection mécanique',
-                    'Les imports japonais avec moins de 100 000 km au compteur peuvent être suspects — la fraude à l\'odomètre existe',
-                    'Un bel aménagement intérieur ne veut rien dire si le moteur est en train de mourir',
-                    'Prévoyez $1 000–$2 000 en plus du prix d\'achat pour les réparations WOF, l\'immatriculation et l\'assurance',
-                ],
-                cta: {
-                    title: 'Trouvez Votre Van Idéal',
-                    text: 'Parcourez des campervans vérifiés avec un historique transparent sur Kiwi Van Market.',
-                    buttonText: 'Voir Tous les Vans',
-                    buttonLink: '/',
+                "cta": {
+                    "title": "Comparer les annonces actuelles",
+                    "text": "Étudiez les informations déclarées par le vendeur, organisez une visite et vérifiez les documents avant l’achat.",
+                    "buttonText": "Voir les campervans à vendre",
+                    "buttonLink": "/"
                 }
             }
         }

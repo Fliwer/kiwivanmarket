@@ -11,7 +11,7 @@ const {
 const { pickLang, pageMeta } = require('./_lib/i18n');
 const COPY = require('../src/data/seo/copy.cjs');
 
-const { LOCATIONS, vansForTaxonomy } = require('./_lib/taxonomy');
+const { LOCATIONS, vansForTaxonomy, hasActiveStock, activeStock } = require('./_lib/taxonomy');
 
 module.exports = async function handler(req, res) {
   const slug = String(req.query.slug || '').toLowerCase();
@@ -30,10 +30,11 @@ module.exports = async function handler(req, res) {
     return send503(res);
   }
 
-  const stats = priceStats(vans);
+  const activeVans = activeStock(vans);
+  const stats = priceStats(activeVans);
   const S = stats && { count: stats.count, min: nzd(stats.min), max: nzd(stats.max), avg: nzd(stats.avg) };
   const title = T.title(name);
-  const metaDesc = S ? T.metaDesc(name, S, vans.length) : T.metaDescNoStats(name);
+  const metaDesc = S ? T.metaDesc(name, S, activeVans.length) : T.metaDescNoStats(name);
   const faqs = T.faqs(name, S);
 
   const body = `
@@ -42,7 +43,7 @@ module.exports = async function handler(req, res) {
 ${stats ? `
 <h2>${T.pricesTitle(esc(name))}</h2>
 <table class="stats"><tbody>
-<tr><td>${C.listingsForSale}</td><td>${stats.count}</td></tr>
+<tr><td>${C.listingsForSale}</td><td>${activeVans.length}</td></tr>
 <tr><td>${C.cheapest}</td><td>${esc(nzd(stats.min))}</td></tr>
 <tr><td>${C.averagePrice}</td><td>${esc(nzd(stats.avg))}</td></tr>
 <tr><td>${C.mostExpensive}</td><td>${esc(nzd(stats.max))}</td></tr>
@@ -60,12 +61,12 @@ ${Object.entries(LOCATIONS).filter(([s]) => s !== slug).map(([s, n]) => `<li><a 
     title,
     metaDesc,
     ...pageMeta(`/location/${slug}`, lang),
-    // Sans annonce, la page se résume au blurb : Google la classe en soft 404.
-    // noindex,follow jusqu'à ce qu'un van arrive (le maillage reste utile).
-    noindex: !vans.length,
+    // A sold listing remains readable, but does not make the city a current
+    // buying destination for search engines.
+    noindex: !hasActiveStock(vans),
     ogImage: (vans[0] && ((vans[0].images || [])[0] || vans[0].imageUrl)) || undefined,
     jsonLd: [
-      itemListLd(T.itemList(name), vans),
+      itemListLd(T.itemList(name), activeVans),
       faqLd(faqs),
       breadcrumbLd([
         { name: C.home, path: '/' },

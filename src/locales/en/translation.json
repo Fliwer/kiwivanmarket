@@ -39,7 +39,7 @@
     "header": {
         "subtitle": "Buy & Sell Campervans 🇳🇿",
         "guides": "Guides",
-        "calculator": "Resale estimate",
+        "calculator": "Ownership costs",
         "sell": "Sell your van",
         "search_placeholder": "Search campervans...",
         "favorites": "Favorites",
@@ -70,11 +70,12 @@
         "buyback": "Buy-Back",
         "buyback_desc": "The seller guarantees to buy back the van at an agreed price.",
         "rego": "REGO Valid",
-        "rego_desc": "Registration fee that must be paid to legally drive on NZ roads.",
-        "self_contained": "Self-Contained",
-        "self_contained_desc": "A certified van with toilet & water tanks. Required for freedom camping.",
+        "rego_desc": "Vehicle licensing (rego) is different from registration and legal ownership. Check the licence label, expiry date and NZTA record. Listing dates are provided by sellers.",
+        "rego_title": "Vehicle licensing (rego)",
+        "self_contained": "Self-contained (seller)",
+        "self_contained_desc": "This filter uses the seller’s declaration. Verify a current green warrant, certificate and register entry. Old blue warrants are no longer recognised; local camping restrictions still apply.",
         "wof": "WOF Valid",
-        "wof_desc": "A safety inspection required every 6-12 months.",
+        "wof_desc": "A WoF checks safety standards at the inspection date. Check the expiry and current NZTA requirements; a WoF does not replace a mechanical pre-purchase inspection. Listing dates are supplied by sellers.",
         "location": "Location",
         "type": "Vehicle Type",
         "year": "Min Year",
@@ -108,16 +109,16 @@
         "sell": "Sell your van",
         "signin": "Sign In",
         "guides": "Guides",
-        "calculator": "Resale estimate"
+        "calculator": "Ownership costs"
     },
     "how_it_works": {
         "title": "How It Works",
         "step1_title": "Search & Filter",
         "step1_desc": "Browse our wide selection of campervans and use filters to find your perfect match",
         "step2_title": "Contact Seller",
-        "step2_desc": "Connect directly with verified sellers and arrange a viewing",
+        "step2_desc": "Contact owners directly, ask questions and arrange a viewing",
         "step3_title": "Buy with Confidence",
-        "step3_desc": "All vans are WOF verified with optional buy-back guarantee"
+        "step3_desc": "Check the vehicle documents, inspect the van and agree the sale with the owner"
     },
     "how_it_works_modal": {
         "title": "How it works",
@@ -138,11 +139,11 @@
         "step3_seller_desc": "Meet the buyer, finalize the sale, and enjoy your payment.",
         "pro_tips_title": "Pro Tips for Backpackers",
         "pro_tips_list": [
-            "Look for Self-Contained vans to freedom camp legally",
-            "Check WOF (safety) and REGO (registration) expiry dates",
-            "Buy-Back guarantee = seller buys it back when you leave NZ",
-            "Use our resale estimate to gauge your costs"
-        ],
+    "Verify a current green warrant and local rules for your camping plans",
+    "Check the WoF and vehicle licensing (rego) expiry dates",
+    "Read the conditions of any seller buyback agreement",
+    "Compare buying and rental budgets with your own quotes"
+],
         "cta": "Got it! Start browsing 🚐"
     },
     "footer": {
@@ -202,15 +203,18 @@
         "whatsapp_account_hint": "To contact the seller on WhatsApp, sign in or create a free account, then verify your email.",
         "sign_in_contact": "Sign in to contact the seller",
         "contact_title": "Ask for Info / Viewing",
-        "contact_subtitle": "Fast response guaranteed",
+        "contact_subtitle": "Reply time depends on the seller.",
         "verify_email_msg": "Please verify your email to contact sellers",
-        "carjam_headline": "Free NZ vehicle history (CarJam)",
+        "carjam_headline": "Vehicle history on CarJam",
         "carjam_explainer_short": "Official checks: debts, stolen status, odometer & import history.",
-        "carjam_explainer_long": "We open CarJam.co.nz with this plate so you can review the same public records buyers rely on across New Zealand — money owing, registration details, and basic odometer and import flags. The basic report is free.",
-        "carjam_cta_button": "Open free CarJam report",
+        "carjam_explainer_long": "CarJam is a third-party vehicle-history service. This link searches the displayed plate on CarJam. Check its current report coverage, available records and prices; some checks require payment.",
+        "carjam_cta_button": "Check vehicle on CarJam",
         "carjam_no_plate_short": "Plate not on listing — ask the seller before paying",
         "carjam_no_plate_title": "CarJam needs a licence plate",
-        "carjam_no_plate_long": "The seller has not added a plate yet. Ask them to add it: it unlocks a free CarJam report (debts, import history, odometer clues) and is one of the strongest trust signals on Kiwi Van Market."
+        "carjam_no_plate_long": "The seller has not added a plate yet. Ask them to add it: it unlocks a free CarJam report (debts, import history, odometer clues) and is one of the strongest trust signals on Kiwi Van Market.",
+        "related_buying_resources": "More buying resources",
+        "local_budget_link": "Campervans in {{city}} under NZ$15,000",
+        "local_self_contained_link": "Self-contained listings in {{city}}"
     },
     "my_listings": {
         "dashboard": "Manage my listing",
@@ -237,6 +241,22 @@
         "delete_success": "Van deleted successfully!",
         "status_updated": "Status updated."
     },
+    "self_contained_form": {
+        "green": "Current green warrant (seller declaration)",
+        "keep_blue": "Keep existing blue sticker record (legacy, not current certification)",
+        "keep_unspecified": "Keep existing record — certificate type unconfirmed",
+        "edit_note": "Your saved declaration stays unchanged unless you change these options. Only select a green warrant after checking your current documents.",
+        "transition": "Blue warrants ceased to be recognised on 7 June 2026. A sticker alone does not prove current certification."
+    },
+    "contact_page": {
+        "reply_title": "Reply by email",
+        "reply_text": "Use the form to send your question and contact details.",
+        "reply_channel": "We reply to the email you provide.",
+        "report_title": "Report a problem",
+        "report_text": "If you notice suspicious activity or an inaccurate listing, send us the details so we can review it.",
+        "guide_correction": "Found an error in a guide? Include the page link and the correction or official source you suggest.",
+        "marketplace_scope": "Campervan marketplace for New Zealand"
+    },
     "guides": {
         "hub": {
             "seo_title": "Travel & Campervan Guides New Zealand | Kiwi Van Market",
@@ -246,7 +266,8 @@
             "title_2": "Campervan Guides",
             "subtitle": "From mechanical inspections to freedom camping rules, we've got you covered for your NZ road trip adventure.",
             "tag_updated": "2025 Updated",
-            "tag_verified": "Expert Verified",
+            "tag_verified": "Practical guide",
+            "guide_note": "A Kiwi Van Market guide. Check current official rules and vehicle documents before buying.",
             "card_1_title": "Expert Tips",
             "card_1_desc": "Mechanical & Legal advice",
             "card_2_title": "Growth Hacks",
@@ -568,7 +589,7 @@
     "notice": "Listings contain seller-provided information. Check vehicle documents and arrange an inspection before agreeing a sale.",
     "faq": "FAQ and how it works",
     "terms": "Terms of use",
-    "resale": "Resale estimate",
+    "resale": "Ownership cost calculator",
     "prices": "Campervan prices in NZ",
     "guides": "Browse all guides",
     "buy": "Buying a campervan",

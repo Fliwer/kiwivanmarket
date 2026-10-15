@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { collection, addDoc, doc, setDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
@@ -11,6 +12,7 @@ import AuthModal from './AuthModal';
 import SeoHead from './SeoHead';
 import { useToast } from './ToastProvider';
 import EditListingPage from './EditListingPage';
+import SelfContainedDeclaration from './SelfContainedDeclaration';
 
 export default function SellPage() {
   const [params] = useSearchParams();
@@ -21,6 +23,7 @@ export default function SellPage() {
 
 function CreateListingPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { currentUser, resendVerificationEmail } = useAuth();
   const [loading, setLoading] = useState(false);
   const [resendingEmail, setResendingEmail] = useState(false);
@@ -122,7 +125,6 @@ function CreateListingPage() {
   const [showBuyBackTooltip, setShowBuyBackTooltip] = useState(false);
   const [showWofTooltip, setShowWofTooltip] = useState(false);
   const [showRegoTooltip, setShowRegoTooltip] = useState(false);
-  const [showSelfContainedTooltip, setShowSelfContainedTooltip] = useState(false);
 
   // Hide the initial HTML loader
   useEffect(() => {
@@ -885,7 +887,7 @@ function CreateListingPage() {
                       title="Warrant of Fitness"
                       emoji=""
                     >
-                      A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months.
+                      {t('filters.wof_desc')}
                     </InfoTooltip>
                   </label>
                   <input
@@ -904,10 +906,10 @@ function CreateListingPage() {
                       show={showRegoTooltip}
                       onMouseEnter={() => setShowRegoTooltip(true)}
                       onMouseLeave={() => setShowRegoTooltip(false)}
-                      title="Registration"
+                      title={t('filters.rego_title', { defaultValue: 'Vehicle licensing (rego)' })}
                       emoji=""
                     >
-                      <span className="text-white font-semibold">Registration fee</span> to legally drive on NZ roads.
+                      {t('filters.rego_desc')}
                     </InfoTooltip>
                   </label>
                   <input
@@ -1064,43 +1066,10 @@ function CreateListingPage() {
 
               {/* Certifications */}
               <div className="space-y-4">
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.selfContained}
-                        onChange={(e) => setFormData({ ...formData, selfContained: e.target.checked })}
-                        className="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
-                      />
-                      <span className="font-medium text-gray-700">Self-Contained Certified</span>
-                    </label>
-                    <InfoTooltip
-                      show={showSelfContainedTooltip}
-                      onMouseEnter={() => setShowSelfContainedTooltip(true)}
-                      onMouseLeave={() => setShowSelfContainedTooltip(false)}
-                      title="Self-Contained"
-                      emoji=""
-                    >
-                      Required for freedom camping in most areas of NZ.
-                    </InfoTooltip>
-                  </div>
-
-                  {formData.selfContained && (
-                    <div className="mt-3 ml-8 flex gap-4 flex-wrap">
-                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'green' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
-                        <input type="radio" name="selfContainedType" value="green" checked={formData.selfContainedType === 'green'} onChange={(e) => setFormData({ ...formData, selfContainedType: e.target.value })} className="hidden" />
-                        <div className="w-6 h-6 bg-green-500 rounded-full"></div>
-                        <span className="font-semibold text-green-700">Green Sticker</span>
-                      </label>
-                      <label className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer border-2 transition ${formData.selfContainedType === 'blue' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}>
-                        <input type="radio" name="selfContainedType" value="blue" checked={formData.selfContainedType === 'blue'} onChange={(e) => setFormData({ ...formData, selfContainedType: e.target.value })} className="hidden" />
-                        <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
-                        <span className="font-semibold text-blue-700">Blue Sticker</span>
-                      </label>
-                    </div>
-                  )}
-                </div>
+                <SelfContainedDeclaration
+                  value={formData}
+                  onChange={(declaration) => setFormData((previous) => ({ ...previous, ...declaration }))}
+                />
 
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2">

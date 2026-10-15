@@ -143,7 +143,7 @@
   },
   "contact": {
     "email": "kiwivanmarket.contact@gmail.com",
-    "responseTime": "24 à 48 heures",
+    "responseTime": "Par email",
     "intro": "Contactez l'équipe Kiwi Van Market. Nous sommes là pour vous aider dans votre aventure en van en Nouvelle-Zélande — question sur une annonce, aide pour vendre votre van, signalement d'un problème ou suggestion de sujet pour un guide."
   },
   "why": {
@@ -286,51 +286,82 @@
     ]
   },
   "buyback": {
-    "seoTitle": "Calculateur de rachat et de valeur de revente de van NZ | Kiwi Van Market",
-    "seoDesc": "Estimez ce que vaudra votre van à la revente en Nouvelle-Zélande. Calculateur gratuit basé sur la marque, l'âge, le kilométrage, le statut self-contained et la saison.",
-    "h1": "Estimation de revente de van — Nouvelle-Zélande",
-    "intro": "Obtenez une estimation de marché basée sur le parc automobile néo-zélandais, la demande saisonnière et la fiabilité des marques.",
-    "explainer": "L'accord de rachat (buy-back) est courant entre backpackers en Nouvelle-Zélande : le vendeur s'engage d'avance à reprendre le van à un prix fixé une fois le voyage de l'acheteur terminé. Connaître votre valeur de revente probable, c'est ce qui rend ce chiffre juste pour les deux parties — et ça dit à tout vendeur ce qu'une saison de vanlife coûtera vraiment.",
-    "factorsTitle": "Sur quoi repose l'estimation",
+    "seoTitle": "Calculateur de coût de van NZ : achat ou location",
+    "seoDesc": "Comparez achat et location de van en Nouvelle-Zélande avec votre prix d’achat, hypothèse de revente, frais et devis de location. Calcul transparent en NZD.",
+    "h1": "Calculateur de coût de possession d’un van en NZ",
+    "intro": "Comparez achat et location avec vos propres hypothèses et devis. Saisissez un montant de revente supposé pour calculer le coût de possession ; cet outil ne prédit pas un prix de vente et ne propose aucun rachat.",
+    "explainer": "Le coût de possession correspond au prix d’achat moins votre hypothèse de revente, plus les frais saisis. Divisez ce total par le nombre de jours de voyage. Comparez-le à un devis de location pour la même durée et des prestations comparables. Chaque résultat dépend de vos saisies.",
+    "factorsTitle": "Préparer une comparaison utile",
     "factors": [
       {
-        "name": "Marque et modèle",
-        "text": "Toyota (Hiace, Estima) garde le mieux sa valeur en Nouvelle-Zélande, suivi de Mitsubishi (L300, Delica) et Mazda (Bongo). Les imports génériques ou rares perdent le plus."
+        "name": "Achat et revente",
+        "text": "Utilisez le prix d’achat réel et une hypothèse de revente que votre budget peut supporter si elle ne se réalise pas. Comparez les annonces de vans similaires, puis testez un montant inférieur. Les prix affichés ne prouvent pas les montants des ventes conclues."
       },
       {
-        "name": "Certification self-contained",
-        "text": "Le certificat vert (toilettes fixes) est la norme actuelle et ajoute de la valeur. Le sticker bleu est en cours de suppression et vaut moins. L'absence de certification est la plus grosse décote."
+        "name": "Inspection, réparations et entretien",
+        "text": "Saisissez le devis d’inspection, les travaux identifiés, l’entretien et une réserve. Un champ vide vaut zéro dans le calcul ; cela ne signifie pas que la dépense est inutile."
       },
       {
-        "name": "Âge et durée de possession",
-        "text": "La dépréciation mensuelle va d'environ 1,6 % pour les vans récents à 1,0 % pour les véhicules de plus de 20 ans — les vieux vans de backpacker ont déjà encaissé leur perte."
+        "name": "Assurance et démarches",
+        "text": "Demandez des devis adaptés à votre permis, âge, voyage et aménagement. Ajoutez les frais applicables de licence du véhicule, RUC et vente au budget des autres coûts. Vérifiez les tarifs actuels du véhicule précis."
       },
       {
-        "name": "Kilométrage parcouru",
-        "text": "Environ un point de valeur perdu tous les 3 500 km parcourus pendant votre possession."
+        "name": "Devis de location",
+        "text": "Utilisez un devis pour les mêmes dates et la même durée. Ajoutez assurances complémentaires, frais et équipements nécessaires aux suppléments de location lorsqu’ils ne sont pas compris dans le tarif journalier."
       },
       {
-        "name": "Historique d'entretien",
-        "text": "Un carnet d'entretien complet ajoute de la valeur ; aucun historique vous coûte plusieurs points."
+        "name": "Frais de route comparables",
+        "text": "Carburant, campings et ferries sont exclus sauf si vous les intégrez aux budgets saisis. Comparez le même itinéraire et les mêmes postes des deux côtés ; un sous-total de possession inférieur ne constitue pas un budget complet du voyage."
       },
       {
-        "name": "Saison de revente",
-        "text": "La demande est maximale en été avec l'arrivée des backpackers, et chute en hiver. Le même van peut valoir nettement plus en décembre qu'en juin."
+        "name": "Accord de rachat réel",
+        "text": "Le rachat proposé par un vendeur constitue un accord séparé. Vérifiez identité de l’acheteur, date, montant, déductions, conditions de kilométrage et d’état, et modalités de paiement. Le calculateur ne plafonne pas votre coût et ne garantit pas l’exécution de cet accord."
       }
     ],
     "faqs": [
       {
-        "q": "Qu'est-ce qu'une garantie de rachat pour un van en Nouvelle-Zélande ?",
-        "a": "Une garantie de rachat est un accord où le vendeur s'engage d'avance à reprendre le van à un prix convenu une fois le voyage de l'acheteur terminé. C'est populaire chez les backpackers qui ont une date de départ fixe, car ça plafonne le coût du voyage et garantit au vendeur de récupérer son van."
+        "q": "Ce calculateur estime-t-il la valeur de marché de mon van ?",
+        "a": "Non. Vous fournissez l’hypothèse de revente. L’outil effectue un calcul transparent sur vos saisies et n’utilise aucun modèle validé de décote, de fiabilité des marques ou de prix saisonniers."
       },
       {
-        "q": "Combien de valeur perd un van en Nouvelle-Zélande ?",
-        "a": "Les vans de backpacker se déprécient lentement par rapport aux voitures ordinaires : environ 1 à 1,6 % par mois selon l'âge, plus l'usure liée aux kilomètres. Un van bien entretenu et self-contained, acheté et revendu à la bonne saison, peut perdre très peu."
+        "q": "Acheter un van coûte-t-il moins cher que louer en Nouvelle-Zélande ?",
+        "a": "Cela dépend de l’achat, de la vente finale, des réparations, de l’assurance, du devis de location et de la durée. Saisissez des devis comparables, testez une revente plus basse et prévoyez les imprévus mécaniques ainsi que le temps nécessaire pour vendre."
       },
       {
-        "q": "Acheter un van revient-il moins cher que louer en Nouvelle-Zélande ?",
-        "a": "Pour un voyage de plus d'un mois environ, en général oui. Louer un van équivalent coûte bien plus de 100 $ par jour, alors qu'acheter puis revendre ne vous coûte que la dépréciation, l'entretien et les frais de route."
+        "q": "Que se passe-t-il si mon hypothèse de revente est trop optimiste ?",
+        "a": "Chaque dollar de revente en moins augmente d’autant votre coût de possession. Testez plusieurs montants de revente et de réparations, et gardez suffisamment de trésorerie avant de compter sur une vente future."
       }
-    ]
+    ],
+    "ui": {
+      "example": "Exemple illustratif : les nombres préremplis sont des hypothèses, pas des prix du marché ni des devis. Remplacez-les par votre budget. Tous les montants saisis et affichés sont en NZD.",
+      "inputsTitle": "Vos hypothèses d’achat",
+      "fields": {
+        "purchase": "Prix d’achat",
+        "resale": "Revente supposée",
+        "days": "Jours de voyage",
+        "inspection": "Budget inspection",
+        "repairs": "Budget réparations et entretien",
+        "insurance": "Budget assurance",
+        "administration": "Licence, RUC et autres frais",
+        "rentalDaily": "Tarif journalier du devis de location",
+        "rentalExtras": "Suppléments et frais de location"
+      },
+      "expensesNote": "Les champs de frais vides valent zéro. Incluez les coûts connus et une réserve ; vérifiez les prestations déjà comprises dans vos devis.",
+      "rentalTitle": "Facultatif : comparer un devis de location",
+      "rentalNote": "Laissez le tarif journalier vide pour afficher uniquement les coûts d’achat. Utilisez la même durée et des prestations comparables.",
+      "resultsTitle": "Résultat de votre scénario",
+      "ownership": "Coût net de possession",
+      "daily": "Coût de possession par jour",
+      "cashRequired": "Achat et frais saisis, avant revente",
+      "rentalTotal": "Total location pour la même durée",
+      "difference": "Total location moins coût de possession",
+      "buyLower": "Avec ces saisies, le sous-total d’achat est inférieur. La revente future et les coûts restent incertains.",
+      "rentLower": "Avec ces saisies, le sous-total de location est inférieur. La différence négative reste affichée.",
+      "equal": "Les deux sous-totaux sont égaux avec ces saisies.",
+      "formula": "Possession = achat − revente supposée + inspection + réparations + assurance + autres frais. Location = jours × tarif journalier du devis + suppléments.",
+      "invalid": "Saisissez un prix d’achat et une durée positifs, une hypothèse de revente au moins égale à zéro et des frais non négatifs.",
+      "limits": "Ce scénario exclut les dépenses non saisies. La trésorerie nécessaire avant revente diffère du coût final : le produit d’une vente future ne finance pas l’achat initial.",
+      "buyingGuide": "Lire la checklist d’achat d’un van"
+    }
   }
 }

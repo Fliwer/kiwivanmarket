@@ -143,7 +143,7 @@
   },
   "contact": {
     "email": "kiwivanmarket.contact@gmail.com",
-    "responseTime": "24 to 48 hours",
+    "responseTime": "By email",
     "intro": "Get in touch with the Kiwi Van Market team. We are here to help with your campervan journey in New Zealand — questions about a listing, help selling your van, reporting a problem, or suggesting a guide topic."
   },
   "why": {
@@ -286,51 +286,82 @@
     ]
   },
   "buyback": {
-    "seoTitle": "Campervan Buyback & Resale Value Calculator NZ | Kiwi Van Market",
-    "seoDesc": "Estimate what your campervan will be worth when you resell it in New Zealand. Free calculator based on brand, age, mileage, self-contained status and season.",
-    "h1": "Campervan Resale Estimate — New Zealand",
-    "intro": "Get a market estimate based on New Zealand vehicle demographics, seasonal demand, and brand reliability.",
-    "explainer": "A buy-back arrangement is common between backpackers in New Zealand: the seller agrees upfront to repurchase the van at a set price once the buyer trip ends. Knowing your likely resale value is what makes that number fair for both sides — and it tells any seller how much a season of vanlife will really cost.",
-    "factorsTitle": "What the estimate is based on",
+    "seoTitle": "Campervan Ownership Cost Calculator NZ: Buy vs Rent",
+    "seoDesc": "Compare campervan ownership and rental costs in New Zealand using your purchase price, resale assumption, expenses and rental quote. Transparent NZD scenario calculator.",
+    "h1": "Campervan ownership cost calculator — New Zealand",
+    "intro": "Compare buying and renting using your own assumptions and quotes. Enter an assumed resale amount to calculate the cost of ownership; this tool does not predict a selling price or make a buyback offer.",
+    "explainer": "Ownership cost is the purchase price minus your assumed resale proceeds, plus the expenses you enter. Divide that total by the number of travel days. Compare it with a rental quote covering the same days and comparable inclusions. Every result changes with your inputs.",
+    "factorsTitle": "How to build a useful comparison",
     "factors": [
       {
-        "name": "Brand and model",
-        "text": "Toyota (Hiace, Estima) holds its value best in New Zealand, followed by Mitsubishi (L300, Delica) and Mazda (Bongo). Generic or rare imports lose the most."
+        "name": "Purchase and resale",
+        "text": "Use the actual purchase price and a resale assumption you can afford to miss. Compare similar advertised vans, then test a lower resale amount. Advertised prices are not evidence of completed sales."
       },
       {
-        "name": "Self-contained certification",
-        "text": "The green certificate (fixed toilet) is the current standard and adds value. The blue sticker is being phased out and is worth less. No certification is the single biggest deduction."
+        "name": "Inspection, repairs and servicing",
+        "text": "Enter your inspection quote, work identified in the report, servicing and a contingency. Leaving a field blank means zero in the arithmetic; it does not mean the cost is unnecessary."
       },
       {
-        "name": "Age and ownership time",
-        "text": "Monthly depreciation runs from roughly 1.6% for newer vans down to 1.0% for vehicles over 20 years old — older backpacker vans have already taken their loss."
+        "name": "Insurance and administration",
+        "text": "Get quotes for your licence, age, trip and conversion. Add applicable licensing, RUC and selling costs to the administration budget. Use current charges for the actual vehicle."
       },
       {
-        "name": "Mileage driven",
-        "text": "Roughly one point of recovery is lost per 3,500 km added during your ownership."
+        "name": "Rental quote",
+        "text": "Enter a quote for the same travel dates and length. Put additional cover, fees and equipment you need in rental extras if they are not included in the daily rate."
       },
       {
-        "name": "Service history",
-        "text": "A full service history adds value; no history at all costs you several points."
+        "name": "Comparable running costs",
+        "text": "Fuel, campsites and ferries are excluded unless you include them in your entered budgets. Compare the same itinerary and cost categories on both sides; a lower ownership subtotal is not a complete trip budget."
       },
       {
-        "name": "Resale season",
-        "text": "Demand peaks in summer when backpackers arrive, and drops in winter. The same van can be worth noticeably more in December than in June."
+        "name": "Actual buyback arrangements",
+        "text": "A seller buyback is a separate agreement. Check the named buyer, timing, amount, deductions, mileage and condition requirements, and payment terms. The calculator does not cap your trip cost or guarantee that agreement will be fulfilled."
       }
     ],
     "faqs": [
       {
-        "q": "What is a buy-back guarantee for a campervan in New Zealand?",
-        "a": "A buy-back guarantee is an agreement where the seller commits upfront to repurchase the van at an agreed price once the buyer trip is over. It is popular with backpackers on a fixed timeline, because it caps how much the trip will cost them and guarantees the seller gets the van back."
-      },
-      {
-        "q": "How much value does a campervan lose in New Zealand?",
-        "a": "Backpacker vans depreciate slowly compared with ordinary cars: roughly 1 to 1.6% per month depending on age, plus wear for the distance driven. A well-kept, self-contained van bought and resold in the right season can lose very little."
+        "q": "Does this calculator estimate the market resale value of my campervan?",
+        "a": "No. You supply the resale assumption. The tool performs transparent arithmetic on your inputs and uses no validated depreciation, brand reliability or seasonal pricing model."
       },
       {
         "q": "Is buying a campervan cheaper than renting in New Zealand?",
-        "a": "For trips beyond about a month it usually is. Renting an equivalent campervan costs well over $100 per day, whereas buying and reselling means you only carry the depreciation, the maintenance and the running costs."
+        "a": "It depends on the purchase, eventual sale, repairs, insurance, rental quote and length of travel. Enter comparable quotes, test a lower resale amount and allow for unexpected repairs and time needed to sell."
+      },
+      {
+        "q": "What happens if my resale assumption is wrong?",
+        "a": "A lower sale amount raises your ownership cost dollar for dollar. Try several resale and repair scenarios and keep enough cash available before relying on future sale proceeds."
       }
-    ]
+    ],
+    "ui": {
+      "example": "Illustrative example: the prefilled numbers are assumptions, not market prices or provider quotes. Replace every amount with your own budget. All entries and results are in NZD.",
+      "inputsTitle": "Your ownership assumptions",
+      "fields": {
+        "purchase": "Purchase price",
+        "resale": "Assumed resale proceeds",
+        "days": "Travel days",
+        "inspection": "Inspection budget",
+        "repairs": "Repairs and servicing budget",
+        "insurance": "Insurance budget",
+        "administration": "Licensing, RUC and other costs",
+        "rentalDaily": "Quoted rental daily rate",
+        "rentalExtras": "Rental extras and fees"
+      },
+      "expensesNote": "Blank expense fields count as zero. Include known costs and a contingency; check which items your quotes already cover.",
+      "rentalTitle": "Optional: compare a rental quote",
+      "rentalNote": "Leave the rental daily rate blank to show ownership costs only. Use the same travel days and comparable inclusions.",
+      "resultsTitle": "Result for your scenario",
+      "ownership": "Net ownership cost",
+      "daily": "Ownership cost per travel day",
+      "cashRequired": "Purchase plus entered expenses, before resale",
+      "rentalTotal": "Rental total for the same days",
+      "difference": "Rental total minus ownership cost",
+      "buyLower": "With these inputs, the ownership subtotal is lower. Future sale proceeds and costs remain uncertain.",
+      "rentLower": "With these inputs, the rental subtotal is lower. A negative difference is shown rather than hidden.",
+      "equal": "The two subtotals are equal with these inputs.",
+      "formula": "Ownership = purchase − assumed resale + inspection + repairs + insurance + administration. Rental = days × quoted daily rate + rental extras.",
+      "invalid": "Enter a positive purchase price and number of days, an assumed resale amount of zero or more, and non-negative costs.",
+      "limits": "This scenario excludes costs you have not entered. Cash needed before resale and final trip cost are different: future sale proceeds are not available to fund the purchase.",
+      "buyingGuide": "Read the campervan buying checklist"
+    }
   }
 }

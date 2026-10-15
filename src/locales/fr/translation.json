@@ -39,7 +39,7 @@
     "header": {
         "subtitle": "Achat & Vente de Vans 🇳🇿",
         "guides": "Guides",
-        "calculator": "Estimation de revente",
+        "calculator": "Budget du van",
         "sell": "Vendre mon van",
         "search_placeholder": "Rechercher un van...",
         "favorites": "Favoris",
@@ -70,11 +70,12 @@
         "buyback": "Buy-Back",
         "buyback_desc": "Le vendeur garantit de racheter le van à un prix convenu.",
         "rego": "REGO Valide",
-        "rego_desc": "Frais d'immatriculation obligatoires pour rouler en NZ.",
-        "self_contained": "Self-Contained",
-        "self_contained_desc": "Van certifié avec toilettes & réservoirs d'eau. Obligatoire pour le camping sauvage.",
+        "rego_desc": "La rego est la licence de circulation, distincte de l’immatriculation et de la propriété légale. Vérifiez la vignette, la date d’expiration et le registre NZTA. Les dates des annonces sont fournies par les vendeurs.",
+        "rego_title": "Licence de circulation (rego)",
+        "self_contained": "Self-contained déclaré",
+        "self_contained_desc": "Ce filtre utilise la déclaration du vendeur. Vérifiez un green warrant valide, le certificat et l’inscription au registre. Les anciens blue warrants ne sont plus reconnus ; les restrictions locales de camping restent applicables.",
         "wof": "WOF Valide",
-        "wof_desc": "Contrôle technique de sécurité obligatoire tous les 6-12 mois.",
+        "wof_desc": "Le WoF contrôle des critères de sécurité à la date de l’inspection. Vérifiez sa validité et les règles NZTA actuelles ; il ne remplace pas une inspection mécanique avant achat. Les dates des annonces sont déclarées par les vendeurs.",
         "location": "Lieu",
         "type": "Type de Véhicule",
         "year": "Année Min",
@@ -108,16 +109,16 @@
         "sell": "Vendre mon van",
         "signin": "Connexion",
         "guides": "Guides",
-        "calculator": "Estimation de revente"
+        "calculator": "Budget du van"
     },
     "how_it_works": {
         "title": "Comment ça marche",
         "step1_title": "Chercher & Filtrer",
         "step1_desc": "Parcourez notre large sélection et utilisez les filtres pour trouver votre van idéal",
         "step2_title": "Contacter le Vendeur",
-        "step2_desc": "Connectez-vous directement avec des vendeurs vérifiés et organisez une visite",
+        "step2_desc": "Contactez directement le propriétaire, posez vos questions et organisez une visite",
         "step3_title": "Acheter en Confiance",
-        "step3_desc": "Tous les vans ont un WOF, avec option de garantie de rachat (buy-back)"
+        "step3_desc": "Vérifiez les documents, inspectez le van et convenez de la vente avec son propriétaire"
     },
     "how_it_works_modal": {
         "title": "Comment ça marche",
@@ -138,11 +139,11 @@
         "step3_seller_desc": "Rencontrez l'acheteur, finalisez la vente et profitez de votre argent.",
         "pro_tips_title": "Conseils Pro pour Backpackers",
         "pro_tips_list": [
-            "Cherchez des vans Self-Contained pour le camping gratuit",
-            "Vérifiez les dates d'expiration du WOF et du REGO",
-            "Garantie Buy-Back = le vendeur le rachète quand vous partez",
-            "Utilisez notre estimation de revente pour évaluer vos coûts"
-        ],
+    "Vérifiez un green warrant actuel et les règles locales de vos lieux de camping",
+    "Contrôlez les dates du WoF et de la licence du véhicule (rego)",
+    "Lisez les conditions de tout accord de rachat proposé par le vendeur",
+    "Comparez les budgets d’achat et de location avec vos devis"
+],
         "cta": "C'est parti ! 🚐"
     },
     "footer": {
@@ -202,15 +203,18 @@
         "whatsapp_account_hint": "Pour contacter le vendeur par WhatsApp, connectez-vous ou créez un compte gratuit, puis vérifiez votre e-mail.",
         "sign_in_contact": "Se connecter pour contacter le vendeur",
         "contact_title": "Demander une info / visite",
-        "contact_subtitle": "Réponse rapide garantie",
+        "contact_subtitle": "Le délai de réponse dépend du vendeur.",
         "verify_email_msg": "Veuillez vérifier votre email pour contacter les vendeurs",
-        "carjam_headline": "Historique véhicule gratuit (CarJam NZ)",
+        "carjam_headline": "Historique du véhicule sur CarJam",
         "carjam_explainer_short": "Vérifs officielles : dettes, vol, kilométrage et historique d’import.",
-        "carjam_explainer_long": "Nous ouvrons CarJam.co.nz avec cette plaque pour que vous puissiez consulter les mêmes données publiques qu’en Nouvelle‑Zélande — dettes, immatriculation, indices d’odomètre et d’import. Le rapport de base est gratuit.",
-        "carjam_cta_button": "Ouvrir le rapport CarJam gratuit",
+        "carjam_explainer_long": "CarJam est un service tiers d’historique des véhicules. Ce lien recherche la plaque affichée sur CarJam. Vérifiez le contenu actuel des rapports, les données disponibles et les tarifs ; certaines vérifications sont payantes.",
+        "carjam_cta_button": "Consulter le véhicule sur CarJam",
         "carjam_no_plate_short": "Plaque absente — demandez-la au vendeur avant de payer",
         "carjam_no_plate_title": "La vérif CarJam nécessite la plaque",
-        "carjam_no_plate_long": "Le vendeur n’a pas encore indiqué de plaque. Demandez-lui de l’ajouter : cela débloque un rapport CarJam gratuit (dettes, import, indices de kilométrage) et renforce fortement la confiance sur Kiwi Van Market."
+        "carjam_no_plate_long": "Le vendeur n’a pas encore indiqué de plaque. Demandez-lui de l’ajouter : cela débloque un rapport CarJam gratuit (dettes, import, indices de kilométrage) et renforce fortement la confiance sur Kiwi Van Market.",
+        "related_buying_resources": "Autres ressources pour l’achat",
+        "local_budget_link": "Vans à {{city}} à moins de 15 000 NZD",
+        "local_self_contained_link": "Annonces self-contained à {{city}}"
     },
     "my_listings": {
         "dashboard": "Gestion de mon annonce",
@@ -237,6 +241,22 @@
         "delete_success": "Annonce supprimée avec succès !",
         "status_updated": "Statut mis à jour."
     },
+    "self_contained_form": {
+        "green": "Green warrant en cours de validité (déclaration du vendeur)",
+        "keep_blue": "Conserver l’ancienne déclaration de vignette bleue (historique, pas une certification actuelle)",
+        "keep_unspecified": "Conserver la déclaration existante — type de certificat non confirmé",
+        "edit_note": "Votre déclaration enregistrée reste inchangée tant que vous ne modifiez pas ces options. Ne sélectionnez le green warrant qu’après avoir vérifié vos documents actuels.",
+        "transition": "Les blue warrants ne sont plus reconnus depuis le 7 juin 2026. Un autocollant seul ne prouve pas une certification en cours de validité."
+    },
+    "contact_page": {
+        "reply_title": "Réponse par email",
+        "reply_text": "Utilisez le formulaire pour envoyer votre question et vos coordonnées.",
+        "reply_channel": "Nous répondons à l’adresse email indiquée.",
+        "report_title": "Signaler un problème",
+        "report_text": "Si vous remarquez une activité suspecte ou une annonce inexacte, envoyez-nous les détails pour que nous puissions l’examiner.",
+        "guide_correction": "Une erreur dans un guide ? Indiquez le lien de la page et la correction ou la source officielle que vous proposez.",
+        "marketplace_scope": "Plateforme d’annonces de vans pour la Nouvelle-Zélande"
+    },
     "guides": {
         "hub": {
             "seo_title": "Guides Voyage & Campervan Nouvelle-Zélande | Kiwi Van Market",
@@ -246,7 +266,8 @@
             "title_2": "Campervan en NZ",
             "subtitle": "Des inspections mécaniques aux règles du camping sauvage, nous vous accompagnons dans votre aventure en van en Nouvelle-Zélande.",
             "tag_updated": "Mis à jour 2025",
-            "tag_verified": "Vérifié par des Experts",
+            "tag_verified": "Guide pratique",
+            "guide_note": "Un guide Kiwi Van Market. Vérifiez les règles officielles en vigueur et les documents du véhicule avant l’achat.",
             "card_1_title": "Conseils d'Experts",
             "card_1_desc": "Conseils Mécaniques & Légaux",
             "card_2_title": "Astuces de Revente",
@@ -568,7 +589,7 @@
     "notice": "Les annonces contiennent des informations déclarées par les vendeurs. Vérifiez les documents du véhicule et organisez une inspection avant de convenir d’une vente.",
     "faq": "FAQ et fonctionnement",
     "terms": "Conditions d’utilisation",
-    "resale": "Estimation de revente",
+    "resale": "Calculateur de budget du van",
     "prices": "Prix des vans en Nouvelle-Zélande",
     "guides": "Voir tous les guides",
     "buy": "Acheter un van",

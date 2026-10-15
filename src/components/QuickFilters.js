@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import selfContained from '../data/seo/self-contained';
 import {
     Search,
     Shield,
@@ -52,7 +53,8 @@ export default function QuickFilters({
     showWofInfo,
     setShowWofInfo
 }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const selfContainedCopy = selfContained.languageCopy(i18n?.resolvedLanguage || i18n?.language || 'en');
     const [showMobileDrawer, setShowMobileDrawer] = useState(false);
 
     const activeFilterCount = [
@@ -300,11 +302,10 @@ export default function QuickFilters({
                                     <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
                                         <button onClick={() => setShowRegoInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
                                         <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
-                                            <span className="text-purple-400 font-bold">📋 Vehicle Registration (REGO)</span>
+                                            <span className="text-purple-400 font-bold">📋 {t('filters.rego_title', { defaultValue: 'Vehicle licensing (rego)' })}</span>
                                         </div>
                                         <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
                                             <span className="text-white font-semibold">{t('filters.rego_desc')}</span>
-                                            <span className="text-white font-semibold"> Check the sticker on the windscreen!</span>
                                         </p>
                                         <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
                                     </div>
@@ -324,8 +325,7 @@ export default function QuickFilters({
                                     : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-blue-400 hover:text-blue-600'
                                     }`}>
                                 <CheckCircle size={16} className={filters.selfContained ? 'text-white' : 'text-blue-500'} />
-                                <span className="md:hidden">Self-Cont</span>
-                                <span className="hidden md:inline">{t('filters.self_contained')}</span>
+                                <span>{t('filters.self_contained')}</span>
                             </button>
                             {showSelfContainedInfo && (
                                 <>
@@ -333,17 +333,13 @@ export default function QuickFilters({
                                     <div className="fixed left-4 right-4 top-48 md:absolute md:left-0 md:right-auto md:top-full md:mt-2 w-auto md:w-72 bg-gray-900 text-white text-sm p-4 rounded-xl shadow-2xl z-[100]">
                                         <button onClick={() => setShowSelfContainedInfo(false)} className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg md:hidden">✕</button>
                                         <div className="flex items-center gap-2 mb-2 pr-6 md:pr-0">
-                                            <span className="text-blue-400 font-bold">🏕️ Self-Contained Certification</span>
+                                            <span className="text-blue-400 font-bold">🏕️ {selfContainedCopy.label}</span>
                                         </div>
                                         <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
-                                            A certified van with <span className="text-white font-semibold">toilet, fresh water & grey water tanks</span>.
-                                            Required for freedom camping in most areas of NZ.
+                                            {t('filters.self_contained_desc')}
                                         </p>
-                                        <div className="flex gap-3 mt-2 text-xs">
-                                            <span><span className="text-green-400 font-bold">🟢 Green</span> = fixed toilet</span>
-                                            <span><span className="text-blue-400 font-bold">🔵 Blue</span> = porta-potty</span>
-                                        </div>
-                                        <p className="text-white font-semibold text-sm md:text-xs mt-2">Essential for free camping!</p>
+                                        <p className="text-gray-300 leading-relaxed text-sm md:text-xs mt-2">{t('self_contained_form.transition', { defaultValue: 'Blue warrants ceased to be recognised on 7 June 2026. A sticker alone does not prove current certification.' })}</p>
+                                        <a href={selfContained.SOURCE} target="_blank" rel="noopener noreferrer" className="inline-block underline mt-2 text-sm md:text-xs">{selfContainedCopy.sourceLabel}</a>
                                         <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
                                     </div>
                                 </>
@@ -374,9 +370,7 @@ export default function QuickFilters({
                                             <span className="text-emerald-400 font-bold">🔧 Warrant of Fitness (WOF)</span>
                                         </div>
                                         <p className="text-gray-300 leading-relaxed text-sm md:text-xs">
-                                            A <span className="text-white font-semibold">safety inspection</span> required every 6-12 months for all vehicles in NZ.
-                                            It checks brakes, lights, tyres, steering and other safety features.
-                                            <span className="text-white font-semibold"> You can't legally drive without a valid WOF!</span>
+                                            {t('filters.wof_desc')}
                                         </p>
                                         <div className="hidden md:block absolute left-6 -top-2 w-4 h-4 bg-gray-900 rotate-45"></div>
                                     </div>

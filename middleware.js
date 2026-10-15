@@ -15,14 +15,21 @@
 //    sinon elle renvoie 404 (page complète, pas le shell React).
 // ============================================================================
 
-// Exclus du middleware : les fonctions api/, les internes Vercel, et tout
-// chemin avec une extension (assets, sitemaps, robots.txt, .html...).
+// Exclude function/platform paths and hashed bundles. Public files are
+// admitted by their exact generated names below, not merely by an extension.
 export const config = {
-  matcher: ['/((?!api/|_vercel/|_next/|__/auth/|.*\\..*).*)'],
+  matcher: ['/((?!api/|_vercel/|_next/|__/auth/|static/).*)'],
 };
 
 import crawlerPattern from './src/data/seo/crawlers';
+import publicAssets from './src/data/seo/public-assets.json';
 const BOT_RE = new RegExp(crawlerPattern, 'i');
+const PUBLIC_FILES = new Set([
+  ...publicAssets,
+  '/asset-manifest.json',
+  '/sitemap-brands.xml', '/sitemap-locations.xml',
+  '/sitemap-vehicles.xml', '/sitemap-search.xml',
+]);
 
 // Miroir des <Route path> de src/App.js. Les segments dynamiques acceptent
 // n'importe quoi : c'est la fonction prerender-* correspondante qui renvoie le
@@ -91,6 +98,14 @@ export default function middleware(request) {
     const path = normalizePath(url.pathname);
     const isBot = BOT_RE.test(request.headers.get('user-agent') || '');
 
+    if (path === '/index.html') {
+      const target = new URL('/', request.url);
+      target.search = url.search;
+      return Response.redirect(target, 308);
+    }
+
+    if (PUBLIC_FILES.has(url.pathname)) return NEXT();
+
     // 1. Home prerendue pour les crawlers (comportement historique). On
     //    transmet ?lang=fr pour la version francaise (sinon la query serait
     //    perdue dans le rewrite).
@@ -104,7 +119,7 @@ export default function middleware(request) {
     }
 
     // 2. Route connue → on laisse Vercel faire (rewrites bots, puis SPA).
-    if (KNOWN_ROUTES.some((re) => re.test(path))) return NEXT();
+    if (!path.includes('.') && KNOWN_ROUTES.some((re) => re.test(path))) return NEXT();
 
     // 3. Inconnue → vrai 404, pour tout le monde. Un humain a une vraie page
     //    au lieu d'un shell vide, Google arrête de compter un soft 404.

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { MapPin, ArrowLeft } from 'lucide-react';
@@ -9,6 +8,8 @@ import boostVisibility from '../utils/boostVisibility.js';
 import { useBoostClock } from '../hooks/useBoostClock';
 import AlertCta from './AlertCta';
 import SeoHead from './SeoHead';
+import SeoFaqSection from './SeoFaqSection';
+import taxonomy from '../data/seo/taxonomy';
 import { useTranslation } from 'react-i18next';
 import { useHideLoader } from '../hooks/useHideLoader';
 import { seoCopy, seoLang, SEO_LANGS, priceStats, nzd } from '../data/seo';
@@ -19,118 +20,81 @@ const LOCATIONS_CONFIG = {
     name: 'Auckland',
     region: 'North Island',
     title: 'Campervans for Sale in Auckland, New Zealand',
-    description: 'Find campervans for sale in Auckland, NZ. Browse self-contained vans, Toyota Hiace, Nissan Caravan and more. Auckland is the best place to start your New Zealand road trip adventure.',
     searchTerms: ['auckland'],
     keywords: ['Campervans Auckland', 'Buy van Auckland', 'Self contained van Auckland NZ'],
-    highlights: ['Largest selection in NZ', 'Easy airport access', 'Start point for North Island trips'],
   },
   'wellington': {
     name: 'Wellington',
     region: 'North Island',
     title: 'Campervans for Sale in Wellington, New Zealand',
-    description: 'Browse campervans for sale in Wellington. Perfect starting point for South Island adventures via the Interislander ferry. Find reliable vans with valid WOF and self-containment.',
     searchTerms: ['wellington'],
     keywords: ['Campervans Wellington', 'Buy van Wellington', 'Wellington campervan sales NZ'],
-    highlights: ['Ferry to South Island', 'Capital city', 'Great café culture'],
   },
   'christchurch': {
     name: 'Christchurch',
     region: 'South Island',
     title: 'Campervans for Sale in Christchurch, New Zealand',
-    description: 'Discover campervans for sale in Christchurch. Gateway to the South Island\'s stunning landscapes. Find self-contained vans perfect for exploring Queenstown, Milford Sound, and more.',
     searchTerms: ['christchurch'],
     keywords: ['Campervans Christchurch', 'Buy van Christchurch', 'Self contained van Christchurch'],
-    highlights: ['South Island gateway', 'Close to ski fields', 'Garden city'],
   },
   'queenstown': {
     name: 'Queenstown',
     region: 'South Island',
     title: 'Campervans for Sale in Queenstown, New Zealand',
-    description: 'Shop campervans in Queenstown, adventure capital of NZ. Find vans ready for exploring Milford Sound, Wanaka, and the stunning Otago region. Self-contained options available.',
     searchTerms: ['queenstown'],
     keywords: ['Campervans Queenstown', 'Buy van Queenstown', 'Queenstown campervan NZ'],
-    highlights: ['Adventure capital', 'Stunning scenery', 'Year-round destination'],
   },
   'hamilton': {
     name: 'Hamilton',
     region: 'North Island',
     title: 'Campervans for Sale in Hamilton, New Zealand',
-    description: 'Find campervans for sale in Hamilton. Central North Island location, perfect base for exploring Waitomo Caves, Hobbiton, and Rotorua. Affordable vans with buy-back options.',
     searchTerms: ['hamilton'],
     keywords: ['Campervans Hamilton', 'Buy van Hamilton', 'Hamilton van sales NZ'],
-    highlights: ['Central location', 'Near Hobbiton', 'Affordable options'],
   },
   'tauranga': {
     name: 'Tauranga',
     region: 'North Island',
     title: 'Campervans for Sale in Tauranga, New Zealand',
-    description: 'Browse campervans in Tauranga and the Bay of Plenty. Beautiful beaches, Mount Maunganui, and great weather. Find your perfect road trip van.',
     searchTerms: ['tauranga', 'bay of plenty'],
     keywords: ['Campervans Tauranga', 'Buy van Tauranga', 'Tauranga camper sales'],
-    highlights: ['Beach lifestyle', 'Great weather', 'Mount Maunganui'],
   },
   'dunedin': {
     name: 'Dunedin',
     region: 'South Island',
     title: 'Campervans for Sale in Dunedin, New Zealand',
-    description: 'Discover campervans for sale in Dunedin. Scottish heritage, wildlife, and gateway to the Catlins. Find reliable vans for your South Island adventure.',
     searchTerms: ['dunedin'],
     keywords: ['Campervans Dunedin', 'Buy van Dunedin', 'Dunedin backpacker van'],
-    highlights: ['Wildlife spotting', 'University town', 'Catlins gateway'],
   },
   'rotorua': {
     name: 'Rotorua',
     region: 'North Island',
     title: 'Campervans for Sale in Rotorua, New Zealand',
-    description: 'Find campervans in Rotorua, heart of Maori culture and geothermal wonders. Perfect base for exploring the North Island\'s thermal attractions.',
     searchTerms: ['rotorua'],
     keywords: ['Campervans Rotorua', 'Buy van Rotorua', 'Rotorua campervan sales'],
-    highlights: ['Geothermal wonders', 'Maori culture', 'Mountain biking'],
   },
   'nelson': {
     name: 'Nelson',
     region: 'South Island',
     title: 'Campervans for Sale in Nelson, New Zealand',
-    description: 'Find campervans for sale in Nelson, gateway to Abel Tasman and the top of the South Island. Compare reliable vans with trust-first listing details.',
     searchTerms: ['nelson'],
     keywords: ['Campervans Nelson', 'Buy van Nelson', 'Nelson campervan sales NZ'],
-    highlights: ['Abel Tasman gateway', 'Sunny climate', 'Top of South Island'],
   },
 };
 
 // Schema.org pour la page de location
-const LocationSchema = ({ location, vans, url }) => {
+const LocationSchema = ({ name, description, vans, url }) => {
   const schema = {
     "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": location.title,
-    "description": location.description,
+    "@type": "ItemList",
+    "name": name,
+    "description": description,
     "url": url,
-    "about": {
-      "@type": "City",
-      "name": location.name,
-      "containedInPlace": {
-        "@type": "Country",
-        "name": "New Zealand"
-      }
-    },
     "numberOfItems": vans.length,
-    "itemListElement": vans.slice(0, 12).map((van, index) => ({
+    "itemListElement": vans.map((van, index) => ({
       "@type": "ListItem",
       "position": index + 1,
-      "item": {
-        "@type": "Car",
-        "name": van.title,
-        "url": `https://kiwivanmarket.com/van/${van.id}`,
-        "image": van.images?.[0] || van.imageUrl,
-        "offers": {
-          "@type": "Offer",
-          "price": van.price,
-          "priceCurrency": "NZD",
-          "availability": van.status === 'sold' ? "https://schema.org/SoldOut" : "https://schema.org/InStock"
-        },
-        "itemCondition": "https://schema.org/UsedCondition"
-      }
+      "name": van.title,
+      "url": `https://kiwivanmarket.com/van/${van.id}`
     }))
   };
 
@@ -156,14 +120,13 @@ export default function LocationPage() {
   // Textes SEO partagés avec le prerender (src/data/seo), dans la langue courante.
   const lang = seoLang(i18n.language);
   const S = seoCopy(i18n.language);
+  const activeVans = taxonomy.activeStock(vans);
   const stats = priceStats(vans);
   const statsFmt = stats && { count: stats.count, min: nzd(stats.min), max: nzd(stats.max), avg: nzd(stats.avg) };
   const name = locationConfig?.name || '';
   const seoTitle = lang === 'en' ? locationConfig?.title : S.location.title(name).replace(' | Kiwi Van Market', '');
-  const seoDescription = lang === 'en'
-    ? locationConfig?.description
-    : (statsFmt ? S.location.metaDesc(name, statsFmt, vans.length) : S.location.metaDescNoStats(name));
-  const heroText = lang === 'en' ? locationConfig?.description : S.location.blurbs[location];
+  const seoDescription = statsFmt ? S.location.metaDesc(name, statsFmt, activeVans.length) : S.location.metaDescNoStats(name);
+  const heroText = S.location.blurbs[location];
   const locationFaqs = locationConfig ? S.location.faqs(name, statsFmt) : [];
 
   useEffect(() => {
@@ -228,7 +191,7 @@ export default function LocationPage() {
         title={seoTitle}
         description={seoDescription}
         keywords={locationConfig?.keywords}
-        noindex={!loading && !vans.length}
+        noindex={!loading && !taxonomy.hasActiveStock(vans)}
         alternateLangs={SEO_LANGS}
         faqs={locationFaqs}
         breadcrumbs={[
@@ -238,7 +201,7 @@ export default function LocationPage() {
         ]}
       />
 
-      {locationConfig && <LocationSchema location={locationConfig} vans={vans} url={url} />}
+      {locationConfig && <LocationSchema name={seoTitle} description={seoDescription} vans={activeVans} url={lang === 'en' ? url : `${url}?lang=${lang}`} />}
 
       {/* Hero Section */}
       <div className="bg-emerald-600 text-white pt-24 pb-12 px-4 shadow-lg">
@@ -262,13 +225,6 @@ export default function LocationPage() {
             {heroText}
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            {locationConfig?.highlights.map((highlight, idx) => (
-              <span key={idx} className="bg-white/10 px-4 py-2 rounded-xl text-sm font-bold border border-white/20">
-                {highlight}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -282,7 +238,7 @@ export default function LocationPage() {
           <>
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-gray-800">
-                {t(vans.length === 1 ? 'seo_pages.location.available_one' : 'seo_pages.location.available_many', { count: vans.length })}
+                {t(activeVans.length === 1 ? 'seo_pages.location.available_one' : 'seo_pages.location.available_many', { count: activeVans.length })}
               </h2>
             </div>
 
@@ -304,6 +260,8 @@ export default function LocationPage() {
             )}
 
             <AlertCta variant="banner" source="location" className="mt-10" defaults={{ location }} />
+
+            <SeoFaqSection title={S.common.faqTitle} faqs={locationFaqs} className="mt-10" />
 
             <div className="mt-10 bg-white rounded-2xl border border-slate-100 p-6">
               <h3 className="text-sm font-black uppercase tracking-widest text-slate-500 mb-4">{t('seo_pages.links_title')}</h3>
@@ -332,7 +290,7 @@ export default function LocationPage() {
                     {t('seo_pages.location.start_title')} <span className="text-emerald-400">{locationConfig?.name}</span>
                   </h2>
                   <p className="text-gray-400 mb-8 text-lg font-medium leading-relaxed">
-                    {S.location.blurbs[location] || locationConfig?.description}
+                    {S.location.blurbs[location]}
                   </p>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
