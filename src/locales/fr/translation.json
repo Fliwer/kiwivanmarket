@@ -214,6 +214,7 @@
     },
     "my_listings": {
         "dashboard": "Gestion de mon annonce",
+        "status_active": "En ligne",
         "pause": "Mettre en pause",
         "resume": "Remettre en ligne",
         "title": "Mes Vans",

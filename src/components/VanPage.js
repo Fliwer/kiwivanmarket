@@ -15,12 +15,13 @@ import { formatMileage, formatWhatsAppNumber } from '../utils/formatHelper';
 import {
   ArrowLeft, Heart, Share2, MapPin, Calendar, Gauge, Users,
   Shield, Star, Clock, CheckCircle, X, MessageCircle, ChevronLeft, ChevronRight, HelpCircle, Copy, Facebook, ExternalLink, BookOpen, User, LogOut,
-  Trash2, Edit2, LayoutDashboard, Pause, Play, AlertTriangle, Phone, Lock, Fuel, Cog
+  Edit2, LayoutDashboard, AlertTriangle, Phone, Lock, Fuel, Cog
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './ToastProvider';
 import SeoHead from './SeoHead';
 import EquipmentBadges from './EquipmentBadges';
+import ListingOwnerPanel from './ListingOwnerPanel';
 
 // Lazy load du QuickMessageBox (avec auto-récupération si chunk périmé)
 import lazyWithReload from '../utils/lazyWithReload';
@@ -729,80 +730,12 @@ ${shareUrl}
             {/* Colonne principale */}
             <div className="lg:col-span-2 space-y-8">
 
-              {/* ✅ OWNER DASHBOARD */}
+              {/* Owner controls */}
               {currentUser?.uid === van.seller?.uid && (
-                <div className="bg-slate-900 rounded-[2rem] shadow-2xl border border-slate-800 p-8 text-white relative overflow-hidden group">
-                  {/* Decorative background icon */}
-                  <LayoutDashboard size={120} className="absolute -right-8 -bottom-8 text-white/5 group-hover:scale-110 transition-transform duration-700" />
-
-                  <div className="relative z-10">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                          <LayoutDashboard size={20} />
-                        </div>
-                        <h3 className="text-lg font-black uppercase tracking-widest">{t('my_listings.dashboard')}</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {van.status === 'paused' && (
-                          <span className="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-amber-400 text-[10px] font-black uppercase tracking-widest animate-pulse">Paused</span>
-                        )}
-                        {van.status === 'sold' && (
-                          <span className="px-3 py-1 bg-red-500/20 border border-red-500/40 rounded-full text-red-400 text-[10px] font-black uppercase tracking-widest">Sold</span>
-                        )}
-                        {(!van.status || van.status === 'active') && (
-                          <span className="px-3 py-1 bg-emerald-500/20 border border-emerald-500/40 rounded-full text-emerald-400 text-[10px] font-black uppercase tracking-widest">Live</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="space-y-3">
-                        <Link
-                          to={`/sell?edit=${van.id}`}
-                          className="flex items-center justify-center gap-3 w-full bg-white/10 hover:bg-white text-white hover:text-slate-900 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
-                        >
-                          <Edit2 size={16} />
-                          {t('my_listings.edit')}
-                        </Link>
-
-                        <button
-                          onClick={handleToggleSold}
-                          disabled={isUpdating}
-                          className={`flex items-center justify-center gap-3 w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${van.status === 'sold'
-                            ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30'
-                            : 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
-                            }`}
-                        >
-                          <CheckCircle size={16} />
-                          {van.status === 'sold' ? t('my_listings.reactivate') : t('my_listings.mark_as_sold')}
-                        </button>
-                      </div>
-
-                      <div className="space-y-3">
-                        <button
-                          onClick={handleTogglePause}
-                          disabled={isUpdating}
-                          className="flex items-center justify-center gap-3 w-full bg-white/10 hover:bg-amber-500 hover:text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
-                        >
-                          {van.status === 'paused' ? <Play size={16} /> : <Pause size={16} />}
-                          {van.status === 'paused' ? t('my_listings.resume') : t('my_listings.pause')}
-                        </button>
-
-                        <button
-                          onClick={() => setShowDeleteConfirm(true)}
-                          disabled={isUpdating}
-                          className="flex items-center justify-center gap-3 w-full bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
-                        >
-                          <Trash2 size={16} />
-                          {t('my_listings.delete')}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <ListingOwnerPanel van={van} isUpdating={isUpdating}
+                  onToggleSold={handleToggleSold} onTogglePause={handleTogglePause}
+                  onDelete={() => setShowDeleteConfirm(true)} />
               )}
-
               {/* Faits clés — ligne épurée style Airbnb */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pb-2">
                 <div className="flex items-center gap-3">

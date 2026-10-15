@@ -23,6 +23,9 @@
     },
     "my_listings": {
         "dashboard": "Gestionar mi anuncio",
+        "status_active": "En línea",
+        "status_paused": "En pausa",
+        "status_sold": "Vendido",
         "pause": "Pausar anuncio",
         "resume": "Reactivar anuncio"
     },

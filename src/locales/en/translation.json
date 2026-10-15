@@ -214,6 +214,7 @@
     },
     "my_listings": {
         "dashboard": "Manage my listing",
+        "status_active": "Online",
         "pause": "Pause listing",
         "resume": "Resume listing",
         "title": "My Vans",
