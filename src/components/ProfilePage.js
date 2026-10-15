@@ -132,9 +132,10 @@ export default function ProfilePage() {
       setSaveError('');
       const result = await uploadToCloudinary(file, { folder: 'profile_photos' });
       const photoURL = result.url;
-      if (auth.currentUser?.uid !== currentUser.uid) throw Object.assign(new Error('Session changed'), { code: 'unauthenticated' });
+      const user = auth.currentUser;
+      if (user?.uid !== currentUser.uid) throw Object.assign(new Error('Session changed'), { code: 'unauthenticated' });
       await updateDoc(doc(db, 'users', currentUser.uid), { photoURL });
-      await updateProfile(auth.currentUser, { photoURL }).catch(error => console.warn('Profile photo sync:', error.code));
+      await updateProfile(user, { photoURL }).catch(error => console.warn('Profile photo sync:', error.code));
       setProfile(p => ({ ...p, photoURL }));
     } catch (e) {
       console.error(e);

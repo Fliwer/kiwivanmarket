@@ -212,11 +212,12 @@ export default function UserProfile({ onClose }) {
 
       // Update Firestore
       const userRef = doc(db, 'users', currentUser.uid);
-      if (auth.currentUser?.uid !== currentUser.uid) throw Object.assign(new Error('Session changed'), { code: 'unauthenticated' });
+      const user = auth.currentUser;
+      if (user?.uid !== currentUser.uid) throw Object.assign(new Error('Session changed'), { code: 'unauthenticated' });
       await updateDoc(userRef, { photoURL: photoURL });
 
       // Update Firebase Auth profile
-      await updateProfile(auth.currentUser, { photoURL }).catch(error => console.warn('Profile photo sync:', error.code));
+      await updateProfile(user, { photoURL }).catch(error => console.warn('Profile photo sync:', error.code));
 
       // Update local state
       setProfile(prev => ({ ...prev, photoURL: photoURL }));
