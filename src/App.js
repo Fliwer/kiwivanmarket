@@ -528,6 +528,16 @@ function ScrollToTop() {
   return null;
 }
 
+function MessagingRouteBridge({ open, onNavigated }) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!open) return;
+    navigate('/messages');
+    onNavigated(false);
+  }, [open, onNavigated, navigate]);
+  return null;
+}
+
 export default function KiwiVanMarket() {
   // Direct entry must reveal every route, including pages without their own loader hook.
   useHideLoader();
@@ -573,6 +583,7 @@ export default function KiwiVanMarket() {
         <NotificationProvider onOpenMessaging={() => setShowMessagingPage(true)}>
           <div className={`min-h-screen ${embedMode ? 'bg-white' : 'bg-slate-50 pt-14 md:pt-0'}`}>
             <ScrollToTop />
+            <MessagingRouteBridge open={showMessagingPage} onNavigated={setShowMessagingPage} />
             <RouteLanguage />
             {!embedMode && <Header {...headerProps} />}
             <Routes>

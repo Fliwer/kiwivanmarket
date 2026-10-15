@@ -6,9 +6,9 @@ service cloud.firestore {
     // ║                                                                   ║
     // ║   🥝 KIWI VAN MARKET - FIRESTORE SECURITY RULES                  ║
     // ║                                                                   ║
-    // ║   Version: 2.1.0                                                  ║
-    // ║   Last Updated: December 2024                                     ║
-    // ║   Security Level: Production Ready                                ║
+    // ║   Reviewed: 15 October 2026                                       ║
+    // ║   Scope and remaining risks: docs/audit-access-2026-10-15.md       ║
+    // ║   Review does not constitute a security certification.            ║
     // ║                                                                   ║
     // ╚══════════════════════════════════════════════════════════════════╝
     
@@ -71,9 +71,97 @@ service cloud.firestore {
     }
     
     function hasValidImages(images) {
-      return images is list && 
-             images.size() >= 1 && 
-             images.size() <= 10;
+      // Join once to validate the whole bounded list without exceeding the Rules expression budget.
+      return images is list && images.size() >= 1 && images.size() <= 10 &&
+             images.join('|').size() <= 20480 &&
+             images.join('|').matches('^https://(res[.]cloudinary[.]com|firebasestorage[.]googleapis[.]com)/[^|]+([|]https://(res[.]cloudinary[.]com|firebasestorage[.]googleapis[.]com)/[^|]+)*$');
+    }
+
+    function isValidImageUrl(url) {
+      return isValidString(url, 1, 2048) &&
+             url.matches('^https://(res[.]cloudinary[.]com|firebasestorage[.]googleapis[.]com)/.+');
+    }
+
+    function optionalString(data, key, maxLength) {
+      let value = data.get(key, null);
+      return value == null || (value is string && value.size() <= maxLength);
+    }
+
+    function optionalNumber(data, key, minimum, maximum) {
+      let value = data.get(key, null);
+      return value == null || (value is number && value >= minimum && value <= maximum);
+    }
+
+    function optionalDate(data, key) {
+      let value = data.get(key, null);
+      return value == null || value is timestamp || (value is string && value.size() <= 32);
+    }
+
+    // Check only modified optional fields on update, so old listings remain editable.
+    function hasValidOptionalListingFields(data, changed) {
+      let equipment = data.get('equipment', {});
+      return (!('region' in changed) || (data.region is string && data.region.size() <= 100)) &&
+             (!('type' in changed) || (data.type is string && data.type.size() <= 50)) &&
+             (!('fuelType' in changed) || (data.fuelType is string && data.fuelType.size() <= 32)) &&
+             (!('transmission' in changed) || (data.transmission is string && data.transmission.size() <= 32)) &&
+             (!('capacity' in changed) || optionalNumber(data, 'capacity', 1, 20)) &&
+             (!('selfContained' in changed) || data.get('selfContained', false) is bool) &&
+             (!('selfContainedType' in changed) || optionalString(data, 'selfContainedType', 32)) &&
+             (!('equipment' in changed) || (equipment is map &&
+               equipment.keys().hasOnly(['doubleBed', 'singleBeds', 'roofBed', 'bedding', 'curtains',
+                 'fridge', 'gasStove', 'sink', 'cookware', 'freshWaterTank', 'greyWaterTank', 'outdoorShower',
+                 'indoorShower', 'toilet', 'portaPotti', 'solarPanel', 'leisureBattery', 'splitCharger',
+                 'inverter', 'usb', 'ledLights', 'heater', 'dieselHeater', 'roofFan', 'insulation', 'awning',
+                 'reverseCamera', 'bluetooth', 'swivelSeats', 'bikeRack', 'surfRack']) &&
+               equipment.values().hasOnly([true, false]))) &&
+             (!('buyBack' in changed) || data.get('buyBack', false) is bool) &&
+             (!('buyBackPrice' in changed) || optionalNumber(data, 'buyBackPrice', 0, 500000)) &&
+             (!('buyBackDuration' in changed) || optionalNumber(data, 'buyBackDuration', 0, 120)) &&
+             (!('buyBackMaxKm' in changed) || optionalNumber(data, 'buyBackMaxKm', 0, 1000000)) &&
+             (!('buyBackConditions' in changed) || (data.buyBackConditions is string && data.buyBackConditions.size() <= 5000)) &&
+             (!('wofExpiry' in changed) || optionalDate(data, 'wofExpiry')) &&
+             (!('regoExpiry' in changed) || optionalDate(data, 'regoExpiry')) &&
+             (!('customFeatures' in changed) || (data.customFeatures is string && data.customFeatures.size() <= 2000)) &&
+             (!('imageUrl' in changed) || data.get('imageUrl', null) == null || isValidImageUrl(data.imageUrl)) &&
+             (!('hasDirectContact' in changed) || data.get('hasDirectContact', false) is bool) &&
+             (!('plateNumber' in changed) || (data.plateNumber is string && data.plateNumber.size() <= 20));
+    }
+
+    function isSellerEditableStatus(status) {
+      return status in ['active', 'sold', 'paused'];
+    }
+
+    function hasValidConversationMaps(data, changed) {
+      return (!('participantNames' in changed) || data.get('participantNames', null) == null ||
+               (data.participantNames is map && data.participantNames.keys().hasOnly(data.participants) &&
+                optionalString(data.participantNames, data.buyerId, 100) && optionalString(data.participantNames, data.sellerId, 100))) &&
+             (!('participantEmails' in changed) || data.get('participantEmails', null) == null ||
+               (data.participantEmails is map && data.participantEmails.keys().hasOnly(data.participants) &&
+                optionalString(data.participantEmails, data.buyerId, 254) && optionalString(data.participantEmails, data.sellerId, 254))) &&
+             (!('unreadCount' in changed) ||
+               (data.unreadCount is map && data.unreadCount.keys().hasOnly(data.participants) &&
+                data.unreadCount.get(data.buyerId, 0) is int && data.unreadCount.get(data.sellerId, 0) is int &&
+                data.unreadCount.get(data.buyerId, 0) >= 0 && data.unreadCount.get(data.sellerId, 0) >= 0 &&
+                data.unreadCount.get(data.buyerId, 0) <= 100000 && data.unreadCount.get(data.sellerId, 0) <= 100000)) &&
+             (!('typing' in changed) ||
+               (data.typing is map && data.typing.keys().hasOnly(data.participants) && data.typing.values().hasOnly([true, false])));
+    }
+
+    function hasValidConversationVan(data) {
+      let van = data.get('van', null);
+      return van == null || (van is map &&
+             van.keys().hasOnly(['id', 'title', 'price', 'imageUrl', 'year', 'mileage', 'location',
+               'wofExpiry', 'regoExpiry', 'selfContained', 'buyBack', 'buyBackPrice', 'buyBackDuration', 'status']) &&
+             van.id == data.vanId && isValidString(van.title, 3, 200) && isValidPrice(van.price) &&
+             van.title == get(/databases/$(database)/documents/vans/$(data.vanId)).data.title &&
+             van.price == get(/databases/$(database)/documents/vans/$(data.vanId)).data.price &&
+             optionalString(van, 'location', 100) && optionalNumber(van, 'year', 1950, 2030) &&
+             optionalNumber(van, 'mileage', 0, 1000000) &&
+             (van.get('imageUrl', null) == null || isValidImageUrl(van.imageUrl)) &&
+             optionalDate(van, 'wofExpiry') && optionalDate(van, 'regoExpiry') &&
+             (van.get('selfContained', false) is bool) && (van.get('buyBack', false) is bool) &&
+             optionalNumber(van, 'buyBackPrice', 0, 500000) && optionalNumber(van, 'buyBackDuration', 0, 120) &&
+             (van.get('status', 'active') in ['active', 'sold', 'paused']));
     }
     
     function isValidEmail(email) {
@@ -221,47 +309,85 @@ service cloud.firestore {
         allow write: if docId == 'contact' && hasVerifiedEmail() &&
                         request.resource.data.keys().hasOnly(['email', 'phone', 'whatsapp']) &&
                         request.resource.data.email == request.auth.token.email &&
+                        optionalString(request.resource.data, 'phone', 64) &&
+                        optionalString(request.resource.data, 'whatsapp', 64) &&
                         currentUserId() == get(/databases/$(database)/documents/vans/$(vanId)).data.seller.uid;
       }
 
-      allow create: if hasVerifiedEmail() &&
-                      hasNoPublicContact(request.resource.data) &&
-                      request.resource.data.get('userId', currentUserId()) == currentUserId() &&
-                      !request.resource.data.keys().hasAny(['availabilityToken', 'availabilityConfirmedAt', 'availabilityReminderSentAt', 'expiredAt', 'expiredReason', 'paymentIntentId', 'stripeAccountId', 'reservedBy', 'reservationId', 'boostState', 'boostStartedAt', 'boostExpiresAt', 'boostOrderId', 'boostLivemode']) &&
-                      request.resource.data.get('featured', false) == false &&
-                      request.resource.data.seller.uid == currentUserId() &&
-                      request.resource.data.keys().hasAll([
+      function validListingCreate() {
+        let data = request.resource.data;
+        let keys = data.keys().toSet();
+        return
+                      hasNoPublicContact(data) &&
+                      keys.hasOnly([
+                        'title', 'price', 'description', 'location', 'region', 'year', 'mileage',
+                        'type', 'fuelType', 'transmission', 'capacity', 'selfContained', 'selfContainedType',
+                        'equipment', 'buyBack', 'buyBackPrice', 'buyBackDuration', 'buyBackMaxKm',
+                        'buyBackConditions', 'wofExpiry', 'regoExpiry', 'customFeatures', 'imageUrl',
+                        'images', 'imageFocusX', 'imageFocusY', 'imageZoom', 'imageCrops', 'seller',
+                        'userId', 'hasDirectContact', 'plateNumber', 'views', 'createdAt', 'updatedAt', 'status'
+                      ]) &&
+                      data.get('userId', currentUserId()) == currentUserId() &&
+                      data.get('featured', false) == false &&
+                      data.seller.uid == currentUserId() &&
+                      data.seller.keys().hasOnly(['uid', 'name']) &&
+                      isValidString(data.seller.name, 1, 100) &&
+                      keys.hasAll([
                         'title', 'price', 'description', 'location', 
                         'year', 'mileage', 'images', 'seller', 
                         'views', 'createdAt', 'status'
                       ]) &&
-                      isValidString(request.resource.data.title, 3, 200) &&
-                      isValidPrice(request.resource.data.price) &&
-                      isValidString(request.resource.data.description, 10, 5000) &&
-                      isValidString(request.resource.data.location, 2, 100) &&
-                      isValidYear(request.resource.data.year) &&
-                      isValidMileage(request.resource.data.mileage) &&
-                      hasValidImages(request.resource.data.images) &&
-                      request.resource.data.views == 0 &&
-                      request.resource.data.status == 'active';
+                      isValidString(data.title, 3, 200) &&
+                      isValidPrice(data.price) &&
+                      isValidString(data.description, 10, 5000) &&
+                      isValidString(data.location, 2, 100) &&
+                      isValidYear(data.year) &&
+                      isValidMileage(data.mileage) &&
+                      hasValidImages(data.images) &&
+                      hasValidOptionalListingFields(data, data) &&
+                      data.views == 0 &&
+                      data.createdAt is timestamp &&
+                      data.createdAt == request.time &&
+                      data.status == 'active';
+      }
+      allow create: if hasVerifiedEmail() && validListingCreate();
       
-      allow update: if isAuthenticated() && 
-                      currentUserId() == resource.data.seller.uid &&
-                      hasNoPublicContact(request.resource.data) &&
-                      fieldsUnchanged(['views', 'createdAt', 'userId', 'availabilityToken', 'availabilityReminderSentAt', 'availabilityConfirmedAt', 'expiredAt', 'expiredReason', 'paymentIntentId', 'stripeAccountId', 'reservedBy', 'reservationId', 'boostState', 'boostStartedAt', 'boostExpiresAt', 'boostOrderId', 'boostLivemode', 'featured']) &&
-                      (fieldUnchanged('seller') || (
-                        request.resource.data.seller.uid == resource.data.seller.uid &&
+      function validListingUpdate() {
+        let data = request.resource.data;
+        let previous = resource.data;
+        let changed = data.diff(previous).affectedKeys();
+        return
+                      currentUserId() == previous.seller.uid &&
+                      hasNoPublicContact(data) &&
+                      changed.hasOnly([
+                        'title', 'price', 'description', 'location', 'region', 'year', 'mileage',
+                        'type', 'fuelType', 'transmission', 'capacity', 'selfContained', 'selfContainedType',
+                        'equipment', 'buyBack', 'buyBackPrice', 'buyBackDuration', 'buyBackMaxKm',
+                        'buyBackConditions', 'wofExpiry', 'regoExpiry', 'customFeatures', 'imageUrl',
+                        'images', 'imageFocusX', 'imageFocusY', 'imageZoom', 'imageCrops', 'seller',
+                        'hasDirectContact', 'plateNumber', 'updatedAt', 'status'
+                      ]) &&
+                      (!('seller' in changed) || (
+                        data.seller.uid == previous.seller.uid &&
                         // whatsapp inclus : le formulaire d'édition permet de le
                         // modifier — sans lui, tout update touchant le WhatsApp
                         // était refusé.
                         // Le formulaire remet les anciennes coordonnees a null.
                         // hasNoPublicContact impose que email/phone/whatsapp restent null.
-                        request.resource.data.seller.diff(resource.data.seller).affectedKeys().hasOnly(['phone', 'facebook', 'whatsapp', 'email'])
+                        data.seller.diff(previous.seller).affectedKeys().hasOnly(['phone', 'facebook', 'whatsapp', 'email'])
                       )) &&
-                      (fieldUnchanged('price') || isValidPrice(request.resource.data.price)) &&
-                      (fieldUnchanged('title') || isValidString(request.resource.data.title, 3, 200)) &&
-                      (fieldUnchanged('description') || isValidString(request.resource.data.description, 10, 5000)) &&
-                      (fieldUnchanged('status') || request.resource.data.status in ['active', 'sold', 'paused', 'deleted']);
+                      (!('price' in changed) || isValidPrice(data.price)) &&
+                      (!('title' in changed) || isValidString(data.title, 3, 200)) &&
+                      (!('description' in changed) || isValidString(data.description, 10, 5000)) &&
+                      (!('location' in changed) || isValidString(data.location, 2, 100)) &&
+                      (!('year' in changed) || isValidYear(data.year)) &&
+                      (!('mileage' in changed) || isValidMileage(data.mileage)) &&
+                      (!('images' in changed) || hasValidImages(data.images)) &&
+                      hasValidOptionalListingFields(data, changed) &&
+                      (!('status' in changed) ||
+                       (isSellerEditableStatus(previous.get('status', 'active')) && isSellerEditableStatus(data.status)));
+      }
+      allow update: if isAuthenticated() && validListingUpdate();
       
       allow update: if isAdmin();
       
@@ -307,6 +433,7 @@ service cloud.firestore {
                         'lastMessageSenderId', 'unreadCount', 'typing',
                         'updatedAt'
                       ]) &&
+                      request.resource.data.participants is list &&
                       currentUserId() in request.resource.data.participants &&
                       request.resource.data.participants.size() == 2 &&
                       request.resource.data.participants[0] != request.resource.data.participants[1] &&
@@ -314,8 +441,17 @@ service cloud.firestore {
                       request.resource.data.sellerId in request.resource.data.participants &&
                       request.resource.data.buyerId != request.resource.data.sellerId &&
                       request.resource.data.buyerId == currentUserId() &&
+                      isValidString(request.resource.data.vanId, 1, 128) &&
                       exists(/databases/$(database)/documents/vans/$(request.resource.data.vanId)) &&
                       request.resource.data.sellerId == get(/databases/$(database)/documents/vans/$(request.resource.data.vanId)).data.seller.uid &&
+                      request.resource.data.createdAt is timestamp && request.resource.data.createdAt == request.time &&
+                      optionalString(request.resource.data, 'buyerName', 100) &&
+                      optionalString(request.resource.data, 'lastMessage', 2000) &&
+                      (request.resource.data.get('lastMessageSenderId', currentUserId()) == currentUserId()) &&
+                      (request.resource.data.get('lastMessageAt', request.time) == request.time) &&
+                      (request.resource.data.get('status', 'new') in ['new', 'active']) &&
+                      hasValidConversationMaps(request.resource.data, request.resource.data.keys().toSet()) &&
+                      hasValidConversationVan(request.resource.data) &&
                       request.resource.data.keys().hasAll(['participants', 'createdAt', 'vanId']);
       
       allow update: if isAuthenticated() &&
@@ -323,7 +459,12 @@ service cloud.firestore {
                       fieldUnchanged('participants') &&
                       fieldUnchanged('vanId') &&
                       fieldUnchanged('createdAt') &&
-                      (fieldUnchanged('status') || request.resource.data.status in ['new', 'active', 'archived', 'closed']) &&
+                      (fieldUnchanged('status') || request.resource.data.status in ['new', 'active', 'pending', 'resolved', 'archived', 'closed']) &&
+                      (fieldUnchanged('lastMessage') || isValidString(request.resource.data.lastMessage, 1, 2000)) &&
+                      (fieldsUnchanged(['lastMessage', 'lastMessageAt', 'lastMessageSenderId']) || request.resource.data.lastMessageSenderId == currentUserId()) &&
+                      (fieldUnchanged('lastMessageAt') || request.resource.data.lastMessageAt == request.time) &&
+                      (fieldUnchanged('updatedAt') || request.resource.data.updatedAt is timestamp) &&
+                      hasValidConversationMaps(request.resource.data, request.resource.data.diff(resource.data).affectedKeys()) &&
                       request.resource.data.diff(resource.data).affectedKeys().hasOnly([
                         'lastMessage', 'lastMessageAt', 'lastMessageSenderId',
                         'status', 'unreadCount', 'typing', 'updatedAt'
@@ -339,6 +480,10 @@ service cloud.firestore {
                         request.resource.data.senderId == currentUserId() &&
                         request.resource.data.senderId != 'system' &&
                         isValidString(request.resource.data.text, 1, 2000) &&
+                        optionalString(request.resource.data, 'senderName', 100) &&
+                        request.resource.data.createdAt is timestamp && request.resource.data.createdAt == request.time &&
+                        request.resource.data.get('read', false) == false &&
+                        request.resource.data.keys().hasOnly(['senderId', 'senderName', 'text', 'createdAt', 'read']) &&
                         request.resource.data.keys().hasAll(['senderId', 'text', 'createdAt']);
         
         allow update: if isConversationParticipant(conversationId) &&

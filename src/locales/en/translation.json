@@ -1,4 +1,8 @@
 {
+    "common": {
+        "loading": "Loading",
+        "cancel": "Cancel"
+    },
     "profile_save": {
         "photo_type": "Choose an image file (JPG, PNG or WebP).",
         "photo_size": "Choose a photo smaller than 5 MB.",
@@ -218,7 +222,7 @@
     },
     "my_listings": {
         "dashboard": "Manage my listing",
-        "status_active": "Online",
+        "status_active": "Listing published",
         "pause": "Pause listing",
         "resume": "Resume listing",
         "title": "My Vans",

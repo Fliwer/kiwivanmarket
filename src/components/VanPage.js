@@ -76,8 +76,9 @@ export default function VanPage() {
     setIsUpdating(true);
     const newStatus = van.status === 'sold' ? 'active' : 'sold';
     try {
-      await updateDoc(doc(db, 'vans', van.id), { status: newStatus });
-      setVan(prev => ({ ...prev, status: newStatus }));
+      const { data } = await httpsCallable(functions, 'setListingAvailability')({ vanId: van.id, status: newStatus });
+      setVan(prev => ({ ...prev, status: data.status,
+        ...(data.confirmedAt ? { availabilityConfirmedAt: new Date(data.confirmedAt) } : {}) }));
       // Invalidate cache
       localStorage.removeItem('kiwiVanMarket_vans');
       localStorage.removeItem('kiwiVanMarket_timestamp');
@@ -94,8 +95,9 @@ export default function VanPage() {
     setIsUpdating(true);
     const newStatus = van.status === 'paused' ? 'active' : 'paused';
     try {
-      await updateDoc(doc(db, 'vans', van.id), { status: newStatus });
-      setVan(prev => ({ ...prev, status: newStatus }));
+      const { data } = await httpsCallable(functions, 'setListingAvailability')({ vanId: van.id, status: newStatus });
+      setVan(prev => ({ ...prev, status: data.status,
+        ...(data.confirmedAt ? { availabilityConfirmedAt: new Date(data.confirmedAt) } : {}) }));
       // Invalidate cache
       localStorage.removeItem('kiwiVanMarket_vans');
       localStorage.removeItem('kiwiVanMarket_timestamp');
@@ -943,7 +945,7 @@ ${shareUrl}
                   <div className="flex items-baseline gap-2 flex-wrap">
                     <span className="text-3xl font-bold text-slate-900">{formatPrice(van.price)}</span>
                     {van.status === 'sold' && (
-                      <span className="text-xs font-bold text-red-600 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded-full">{t('my_listings.sold') || 'Sold'}</span>
+                      <span className="text-xs font-bold text-red-600 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded-full">{t('my_listings.status_sold')}</span>
                     )}
                   </div>
                   <p className="mt-1.5 text-xs text-slate-400 flex items-center gap-1.5">

@@ -1,4 +1,8 @@
 {
+    "common": {
+        "loading": "Chargement",
+        "cancel": "Annuler"
+    },
     "profile_save": {
         "photo_type": "Choisissez une image JPG, PNG ou WebP.",
         "photo_size": "Choisissez une photo de moins de 5 Mo.",
@@ -218,7 +222,7 @@
     },
     "my_listings": {
         "dashboard": "Gestion de mon annonce",
-        "status_active": "En ligne",
+        "status_active": "Annonce publiée",
         "pause": "Mettre en pause",
         "resume": "Remettre en ligne",
         "title": "Mes Vans",

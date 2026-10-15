@@ -5,14 +5,17 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useFavorites } from '../hooks/useFavorites';
 import { safeDate } from '../utils/dateHelper';
 import { formatMileage } from '../utils/formatHelper';
+import { useNavigate } from 'react-router-dom';
 
 export default function FavoritesPage({ onClose, onVanClick }) {
+  const navigate = useNavigate();
   const { favorites, toggleFavorite, loading: favoritesLoading } = useFavorites();
   const [vansData, setVansData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Charger les donnÃ©es des vans favoris
   useEffect(() => {
+    let cancelled = false;
     const loadFavoriteVans = async () => {
       if (favorites.length === 0) {
         setVansData([]);
@@ -23,26 +26,29 @@ export default function FavoritesPage({ onClose, onVanClick }) {
       try {
         setLoading(true);
         const vansRef = collection(db, 'vans');
-        const q = query(vansRef, where('__name__', 'in', favorites.slice(0, 10))); // Firebase limite Ã  10
-        const snapshot = await getDocs(q);
-
-        const vans = snapshot.docs.map(doc => ({
+        const batches = [];
+        for (let start = 0; start < favorites.length; start += 10) {
+          batches.push(getDocs(query(vansRef, where('__name__', 'in', favorites.slice(start, start + 10)))));
+        }
+        const snapshots = await Promise.all(batches);
+        const vans = snapshots.flatMap(snapshot => snapshot.docs).map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
 
-        setVansData(vans);
+        if (!cancelled) setVansData(vans);
         console.log('âœ… Vans favoris chargÃ©s:', vans.length);
       } catch (error) {
         console.error('âŒ Erreur lors du chargement des vans favoris:', error);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     if (!favoritesLoading) {
       loadFavoriteVans();
     }
+    return () => { cancelled = true; };
   }, [favorites, favoritesLoading]);
 
   const formatPrice = (price) => `NZ$${price?.toLocaleString() || '0'}`;
@@ -116,7 +122,8 @@ export default function FavoritesPage({ onClose, onVanClick }) {
                 <div
                   key={van.id}
                   onClick={() => {
-                    onVanClick(van);
+                    if (typeof onVanClick === 'function') onVanClick(van);
+                    else navigate(`/van/${van.id}`);
                     onClose();
                   }}
                   className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition cursor-pointer transform hover:-translate-y-1 border border-gray-100">

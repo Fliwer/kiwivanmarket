@@ -48,14 +48,15 @@ function createBoostService({ db, stripe, getKey, liveEnabled, FV, HttpsError, r
   async function setAvailability(request) {
     const uid = await requireUser(request);
     const vanId = request.data?.vanId, status = request.data?.status;
-    if (!validId(vanId) || !['active', 'sold'].includes(status)) fail('invalid-argument', 'Invalid listing status.');
+    if (!validId(vanId) || !['active', 'sold', 'paused'].includes(status)) fail('invalid-argument', 'Invalid listing status.');
     const ref = db.collection('vans').doc(vanId);
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       if (!snap.exists || (snap.data().seller?.uid !== uid && request.auth.token.admin !== true)) fail('permission-denied', 'Access denied.');
+      if (['hidden', 'rejected', 'deleted'].includes(snap.data().status) && request.auth.token.admin !== true) fail('permission-denied', 'This listing requires administrator review.');
       tx.update(ref, { status, updatedAt: FV.serverTimestamp(), ...(status === 'active' ? {
         availabilityConfirmedAt: FV.serverTimestamp(), availabilityReminderSentAt: FV.delete(),
-        expiredAt: FV.delete(), expiredReason: FV.delete(),
+        finalNoticeSentAt: FV.delete(), expiredAt: FV.delete(), expiredReason: FV.delete(),
       } : {}) });
     });
     return { status, confirmedAt: status === 'active' ? new Date(now()).toISOString() : null };
@@ -91,7 +92,7 @@ function createBoostService({ db, stripe, getKey, liveEnabled, FV, HttpsError, r
       if (canActivate) tx.update(vanRef, {
         status: 'active', boostState: 'active', boostStartedAt: FV.serverTimestamp(), boostExpiresAt: expiresAt,
         boostOrderId: id, boostLivemode: order.livemode, availabilityConfirmedAt: FV.serverTimestamp(),
-        availabilityReminderSentAt: FV.delete(), expiredAt: FV.delete(), expiredReason: FV.delete(), updatedAt: FV.serverTimestamp(),
+        availabilityReminderSentAt: FV.delete(), finalNoticeSentAt: FV.delete(), expiredAt: FV.delete(), expiredReason: FV.delete(), updatedAt: FV.serverTimestamp(),
       });
       if (lockSnap.data()?.orderId === id) tx.delete(lockRef);
       tx.set(eventRef, { processedAt: FV.serverTimestamp(), orderId: id });

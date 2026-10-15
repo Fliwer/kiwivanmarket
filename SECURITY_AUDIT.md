@@ -1,5 +1,7 @@
 # Audit de sécurité — Kiwi Van Market — 12 octobre 2026
 
+> Historique conservé. Pour l'état actuel, les corrections supplémentaires et le nettoyage soumis à accord, consulter [l'audit complet du 15 octobre 2026](docs/AUDIT_SECURITE_FONCTIONNEL_2026-10-15.md).
+
 ## Décision
 
 **Paiements réels : ne pas activer.** Les vulnérabilités confirmées et les correctifs sont décrits ci-dessous. Le backend refuse désormais les clés Stripe réelles à la création de Checkout et de comptes Connect. Les remboursements existants et le webhook ne sont pas désactivés. Ce contrôle doit rester en place jusqu'à validation du cycle financier complet.

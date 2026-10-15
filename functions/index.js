@@ -31,6 +31,8 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 admin.initializeApp();
 const db = admin.firestore();
 const { consumeRateLimit } = require('./abuseProtection');
+const { createEmailDelivery } = require('./emailDelivery');
+const emailDelivery = createEmailDelivery({ db });
 
 async function enforceRateLimit(request, action, limit) {
   if (request.auth) {
@@ -148,7 +150,7 @@ exports.onNewConversation = onDocumentCreated(
       const safeMessagePreview = escapeHtml(messagePreview);
 
       // Envoyer l'email
-      const { data, error } = await resend.emails.send({
+      const { data, error, skipped } = await emailDelivery.send(resend, {
         from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
         to: sellerEmail,
         subject: `💬 New inquiry about your ${safeVanTitle}`,
@@ -189,14 +191,16 @@ exports.onNewConversation = onDocumentCreated(
           </p>
         </div>
       `,
-      });
+      }, { key: `conversation:${conversationId}`, senderId: conversation.buyerId, cooldownMs: 30 * 60000 });
+
+      if (skipped) return null;
 
       if (error) {
         console.error('❌ Resend error:', error);
         return null;
       }
 
-      console.log(`✅ Email sent to ${sellerEmail} - ID: ${data?.id}`);
+      console.log(`✅ Conversation email sent - ID: ${data?.id}`);
 
       // Marquer que l'email a été envoyé (pour éviter les doublons)
       await event.data.ref.update({
@@ -252,7 +256,7 @@ exports.onNewMessage = onDocumentCreated(
       }
 
       // Skip if this is the very first message (handled by onNewConversation)
-      if (conv.emailNotificationSent && !conv.lastEmailNotification) {
+      if (conv.emailNotificationSent && !conv.lastEmailNotification && message.senderId === conv.buyerId) {
         // First message already handled, but mark the tracking field
         await convDoc.ref.update({
           [`lastEmailNotification.${recipientId}`]: admin.firestore.FieldValue.serverTimestamp(),
@@ -289,7 +293,7 @@ exports.onNewMessage = onDocumentCreated(
       if (!apiKey) return null;
       const resend = new Resend(apiKey);
 
-      const { data, error } = await resend.emails.send({
+      const { data, error, skipped } = await emailDelivery.send(resend, {
         from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
         to: recipientEmail,
         subject: `💬 New message from ${safeSenderName} about ${safeVanTitle}`,
@@ -321,14 +325,16 @@ exports.onNewMessage = onDocumentCreated(
             </p>
           </div>
         `,
-      });
+      }, { key: `message:${conversationId}:${event.params.messageId}`, senderId: message.senderId, cooldownMs: 30 * 60000 });
+
+      if (skipped) return null;
 
       if (error) {
         console.error('❌ Resend error:', error);
         return null;
       }
 
-      console.log(`✅ Message notification sent to ${recipientEmail} - ID: ${data?.id}`);
+      console.log(`✅ Message notification sent - ID: ${data?.id}`);
 
       // Update throttle timestamp
       await convDoc.ref.update({
@@ -433,7 +439,7 @@ exports.sendReminderEmails = onSchedule(
         const safeSenderName = escapeHtml(senderName);
         const safeVanTitle = escapeHtml(vanTitle);
 
-        const { data, error } = await resend.emails.send({
+        const { data, error, skipped, reason } = await emailDelivery.send(resend, {
           from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
           to: recipientEmail,
           subject: `Reminder: ${safeSenderName} is waiting for your reply about ${safeVanTitle}`,
@@ -462,8 +468,9 @@ exports.sendReminderEmails = onSchedule(
               </p>
             </div>
           `,
-        });
+        }, { key: `unanswered:${convDoc.id}:${lastMsgTime.getTime()}:${Math.floor(Date.now() / (12 * 3600000))}` });
 
+        if (skipped && reason === 'inflight') continue;
         if (error) {
           console.error(`❌ Reminder error for ${recipientEmail}:`, error);
           continue;
@@ -650,7 +657,7 @@ exports.sendCarJamCampaign = onCall(
       const editUrl = recipient.primaryVanId
         ? `https://kiwivanmarket.com/my-listings?edit=${encodeURIComponent(recipient.primaryVanId)}&focus=plate`
         : 'https://kiwivanmarket.com/my-listings?focus=plate';
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await emailDelivery.send(resend, {
         from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
         to: recipient.email,
         subject: 'Nouvelle fonctionnalite CarJam / New CarJam trust feature',
@@ -1129,7 +1136,7 @@ exports.setListingAvailability = onCall({ maxInstances: 3 }, async (request) => 
 });
 
 // Dates also enforce expiry in every listing view, even between scheduler runs.
-exports.expireListingBoosts = onSchedule({ schedule: 'every 60 minutes', timeoutSeconds: 120 }, async () => {
+exports.expireListingBoosts = onSchedule({ schedule: 'every 60 minutes', timeoutSeconds: 120, maxInstances: 1 }, async () => {
   const cutoff = new Date();
   const snap = await db.collection('boostOrders').where('status', '==', 'active').get();
   for (const order of snap.docs) {
@@ -1746,7 +1753,7 @@ exports.sendContactMessage = onCall(
     const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
 
     try {
-      const { error } = await resend.emails.send({
+      const { error } = await emailDelivery.send(resend, {
         from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
         to: CONTACT_RECIPIENT,
         reply_to: email,
@@ -1819,7 +1826,7 @@ exports.reportListing = onCall(
     const reporterUid = request.auth ? request.auth.uid : 'anonymous';
 
     try {
-      const { error } = await resend.emails.send({
+      const { error } = await emailDelivery.send(resend, {
         from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
         to: CONTACT_RECIPIENT,
         subject: `[Report] ${reasonLabel} — ${vanTitle || vanId}`.slice(0, 200),
@@ -1862,10 +1869,10 @@ exports.reportListing = onCall(
 //
 // Cycle, tous les jours :
 //   J+30 sans signal (création ou dernière confirmation) → email "toujours
-//        disponible ?" avec 2 liens 1-clic (confirmer / vendu), token sur le doc.
+//        disponible ?" avec 2 liens (confirmer / vendu), token prive.
 //   J+30 après l'email, sans réponse → annonce mise en pause (status 'paused',
 //        expiredAt renseigné). Le vendeur garde son annonce et la réactive en
-//        1 clic depuis l'email ou depuis son espace (bouton Play existant).
+//        confirmation depuis l'email ou depuis son espace (bouton Play existant).
 // Confirmer remet le compteur à zéro : prochain rappel 30 jours plus tard.
 //
 // Les vendeurs qui répondent alimentent "Disponibilité confirmée" (VanCard) et
@@ -1880,6 +1887,11 @@ const LIFECYCLE = {
   SITE: 'https://kiwivanmarket.com',
   ACTION_URL: 'https://us-central1-kiwivanmarket.cloudfunctions.net/listingAction',
 };
+const { createListingLifecycle } = require('./lifecycleToken');
+const listingLifecycleService = createListingLifecycle({
+  db, FV: admin.firestore.FieldValue, createToken: () => crypto.randomBytes(24).toString('hex'),
+  activeBoost: boostIsActive, remindAfterMs: LIFECYCLE.REMIND_AFTER_MS, pauseAfterMs: LIFECYCLE.PAUSE_AFTER_MS,
+});
 
 // Timestamp Firestore / Date / ISO → millisecondes (0 si absent)
 const toMs = (x) => {
@@ -1908,7 +1920,7 @@ function availabilityEmailHtml({ sellerName, vanTitle, vanId, token, daysListed 
         <p style="font-size:16px;color:#374151;">Hi ${name},</p>
         <p style="font-size:16px;color:#374151;">
           Your listing <strong>${title}</strong> has been on Kiwi Van Market for ${daysListed} days.
-          Buyers are still contacting sellers from listings like yours — let us know where you're at, it takes one click:
+          Buyers are still contacting sellers from listings like yours — choose below and confirm on the page that opens:
         </p>
         <div style="text-align:center;margin:24px 0;">
           ${btn(actionLink(vanId, token, 'confirm'), '#059669', '✅ Still for sale')}
@@ -1938,12 +1950,12 @@ function pausedEmailHtml({ sellerName, vanTitle, vanId, token }) {
         <p style="font-size:16px;color:#374151;">Hi ${name},</p>
         <p style="font-size:16px;color:#374151;">
           We didn't hear back about <strong>${title}</strong>, so we paused it to keep the marketplace accurate for buyers.
-          Nothing is deleted — if it's still for sale, bring it back in one click:
+          Nothing is deleted — if it's still for sale, open the link below and confirm to bring it back:
         </p>
         <div style="text-align:center;margin:24px 0;">
           <a href="${actionLink(vanId, token, 'confirm')}" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px;">🔄 Reactivate my listing</a>
         </div>
-        <p style="font-size:13px;color:#9ca3af;"><em>Votre annonce a été mise en pause faute de réponse. Si le van est toujours à vendre, réactivez-la en un clic ci-dessus.</em></p>
+        <p style="font-size:13px;color:#9ca3af;"><em>Votre annonce a été mise en pause faute de réponse. Si le van est toujours à vendre, ouvrez le lien ci-dessus puis confirmez pour la réactiver.</em></p>
       </div>
     </div>`;
 }
@@ -1998,22 +2010,18 @@ exports.listingLifecycle = onSchedule(
       try {
         // 2. Rappel envoyé, toujours aucune réponse 30 jours plus tard → pause.
         if (remindedAt && remindedAt > lastSignal && now - remindedAt > LIFECYCLE.PAUSE_AFTER_MS) {
-          const token = crypto.randomBytes(24).toString('hex');
-          await doc.ref.collection('private').doc('lifecycle').set({ availabilityToken: token });
-          await doc.ref.update({
-            status: 'paused',
-            expiredAt: admin.firestore.FieldValue.serverTimestamp(),
-            expiredReason: 'no_confirmation',
-            availabilityToken: admin.firestore.FieldValue.delete(),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
+          // Re-read inside the transaction: the seller may have confirmed or
+          // paid for a boost after this scheduler obtained its initial snapshot.
+          const paused = await listingLifecycleService.pause(doc.ref);
+          if (!paused) { stats.skipped++; continue; }
           if (stats.reminded + stats.paused < LIFECYCLE.MAX_EMAILS_PER_RUN) {
-            await resend.emails.send({
+            const delivery = await emailDelivery.send(resend, {
               from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
               to: email,
               subject: `Your listing "${van.title || 'your van'}" has been paused`,
-              html: pausedEmailHtml({ sellerName: van.seller.name, vanTitle: van.title, vanId: doc.id, token }),
-            });
+              html: pausedEmailHtml({ sellerName: van.seller?.name, vanTitle: van.title, vanId: doc.id, token: paused.token }),
+            }, { key: `lifecycle-paused:${doc.id}:${paused.cycle}` });
+            if (delivery.error) stats.errors++;
           }
           stats.paused++;
           continue;
@@ -2022,20 +2030,19 @@ exports.listingLifecycle = onSchedule(
         // 1. 30 jours sans signal et pas encore rappelé pour ce cycle → rappel.
         if (now - lastSignal > LIFECYCLE.REMIND_AFTER_MS && remindedAt <= lastSignal) {
           if (stats.reminded + stats.paused >= LIFECYCLE.MAX_EMAILS_PER_RUN) { stats.skipped++; continue; }
-          const token = crypto.randomBytes(24).toString('hex');
-          await doc.ref.collection('private').doc('lifecycle').set({ availabilityToken: token });
+          const prepared = await listingLifecycleService.prepareReminder(doc.ref);
+          if (!prepared) { stats.skipped++; continue; }
           const daysListed = Math.round((now - toMs(van.createdAt)) / 86400000);
-          await resend.emails.send({
+          const delivery = await emailDelivery.send(resend, {
             from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
             to: email,
             subject: `Is "${van.title || 'your van'}" still for sale?`,
-            html: availabilityEmailHtml({ sellerName: van.seller.name, vanTitle: van.title, vanId: doc.id, token, daysListed }),
-          });
-          await doc.ref.update({
-            availabilityReminderSentAt: admin.firestore.FieldValue.serverTimestamp(),
-            availabilityToken: admin.firestore.FieldValue.delete(),
-          });
-          stats.reminded++;
+            html: availabilityEmailHtml({ sellerName: van.seller?.name, vanTitle: van.title, vanId: doc.id, token: prepared.token, daysListed }),
+          }, { key: `lifecycle-reminder:${doc.id}:${prepared.cycle}` });
+          if (delivery.error) { stats.errors++; continue; }
+          if (delivery.reason === 'inflight') { stats.skipped++; continue; }
+          if (await listingLifecycleService.markReminded(doc.ref, prepared)) stats.reminded++;
+          else stats.skipped++;
         }
       } catch (e) {
         stats.errors++;
@@ -2046,47 +2053,48 @@ exports.listingLifecycle = onSchedule(
   }
 );
 
-// Liens 1-clic des emails (aucune connexion requise : le token sur le doc fait foi).
+// Email links show a confirmation form first: link scanners only perform GET.
+// The private bearer token is verified again atomically when the form is posted.
 exports.listingAction = onRequest({ cors: false }, async (req, res) => {
-  const vanId = String(req.query.van || '').replace(/[^A-Za-z0-9_-]/g, '');
-  const token = String(req.query.token || '');
-  const action = String(req.query.action || '');
+  res.set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer', 'X-Robots-Tag': 'noindex, noarchive',
+    'X-Content-Type-Options': 'nosniff',
+    'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'" });
+  if (!['GET', 'POST'].includes(req.method)) return res.status(405).set('Allow', 'GET, POST').send('Method not allowed');
+  const input = req.method === 'POST' ? req.body || {} : req.query || {};
+  const vanId = String(input.van || '');
+  const token = String(input.token || '');
+  const action = String(input.action || '');
   const page = (title, body, ok = true) => res.status(ok ? 200 : 400).set('Content-Type', 'text/html; charset=utf-8').send(`<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
 <title>${escapeHtml(title)} | Kiwi Van Market</title>
-<style>body{font-family:system-ui,sans-serif;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;color:#1e293b;text-align:center;padding:24px}h1{font-size:1.6rem;margin:0 0 10px}p{color:#64748b;margin:0 0 22px}a{display:inline-block;margin:6px;padding:12px 20px;border-radius:12px;background:#059669;color:#fff;text-decoration:none;font-weight:700}</style>
-</head><body><main><h1>${escapeHtml(title)}</h1><p>${body}</p><a href="${LIFECYCLE.SITE}/my-listings">My listings</a> <a href="${LIFECYCLE.SITE}/" style="background:#fff;color:#059669;border:2px solid #059669">Browse vans</a></main></body></html>`);
+<style>body{font-family:system-ui,sans-serif;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8fafc;color:#1e293b;text-align:center;padding:24px}h1{font-size:1.6rem;margin:0 0 10px}.copy{color:#64748b;margin:0 0 22px}a,button{display:inline-block;margin:6px;padding:12px 20px;border:0;border-radius:12px;background:#059669;color:#fff;text-decoration:none;font:inherit;font-weight:700;cursor:pointer}</style>
+</head><body><main><h1>${escapeHtml(title)}</h1><div class="copy">${body}</div><a href="${LIFECYCLE.SITE}/my-listings">My listings</a> <a href="${LIFECYCLE.SITE}/" style="background:#fff;color:#059669;border:2px solid #059669">Browse vans</a></main></body></html>`);
 
-  if (!vanId || !token || !['confirm', 'sold'].includes(action)) {
+  if (!/^[A-Za-z0-9_-]{1,128}$/.test(vanId) || !token || token.length > 256 || !['confirm', 'sold'].includes(action)) {
     return page('Invalid link', 'This link is incomplete. Open your listings to manage your van.', false);
   }
   const ref = db.collection('vans').doc(vanId);
-  const snap = await ref.get();
-  if (!snap.exists) return page('Listing not found', 'This listing no longer exists.', false);
-  const van = snap.data();
-  // Never accept a legacy token from the public listing: it must be treated as leaked.
-  const lifecycle = await ref.collection('private').doc('lifecycle').get();
-  const expected = String(lifecycle.data()?.availabilityToken || '');
-  const given = Buffer.from(token);
-  const exp = Buffer.from(expected);
-  if (!expected || given.length !== exp.length || !crypto.timingSafeEqual(given, exp)) {
+  const { applyLifecycleAction } = require('./lifecycleToken');
+  const result = await applyLifecycleAction(db, ref, token, action, admin.firestore.FieldValue, req.method === 'POST');
+  if (result.error === 'missing') return page('Listing not found', 'This listing no longer exists.', false);
+  if (result.error === 'expired') {
     return page('Link expired', 'This link is no longer valid. Sign in to manage your listing.', false);
   }
-  const ts = admin.firestore.FieldValue.serverTimestamp();
+  if (result.error === 'moderated') return page('Listing under review', 'Please contact support to manage this listing.', false);
+  const { van, wasPaused } = result;
+  if (req.method === 'GET') {
+    const label = action === 'sold' ? 'Mark as sold / Marquer vendu' : 'Still for sale / Toujours disponible';
+    return page('Confirm your choice / Confirmez votre choix',
+      `<strong>${escapeHtml(van.title || 'Your van')}</strong><br><br>Confirm below to update your listing.<br>Confirmez ci-dessous pour modifier votre annonce.
+      <form method="post" action="${LIFECYCLE.ACTION_URL}">
+      <input type="hidden" name="van" value="${escapeHtml(vanId)}"><input type="hidden" name="token" value="${escapeHtml(token)}">
+      <input type="hidden" name="action" value="${escapeHtml(action)}"><button type="submit">${label}</button></form>`);
+  }
   if (action === 'sold') {
-    await ref.update({ status: 'sold', soldAt: ts, soldVia: 'availability_email', updatedAt: ts });
     console.log(`listingAction: ${vanId} marked sold`);
     return page('Congratulations! 🎉', `<strong>${escapeHtml(van.title || 'Your van')}</strong> is now marked as sold. Safe travels — and thanks for using Kiwi Van Market.`);
   }
   // confirm : remet en ligne si en pause, et repart pour 30 jours.
-  const wasPaused = van.status === 'paused';
-  await ref.update({
-    status: van.status === 'sold' ? 'sold' : 'active',
-    availabilityConfirmedAt: ts,
-    expiredAt: admin.firestore.FieldValue.delete(),
-    expiredReason: admin.firestore.FieldValue.delete(),
-    updatedAt: ts,
-  });
   console.log(`listingAction: ${vanId} confirmed${wasPaused ? ' (reactivated)' : ''}`);
   return page(wasPaused ? 'Listing reactivated ✅' : 'Thanks, still for sale ✅',
     `<strong>${escapeHtml(van.title || 'Your van')}</strong> is live${wasPaused ? ' again' : ''} with an <em>availability confirmed</em> badge. We'll check back in 30 days.`);
@@ -2247,7 +2255,7 @@ exports.createAlert = onCall({ secrets: [resendApiKey], maxInstances: 3 }, async
   try {
     const T = alertCopy[lang];
     const stop = `${ALERT_ACTION_URL}?id=${ref.id}&token=${token}&action=unsubscribe`;
-    await new Resend(resendApiKey.value()).emails.send({
+    const delivery = await emailDelivery.send(new Resend(resendApiKey.value()), {
       from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
       to: email,
       subject: T.createdSubject,
@@ -2255,7 +2263,8 @@ exports.createAlert = onCall({ secrets: [resendApiKey], maxInstances: 3 }, async
         <p style="font-size:16px;color:#374151;">${T.createdBody(escapeHtml(label))}</p>
         <p style="text-align:center;margin:22px 0;"><a href="https://kiwivanmarket.com/${lang === 'fr' ? '?lang=fr' : ''}" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;font-weight:700;padding:13px 22px;border-radius:12px;">${T.browse}</a></p>`,
         lang, `<a href="${stop}" style="color:#059669;">${T.manage}</a>`),
-    });
+    }, { key: `alert-created:${ref.id}` });
+    if (delivery.error) throw new Error(delivery.error.name || 'email_provider');
   } catch (e) {
     console.error('createAlert: confirmation email failed', e.message || e);
   }
@@ -2296,7 +2305,7 @@ exports.onVanCreatedNotifyAlerts = onDocumentCreated(
         const T = alertCopy[lang];
         const vanUrl = `https://kiwivanmarket.com/van/${vanId}${lang === 'fr' ? '?lang=fr' : ''}`;
         const stop = `${ALERT_ACTION_URL}?id=${a.id}&token=${a.token}&action=unsubscribe`;
-        const { error } = await resend.emails.send({
+        const { error } = await emailDelivery.send(resend, {
           from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
           to: email,
           subject: T.matchSubject(van.title || 'Campervan', price),
@@ -2308,7 +2317,7 @@ exports.onVanCreatedNotifyAlerts = onDocumentCreated(
             <p style="font-size:14px;color:#6b7280;margin:4px 0;">${escapeHtml(String(van.year || ''))} · ${escapeHtml(van.location || '')}${van.selfContained ? ' · self-contained' : ''}</p>
             <p style="text-align:center;margin:22px 0;"><a href="${vanUrl}" style="display:inline-block;background:#059669;color:#fff;text-decoration:none;font-weight:700;padding:13px 22px;border-radius:12px;">${T.view}</a></p>`,
             lang, `<a href="${stop}" style="color:#059669;">${T.manage}</a>`),
-        });
+        }, { key: `alert-match:${vanId}:${a.id}` });
         if (error) { console.error('alert email error:', error); continue; }
         sent++;
         await db.collection('alerts').doc(a.id).update({
@@ -2325,7 +2334,7 @@ exports.onVanCreatedNotifyAlerts = onDocumentCreated(
 );
 
 // Lien "arrêter cette alerte" des emails.
-exports.alertAction = onRequest({ cors: false }, async (req, res) => {
+exports.alertAction = onRequest({ cors: false, maxInstances: 3 }, async (req, res) => {
   const id = String(req.query.id || '').replace(/[^A-Za-z0-9_-]/g, '');
   const token = String(req.query.token || '');
   const action = String(req.query.action || '');
@@ -2466,7 +2475,7 @@ function finalNoticeEmailHtml({ sellerName, vanTitle, vanId, token, daysLeft }) 
         </p>
         <p style="font-size:13px;color:#9ca3af;margin-top:24px;">
           <em>Votre annonce sera retiree ${daysLeft <= 1 ? 'demain' : `dans ${daysLeft} jours`}.
-          Un clic sur « Keep it online » la conserve, « It's sold » si le van est vendu.</em>
+          Ouvrez « Keep it online » puis confirmez pour la conserver, ou « It's sold » si le van est vendu.</em>
         </p>
         <p style="font-size:12px;color:#9ca3af;">Kiwi Van Market — <a href="${LIFECYCLE.SITE}/my-listings" style="color:#059669;">manage your listings</a></p>
       </div>
@@ -2506,7 +2515,7 @@ async function runFinalNotices() {
           () => crypto.randomBytes(24).toString('hex'),
           () => admin.firestore.FieldValue.delete());
 
-        await resend.emails.send({
+        const delivery = await emailDelivery.send(resend, {
           from: 'Kiwi Van Market <noreply@kiwivanmarket.com>',
           to: contact.email,
           reply_to: 'kiwivanmarket.contact@gmail.com',
@@ -2518,8 +2527,19 @@ async function runFinalNotices() {
             token,
             daysLeft: Math.max(1, daysLeft),
           }),
+        }, { key: `lifecycle-final:${doc.id}:${remindedAt}` });
+        if (delivery.error) { stats.errors++; continue; }
+        if (delivery.reason === 'inflight') { stats.skipped++; continue; }
+        // A confirmation/boost received while the email was being sent starts
+        // a fresh cycle; never mark that new cycle as already reminded.
+        await db.runTransaction(async (tx) => {
+          const current = (await tx.get(doc.ref)).data();
+          if (current?.status === 'active' && !boostIsActive(current, Date.now()) &&
+              toMs(current.availabilityReminderSentAt) === remindedAt &&
+              Math.max(toMs(current.createdAt), toMs(current.availabilityConfirmedAt)) === lastSignal) {
+            tx.update(doc.ref, { finalNoticeSentAt: admin.firestore.FieldValue.serverTimestamp() });
+          }
         });
-        await doc.ref.update({ finalNoticeSentAt: admin.firestore.FieldValue.serverTimestamp() });
         stats.sent++;
       } catch (e) {
         stats.errors++;

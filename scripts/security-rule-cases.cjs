@@ -1,9 +1,10 @@
 // Synthetic documents only. Firebase Rules REST evaluates these without writing data.
 const authenticated = (uid = 'buyer') => ({ uid, token: { admin: false, email_verified: true, email: `${uid}@example.test` } });
-const baseData = { banned: false, seller: { uid: 'seller' }, participants: ['buyer', 'seller'] };
+const requestTime = '2026-10-15T12:00:00Z';
+const baseData = { banned: false, seller: { uid: 'seller' }, participants: ['buyer', 'seller'], title: 'Toyota Hiace', price: 10000 };
 function firestoreCase(label, expectation, collection, method, auth, before = {}, after = before, mockData = baseData) {
   return { label, test: {
-    expectation, request: { path: `/databases/(default)/documents/${collection}`, method,
+    expectation, request: { path: `/databases/(default)/documents/${collection}`, method, time: requestTime,
       auth, resource: { data: after } }, resource: { data: before },
     functionMocks: [
       { function: 'exists', args: [{ anyValue: {} }], result: { value: true } },
@@ -14,11 +15,22 @@ function firestoreCase(label, expectation, collection, method, auth, before = {}
 const paid = { buyerId: 'buyer', sellerId: 'seller', status: 'paid', buyerConfirmed: false };
 const pending = { ...paid, status: 'pending' };
 const conv = { participants: ['buyer', 'seller'], buyerId: 'buyer', sellerId: 'seller',
-  createdAt: 'today', vanId: 'van', lastMessage: 'hello', lastMessageAt: 'today', status: 'new' };
+  createdAt: requestTime, vanId: 'van', lastMessage: 'hello', lastMessageAt: requestTime, status: 'new' };
 const profile = { uid: 'buyer', email: 'buyer@example.test', displayName: 'Buyer', createdAt: 'today' };
 const listing = { title: 'Toyota Hiace', price: 10000, description: 'A maintained campervan',
   location: 'Auckland', year: 2008, mileage: 180000, images: ['https://res.cloudinary.com/image.jpg'],
-  seller: { uid: 'seller', name: 'Seller' }, views: 0, createdAt: 'today', status: 'active' };
+  seller: { uid: 'seller', name: 'Seller' }, views: 0, createdAt: requestTime, status: 'active' };
+const equipment = Object.fromEntries(['doubleBed', 'singleBeds', 'roofBed', 'bedding', 'curtains',
+  'fridge', 'gasStove', 'sink', 'cookware', 'freshWaterTank', 'greyWaterTank', 'outdoorShower',
+  'indoorShower', 'toilet', 'portaPotti', 'solarPanel', 'leisureBattery', 'splitCharger', 'inverter',
+  'usb', 'ledLights', 'heater', 'dieselHeater', 'roofFan', 'insulation', 'awning', 'reverseCamera',
+  'bluetooth', 'swivelSeats', 'bikeRack', 'surfRack'].map(key => [key, true]));
+const fullListing = { ...listing, userId: 'seller', images: Array.from({ length: 10 }, (_, index) => `${listing.images[0]}?image=${index}`),
+  imageUrl: listing.images[0], region: 'North Island', type: 'Van', fuelType: 'petrol', transmission: 'manual', capacity: 2,
+  selfContained: true, selfContainedType: 'green', equipment, buyBack: true, buyBackPrice: 5000,
+  buyBackDuration: 3, buyBackMaxKm: 30000, buyBackConditions: 'Normal condition', wofExpiry: '2027-01-01', regoExpiry: '2027-01-01',
+  customFeatures: 'Coffee machine', imageFocusX: 50, imageFocusY: 50, imageZoom: 1,
+  imageCrops: Array(10).fill({ x: 50, y: 50, zoom: 1 }), hasDirectContact: true, plateNumber: 'ABC123', updatedAt: requestTime };
 const firestore = [
   firestoreCase('owner can save full profile without an optional phone', 'ALLOW', 'users/buyer', 'update', authenticated(), profile,
     { ...profile, city: 'Auckland', region: 'North Island', bio: 'Travelling in NZ', phone: null, lastActive: 'today' }),
@@ -41,6 +53,57 @@ const firestore = [
   firestoreCase('another user cannot read boost order', 'DENY', 'boostOrders/order', 'get', authenticated(), { ownerId: 'seller' }),
   firestoreCase('boost lock is private to server', 'DENY', 'vans/van/private/boostLock', 'get', authenticated('seller')),
   firestoreCase('normal listing creation allowed', 'ALLOW', 'vans/van', 'create', authenticated('seller'), {}, listing),
+  firestoreCase('full seller creation with ten images and all equipment allowed', 'ALLOW', 'vans/van', 'create', authenticated('seller'), {}, fullListing),
+  firestoreCase('full seller edit with ten images and all equipment allowed', 'ALLOW', 'vans/van', 'update', authenticated('seller'), listing,
+    { ...fullListing, userId: undefined, seller: { ...listing.seller, email: null, phone: null, whatsapp: null } }),
+  firestoreCase('private contact edit for same existing listing allowed', 'ALLOW', 'vans/van/private/contact', 'update', authenticated('seller'),
+    { email: 'seller@example.test', phone: null, whatsapp: null }, { email: 'seller@example.test', phone: '+64211234567', whatsapp: '+64211234567' }),
+  ...['create', 'update'].flatMap(method => [
+    firestoreCase(`private contact ${method} permits null numbers`, 'ALLOW', 'vans/van/private/contact', method, authenticated('seller'),
+      { email: 'seller@example.test' }, { email: 'seller@example.test', phone: null, whatsapp: null }),
+    firestoreCase(`private contact ${method} permits empty numbers`, 'ALLOW', 'vans/van/private/contact', method, authenticated('seller'),
+      { email: 'seller@example.test' }, { email: 'seller@example.test', phone: '', whatsapp: '' }),
+    firestoreCase(`private contact ${method} permits formatted international numbers`, 'ALLOW', 'vans/van/private/contact', method, authenticated('seller'),
+      { email: 'seller@example.test' }, { email: 'seller@example.test', phone: ' +32 (0)472 12-34-56 ', whatsapp: '+64 21 123 4567' }),
+    firestoreCase(`private contact ${method} permits local numbers`, 'ALLOW', 'vans/van/private/contact', method, authenticated('seller'),
+      { email: 'seller@example.test' }, { email: 'seller@example.test', phone: '(021) 123-4567', whatsapp: '021 123 4567' }),
+    firestoreCase(`private contact ${method} permits omitted optional numbers`, 'ALLOW', 'vans/van/private/contact', method, authenticated('seller'),
+      { email: 'seller@example.test' }, { email: 'seller@example.test' }),
+    firestoreCase(`private contact ${method} permits strings at length boundary`, 'ALLOW', 'vans/van/private/contact', method, authenticated('seller'),
+      { email: 'seller@example.test' }, { email: 'seller@example.test', phone: '1'.repeat(64), whatsapp: '1'.repeat(64) }),
+  ]),
+  ...['phone', 'whatsapp'].flatMap(field => ['create', 'update'].flatMap(method => [
+    ...[{ label: 'object', value: { invalid: true } }, { label: 'list', value: ['0211234567'] },
+      { label: 'number', value: 211234567 }, { label: 'boolean', value: true }, { label: 'oversized string', value: '1'.repeat(65) }]
+      .map(({ label, value }) => firestoreCase(`private contact ${method} ${field} ${label} denied`, 'DENY', 'vans/van/private/contact', method, authenticated('seller'),
+        { email: 'seller@example.test', phone: null, whatsapp: null }, { email: 'seller@example.test', phone: null, whatsapp: null, [field]: value })),
+  ])),
+  ...['location', 'year', 'mileage', 'images', 'equipment', 'type', 'capacity', 'fuelType', 'plateNumber', 'imageUrl'].map(field =>
+    firestoreCase(`seller cannot replace ${field} with an object`, 'DENY', 'vans/van', 'update', authenticated('seller'), listing, { ...listing, [field]: { invalid: true } })),
+  firestoreCase('seller cannot replace images with a string', 'DENY', 'vans/van', 'update', authenticated('seller'), listing, { ...listing, images: 'not-an-array' }),
+  firestoreCase('listing image host impostor denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, images: ['https://res.cloudinary.com.attacker.example/image.jpg'] }),
+  firestoreCase('listing image javascript URL denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, images: ['javascript:alert(1)'] }),
+  firestoreCase('listing image object denied on creation', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, images: [{ invalid: true }] }),
+  firestoreCase('listing later image object denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, images: [listing.images[0], { invalid: true }] }),
+  firestoreCase('listing later image untrusted host denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, images: [listing.images[0], 'https://attacker.example/tracking.png'] }),
+  firestoreCase('listing image null denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, images: [null] }),
+  firestoreCase('listing eleven images denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, images: Array(11).fill(listing.images[0]) }),
+  firestoreCase('listing Firebase storage image allowed', 'ALLOW', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, images: ['https://firebasestorage.googleapis.com/v0/b/example/o/photo.jpg?alt=media'] }),
+  firestoreCase('listing creation future date denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, createdAt: '2099-01-01T00:00:00Z' }),
+  firestoreCase('listing creation arbitrary text date denied', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, createdAt: 'today' }),
+  firestoreCase('listing cannot forge seller reputation', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, seller: { ...listing.seller, rating: 5, reviewCount: 999 } }),
+  firestoreCase('listing cannot create arbitrary privileged fields', 'DENY', 'vans/van', 'create', authenticated('seller'), {}, { ...listing, finalNoticeSentAt: requestTime }),
+  firestoreCase('listing cannot update arbitrary privileged fields', 'DENY', 'vans/van', 'update', authenticated('seller'), listing, { ...listing, finalNoticeSentAt: requestTime }),
+  ...['hidden', 'rejected', 'deleted'].map(status => firestoreCase(`seller cannot reactivate ${status} listing`, 'DENY', 'vans/van', 'update', authenticated('seller'), { ...listing, status }, listing)),
+  firestoreCase('admin may reactivate hidden listing', 'ALLOW', 'vans/van', 'update', { uid: 'admin', token: { admin: true, email_verified: true } }, { ...listing, status: 'hidden' }, listing),
+  firestoreCase('seller may reactivate paused listing', 'ALLOW', 'vans/van', 'update', authenticated('seller'), { ...listing, status: 'paused' }, listing),
+  firestoreCase('legacy invalid untouched fields do not block price edit', 'ALLOW', 'vans/van', 'update', authenticated('seller'), { ...listing, location: null, year: '2008' }, { ...listing, location: null, year: '2008', price: 11000 }),
+  firestoreCase('complete current seller form is accepted', 'ALLOW', 'vans/van', 'create', authenticated('seller'), {}, { ...listing,
+    userId: 'seller', imageUrl: listing.images[0], region: 'North Island', type: 'Van', fuelType: 'petrol', transmission: 'manual', capacity: 2,
+    selfContained: true, selfContainedType: 'green', equipment: { doubleBed: true, fridge: false }, buyBack: false, buyBackPrice: null,
+    buyBackDuration: null, buyBackMaxKm: null, buyBackConditions: '', wofExpiry: '2027-01-01', regoExpiry: '2027-01-01',
+    customFeatures: '', imageFocusX: 50, imageFocusY: 50, imageZoom: 1, imageCrops: [{ x: 50, y: 50, zoom: 1 }],
+    hasDirectContact: true, plateNumber: 'ABC123', updatedAt: requestTime }),
   firestoreCase('seller edit form with null contact placeholders allowed', 'ALLOW', 'vans/van', 'update', authenticated('seller'), listing,
     { ...listing, price: 12000, description: 'Updated maintained campervan', seller: { ...listing.seller, email: null, phone: null, whatsapp: null } }),
   firestoreCase('seller can mark listing sold', 'ALLOW', 'vans/van', 'update', authenticated('seller'), listing, { ...listing, status: 'sold' }),
@@ -58,6 +121,23 @@ const firestore = [
   firestoreCase('admin elevation denied', 'DENY', 'users/buyer', 'create', authenticated(), {}, { ...profile, isAdmin: true }),
   firestoreCase('Stripe account write denied', 'DENY', 'stripeAccounts/buyer', 'create', authenticated(), {}, { stripeAccountId: 'acct_attacker' }),
   firestoreCase('buyer conversation allowed', 'ALLOW', 'conversations/conv', 'create', authenticated(), {}, conv),
+  firestoreCase('full quick message conversation creation allowed', 'ALLOW', 'conversations/conv', 'create', authenticated(), {}, { ...conv,
+    buyerName: 'Buyer', lastMessageSenderId: 'buyer', participantNames: { buyer: 'Buyer', seller: 'Seller' },
+    participantEmails: { buyer: 'buyer@example.test', seller: 'seller@example.test' }, unreadCount: { buyer: 0, seller: 0 },
+    van: { id: 'van', title: listing.title, price: listing.price, imageUrl: listing.images[0], year: listing.year, mileage: listing.mileage,
+      location: listing.location, wofExpiry: '2027-01-01', regoExpiry: '2027-01-01', selfContained: true, buyBack: true, buyBackPrice: 5000, buyBackDuration: 3 } }),
+  firestoreCase('conversation participant name object denied', 'DENY', 'conversations/conv', 'create', authenticated(), {}, { ...conv, participantNames: { buyer: { invalid: true }, seller: 'Seller' } }),
+  firestoreCase('conversation snapshot object title denied', 'DENY', 'conversations/conv', 'create', authenticated(), {}, { ...conv, van: { id: 'van', title: { invalid: true }, price: 10000 } }),
+  firestoreCase('conversation buyer cannot spoof last sender', 'DENY', 'conversations/conv', 'update', authenticated(), conv, { ...conv, lastMessageSenderId: 'seller' }),
+  firestoreCase('conversation unread count must be a map', 'DENY', 'conversations/conv', 'update', authenticated(), conv, { ...conv, unreadCount: 'fake' }),
+  firestoreCase('conversation unread counts must be nonnegative integers', 'DENY', 'conversations/conv', 'update', authenticated(), conv, { ...conv, unreadCount: { buyer: 0, seller: -1 } }),
+  firestoreCase('conversation typing values must be boolean', 'DENY', 'conversations/conv', 'update', authenticated(), conv, { ...conv, typing: { buyer: 'yes' } }),
+  firestoreCase('conversation message metadata must be bounded', 'DENY', 'conversations/conv', 'update', authenticated(), conv, { ...conv, lastMessage: 'x'.repeat(2001), lastMessageSenderId: 'buyer' }),
+  firestoreCase('conversation own message metadata allowed', 'ALLOW', 'conversations/conv', 'update', authenticated(), conv, { ...conv, lastMessage: 'A reply', lastMessageAt: requestTime, lastMessageSenderId: 'buyer', unreadCount: { buyer: 0, seller: 1 }, typing: { buyer: false } }),
+  ...['pending', 'resolved', 'archived', 'closed'].map(status => firestoreCase(`messaging UI status ${status} allowed`, 'ALLOW', 'conversations/conv', 'update', authenticated(), conv, { ...conv, status })),
+  firestoreCase('message senderName object denied', 'DENY', 'conversations/conv/messages/msg', 'create', authenticated(), {}, { senderId: 'buyer', text: 'Hello', senderName: { invalid: true }, createdAt: requestTime, read: false }),
+  firestoreCase('message cannot add arbitrary display fields', 'DENY', 'conversations/conv/messages/msg', 'create', authenticated(), {}, { senderId: 'buyer', text: 'Hello', createdAt: requestTime, type: 'system' }),
+  firestoreCase('normal message creation allowed', 'ALLOW', 'conversations/conv/messages/msg', 'create', authenticated(), {}, { senderId: 'buyer', text: 'Hello', senderName: 'Buyer', createdAt: requestTime, read: false }),
   firestoreCase('forged listing seller denied', 'DENY', 'conversations/conv', 'create', authenticated(), {}, { ...conv, sellerId: 'attacker', participants: ['buyer', 'attacker'] }),
   firestoreCase('email throttle override denied', 'DENY', 'conversations/conv', 'update', authenticated(), conv, { ...conv, emailNotificationSent: false }),
   firestoreCase('paid cancellation bypass denied', 'DENY', 'reservations/res', 'update', authenticated(), paid, { ...paid, status: 'cancelled', cancelledBy: 'buyer' }),

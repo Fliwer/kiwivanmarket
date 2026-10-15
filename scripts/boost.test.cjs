@@ -121,8 +121,30 @@ test('owner can reactivate a paused listing and refresh its availability; other 
   await assert.rejects(f.service.setAvailability(request));
 });
 
+test('owner can pause a listing but cannot use availability to override moderation', async () => {
+  const f = fixture(), request = f.request();
+  request.auth.token.admin = false;
+  request.data = { vanId: 'van', status: 'paused' };
+  await f.service.setAvailability(request);
+  assert.equal(f.data.get('vans/van').status, 'paused');
+  for (const status of ['hidden', 'rejected', 'deleted']) {
+    f.data.get('vans/van').status = status;
+    for (const next of ['active', 'sold', 'paused']) {
+      request.data.status = next;
+      await assert.rejects(f.service.setAvailability(request), { code: 'permission-denied' });
+      assert.equal(f.data.get('vans/van').status, status);
+    }
+  }
+  request.auth.token.admin = true; request.data.status = 'active';
+  await f.service.setAvailability(request);
+  assert.equal(f.data.get('vans/van').status, 'active');
+});
+
 test('only paid matching sessions activate a boost, once, for exactly 14 days', async () => {
-  const f = fixture(); await f.service.checkout(f.request());
+  const f = fixture();
+  f.data.get('vans/van').finalNoticeSentAt = new Date(f.now() - 1000);
+  f.data.get('vans/van').availabilityReminderSentAt = new Date(f.now() - 2000);
+  await f.service.checkout(f.request());
   const unpaid = [...f.sessions.values()][0]; await f.service.fulfill(unpaid, 'evt_unpaid');
   assert.equal(f.data.get('vans/van').boostState, undefined);
   const paid = f.paidSession();
@@ -133,6 +155,8 @@ test('only paid matching sessions activate a boost, once, for exactly 14 days', 
   await Promise.all([f.service.fulfill(paid, 'evt_paid'), f.service.fulfill(paid, 'evt_paid')]);
   const expiry = f.data.get('vans/van').boostExpiresAt.getTime();
   assert.equal(expiry, f.now() + 14 * 86400000);
+  assert.equal(f.data.get('vans/van').finalNoticeSentAt, undefined);
+  assert.equal(f.data.get('vans/van').availabilityReminderSentAt, undefined);
   f.advance(86400000);
   await f.service.fulfill(paid, 'evt_other_paid');
   assert.equal(f.data.get('vans/van').boostExpiresAt.getTime(), expiry);

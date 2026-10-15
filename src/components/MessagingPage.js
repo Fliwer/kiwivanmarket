@@ -19,6 +19,7 @@ import SeoHead from './SeoHead';
 import { useTranslation } from 'react-i18next';
 import { useHideLoader } from '../hooks/useHideLoader';
 import { useToast } from '../components/ToastProvider';
+const EMPTY_MESSAGES = Object.freeze([]);
 
 // ============================================
 // MESSAGING PAGE - Full Page 3 Columns
@@ -68,8 +69,10 @@ export default function MessagingPage({ onBack }) {
   }, [currentUser]);
 
   // State
-  const [conversations, setConversations] = useState([]);
-  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [conversationData, setConversations] = useState([]);
+  const conversations = conversationData.filter(conversation => conversation.viewerId === currentUser?.uid);
+  const [selection, setSelectedConversation] = useState(null);
+  const selectedConversation = selection?.viewerId === currentUser?.uid ? selection : null;
 
   // Listen to other user's lastSeen
   useEffect(() => {
@@ -92,7 +95,9 @@ export default function MessagingPage({ onBack }) {
 
     return () => unsubscribe();
   }, [selectedConversation?.otherUserId]);
-  const [messages, setMessages] = useState([]);
+  const [messageResult, setMessageResult] = useState(null);
+  const messages = messageResult && messageResult.viewerId === currentUser?.uid && messageResult.conversationId === selectedConversation?.id
+    ? messageResult.messages : EMPTY_MESSAGES;
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -116,6 +121,14 @@ export default function MessagingPage({ onBack }) {
   const inputRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const isTypingActiveRef = useRef(false); // Track if we already sent a typing=true
+
+  useEffect(() => {
+    setConversations([]);
+    setSelectedConversation(null);
+    setMessageResult(null);
+    setNewMessage('');
+    deepLinkDoneRef.current = false;
+  }, [currentUser?.uid]);
 
   // Quick replies
   const quickReplies = [
@@ -157,6 +170,7 @@ export default function MessagingPage({ onBack }) {
           return {
             id: docSnap.id,
             ...data,
+            viewerId: currentUser.uid,
             unreadCount: data.unreadCount?.[currentUser.uid] || 0,
             otherUserId: data.participants.find(p => p !== currentUser.uid)
           };
@@ -210,7 +224,7 @@ export default function MessagingPage({ onBack }) {
 
     // Query with limit to reduce costs - load last 100 messages
     const messagesRef = collection(db, 'conversations', selectedConversation.id, 'messages');
-    const messagesQuery = query(messagesRef, limit(100));
+    const messagesQuery = query(messagesRef, orderBy('createdAt', 'desc'), limit(100));
 
     const unsubscribe = onSnapshot(messagesQuery,
       (snapshot) => {
@@ -228,7 +242,7 @@ export default function MessagingPage({ onBack }) {
           return timeA - timeB;
         });
 
-        setMessages(msgs);
+        setMessageResult({ viewerId: currentUser.uid, conversationId: selectedConversation.id, messages: msgs });
         // NOTE: markAsRead is called once on conversation selection, not here
         // to avoid a write->read feedback loop
       },

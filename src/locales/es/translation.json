@@ -1,4 +1,8 @@
 {
+    "common": {
+        "loading": "Cargando",
+        "cancel": "Cancelar"
+    },
     "profile_save": {
         "photo_type": "Elige una imagen JPG, PNG o WebP.",
         "photo_size": "Elige una foto de menos de 5 MB.",
@@ -23,7 +27,7 @@
     },
     "my_listings": {
         "dashboard": "Gestionar mi anuncio",
-        "status_active": "En línea",
+        "status_active": "Anuncio publicado",
         "status_paused": "En pausa",
         "status_sold": "Vendido",
         "pause": "Pausar anuncio",
