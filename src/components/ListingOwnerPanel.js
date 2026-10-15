@@ -30,7 +30,7 @@ export default function ListingOwnerPanel({ van, isUpdating, onToggleSold, onTog
     <div className="grid grid-cols-2 gap-2 border-t border-slate-100 bg-slate-50/60 px-4 py-3 sm:flex sm:flex-wrap sm:items-center sm:px-5">
       <Link to={`/sell?edit=${van.id}`} aria-disabled={isUpdating || undefined} tabIndex={isUpdating ? -1 : undefined}
         onClick={(event) => { if (isUpdating) event.preventDefault(); }}
-        className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 aria-disabled:opacity-50">
+        className={`${secondary} aria-disabled:opacity-50`}>
         <Edit2 size={16} className="shrink-0" aria-hidden="true" />{t('my_listings.edit')}
       </Link>
       <button type="button" onClick={onTogglePause} disabled={isUpdating} className={secondary}>
