@@ -191,6 +191,9 @@
         "carjam_no_plate_long": "The seller has not added a plate yet. Ask them to add it: it unlocks a free CarJam report (debts, import history, odometer clues) and is one of the strongest trust signals on Kiwi Van Market."
     },
     "my_listings": {
+        "dashboard": "Manage my listing",
+        "pause": "Pause listing",
+        "resume": "Resume listing",
         "title": "My Vans",
         "manage": "Manage your van listings",
         "add_new": "Add New Van",

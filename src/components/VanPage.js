@@ -741,7 +741,7 @@ ${shareUrl}
                         <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                           <LayoutDashboard size={20} />
                         </div>
-                        <h3 className="text-lg font-black uppercase tracking-widest">{t('owner.dashboard') || 'Owner Dashboard'}</h3>
+                        <h3 className="text-lg font-black uppercase tracking-widest">{t('my_listings.dashboard')}</h3>
                       </div>
                       <div className="flex items-center gap-2">
                         {van.status === 'paused' && (
@@ -786,7 +786,7 @@ ${shareUrl}
                           className="flex items-center justify-center gap-3 w-full bg-white/10 hover:bg-amber-500 hover:text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all"
                         >
                           {van.status === 'paused' ? <Play size={16} /> : <Pause size={16} />}
-                          {van.status === 'paused' ? t('my_listings.resume') || 'Resume' : t('my_listings.pause') || 'Pause'}
+                          {van.status === 'paused' ? t('my_listings.resume') : t('my_listings.pause')}
                         </button>
 
                         <button

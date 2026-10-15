@@ -191,6 +191,9 @@
         "carjam_no_plate_long": "Le vendeur n’a pas encore indiqué de plaque. Demandez-lui de l’ajouter : cela débloque un rapport CarJam gratuit (dettes, import, indices de kilométrage) et renforce fortement la confiance sur Kiwi Van Market."
     },
     "my_listings": {
+        "dashboard": "Gestion de mon annonce",
+        "pause": "Mettre en pause",
+        "resume": "Remettre en ligne",
         "title": "Mes Vans",
         "manage": "Gérez vos annonces de vans",
         "add_new": "Ajouter un van",

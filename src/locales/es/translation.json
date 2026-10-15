@@ -1,4 +1,9 @@
 {
+    "my_listings": {
+        "dashboard": "Gestionar mi anuncio",
+        "pause": "Pausar anuncio",
+        "resume": "Reactivar anuncio"
+    },
     "header": {
         "subtitle": "Compra y Venta de vans 🇳🇿",
         "guides": "Guías",
