@@ -33,7 +33,7 @@ import { safeDate } from './utils/dateHelper';
 import Footer, { FAQModal } from './components/Footer';
 import VanCard from './components/VanCard';
 import GuidePreviewSection from './components/GuidePreviewSection';
-import HeroGuideCard from './components/HeroGuideCard';
+import HomeSearch from './components/HomeSearch';
 import HomeSeoSection from './components/HomeSeoSection';
 import RouteLanguage from './components/RouteLanguage';
 import BottomNavigation from './components/BottomNavigation';
@@ -414,70 +414,71 @@ function MainApp({
 
       {/* Hero Section — visible uniquement sur la 1re page des annonces */}
       {listingsPage === 1 && (
-      <section className="relative pt-10 pb-16 lg:pt-20 lg:pb-32 overflow-hidden bg-white">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <section className="bg-white border-b border-slate-200/70 py-6 sm:py-7 lg:py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-8 lg:gap-12 items-center mb-5 lg:mb-6">
             {/* Left Column: Content */}
             <div className="flex flex-col items-start text-left">
-              <h1 className="text-[2.6rem] leading-[1.05] sm:text-5xl lg:text-7xl font-black text-slate-900 mb-4 lg:mb-6 sm:leading-[1.1] tracking-tight">
-                {t('home.title_part1')} <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t('home.title_highlight')}</span> {t('home.title_part2')}
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] font-bold leading-[1.08] tracking-tight text-slate-900 mb-4">
+                {t('home.title_part1')} <span className="text-emerald-700">{t('home.title_highlight')}</span> {t('home.title_part2')}
               </h1>
 
-              <p className="text-base sm:text-lg lg:text-xl text-slate-500 font-medium mb-7 lg:mb-10 max-w-xl leading-relaxed opacity-90">
+              <p className="text-base sm:text-lg text-slate-600 mb-5 max-w-xl leading-relaxed">
                 {t('home.subtitle')}
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 lg:mb-8 w-full">
-                <button
-                  onClick={() => document.getElementById('listings-start')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-emerald-600 text-white px-10 py-5 rounded-2xl font-black hover:bg-emerald-500 transition-all shadow-2xl shadow-emerald-900/20 active:scale-95 text-lg"
-                >
-                  <Search size={20} />
-                  {t('home.cta_browse_listings')}
-                </button>
-
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
                 <Link
-                  to="/sell"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-white text-slate-700 border-2 border-dashed border-slate-300 px-8 py-5 rounded-2xl font-bold hover:border-emerald-400 hover:text-emerald-700 transition-all active:scale-95 text-base"
+                  to={seoHref('/sell')}
+                  className="inline-flex items-center gap-2 py-2 text-sm font-semibold text-emerald-800 hover:underline underline-offset-4 rounded focus-visible:outline-emerald-700"
                 >
                   <Plus size={18} />
                   {t('home.cta_sell_van')}
                 </Link>
+                <Link to={seoHref('/guide/buying-campervan-nz')} className="inline-flex items-center gap-2 py-2 text-sm font-semibold text-slate-600 hover:text-emerald-800 hover:underline underline-offset-4 rounded focus-visible:outline-emerald-700">
+                  <BookOpen size={17} aria-hidden="true" />
+                  {t('marketplace.buying_guide')}
+                  <ArrowRight size={15} aria-hidden="true" />
+                </Link>
               </div>
-
-              {/* Guide vedette — la même carte (image + titre + lien) sur TOUTES
-                  les tailles d'écran : bien plus engageante que l'ancien simple
-                  lien texte « Buying Guides » du desktop */}
-              <HeroGuideCard className="w-full max-w-xl mt-1" />
             </div>
 
             {/* Right Column: Hero Image Card */}
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-emerald-500/5 rounded-[4rem] blur-3xl group-hover:bg-emerald-500/10 transition-colors" />
-              <div className="relative bg-white p-2 sm:p-3 rounded-[2rem] sm:rounded-[3.5rem] shadow-2xl shadow-slate-200 border border-slate-50 overflow-hidden transform group-hover:-translate-y-2 transition-transform duration-700">
-                <div className="rounded-[1.5rem] sm:rounded-[3rem] overflow-hidden border-[6px] sm:border-[12px] border-white shadow-inner aspect-[4/3] lg:aspect-auto">
+            <div className="hidden lg:block">
+              <div className="overflow-hidden rounded-2xl bg-slate-100">
+                <div className="h-[220px] xl:h-[240px]">
                   <picture>
                     <source srcSet="/hiace-camper.webp" type="image/webp" />
                     <img
                       src="/hiace-camper.png"
-                      alt="Toyota Hiace campervan for sale in New Zealand"
+                      alt={t('marketplace.hero_alt')}
                       fetchPriority="high"
                       loading="eager"
                       width="640"
                       height="640"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
+                      className="w-full h-full object-cover object-[center_62%]"
                     />
                   </picture>
                 </div>
               </div>
             </div>
           </div>
+          <HomeSearch
+            location={filters.location}
+            priceMax={filters.priceMax}
+            onSearch={(criteria) => {
+              setFilters((previous) => ({ ...previous, ...criteria, priceMin: 0 }));
+              const results = document.getElementById('listings-start');
+              results?.focus({ preventScroll: true });
+              results?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+            }}
+          />
         </div>
       </section>
       )}
 
       <main id="main-content">
-        <div id="listings-start" className="scroll-mt-24" />
+        <div id="listings-start" tabIndex={-1} className="scroll-mt-20 outline-none" />
         <QuickFilters
           searchTerm={searchTerm} setSearchTerm={setSearchTerm}
           filters={filters} setFilters={setFilters}

@@ -70,6 +70,26 @@
         "trust_transparent": "Infos véhicule transparentes",
         "why_link": "Pourquoi KiwiVanMarket ?"
     },
+    "marketplace": {
+        "search_label": "Trouver un van",
+        "city": "Ville de départ",
+        "all_locations": "Toute la NZ",
+        "budget": "Budget maximum · NZD",
+        "any_budget": "Tous les budgets",
+        "up_to": "Jusqu’à {{amount}} $",
+        "search": "Chercher un van",
+        "buying_guide": "Premier van ? Le guide d’achat",
+        "hero_alt": "Van aménagé au bord d’un lac dans les montagnes de Nouvelle-Zélande",
+        "mileage": "Kilométrage · km",
+        "vehicle_history": "Historique du véhicule",
+        "sold": "Vendu",
+        "promoted": "Mis en avant",
+        "popular": "Populaire",
+        "previous_photo": "Photo précédente",
+        "next_photo": "Photo suivante",
+        "save_favorite": "Ajouter {{title}} aux favoris",
+        "remove_favorite": "Retirer {{title}} des favoris"
+    },
     "filters": {
         "buyback": "Buy-Back",
         "buyback_desc": "Le vendeur garantit de racheter le van à un prix convenu.",
@@ -332,6 +352,10 @@
         "plate_tooltip_desc": "Ajouter votre plaque permet aux acheteurs de vérifier l'historique de votre van sur CarJam (WOF, REGO, kilométrage). Cela augmente considérablement la confiance et l'intérêt !"
     },
     "listings": {
+        "sort_by": "Trier les annonces",
+        "sort_newest": "Plus récentes",
+        "sort_price_asc": "Prix croissant",
+        "sort_price_desc": "Prix décroissant",
         "loading": "Chargement des annonces…",
         "page_range": "Annonces {{start}}–{{end}} sur {{count}}",
         "previous_page": "Page précédente",

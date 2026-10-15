@@ -70,6 +70,26 @@
         "trust_transparent": "Transparent vehicle info",
         "why_link": "Why KiwiVanMarket?"
     },
+    "marketplace": {
+        "search_label": "Find a campervan",
+        "city": "Pickup city",
+        "all_locations": "All New Zealand",
+        "budget": "Maximum budget · NZD",
+        "any_budget": "Any budget",
+        "up_to": "Up to ${{amount}}",
+        "search": "Search vans",
+        "buying_guide": "First van? Read the guide",
+        "hero_alt": "Campervan beside a lake in the New Zealand mountains",
+        "mileage": "Mileage · km",
+        "vehicle_history": "Vehicle history",
+        "sold": "Sold",
+        "promoted": "Promoted",
+        "popular": "Popular",
+        "previous_photo": "Previous photo",
+        "next_photo": "Next photo",
+        "save_favorite": "Save {{title}} to favorites",
+        "remove_favorite": "Remove {{title}} from favorites"
+    },
     "filters": {
         "buyback": "Buy-Back",
         "buyback_desc": "The seller guarantees to buy back the van at an agreed price.",
@@ -332,6 +352,10 @@
         "plate_tooltip_desc": "Adding your plate allows buyers to check your van's history on CarJam (WOF, REGO, mileage). This significantly increases trust and interest!"
     },
     "listings": {
+        "sort_by": "Sort listings",
+        "sort_newest": "Newest first",
+        "sort_price_asc": "Lowest price",
+        "sort_price_desc": "Highest price",
         "loading": "Loading listings…",
         "page_range": "Showing {{start}}–{{end}} of {{count}} listings",
         "previous_page": "Previous page",

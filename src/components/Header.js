@@ -92,7 +92,7 @@ export default function Header({
                     </Link>
 
                     {/* Navigation - Desktop Central */}
-                    <nav className="hidden md:flex items-center gap-1 ml-6">
+                    <nav className="hidden lg:flex items-center gap-1 ml-6">
                         <Link
                             to={localHref('/guides')}
                             className="px-4 py-2 bg-emerald-50 text-emerald-700 font-bold hover:bg-emerald-100 rounded-xl transition-all flex items-center gap-2 text-sm border border-emerald-200/50 hover:border-emerald-300"
@@ -111,28 +111,28 @@ export default function Header({
                     </nav>
 
                     {/* Barre de recherche - Desktop Content-Aware */}
-                    <div className="hidden lg:flex flex-1 max-w-sm mx-8">
+                    <div className="hidden xl:flex flex-1 max-w-sm mx-8">
                         <div className="relative w-full group">
                             <input
                                 type="text"
-                                placeholder="Search campervans..."
+                                placeholder={t('header.search_placeholder')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 bg-slate-100/50 border border-transparent rounded-2xl text-slate-800 placeholder-slate-400 focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all text-sm"
-                                aria-label="Search campervans"
+                                aria-label={t('header.search_placeholder')}
                             />
                             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                         </div>
                     </div>
 
                     {/* Actions & Profile - Desktop Right */}
-                    <div className="hidden md:flex items-center gap-2">
+                    <div className="hidden lg:flex items-center gap-2">
                         <button
                             onClick={() => navigate('/sell')}
                             className="btn-primary text-xs px-5 py-2.5 flex items-center gap-2 mr-2"
                         >
                             <Plus size={16} />
-                            <span>Sell Van</span>
+                            <span>{t('header.sell')}</span>
                         </button>
 
                         <div className="h-8 w-[1px] bg-slate-200 mx-1" />
@@ -230,7 +230,7 @@ export default function Header({
                     </div>
 
                     {/* Mobile : bouton burger clean (devise/langue déplacées dans le menu) */}
-                    <div className="md:hidden flex items-center">
+                    <div className="lg:hidden flex items-center">
                         <button
                             onClick={() => setShowMobileMenu(!showMobileMenu)}
                             aria-label="Menu"
@@ -247,7 +247,7 @@ export default function Header({
                     (glass-effect) qui, sinon, "capture" le position:fixed et
                     empêche le drawer de couvrir tout l'écran. */}
                 {showMobileMenu && createPortal(
-                    <div className="md:hidden fixed inset-0 z-[70] bg-white flex flex-col animate-in fade-in slide-in-from-right-4 duration-200">
+                    <div className="lg:hidden fixed inset-0 z-[70] bg-white flex flex-col animate-in fade-in slide-in-from-right-4 duration-200">
                         {/* Barre du haut : logo + fermer */}
                         <div className="flex items-center justify-between px-5 h-16 border-b border-slate-100 flex-shrink-0">
                             <Link to={localHref('/')} onClick={() => setShowMobileMenu(false)} className="flex items-center gap-2">

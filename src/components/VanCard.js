@@ -16,6 +16,7 @@ const RETURN_PATH_KEY = 'kiwiVanMarket_returnPath';
 
 // Carousel de photos pour la card
 const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStart = useRef(null);
   const didSwipe = useRef(false);
@@ -72,7 +73,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
 
   return (
     <div
-      className="relative group overflow-hidden h-64"
+      className="relative group overflow-hidden aspect-[16/10]"
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       onClickCapture={onClickCapture}
@@ -96,7 +97,7 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
         <div className="absolute inset-0 z-20 flex items-center justify-center p-4">
           <div className="bg-red-600/90 backdrop-blur-md text-white px-8 py-3 rounded-2xl font-black text-2xl uppercase tracking-[0.2em] shadow-2xl border-2 border-white/30 rotate-[-12deg] flex items-center gap-2">
             <CheckCircle size={24} fill="currentColor" strokeWidth={3} className="text-red-100" />
-            Sold
+            {t('marketplace.sold')}
           </div>
         </div>
       )}
@@ -106,15 +107,15 @@ const ImageCarousel = ({ images, title, vanStatus, priority = false }) => {
         <>
           <button
             onClick={goPrev}
-            className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 rounded-2xl p-2 shadow-xl opacity-0 group-hover:opacity-100 transition-all z-10 border border-white/30"
-            aria-label="Previous image"
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 rounded-full p-2.5 shadow-sm sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity z-10"
+            aria-label={t('marketplace.previous_photo')}
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={goNext}
-            className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md hover:bg-white text-white hover:text-slate-900 rounded-2xl p-2 shadow-xl opacity-0 group-hover:opacity-100 transition-all z-10 border border-white/30"
-            aria-label="Next image"
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-800 rounded-full p-2.5 shadow-sm sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity z-10"
+            aria-label={t('marketplace.next_photo')}
           >
             <ChevronRight size={20} />
           </button>
@@ -170,9 +171,9 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           // Ignore storage errors (private mode / blocked storage)
         }
       }}
-      className="premium-card group block overflow-hidden"
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:border-emerald-300 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-emerald-700 transition-[border-color,box-shadow]"
     >
-      <div className="relative">
+      <div className="relative shrink-0">
         <ImageCarousel
           images={images}
           title={translatedTitle}
@@ -183,7 +184,9 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
         {/* Favorite button */}
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(van.id, setShowAuthModal); }}
-          className="absolute top-4 right-4 bg-white/90 backdrop-blur-md p-2.5 rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all z-20 group/fav"
+          aria-label={t(isFavorite(van.id) ? 'marketplace.remove_favorite' : 'marketplace.save_favorite', { title: translatedTitle })}
+          aria-pressed={isFavorite(van.id)}
+          className="absolute top-3 right-3 bg-white/95 p-3 rounded-full shadow-sm hover:bg-white focus-visible:outline-emerald-700 transition-colors z-20 group/fav"
         >
           <Heart
             size={20}
@@ -202,15 +205,15 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           )}
           {boostVisibility.isBoostActive(van, boostNow) && <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 text-xs font-bold px-2 py-1 rounded-lg"><Star size={12} />{t('boost.sponsored')}</span>}
           {van.featured && !boostVisibility.isBoostActive(van, boostNow) && (
-            <div className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-[0_4px_15px_rgba(251,191,36,0.5)] border border-white/40 flex items-center gap-1.5 animate-pulse">
+            <div className="bg-amber-100 text-amber-900 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <Star size={12} fill="currentColor" />
-              Promoted
+              {t('marketplace.promoted')}
             </div>
           )}
           {van.views > 50 && (
-            <div className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase shadow-[0_4px_15px_rgba(225,29,72,0.5)] border border-white/40 flex items-center gap-1.5 animate-pulse">
+            <div className="bg-rose-50 text-rose-800 px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <span className="text-base leading-none">🔥</span>
-              Hot
+              {t('marketplace.popular')}
             </div>
           )}
           {van.buyBack && (
@@ -221,39 +224,35 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           )}
         </div>
 
-        {/* Self-contained marker */}
-        {van.selfContained === true && (
-          <div title={selfContained.describe(van, i18n.language)} className={`absolute bottom-4 left-4 max-w-[90%] backdrop-blur-md text-white px-3 py-2 rounded-2xl text-[10px] font-black tracking-widest uppercase shadow-2xl flex items-center gap-2 border border-white/30 ${van.selfContainedType === 'green' ? 'bg-emerald-600/90' : 'bg-slate-700/90'
-            }`}>
-            {selfContained.short(van, i18n.language)}
-          </div>
-        )}
       </div>
 
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="font-bold text-slate-900 text-lg leading-snug group-hover:text-emerald-700 transition-colors line-clamp-2 min-h-[3.5rem]">
-              {translatedTitle}
-            </h3>
-            <div className="flex items-center gap-3 mt-2">
-              <div className="flex items-center gap-1.5 text-slate-400 text-sm">
-                <MapPin size={14} className="text-emerald-500" />
-                <span className="font-medium">{van.location}</span>
-              </div>
-            </div>
-          </div>
+      <div className="flex flex-1 flex-col p-5">
+        <h3 title={translatedTitle} className="font-bold text-slate-900 text-lg leading-6 group-hover:text-emerald-800 transition-colors line-clamp-2 h-12 break-words">
+          {translatedTitle}
+        </h3>
+        <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
+          <MapPin size={15} className="text-emerald-700 shrink-0" aria-hidden="true" />
+          <span>{van.location}</span>
         </div>
 
-        <div className="flex items-center gap-3 text-slate-500 mb-4 bg-slate-50 p-2.5 rounded-2xl border border-slate-100">
+        <div className="flex items-center justify-between gap-3 my-4">
+          <span className="text-2xl font-bold tracking-tight text-slate-900">
+            {formatPrice ? formatPrice(van.price) : `$${(van.price || 0).toLocaleString()}`}
+          </span>
+          <span className="rounded-full bg-emerald-50 p-2 text-emerald-800 group-hover:bg-emerald-100 transition-colors" aria-hidden="true">
+            <ChevronRight size={20} />
+          </span>
+        </div>
+
+        <div className="flex items-center gap-3 mb-4 bg-slate-50 px-3 py-2.5 rounded-xl">
           <div className="flex flex-col flex-1">
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Year</span>
-            <span className="text-slate-900 font-bold">{van.year}</span>
+            <span className="text-xs font-medium text-slate-600">{t('van_page.year')}</span>
+            <span className="text-slate-900 font-semibold">{van.year}</span>
           </div>
           <div className="w-[1px] h-6 bg-slate-200" />
           <div className="flex flex-col flex-1">
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Km</span>
-            <span className="text-slate-900 font-bold">{formatMileage(van.mileage)}</span>
+            <span className="text-xs font-medium text-slate-600">{t('marketplace.mileage')}</span>
+            <span className="text-slate-900 font-semibold">{formatMileage(van.mileage)}</span>
           </div>
         </div>
 
@@ -261,25 +260,25 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
         {(van.wofExpiry || van.regoExpiry || van.selfContained) && (
           <div className="flex flex-wrap items-center gap-2 mb-4">
             {van.wofExpiry && (
-              <span className="inline-flex items-center gap-1 bg-slate-50 border border-slate-200 text-slate-700 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
+              <span className="inline-flex items-center gap-1 bg-slate-50 border border-slate-200 text-slate-700 px-2 py-1 rounded-md text-xs font-semibold">
                 <Calendar size={11} className="text-slate-500" />
                 WOF
-                <span className="font-semibold normal-case tracking-normal text-slate-500 ml-0.5">
+                <span className="font-medium text-slate-600 ml-0.5">
                   · {safeDate(van.wofExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || '—'}
                 </span>
               </span>
             )}
             {van.regoExpiry && (
-              <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">
-                <Calendar size={11} className="text-blue-600" />
+              <span className="inline-flex items-center gap-1 bg-slate-50 border border-slate-200 text-slate-700 px-2 py-1 rounded-md text-xs font-semibold">
+                <Calendar size={11} className="text-slate-500" />
                 REGO
-                <span className="font-semibold normal-case tracking-normal text-blue-600 ml-0.5">
+                <span className="font-medium text-slate-600 ml-0.5">
                   · {safeDate(van.regoExpiry)?.toLocaleDateString('en-NZ', { month: 'short', year: '2-digit' }) || '—'}
                 </span>
               </span>
             )}
             {van.selfContained === true && (
-              <span title={selfContained.describe(van, i18n.language)} className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide border ${van.selfContainedType === 'green'
+              <span title={selfContained.describe(van, i18n.language)} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold border ${van.selfContainedType === 'green'
                 ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
                 : 'bg-slate-50 border-slate-300 text-slate-700'
                 }`}>
@@ -289,44 +288,32 @@ export default function VanCard({ van, formatPrice, priority = false, setShowAut
           </div>
         )}
 
-        <div className="mb-4">
+        <div className="mt-auto pt-3 border-t border-slate-100">
           {van.plateNumber ? (
             <button
               type="button"
               onClick={openCarJam}
-              className="w-full inline-flex items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-slate-700 hover:border-blue-300 hover:text-blue-700 transition-colors"
+              className="w-full inline-flex min-h-[44px] items-center justify-between gap-2 rounded-lg text-slate-600 hover:text-blue-800 focus-visible:outline-blue-600 transition-colors"
               aria-label={t('van_page.carjam_cta_button')}
             >
               <span className="inline-flex items-center gap-2 min-w-0">
-                <span className="inline-flex items-center rounded-full bg-blue-600 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white">
+                <span className="inline-flex items-center rounded bg-blue-700 px-2 py-1 text-[11px] font-bold text-white">
                   CarJam
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wide truncate">
-                  Vehicle history
+                <span className="text-xs font-medium">
+                  {t('marketplace.vehicle_history')}
                 </span>
               </span>
               <ExternalLink size={13} className="shrink-0" aria-hidden />
             </button>
           ) : (
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-900">
+            <div className="flex min-h-[44px] items-center gap-2 rounded-lg bg-amber-50 px-2.5 py-2 text-xs text-amber-900">
               <span className="font-black uppercase tracking-wide">CarJam</span>
               <span>{t('van_page.carjam_no_plate_short')}</span>
             </div>
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider leading-none mb-1">Price</span>
-            <div className="text-2xl font-black text-slate-900">
-              {formatPrice ? formatPrice(van.price) : `$${(van.price || 0).toLocaleString()}`}
-            </div>
-          </div>
-
-          <div className="bg-emerald-600 text-white p-2.5 rounded-2xl shadow-lg shadow-emerald-200 group-hover:scale-110 group-hover:translate-x-1 transition-all">
-            <ChevronRight size={20} />
-          </div>
-        </div>
       </div>
     </Link>
   );

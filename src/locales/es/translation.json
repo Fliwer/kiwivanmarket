@@ -63,6 +63,26 @@
         "trust_transparent": "Información transparente",
         "why_link": "¿Por qué KiwiVanMarket?"
     },
+    "marketplace": {
+        "search_label": "Encontrar una campervan",
+        "city": "Ciudad de recogida",
+        "all_locations": "Toda Nueva Zelanda",
+        "budget": "Presupuesto máximo · NZD",
+        "any_budget": "Cualquier presupuesto",
+        "up_to": "Hasta {{amount}} $",
+        "search": "Buscar vans",
+        "buying_guide": "¿Tu primera van? Lee la guía",
+        "hero_alt": "Campervan junto a un lago en las montañas de Nueva Zelanda",
+        "mileage": "Kilometraje · km",
+        "vehicle_history": "Historial del vehículo",
+        "sold": "Vendido",
+        "promoted": "Destacado",
+        "popular": "Popular",
+        "previous_photo": "Foto anterior",
+        "next_photo": "Foto siguiente",
+        "save_favorite": "Guardar {{title}} en favoritos",
+        "remove_favorite": "Quitar {{title}} de favoritos"
+    },
     "filters": {
         "buyback": "Buy-Back",
         "buyback_desc": "El vendedor garantiza recomprar la van a un precio acordado.",
@@ -267,6 +287,10 @@
         "plate_tooltip_desc": "Añadir tu matrícula permite a los compradores verificar el historial de tu van en CarJam (WOF, REGO, kilometraje). ¡Esto aumenta significativamente la confianza y el interés!"
     },
     "listings": {
+        "sort_by": "Ordenar anuncios",
+        "sort_newest": "Más recientes",
+        "sort_price_asc": "Precio más bajo",
+        "sort_price_desc": "Precio más alto",
         "loading": "Cargando anuncios…",
         "page_range": "Anuncios {{start}}–{{end}} de {{count}}",
         "previous_page": "Página anterior",

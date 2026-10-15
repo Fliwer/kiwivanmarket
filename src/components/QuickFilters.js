@@ -64,7 +64,7 @@ export default function QuickFilters({
 
     return (
         <div className="bg-transparent">
-            <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
 
                 {/* Search Mobile — sur mobile/tablette : UNE barre + UN bouton Filters
                     (le tiroir contient déjà tous les filtres rapides). Les pastilles
@@ -75,14 +75,14 @@ export default function QuickFilters({
                             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
                             <input
                                 type="text"
-                                placeholder="Search campervans..."
+                                placeholder={t('header.search_placeholder')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 bg-gray-100 border-2 border-transparent rounded-xl focus:border-emerald-500 focus:bg-white outline-none transition-all"
-                                aria-label="Search campervans"
+                                className="w-full pl-11 pr-10 py-3 bg-white border-2 border-transparent rounded-xl focus:border-emerald-500 focus:bg-white outline-none transition-all"
+                                aria-label={t('header.search_placeholder')}
                             />
                             {searchTerm && (
-                                <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                <button aria-label={t('filters.clear_search')} onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                     <X size={16} />
                                 </button>
                             )}
@@ -93,7 +93,7 @@ export default function QuickFilters({
                             className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 ${activeFilterCount > 0 ? 'bg-emerald-600 text-white' : 'bg-white border-2 border-gray-200 text-gray-700'}`}
                         >
                             <SlidersHorizontal size={18} />
-                            <span>Filters</span>
+                            <span>{t('filters.show_filters')}</span>
                             {activeFilterCount > 0 && (
                                 <span className="w-5 h-5 bg-white text-emerald-700 text-[11px] font-black rounded-full flex items-center justify-center">{activeFilterCount}</span>
                             )}
